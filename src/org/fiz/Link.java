@@ -137,9 +137,9 @@ public class Link {
         }
         for (int i = 0; i < queryNames.length; i++) {
             url.append(separator);
-            Util.escapeUrlChars(queryNames[i], url);
+            Html.escapeUrlChars(queryNames[i], url);
             url.append('=');
-            Util.escapeUrlChars(data.get(queryNames[i]), url);
+            Html.escapeUrlChars(data.get(queryNames[i]), url);
             separator = "&amp;";
         }
 
@@ -211,10 +211,10 @@ public class Link {
         // Thus the contents of the message get quoted twice.
         Template.expand(template, data, message, Template.Encoding.NONE);
         StringBuilder code = new StringBuilder("if (!confirm(\"");
-        Util.escapeStringChars(message.toString(), code);
+        Html.escapeStringChars(message.toString(), code);
         code.append("\") {return false;}");
         out.append("onclick=\"");
-        Util.escapeHtmlChars(code.toString(), out);
+        Html.escapeHtmlChars(code.toString(), out);
         out.append("\"");
     }
 }

@@ -1,6 +1,6 @@
 /**
  * This file defines a class that is used for testing Dispatcher.java.
- * This particular class is used for testing the case where the
+ * This particular class is used for testing the error case where the
  * constructor fails with an exception.
  */
 

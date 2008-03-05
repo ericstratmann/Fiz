@@ -24,6 +24,8 @@
 
 package org.fiz;
 
+import javax.servlet.http.*;
+
 public class Interactor {
 
     /**
@@ -41,5 +43,23 @@ public class Interactor {
      * such as closing files and external connections.
      */
     public void destroy() {
+    }
+
+    /**
+     * This method is invoked by the dispatcher at the beginning of handling
+     * each request to create a Request object for the request.  Applications
+     * can override this method in their Interactor subclasses, returning
+     * a subclass of Request holding additional application-specific
+     * information.
+     * @param servletRequest       The HttpServletRequest provided by the
+     *                             container.
+     * @param servletResponse      The HttpServletResponse provided by the
+     *                             container.
+     * @return                     A Request object to use for managing
+     *                             the current request.
+     */
+    public Request getRequest(HttpServletRequest servletRequest,
+            HttpServletResponse servletResponse) {
+        return new Request(servletRequest, servletResponse);
     }
 }

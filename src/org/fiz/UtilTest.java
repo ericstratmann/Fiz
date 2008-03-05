@@ -69,39 +69,25 @@ public class UtilTest extends junit.framework.TestCase {
                 Util.identifierEnd("abc", 10));
     }
 
-    public void testEscapeHtmlChars() {
-        StringBuilder out = new StringBuilder();
-        Util.escapeHtmlChars("abc123", out);
-        assertEquals("no special characters", "abc123", out.toString());
-        out.setLength(0);
-        Util.escapeHtmlChars("!\"#%&';<=>?", out);
-        assertEquals("special characters", "!&quot;#%&amp;';&lt;=&gt;?",
-                out.toString());
-    }
-
-    public void testEscapeUrlChars() {
-        StringBuilder out = new StringBuilder();
-        Util.escapeUrlChars(" +,-./@ABYZ[`abyz{", out);
-        assertEquals("ASCII characters", "+%2b%2c-.%2f%40ABYZ%5b%60abyz%7b",
-                out.toString());
-        out.setLength(0);
-        Util.escapeUrlChars("/0123456789:", out);
-        assertEquals("digits","%2f0123456789%3a", out.toString());
-        out.setLength(0);
-        Util.escapeUrlChars("\u007f--\u0080--\u07ff--\u0800--\u1234", out);
-        assertEquals("Unicode characters",
-                "%7f--%c2%80--%df%bf--%e0%a0%80--%e1%88%b4",
-                out.toString());
-    }
-
-    public void testEscapeStringChars() {
-        StringBuilder out = new StringBuilder();
-        Util.escapeStringChars("abc\037\040 | \n\t | \001 | \\\"", out);
-        assertEquals("abc\\x1f  | \\n\\t | \\x01 | \\\\\\\"",
-                out.toString());
-    }
-
     public void testGetUriAndQuery() {
-        // TODO: need tests for testGetUriAndQuery
+        assertEquals("no query data", "/a/b",
+                Util.getUriAndQuery(new UtilTestRequest("/a/b", null)));
+        assertEquals("query data", "/a/b?x=24&y=13",
+                Util.getUriAndQuery(new UtilTestRequest("/a/b", "x=24&y=13")));
     }
+}
+
+// The following class implements just enough of the HttpServletRequest
+// interface to test the testGetUriAndQuery method.
+class UtilTestRequest extends TestServletRequest {
+    public String uri;
+    public String queryString;
+
+    public UtilTestRequest(String uri, String query) {
+        this.uri = uri;
+        this.queryString = query;
+    }
+
+    public String getQueryString() {return queryString;}
+    public String getRequestURI() {return uri;}
 }

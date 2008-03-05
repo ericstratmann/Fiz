@@ -5,7 +5,7 @@
 <servlet>
     <servlet-name>fiz</servlet-name>
     <description>Various Fiz demos and tests</description>
-    <servlet-class>Dispatcher</servlet-class>
+    <servlet-class>org.fiz.Dispatcher</servlet-class>
 </servlet>
 <servlet-mapping>
     <servlet-name>fiz</servlet-name>

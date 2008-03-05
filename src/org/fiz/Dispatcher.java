@@ -12,7 +12,6 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.util.Hashtable;
 import javax.servlet.http.*;
-
 import org.apache.log4j.Logger;
 
 public class Dispatcher extends HttpServlet {
@@ -161,25 +160,11 @@ public class Dispatcher extends HttpServlet {
                 Interactor interactor = classMap.get(className);
                 if (interactor == null) {
                     // This is a new class.  First load the class.
-                    Class<?> cl;
-                    try {
-                        cl =  Class.forName(className);
-                    }
-                    catch (ClassNotFoundException e) {
-                        throw new UnsupportedUriError(request.getRequestURI(),
-                                "can't find class \"" + className + "\"");
-                    }
+                    Class<?> cl = findClass(className, request);
 
                     // Make sure the class is a subclass of Interactor.
-                    Class<?> interactorClass = null;
-                    try {
-                        interactorClass = Class.forName("org.fiz.Interactor");
-                    }
-                    catch (ClassNotFoundException e) {
-                        logger.error("Dispatcher.init couldn't find "
-                                + "org.fiz.Interactor class: "
-                                + e.getMessage());
-                    }
+                    Class<?> interactorClass = findClass("org.fiz.Interactor",
+                            request);
                     if (!interactorClass.isAssignableFrom(cl)) {
                         throw new UnsupportedUriError(request.getRequestURI(),
                                 "class \"" + className
@@ -213,20 +198,15 @@ public class Dispatcher extends HttpServlet {
                     interactor.init();
 
                     // Scan the methods for the class and remember each method
-                    // that is public and has the appropriate number and types
-                    // of arguments.
+                    // that is public and takes a single argument that is a
+                    // subclass of Request.
+                    Class<?> requestClass = findClass("org.fiz.Request",
+                            request);
                     for (Method m : cl.getMethods()) {
-                        if (!Modifier.isPublic(m.getModifiers())) {
-                            continue;
-                        }
                         Class[] parameterTypes = m.getParameterTypes();
-                        if (parameterTypes.length != 2) {
-                            continue;
-                        }
-                        if (!parameterTypes[0].getName().equals(
-                                "javax.servlet.http.HttpServletRequest")
-                                || !parameterTypes[1].getName().equals(
-                                "javax.servlet.http.HttpServletResponse")) {
+                        if ((parameterTypes.length != 1)
+                                || !requestClass.isAssignableFrom(
+                                parameterTypes[0])) {
                             continue;
                         }
                         String key = pathInfo.substring(1, endOfClass+1)
@@ -239,17 +219,20 @@ public class Dispatcher extends HttpServlet {
                 }
                 if (method == null) {
                     throw new UnsupportedUriError(request.getRequestURI(),
-                            "no method \"" + pathInfo.substring(endOfClass+1,
-                            endOfMethod) + "\" in class " + className);
+                            "couldn't find method \""
+                            + pathInfo.substring(endOfClass+1, endOfMethod)
+                            + "\" with proper signature in class " + className);
                 }
             }
 
             // At this point we have located the method to service this
-            // request.  Invoke it.
-            method.method.invoke(method.interactor, request, response);
+            // request.  Package up relevant information into a Request
+            // object and invoke the method.
+            method.method.invoke(method.interactor,
+                    method.interactor.getRequest(request, response));
         }
         catch (Throwable e) {
-            // TODO.  Possible approaches:
+            // TODO: allow application-specific handling of errors.
             // * Generate a standard result page (handle AJAX especially)
             // * Generate a log message.
             // * Invoke application-specific code to handle (but catch
@@ -267,9 +250,26 @@ public class Dispatcher extends HttpServlet {
             fullMessage = "unhandled exception for URI \""
                     + Util.getUriAndQuery(request) + "\"\n"
                     + sWriter.toString();
-            if (logger.isTraceEnabled()) {
-                logger.error(fullMessage);
-            }
+            logger.error(fullMessage);
+        }
+    }
+
+    /**
+     * This utility method looks up a class and generates an appropriate
+     * Error if the class can't be found.
+     * @param className            Name of the desired class
+     * @param request              Information about the HTTP request (used
+     *                             for generating error messages)
+     * @return                     The Class object corresponding to
+     *                             className.
+     */
+    protected Class<?> findClass(String className, HttpServletRequest request) {
+        try {
+            return Class.forName(className);
+        }
+        catch (ClassNotFoundException e) {
+            throw new UnsupportedUriError(request.getRequestURI(),
+                    "can't find class \"" + className + "\"");
         }
     }
 }

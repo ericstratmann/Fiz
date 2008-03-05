@@ -28,15 +28,13 @@ public class Chat extends Interactor {
         messages = new Message[10];
     }
 
-    public void page(HttpServletRequest request,
-                        HttpServletResponse response)
+    public void page(Request request)
             throws ServletException, IOException {
-        logger.info("service initiated");
-        PrintWriter out = response.getWriter();
+        logger.info("chat initiated");
+        PrintWriter out = request.getWriter();
         String watch = request.getParameter("watch");
         String source = request.getParameter("source");
         StringBuffer code = new StringBuffer();
-        String path = request.getPathInfo();
         int id = 1;
 
         out.printf("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"%n"
@@ -82,8 +80,7 @@ public class Chat extends Interactor {
                 + "</html>%n", code);
     }
 
-    public void watch(HttpServletRequest request,
-                        HttpServletResponse response)
+    public void watch(Request request)
             throws ServletException, IOException {
         String parameter = request.getParameter("watch");
         int index = (parameter != null) ? Integer.parseInt(parameter) : 0;
@@ -93,12 +90,11 @@ public class Chat extends Interactor {
             messages[index] = new Message();
         }
         int newGeneration = messages[index].waitChange(generation);
-        response.getWriter().printf("%d:%s", newGeneration,
+        request.getWriter().printf("%d:%s", newGeneration,
                 messages[index].getValue());
     }
 
-    public void source(HttpServletRequest request,
-                        HttpServletResponse response)
+    public void source(Request request)
             throws ServletException, IOException {
         char buffer[] = new char[1024];
         int length = request.getReader().read(buffer, 0, buffer.length);
@@ -111,7 +107,7 @@ public class Chat extends Interactor {
             messages[index] = new Message();
         }
         messages[index].setValue(new String(buffer, 0, length));
-        response.getWriter().printf("%s, generation %d",
+        request.getWriter().printf("%s, generation %d",
                 messages[index].getValue(), messages[index].getGeneration());
     }
 }

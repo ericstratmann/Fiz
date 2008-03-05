@@ -279,9 +279,9 @@ public class Template {
             value = info.data.get(name);
         }
         if (info.encoding == Encoding.HTML) {
-            Util.escapeHtmlChars(value, info.out);
+            Html.escapeHtmlChars(value, info.out);
         } else if (info.encoding == Encoding.URL) {
-            Util.escapeUrlChars(value, info.out);
+            Html.escapeUrlChars(value, info.out);
         } else {
             info.out.append(value);
         }

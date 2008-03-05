@@ -17,25 +17,19 @@ public class DispatcherTest1 extends Interactor {
     public void destroy() {
         destroyCount++;
     }
-    public void incCount(HttpServletRequest request,
-                        HttpServletResponse response) {
+    public void incCount(Request request) {
         count++;
     }
-    public void resetCount(HttpServletRequest request,
-                        HttpServletResponse response) {
+    public void resetCount(Request request) {
         count = 0;
     }
-    public void error(HttpServletRequest request,
-                        HttpServletResponse response) {
+    public void error(Request request) {
         throw new Error("error in method");
     }
-    private void privateMethod(HttpServletRequest request,
-                        HttpServletResponse response) {
+    private void privateMethod(Request request) {
     }
-    public void oneArg(HttpServletRequest request) {
+    public void twoArgs(Request request, int count) {
     }
-    public void firstArgWrongType(int a, HttpServletResponse response) {
-    }
-    public void secondArgWrongType(HttpServletRequest request, int b) {
+    public void wrongArgType(HttpServletRequest request) {
     }
 }
