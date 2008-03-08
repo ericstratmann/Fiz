@@ -12,11 +12,14 @@ import java.util.Vector;
 import java.util.Locale;
 
 @SuppressWarnings("deprecation")
-public class TestServletResponse implements HttpServletResponse{
+public class ServletResponseFixture implements HttpServletResponse{
     // Some methods just set the following variable to indicate that they
     // were called.  This is used in situations where the method can't easily
     // synthesize an appropriate return type (such as getOutputStream).
     public String lastMethod = null;
+
+    // Used as the result of getWriter requests:
+    public PrintWriter writer = new PrintWriter(new StringWriter ());
 
     // HttpServletResponse methods:
 
@@ -100,7 +103,7 @@ public class TestServletResponse implements HttpServletResponse{
     }
     public PrintWriter getWriter() {
         lastMethod = "getWriter";
-        return null;
+        return writer;
     }
     public boolean isCommitted() {
         lastMethod = "isCommitted";

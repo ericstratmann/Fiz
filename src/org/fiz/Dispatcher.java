@@ -107,28 +107,43 @@ public class Dispatcher extends HttpServlet {
 
     /**
      * This method is invoked for each incoming HTTP request whose URI
-     * matches this application.  This method dispatches the request to
-     * a method in an Interactor object based on information in the URI.
-     * This method also loads Interactor classes and creates Interactor
-     * objects at the time of the first request for each class.
+     * matches this application.  The request can be handled in any of
+     * the following ways, based on pathInfo (the portion of the URL
+     * "owned" by this servlet):
+     * 1. PathInfo has tbe form "/css/...", which means it refers to a
+     *    generated stylesheet.  In this case the stylesheet manager
+     *    is invoked to generate the stylesheet or return a cached copy.
+     * 2. PathInfo has the form "/class/method/...", which means it should
+     *    be handled by method "method" in an Interactor object of class
+     *    "class".  In this case the Interactor class is loaded and
+     *    instantiated if necessary, then the Interactor method is invoked.
      * @param request              Information about the HTTP request
      * @param response             Used to generate the response
      */
     public void service (HttpServletRequest request,
         HttpServletResponse response) {
-        try {
+        handleRequest: try {
             if (logger.isTraceEnabled()) {
-                String query = request.getQueryString();
                 logger.trace("incoming URI: " + Util.getUriAndQuery(request));
             }
+
+            // Use UTF-8 as the default encoding for all responses.
+            response.setCharacterEncoding("UTF-8");
+
+            // See if the URI refers to a generated stylesheet.
+            String pathInfo = request.getPathInfo();
+            if (pathInfo.startsWith("/css/")) {
+                break handleRequest;
+            }
+
             // The "pathInfo" portion of the URI (the part that belongs to
-            // us) has the form /class/method/... Peel off the "class/method"
-            // part and see if we already have information about the method.
+            // us) must have the form /class/method/... Peel off the
+            // "class/method" part and see if we already have information
+            // about the method.
 
             String methodKey = null;
             InteractorMethod method = null;
             int endOfMethod = -1;
-            String pathInfo = request.getPathInfo();
             int endOfClass = pathInfo.indexOf('/', 1);
             if (endOfClass >= 1) {
                 endOfMethod = pathInfo.indexOf('/', endOfClass+1);
@@ -228,8 +243,18 @@ public class Dispatcher extends HttpServlet {
             // At this point we have located the method to service this
             // request.  Package up relevant information into a Request
             // object and invoke the method.
-            method.method.invoke(method.interactor,
-                    method.interactor.getRequest(request, response));
+            Request fizRequest = method.interactor.getRequest(this, request,
+                    response);
+            method.method.invoke(method.interactor, fizRequest);
+
+            // The service method has completed successfully.  Output the
+            // HTML that was generated.
+            // TODO: figure out a way to set Content-Length for output.
+            PrintWriter out = response.getWriter();
+            fizRequest.getHtml().print(out);
+            if (out.checkError()) {
+                throw new IOException("I/O error while outputting HTML");
+            }
         }
         catch (Throwable e) {
             // TODO: allow application-specific handling of errors.

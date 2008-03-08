@@ -11,7 +11,7 @@ import java.util.Vector;
 import java.io.BufferedReader;
 
 @SuppressWarnings("deprecation")
-public class TestServletRequest implements HttpServletRequest {
+public class ServletRequestFixture implements HttpServletRequest {
     // Some methods just set the following variable to indicate that they
     // were called.  This is used in situations where the method can't easily
     // synthesize an appropriate return type (such as HttpSession).

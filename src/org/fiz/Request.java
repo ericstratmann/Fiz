@@ -20,7 +20,6 @@ import java.util.Locale;
 
 @SuppressWarnings("deprecation")
 public class Request implements HttpServletRequest {
-
     /**
      * DeprecatedMethodError is thrown when deprecated methods such as
      * isRequestedSessionIdFromUrl are invoked.
@@ -37,15 +36,25 @@ public class Request implements HttpServletRequest {
         }
     }
 
+    // The following field provides access to the servlet under which
+    // this Request is being processed.
+    protected HttpServlet servlet;
+
     // The following fields provide access to the HttpServletRequest
     // and HttpServletResponse objects provided by the servlet container.
     // See documentation for the constructor arguments for more information.
     protected HttpServletRequest servletRequest;
     protected HttpServletResponse servletResponse;
 
+    // The following field is used while processing the request to
+    // a cumulative information that will eventually be returned as
+    // HTML output.
+    protected Html html;
+
     /**
      * Constructor for Request objects.  Typically invoked by the
      * getRequest method of an Interactor object.
+     * @param servlet              Servlet under which this request is running.
      * @param servletRequest       The HttpServletRequest provided by the
      *                             container.  May be null, in which case
      *                             the corresponding methods will become
@@ -57,10 +66,11 @@ public class Request implements HttpServletRequest {
      *                             container; if null (primarily for testing),
      *                             the corresponding methods become no-ops.
      */
-    public Request(HttpServletRequest servletRequest, HttpServletResponse
-            servletResponse) {
+    public Request(HttpServlet servlet, HttpServletRequest servletRequest,
+            HttpServletResponse servletResponse) {
         this.servletRequest = servletRequest;
         this.servletResponse = servletResponse;
+        this.servlet = servlet;
     }
 
     /**
@@ -79,6 +89,35 @@ public class Request implements HttpServletRequest {
      */
     public HttpServletResponse getServletResponse() {
         return servletResponse;
+    }
+
+    /**
+     * Returns information about the servlet under which the Request is
+     * being processed.
+     * @return                     HttpServlet for this request.
+     */
+    public HttpServlet getServlet() {
+        return servlet;
+    }
+
+    /**
+     * @return                     The ServletContext object associated with
+     *                             this request's servlet.
+     */
+    public ServletContext getServletContext() {
+        return servlet.getServletContext();
+    }
+
+    /**
+     * Returns an object used to generate and buffer the request's HTML
+     * output.
+     * @return                     Html object for this request.
+     */
+    public Html getHtml() {
+        if (html == null) {
+            html = new Html();
+        }
+        return html;
     }
 
     // The following methods simply reflect HttpServletRequest methods

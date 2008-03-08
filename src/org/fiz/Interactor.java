@@ -51,6 +51,7 @@ public class Interactor {
      * can override this method in their Interactor subclasses, returning
      * a subclass of Request holding additional application-specific
      * information.
+     * @param servlet              Servlet under which this request is running.
      * @param servletRequest       The HttpServletRequest provided by the
      *                             container.
      * @param servletResponse      The HttpServletResponse provided by the
@@ -58,8 +59,9 @@ public class Interactor {
      * @return                     A Request object to use for managing
      *                             the current request.
      */
-    public Request getRequest(HttpServletRequest servletRequest,
+    public Request getRequest(HttpServlet servlet,
+            HttpServletRequest servletRequest,
             HttpServletResponse servletResponse) {
-        return new Request(servletRequest, servletResponse);
+        return new Request(servlet, servletRequest, servletResponse);
     }
 }

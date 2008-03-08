@@ -4,7 +4,8 @@
  */
 
 package org.fiz;
-import javax.servlet.http.HttpServletRequest;
+import java.io.*;
+import javax.servlet.http.*;
 
 public class Util {
     /**
@@ -17,7 +18,7 @@ public class Util {
      *                                 string length if there are no more
      *                                 non-space characters.
      */
-    public static int skipSpaces(String s, int index) {
+    public static int skipSpaces(CharSequence s, int index) {
         while (index < s.length() && (s.charAt(index) == ' ')) {
             index++;
         }
@@ -36,7 +37,8 @@ public class Util {
      *                                 <code>separator</code> between adjacent
      *                                 values.
      */
-    public static int joinedLength(String[] values, String separator) {
+    public static int joinedLength(CharSequence[] values,
+            CharSequence separator) {
         int length = 0, separatorLength = 0;
         for (int i = 0; i < values.length; i++) {
             length += values[i].length() + separatorLength;
@@ -55,9 +57,9 @@ public class Util {
      *                                 <code>separator</code> between adjacent
      *                                 values.
      */
-    public static String join(Iterable values, String separator) {
+    public static String join(Iterable values, CharSequence separator) {
         StringBuilder builder= new StringBuilder();
-        String prefix = "";
+        CharSequence prefix = "";
         for (Object o: values) {
             builder.append(prefix);
             builder.append(o.toString());
@@ -76,10 +78,10 @@ public class Util {
      *                                 <code>separator</code> between adjacent
      *                                 values.
      */
-    public static String join(String[] values, String separator) {
+    public static String join(CharSequence[] values, CharSequence separator) {
         StringBuilder builder= new StringBuilder(joinedLength(values,
                 separator));
-        String prefix = "";
+        CharSequence prefix = "";
         for (int i = 0; i < values.length; i++) {
             builder.append(prefix);
             builder.append(values[i]);
@@ -145,7 +147,7 @@ public class Util {
      *                                cannot be part of an identifier or is
      *                                past the end of the string.
      */
-    public static int identifierEnd(String s, int start) {
+    public static int identifierEnd(CharSequence s, int start) {
         int i;
         for (i = start; i < s.length(); i++) {
             if (!Character.isUnicodeIdentifierPart(s.charAt(i))) {
@@ -153,6 +155,66 @@ public class Util {
             }
         }
         return i;
+    }
+
+    /**
+     * Given a file name, this method checks to see if the last element
+     * in <code>path</code> contains an extension (i.e., it ends with
+     * a construct such as ".java", ".jx", etc.).  If so the extension
+     * is returned.
+     * @param path                    A filename such as "/a/b/foo.html";
+     *                                the file need not actually exist.
+     * @return                        If <code>path</code> contains an
+     *                                extension it is returned (including the
+     *                                ".").  If there is no extension null is
+     *                                returned.
+     */
+    public static String fileExtension(CharSequence path) {
+        // Work backwards from the end of the string to see if we find a
+        // "." before a "/".
+
+        int length = path.length();
+        for (int i = length -1; i >= 0; i--) {
+            char c = path.charAt(i);
+            if (c == '.') {
+                if (i == (length-1)) {
+                    // There is a "dot", but there is nothing after it.
+                    return null;
+                }
+                return path.subSequence(i, length).toString();
+            }
+            if ((c == '/') || (c == '\\')) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Given a file name without an extension, this checks to see if there
+     * exists a file with this base name and one of several possible
+     * extensions.
+     * @param base                    The base file name, which should not
+     *                                already have an extension.
+     * @param extensions              Extensions to try (must contain ".")
+     *                                in order.
+     * @return                        The name (base plus extension) of the
+     *                                first file that exists.  If none of
+     *                                extensions exist null is returned.
+     */
+    public static String findFileWithExtension(String base,
+            String... extensions) {
+        int baseLength = base.length();
+        StringBuilder fullName = new StringBuilder(baseLength + 6);
+        fullName.append(base);
+        for (String extension : extensions) {
+            fullName.setLength(baseLength);
+            fullName.append(extension);
+            if ((new File(fullName.toString())).exists()) {
+                return fullName.toString();
+            }
+        }
+        return null;
     }
 
     /**
@@ -169,5 +231,34 @@ public class Util {
             return uri;
         }
         return uri + "?" + query;
+    }
+
+    /**
+     * Copy all of the data from one stream to another, stopping when the
+     * end of the input stream is reached.
+     * @param in                      Read from this stream.
+     * @param out                     Write to this stream
+     */
+    public static void copyStream(Reader in, Writer out) throws IOException {
+        while (true) {
+            int next = in.read();
+            if (next == -1) {
+                break;
+            }
+            out.write(next);
+        }
+    }
+
+    /**
+     * Return the contents of a file as the response to an HTTP request.
+     * @param input                   Identifies the file to return.
+     * @param response                The file is delivered via this object.
+     */
+    public static void respondWithFile(File input,
+            HttpServletResponse response) throws IOException {
+        response.setContentLength((int) input.length());
+        FileReader in = new FileReader(input);
+        copyStream(in, response.getWriter());
+        in.close();
     }
 }

@@ -13,27 +13,27 @@ public class DispatcherTest  extends junit.framework.TestCase {
         i.destroy();
         Dispatcher dispatcher = new Dispatcher();
         DispatcherTest1.count = 43;
-        dispatcher.service(new DispatcherTestRequest(
-                "/dispatcherTest1/incCount/extra"), null);
+        dispatcher.service(new DispatcherRequestFixture(
+                "/dispatcherTest1/incCount/extra"), new ServletResponseFixture());
         assertEquals("error message", null, dispatcher.fullMessage);
         assertEquals("invocation count", 44, DispatcherTest1.count);
     }
 
-    public void testUnsupportedUriError() {
+    public void test_UnsupportedUriError() {
         Error e = new Dispatcher.UnsupportedUriError("/a/b/c", "smelled funny");
         assertEquals("exception message",
                 "unsupported URI \"/a/b/c\": smelled funny", e.getMessage());
     }
 
-    public void testDestroy() {
-        TestDispatcher dispatcher = new TestDispatcher();
+    public void test_destroy() {
+        DispatcherFixture dispatcher = new DispatcherFixture();
         DispatcherTest1.count = 0;
         DispatcherTest1.destroyCount = 0;
         DispatcherTest5.destroyCount = 0;
-        dispatcher.service(new DispatcherTestRequest(
-                "/dispatcherTest1/incCount"), null);
-        dispatcher.service(new DispatcherTestRequest("/dispatcherTest5/xyz"),
-                null);
+        dispatcher.service(new DispatcherRequestFixture(
+                "/dispatcherTest1/incCount"), new ServletResponseFixture());
+        dispatcher.service(new DispatcherRequestFixture("/dispatcherTest5/xyz"),
+                new ServletResponseFixture());
         assertEquals("first interactor not yet destroyed", 0,
                 DispatcherTest1.destroyCount);
         assertEquals("second interactor not yet destroyed", 0,
@@ -45,123 +45,128 @@ public class DispatcherTest  extends junit.framework.TestCase {
                 DispatcherTest5.destroyCount);
     }
 
-    public void testService_parseMethodEndingInSlash() {
+    public void test_service_parseMethodEndingInSlash() {
         Dispatcher dispatcher = new Dispatcher();
-        dispatcher.service(new DispatcherTestRequest(
-                "/dispatcherTest1/bogus/a/b/c"), null);
+        dispatcher.service(new DispatcherRequestFixture(
+                "/dispatcherTest1/bogus/a/b/c"), new ServletResponseFixture());
         TestUtil.assertSubstring("error message",
                 "couldn't find method \"bogus\" with proper signature",
                 dispatcher.basicMessage);
     }
-    public void testService_parseMethodNotEndingInSlash() {
+    public void test_service_parseMethodNotEndingInSlash() {
         Dispatcher dispatcher = new Dispatcher();
-        dispatcher.service(new DispatcherTestRequest(
-                "/dispatcherTest1/bogus"), null);
+        dispatcher.service(new DispatcherRequestFixture(
+                "/dispatcherTest1/bogus"), new ServletResponseFixture());
         TestUtil.assertSubstring("error message",
                 "couldn't find method \"bogus\" with proper signature",
                 dispatcher.basicMessage);
     }
-    public void testService_notEnoughInfoInUri() {
+    public void test_service_notEnoughInfoInUri() {
         Dispatcher dispatcher = new Dispatcher();
-        dispatcher.service(new DispatcherTestRequest("abc"), null);
+        dispatcher.service(new DispatcherRequestFixture("abc"),
+                new ServletResponseFixture());
         TestUtil.assertSubstring("no slashes",
                 "URI doesn't contain class name and/or method name",
                 dispatcher.basicMessage);
         dispatcher.basicMessage = null;
-        dispatcher.service(new DispatcherTestRequest("//a/b/c"), null);
+        dispatcher.service(new DispatcherRequestFixture("//a/b/c"),
+                new ServletResponseFixture());
         TestUtil.assertSubstring("empty class name",
                 "URI doesn't contain class name and/or method name",
                 dispatcher.basicMessage);
         dispatcher.basicMessage = null;
-        dispatcher.service(new DispatcherTestRequest("/a//b/c"), null);
+        dispatcher.service(new DispatcherRequestFixture("/a//b/c"),
+                new ServletResponseFixture());
         TestUtil.assertSubstring("empty method name",
                 "URI doesn't contain class name and/or method name",
                 dispatcher.basicMessage);
         dispatcher.basicMessage = null;
-        dispatcher.service(new DispatcherTestRequest("/a/b/c"), null);
+        dispatcher.service(new DispatcherRequestFixture("/a/b/c"),
+                new ServletResponseFixture());
         TestUtil.assertSubstring("simplest valid URI",
                 "can't find class \"org.fiz.A\"",
                 dispatcher.basicMessage);
     }
-    public void testService_nonexistentClass() {
+    public void test_service_nonexistentClass() {
         Dispatcher dispatcher = new Dispatcher();
-        dispatcher.service(new DispatcherTestRequest("/missingClass/a"), null);
+        dispatcher.service(new DispatcherRequestFixture("/missingClass/a"),
+                new ServletResponseFixture());
         TestUtil.assertSubstring("error message",
                 "can't find class \"org.fiz.MissingClass\"",
                 dispatcher.basicMessage);
     }
-    public void testService_classNotInteractorSubclass() {
+    public void test_service_classNotInteractorSubclass() {
         Dispatcher dispatcher = new Dispatcher();
-        dispatcher.service(new DispatcherTestRequest("/dispatcherTest4/x"),
-                null);
+        dispatcher.service(new DispatcherRequestFixture("/dispatcherTest4/x"),
+                new ServletResponseFixture());
         TestUtil.assertSubstring("error message",
                 "class \"org.fiz.DispatcherTest4\" isn't a subclass of "
                 + "org.fiz.Interactor", dispatcher.basicMessage);
     }
-    public void testService_cantFindConstructor() {
+    public void test_service_cantFindConstructor() {
         Dispatcher dispatcher = new Dispatcher();
-        dispatcher.service(new DispatcherTestRequest("/dispatcherTest2/a"),
-                null);
+        dispatcher.service(new DispatcherRequestFixture("/dispatcherTest2/a"),
+                new ServletResponseFixture());
         TestUtil.assertSubstring("error message",
                 "couldn't find no-argument constructor for class "
                 + "\"org.fiz.DispatcherTest2\"", dispatcher.basicMessage);
     }
-    public void testService_classCantBeInstantiated() {
+    public void test_service_classCantBeInstantiated() {
         Dispatcher dispatcher = new Dispatcher();
-        dispatcher.service(new DispatcherTestRequest("/dispatcherTest3/a"),
-                null);
+        dispatcher.service(new DispatcherRequestFixture("/dispatcherTest3/a"),
+                new ServletResponseFixture());
         TestUtil.assertSubstring("error message", "couldn't create instance "
                 + "of class \"org.fiz.DispatcherTest3\": sample error",
                 dispatcher.basicMessage);
     }
-    public void testService_updateClassMap() {
-        TestDispatcher dispatcher = new TestDispatcher();
-        dispatcher.service(new DispatcherTestRequest(
-                "/dispatcherTest1/incCount/extra"), null);
+    public void test_service_updateClassMap() {
+        DispatcherFixture dispatcher = new DispatcherFixture();
+        dispatcher.service(new DispatcherRequestFixture(
+                "/dispatcherTest1/incCount/extra"), new ServletResponseFixture());
         assertEquals("org.fiz.DispatcherTest1", dispatcher.getClassKeys());
     }
-    public void testService_invokeInit() {
-        TestDispatcher dispatcher = new TestDispatcher();
+    public void test_service_invokeInit() {
+        DispatcherFixture dispatcher = new DispatcherFixture();
         DispatcherTest1.count = 0;
         DispatcherTest1.initCount = 0;
-        dispatcher.service(new DispatcherTestRequest(
-                "/dispatcherTest1/incCount"), null);
+        dispatcher.service(new DispatcherRequestFixture(
+                "/dispatcherTest1/incCount"), new ServletResponseFixture());
         assertEquals("init invoked during first request", 1,
                 DispatcherTest1.initCount);
-        dispatcher.service(new DispatcherTestRequest(
-                "/dispatcherTest1/incCount"), null);
+        dispatcher.service(new DispatcherRequestFixture(
+                "/dispatcherTest1/incCount"), new ServletResponseFixture());
         assertEquals("init not invoked during second request", 1,
                 DispatcherTest1.initCount);
         assertEquals("method invoked during both requests", 2,
                 DispatcherTest1.count);
     }
-    public void testService_scanMethods() {
-        TestDispatcher dispatcher = new TestDispatcher();
-        dispatcher.service(new DispatcherTestRequest(
-                "/dispatcherTest1/incCount/extra"), null);
+    public void test_service_scanMethods() {
+        DispatcherFixture dispatcher = new DispatcherFixture();
+        dispatcher.service(new DispatcherRequestFixture(
+                "/dispatcherTest1/incCount/extra"), new ServletResponseFixture());
         assertEquals("dispatcherTest1/incCount, dispatcherTest1/resetCount"
                 + ", dispatcherTest1/error", dispatcher.getMethodKeys());
     }
-    public void testService_methodNotFound() {
+    public void test_service_methodNotFound() {
         Dispatcher dispatcher = new Dispatcher();
-        dispatcher.service(new DispatcherTestRequest(
-                "/dispatcherTest1/twoArgs"), null);
+        dispatcher.service(new DispatcherRequestFixture(
+                "/dispatcherTest1/twoArgs"), new ServletResponseFixture());
         TestUtil.assertSubstring("error message",
                 "couldn't find method \"twoArgs\" with proper signature "
                 + "in class org.fiz.DispatcherTest1",
                 dispatcher.basicMessage);
     }
-    public void testService_exceptionInMethod() {
+    public void test_service_exceptionInMethod() {
         Dispatcher dispatcher = new Dispatcher();
-        dispatcher.service(new DispatcherTestRequest("/dispatcherTest1/error"),
-                null);
+        dispatcher.service(new DispatcherRequestFixture("/dispatcherTest1/error"),
+                new ServletResponseFixture());
         TestUtil.assertSubstring("error message", "error in method",
                 dispatcher.basicMessage);
     }
-    public void testService_handlingException() {
+    public void test_service_handlingException() {
         Dispatcher dispatcher = new Dispatcher();
-        dispatcher.service(new DispatcherTestRequest("/dispatcherTest1/error"),
-                null);
+        dispatcher.service(new DispatcherRequestFixture("/dispatcherTest1/error"),
+                new ServletResponseFixture());
         assertEquals("error message", "error in method",
                 dispatcher.basicMessage);
         String message = dispatcher.fullMessage.replaceAll("\\r\\n", "\n");
@@ -172,15 +177,15 @@ public class DispatcherTest  extends junit.framework.TestCase {
                 message);
     }
 
-    public void testGetClass_exceptionInMethod() {
-        Dispatcher dispatcher = new TestDispatcher();
+    public void test_findClass() {
+        Dispatcher dispatcher = new DispatcherFixture();
         Class<?> cl = dispatcher.findClass("org.fiz.Interactor", null);
         TestUtil.assertSubstring("name of found class", "org.fiz.Interactor",
                 cl.getName());
         boolean gotException = false;
         try {
             dispatcher.findClass("bogus_xyz",
-                    new DispatcherTestRequest("/first/second"));
+                    new DispatcherRequestFixture("/first/second"));
         }
         catch (Dispatcher.UnsupportedUriError e) {
             assertEquals("exception message",
@@ -194,13 +199,13 @@ public class DispatcherTest  extends junit.framework.TestCase {
 
 // The following class implements just enough of the HttpServletRequest
 // interface to provide request objects for tests.
-class DispatcherTestRequest extends TestServletRequest {
+class DispatcherRequestFixture extends ServletRequestFixture {
     public String pathInfo;
     public StringBuffer url = new StringBuffer("http://localhost/a/b/c");
     public String uri = "/a/b/c";
     public String queryString = "day=Monday";
 
-    public DispatcherTestRequest(String path) {
+    public DispatcherRequestFixture(String path) {
         pathInfo = path;
     }
 
@@ -212,8 +217,8 @@ class DispatcherTestRequest extends TestServletRequest {
 
 // The following class definition provides a mechanism for accessing
 // protected/private fields and methods.
-class TestDispatcher extends Dispatcher {
-    public TestDispatcher() {
+class DispatcherFixture extends Dispatcher {
+    public DispatcherFixture() {
         logger.setLevel(Level.FATAL);
     }
     public String getClassKeys() {

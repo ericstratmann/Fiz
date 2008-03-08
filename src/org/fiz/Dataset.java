@@ -169,14 +169,13 @@ public class Dataset {
      * @param fileName             Name of a file in a supported format;
      *                             the format is inferred from the file's
      *                             extension (e.g. ".yaml" means the file
-     *                             is in YAML format)
+     *                             is in YAML format).
      * @return                     New Dataset object containing contents
      *                             of <code>fileName</code>
      */
     public static Dataset getFileInstance(String fileName) {
-        int dot = fileName.lastIndexOf('.');
-        if (dot != -1) {
-            String extension = fileName.substring(dot, fileName.length());
+        String extension = Util.fileExtension(fileName);
+        if (extension != null) {
             if (extension.equals(".yml") || extension.equals(".yaml")) {
                 return YamlDataset.getFileInstance(fileName);
             }

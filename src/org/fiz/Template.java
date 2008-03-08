@@ -78,7 +78,7 @@ public class Template {
     // methods.  Among other things, it provides a vehicle for returning
     // additional results from a method.
     protected static class ParseInfo {
-        String template;           // The template being processed.
+        CharSequence template;     // The template being processed.
         Dataset data;              // Source of data for expansions.
         StringBuilder out;         // Output information is appended here.
         Encoding encoding;         // How to transform special characters.
@@ -106,7 +106,7 @@ public class Template {
 
     /**
      * Substitute data into a template string, appending the result to a
-     * StringBuffer.
+     * StringBuilder.
      * @param template             Contains text to be copied to
      *                             <code>out</code> plus substitution
      *                             specifiers, as described above.
@@ -121,7 +121,7 @@ public class Template {
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as "@+".
      */
-    public static void expand(String template, Dataset data, StringBuilder out,
+    public static void expand(CharSequence template, Dataset data, StringBuilder out,
             Encoding encoding) throws Dataset.MissingValueError, SyntaxError{
         ParseInfo info = new ParseInfo();
         info.template = template;
@@ -149,7 +149,7 @@ public class Template {
 
     /**
      * Substitute data into a template string, appending the result to a
-     * StringBuffer.  In this method the encoding defaults to HTML.
+     * StringBuilder.  In this method the encoding defaults to HTML.
      * @param template             Contains text to be copied to
      *                             <code>out</code> plus substitution
      *                             specifiers, as described above.
@@ -162,8 +162,8 @@ public class Template {
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as "@+".
      */
-    public static void expand(String template, Dataset data, StringBuilder out)
-            throws Dataset.MissingValueError, SyntaxError {
+    public static void expand(CharSequence template, Dataset data,
+            StringBuilder out) throws Dataset.MissingValueError, SyntaxError {
         expand(template, data, out, Encoding.HTML);
     }
 
@@ -190,8 +190,9 @@ public class Template {
             throws Dataset.MissingValueError {
         char c = info.template.charAt(start);
         if (Character.isUnicodeIdentifierStart(c)) {
-            info.end = Util.identifierEnd (info.template,  start);
-            appendValue(info, info.template.substring(start, info.end));
+            info.end = Util.identifierEnd(info.template, start);
+            appendValue(info,
+                    info.template.subSequence(start, info.end).toString());
         } else if (c == '(') {
             expandParenName(info, start+1);
         } else if ((c == '@') || (c == '{') || (c == '}')) {
@@ -233,7 +234,7 @@ public class Template {
         Encoding oldEncoding = info.encoding;
         info.encoding = Encoding.NONE;
 
-        String template = info.template;
+        CharSequence template = info.template;
         for (int i = start; i < template.length(); ) {
             char c = template.charAt(i);
             if (c == '@') {
@@ -307,7 +308,7 @@ public class Template {
         info.conditional = true;
         info.missingData = false;
         int oldEnd = info.out.length();
-        String template = info.template;
+        CharSequence template = info.template;
 
         for (int i = start; i < template.length(); ) {
             char c = template.charAt(i);

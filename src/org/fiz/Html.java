@@ -12,21 +12,21 @@ import java.io.*;
 
 public class Html {
     // Contents of the document; see getBody for details.
-    protected StringBuffer body = new StringBuffer();
+    protected StringBuilder body = new StringBuilder();
 
     // Title for the document; see setTitle for details.
     protected String title = null;
 
     /**
-     * Returns the StringBuffer object used to assemble the main body of
+     * Returns the StringBuilder object used to assemble the main body of
      * the HTML document.  Typically, information is appended to this
      * object, but the caller can manipulate it in arbitrary ways.
-     * @return                        StringBuffer object; the contents of
+     * @return                        StringBuilder object; the contents of
      *                                this object will eventually appear
      *                                between the <body> and </body> tags
      *                                in the final HTML document.
      */
-    public StringBuffer getBody() {
+    public StringBuilder getBody() {
         return body;
     }
 
@@ -70,11 +70,19 @@ public class Html {
 
     /**
      * Generates a complete HTML document from the information that has been
-     * provided so far.  Note: this method does not check for I/O errors; it
-     * is up to the caller to do that and handle them appropriately.
+     * provided so far and writes it on a given Writer.  If no information
+     * has been provided for the HTML since the last reset, then no output
+     * whatsoever is generated.  Note: this method ignores I/O errors; it
+     * assumes that the Writer does not actually generate exceptions even
+     * though the interface allows it.
      * @param writer                  Where to write the HTML document.
+     *                                Must be a subclass of Writer that does
+     *                                not actually generate exceptions.
      */
     public void print(Writer writer) {
+        if ((title == null) && (body.length() == 0)) {
+            return;
+        }
         try {
             writer.write(getPrologue());
             writer.write("<head>\n");
@@ -90,6 +98,26 @@ public class Html {
             // practice anyway, since normal usage is through a PrintWriter
             // or StringWriter and neither of these generates exceptions.
         }
+    }
+
+    /**
+     * Generates a complete HTML document from the information that has been
+     * provided so far, and returns it in a String.
+     * @return                        The HTML document.
+     */
+    public String toString() {
+        StringWriter result = new StringWriter();
+        print(result);
+        return result.toString();
+    }
+
+    /**
+     * Clears all information that has been specified for the HTML, restoring
+     * the object to its initial empty state.
+     */
+    public void reset() {
+        title = null;
+        body.setLength(0);
     }
 
     /**

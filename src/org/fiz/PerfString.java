@@ -7,7 +7,7 @@ import java.io.*;
  */
 public class PerfString {
     public static void main(String[] argv) throws IOException {
-        int count = 100000;
+        int count = 1000;
         int code = 0;
         String value = "xyz";
         String value2 = "projectName, procedureName, stepName, propertyName";
@@ -17,6 +17,7 @@ public class PerfString {
         StringBuilder s = new StringBuilder();
         StringBuilder builder1 = new StringBuilder("12345");
         StringBuilder builder2 = new StringBuilder("xxx12345aaa");
+        StringReader reader = new StringReader("0123456789abcdefghij");
         char c = 'c';
         int result = 44;
 
@@ -34,18 +35,6 @@ public class PerfString {
 //                for (int k = 0; k < value3.length(); k++) {
 //                     s.append(value3.charAt(k));
 //                }
-//                code += value.length();
-//                code += length;
-//                code += Util.split(value2, ',').length;
-//                code += value2.substring(10, 20).length();
-//                ArrayList<String> array = new ArrayList<String>();
-//                for (int k = 0; k < 5; k++) {
-//                    array.add(value);
-//                }
-//                String[] array = new String[100];
-//                for (int k = 0; k < 100; k++) {
-//                    array[k] = value;
-//                }
 //                code = 0;
 //                for (int k = 0; k < value3.length(); k++) {
 //                    if (Character.isUnicodeIdentifierPart(value3.charAt(k))) {
@@ -54,12 +43,13 @@ public class PerfString {
 //                }
 //                StringBuilder builder3 = new StringBuilder();
 //                code = builder1.toString().length();
-                result = value3.indexOf("/", 30);
+                CharSequence substring = builder2.subSequence(3, 6);
+                value = substring.toString();
             }
             long finish = System.nanoTime();
             System.out.printf("%.4f us per iteration%n", (finish - start)/(1000.0*count));
         }
-        System.out.printf("Result: %s\n", result);
+        System.out.printf("Result: %s\n", value);
     }
 
     protected static int inc(int i) {

@@ -11,18 +11,20 @@ import javax.servlet.http.*;
 import javax.servlet.*;
 
 public class PerfAjax extends Interactor {
-    public void ping(HttpServletRequest request,
-                        HttpServletResponse response)
+    public void ping(Request request)
             throws ServletException, IOException {
         BufferedReader reader = request.getReader();
-        PrintWriter writer = response.getWriter();
+        StringBuilder output = new StringBuilder();
         while (true) {
             String line = reader.readLine();
             if (line == null) {
                 break;
             }
-            writer.println(line);
+            output.append(line + "\n");
         }
-        writer.println(System.nanoTime());
+        output.append(System.nanoTime() + "\n");
+        request.setHeader("Content-Length", Integer.toString(output.length()));
+        PrintWriter writer = request.getWriter();
+        writer.write(output.toString());
     }
 }

@@ -30,7 +30,7 @@ function ping(data)
     // Initialize the request and send it out.
 
     request.onreadystatechange = stateChange;
-    request.open("POST", "/fiz/perfAjax/ping");
+    request.open("POST", "/fiz/fiz/perfAjax/ping");
     request.setRequestHeader("Content-type", "text/plain");
     request.send(data);
 }
@@ -44,13 +44,7 @@ function stateChange()
     }
     request.onreadystatechange = null;
     pingCount++;
-    if (pingCount < 10) {
-        var sum = 0;
-        for (var i = 0; i < 0; i++) {
-            for (var j = 0; j < 10000; j++) {
-               sum += j;
-            }
-        }
+    if (pingCount < 20) {
         ping(request.responseText);
     } else {
         var times = request.responseText.split("\n");

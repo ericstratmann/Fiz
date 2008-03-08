@@ -4,10 +4,11 @@
 
 package org.fiz;
 import java.util.HashMap;
+import java.io.*;
 
 public class UtilTest extends junit.framework.TestCase {
 
-    public void testSkipSpaces() {
+    public void test_skipSpaces() {
         assertEquals(6, Util.skipSpaces("abc   def", 3));
         assertEquals(6, Util.skipSpaces("abc   def", 5));
         assertEquals(6, Util.skipSpaces("abc   def", 6));
@@ -16,7 +17,7 @@ public class UtilTest extends junit.framework.TestCase {
                 Util.skipSpaces("abc   ", 4));
     }
 
-    public void testJoinedLength() {
+    public void test_joinedLength() {
         assertEquals("basics", 20, Util.joinedLength(new String[]
                 {"first", "second", "third"}, ", "));
         assertEquals("no strings to join", 0,
@@ -24,7 +25,7 @@ public class UtilTest extends junit.framework.TestCase {
 
     }
 
-    public void testJoinStringArray() {
+    public void test_joinStringArray() {
         assertEquals("basics", "first, second, third",
                 Util.join(new String[] {"first", "second", "third"}, ", "));
         assertEquals("no strings to join", "",
@@ -32,7 +33,7 @@ public class UtilTest extends junit.framework.TestCase {
 
     }
 
-    public void testJoinIterable() {
+    public void test_joinIterable() {
         HashMap<Integer,String> hash = new HashMap<Integer, String>();
         hash.put(123, "string_123");
         hash.put(99, "string_99");
@@ -43,7 +44,7 @@ public class UtilTest extends junit.framework.TestCase {
 
     }
 
-    public void testSplit() {
+    public void test_split() {
         String[] result = Util.split("first, second,,third ", ',');
         String[] result2 = Util.split("  no separators", ',');
         String[] result3 = Util.split("  ", ',');
@@ -60,7 +61,7 @@ public class UtilTest extends junit.framework.TestCase {
         assertEquals("trim spaces ", "second", result[1]);
     }
 
-    public void testIdentifierEnd() {
+    public void test_identifierEnd() {
         assertEquals("stop on dot", 6,
                 Util.identifierEnd("a+cdef.ghi", 2));
         assertEquals("stop at end of string", 7,
@@ -69,25 +70,85 @@ public class UtilTest extends junit.framework.TestCase {
                 Util.identifierEnd("abc", 10));
     }
 
-    public void testGetUriAndQuery() {
+    public void test_fileExtension() {
+        assertEquals("extension exists", ".java",
+                Util.fileExtension("C:/a/b/c.java"));
+        assertEquals("nothing after the dot", null,
+                Util.fileExtension("C:/a/b/c."));
+        assertEquals("slash after last dot", null,
+                Util.fileExtension("C:/a/b.test/c"));
+        assertEquals("backslash after last dot", null,
+                Util.fileExtension("C:\\a\\b.test\\c"));
+        assertEquals("no slash, no dot", null,
+                Util.fileExtension("name"));
+    }
+
+     public void test_findFileWithExtension() {
+        TestUtil.writeFile("_test_.abc", "abc");
+        TestUtil.writeFile("_test_.x", "abc");
+        assertEquals("found file", "_test_.x",
+                Util.findFileWithExtension("_test_", ".def", ".x", ".abc"));
+        assertEquals("couldn't find file", null,
+                Util.findFileWithExtension("_test_", ".q", ".y"));
+        TestUtil.deleteFile("_test_.abc");
+        TestUtil.deleteFile("_test_.x");
+    }
+
+    public void test_getUriAndQuery() {
         assertEquals("no query data", "/a/b",
-                Util.getUriAndQuery(new UtilTestRequest("/a/b", null)));
+                Util.getUriAndQuery(new UtilRequestFixture("/a/b", null)));
         assertEquals("query data", "/a/b?x=24&y=13",
-                Util.getUriAndQuery(new UtilTestRequest("/a/b", "x=24&y=13")));
+                Util.getUriAndQuery(new UtilRequestFixture("/a/b", "x=24&y=13")));
+    }
+
+    public void test_copyStream() throws IOException {
+        StringReader in = new StringReader("01234567890abcdefg");
+        StringWriter out = new StringWriter();
+        in.read(); in.read();
+        out.write('x');
+        Util.copyStream (in, out);
+        assertEquals("destination stream", "x234567890abcdefg",
+                out.toString());
+        out.getBuffer().setLength(0);
+        out.write('q');
+        Util.copyStream (in, out);
+        assertEquals("input stream already at end-of-file", "q",
+                out.toString());
+    }
+
+    public void test_respondWithFile() throws IOException {
+        TestUtil.writeFile("test.html", "0123456789abcde");
+        UtilResponseFixture response = new UtilResponseFixture();
+        Util.respondWithFile(new File("test.html"), response);
+        assertEquals("content length", 15, response.contentLength);
+        assertEquals("returned data", "0123456789abcde",
+                response.writer.toString());
+        TestUtil.deleteFile("test.html");
     }
 }
 
 // The following class implements just enough of the HttpServletRequest
 // interface to test the testGetUriAndQuery method.
-class UtilTestRequest extends TestServletRequest {
+class UtilRequestFixture extends ServletRequestFixture {
     public String uri;
     public String queryString;
 
-    public UtilTestRequest(String uri, String query) {
+    public UtilRequestFixture(String uri, String query) {
         this.uri = uri;
         this.queryString = query;
     }
 
     public String getQueryString() {return queryString;}
     public String getRequestURI() {return uri;}
+}
+
+class UtilResponseFixture extends ServletResponseFixture {
+    public int contentLength;
+    public void setContentLength(int length) {
+        contentLength = length;
+    }
+    public StringWriter writer = new StringWriter();
+    public PrintWriter getWriter() {
+        return new PrintWriter(writer);
+    }
 }

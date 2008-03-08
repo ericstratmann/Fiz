@@ -13,7 +13,7 @@
           <root url="file://$MODULE_DIR$/src" />
         </sourceRoots>
         <building>
-          <setting name="EXPLODED_URL" value="file://$MODULE_DIR$/out/exploded/TomcatTestWeb" />
+          <setting name="EXPLODED_URL" value="file://$MODULE_DIR$/out/exploded/Fiz" />
           <setting name="EXPLODED_ENABLED" value="true" />
           <setting name="JAR_URL" value="file://" />
           <setting name="JAR_ENABLED" value="false" />
@@ -24,7 +24,7 @@
           <setting name="BUILD_ONLY_WEB_RESOURCES" value="false" />
         </building>
         <packaging>
-          <containerElement type="module" name="TomcatTest">
+          <containerElement type="module" name="Fiz">
             <attribute name="method" value="1" />
             <attribute name="URI" value="/WEB-INF/classes" />
           </containerElement>

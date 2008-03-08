@@ -6,7 +6,7 @@ package org.fiz;
 
 public class LinkTest extends junit.framework.TestCase {
 
-    public void testConstructor_missingBase() {
+    public void test_Link_missingBase() {
         boolean gotException = false;
         try {
             Link link = new Link(new Dataset());
@@ -18,21 +18,21 @@ public class LinkTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
-    public void testConstructor_parseArgs() {
-        TestLink link = new TestLink(new Dataset("base", "http://www.xyz.com",
+    public void test_Link_parseArgs() {
+        LinkFixture link = new LinkFixture(new Dataset("base", "http://www.xyz.com",
                 "args", "project, procedure:subproc, x:  y, final"));
         assertEquals("query names", "project, procedure, x, final",
                 link.getQueryNames());
         assertEquals("query data", "project, subproc, y, final",
                 link.getQueryData());
     }
-    public void testConstructor_noArgs() {
-        TestLink link = new TestLink(new Dataset("base", "http://www.xyz.com"));
+    public void test_Link_noArgs() {
+        LinkFixture link = new LinkFixture(new Dataset("base", "http://www.xyz.com"));
         assertEquals("query names", "", link.getQueryNames());
         assertEquals("query data", "", link.getQueryData());
     }
 
-    public void testHtml_setDisplayText() {
+    public void test_html_setDisplayText() {
         StringBuilder out = new StringBuilder("123");
         Link link = new Link(new Dataset("base", "http://foo",
                 "text", "abc"));
@@ -50,7 +50,7 @@ public class LinkTest extends junit.framework.TestCase {
         link.html(new Dataset(), out);
         assertEquals("HTML for link", "123", out.toString());
     }
-    public void testHtml_setDisplayIcon() {
+    public void test_html_setDisplayIcon() {
         StringBuilder out = new StringBuilder("123");
         Link link = new Link(new Dataset("base", "http://foo",
                 "icon", "xyz"));
@@ -69,7 +69,7 @@ public class LinkTest extends junit.framework.TestCase {
         link.html(new Dataset(), out);
         assertEquals("HTML for link", "123", out.toString());
     }
-    public void testHtml_baseAlreadyHasQueryData() {
+    public void test_html_baseAlreadyHasQueryData() {
         StringBuilder out = new StringBuilder();
         Dataset data = new Dataset("name", "Alice", "weight", "110");
         Link link = new Link(new Dataset("base", "/url?age=24",
@@ -79,7 +79,7 @@ public class LinkTest extends junit.framework.TestCase {
                 + "name=Alice&amp;weight=110\">Alice</a>", out.toString());
         TestUtil.assertXHTML(out.toString());
     }
-    public void testHtml_baseHasNoQueryData() {
+    public void test_html_baseHasNoQueryData() {
         StringBuilder out = new StringBuilder();
         Dataset data = new Dataset("name", "Alice", "weight", "110");
         Link link = new Link(new Dataset("base", "/url",
@@ -88,7 +88,7 @@ public class LinkTest extends junit.framework.TestCase {
         assertEquals("HTML for link", "<a href=\"/url?name=Alice"
                 + "&amp;weight=110\">Alice</a>", out.toString());
     }
-    public void testHtml_noArgsInUrl() {
+    public void test_html_noArgsInUrl() {
         StringBuilder out = new StringBuilder();
         Dataset data = new Dataset("name", "Alice", "weight", "110");
         Link link = new Link(new Dataset("base", "/url",
@@ -97,7 +97,7 @@ public class LinkTest extends junit.framework.TestCase {
         assertEquals("HTML for link", "<a href=\"/url\">Alice</a>",
                 out.toString());
     }
-    public void testHtml_confirmation() {
+    public void test_html_confirmation() {
         StringBuilder out = new StringBuilder();
         Dataset data = new Dataset("name", "Alice", "weight", "110");
         Link link = new Link(new Dataset("base", "/url", "text", "@name",
@@ -108,7 +108,7 @@ public class LinkTest extends junit.framework.TestCase {
                 + "{return false;}\">Alice</a>",
                 out.toString());
     }
-    public void testHtml_renderBothIconAndText() {
+    public void test_html_renderBothIconAndText() {
         StringBuilder out = new StringBuilder();
         Dataset data = new Dataset("name", "Alice", "weight", "110");
         Link link = new Link(new Dataset("base", "/url",
@@ -122,7 +122,7 @@ public class LinkTest extends junit.framework.TestCase {
                 out.toString());
         TestUtil.assertXHTML(out.toString());
     }
-    public void testHtml_renderText() {
+    public void test_html_renderText() {
         StringBuilder out = new StringBuilder();
         Dataset data = new Dataset("name", "Alice", "weight", "110");
         Link link = new Link(new Dataset("base", "/url",
@@ -131,7 +131,7 @@ public class LinkTest extends junit.framework.TestCase {
         assertEquals("HTML for link", "<a href=\"/url\">Alice</a>",
                 out.toString());
     }
-    public void testHtml_renderIcon() {
+    public void test_html_renderIcon() {
         StringBuilder out = new StringBuilder();
         Dataset data = new Dataset("name", "Alice", "weight", "110");
         Link link = new Link(new Dataset("base", "/url",
@@ -144,20 +144,20 @@ public class LinkTest extends junit.framework.TestCase {
         TestUtil.assertXHTML(out.toString());
     }
 
-    public void testIconHtml_noAltText() {
+    public void test_iconHtml_noAltText() {
         StringBuilder out = new StringBuilder();
         Dataset data = new Dataset("name", "Alice");
-        TestLink link = new TestLink(new Dataset("base", "http://foo",
+        LinkFixture link = new LinkFixture(new Dataset("base", "http://foo",
                 "icon", "/icons/x.gif"));
         link.iconHtml(data, out);
         assertEquals("HTML for icon",
                 "<img class=\"link_image\" src=\"/icons/x.gif\" alt=\"\" />",
                 out.toString());
     }
-    public void testIconHtml_altText() {
+    public void test_iconHtml_altText() {
         StringBuilder out = new StringBuilder();
         Dataset data = new Dataset("name", "Alice");
-        TestLink link = new TestLink(new Dataset("base", "http://foo",
+        LinkFixture link = new LinkFixture(new Dataset("base", "http://foo",
                 "icon", "/icons/x.gif", "alt", "picture of @name"));
         link.iconHtml(data, out);
         assertEquals("HTML for icon",
@@ -166,19 +166,19 @@ public class LinkTest extends junit.framework.TestCase {
                 out.toString());
     }
 
-    public void testConfirmHtml_expandTemplate() {
+    public void test_confirmHtml_expandTemplate() {
         StringBuilder out = new StringBuilder();
         Dataset data = new Dataset("name", "Alice");
-        TestLink link = new TestLink(new Dataset("base", "http://foo"));
+        LinkFixture link = new LinkFixture(new Dataset("base", "http://foo"));
         link.confirmHtml("about to modify name: @name", data, out);
         assertEquals("confirmation attribute",
                 "onclick=\"if (!confirm(&quot;about to modify name: "
                 + "Alice&quot;) {return false;}\"", out.toString());
     }
-    public void testConfirmHtml_MessageChars() {
+    public void test_confirmHtml_MessageChars() {
         StringBuilder out = new StringBuilder();
         Dataset data = new Dataset("name", "Alice");
-        TestLink link = new TestLink(new Dataset("base", "http://foo"));
+        LinkFixture link = new LinkFixture(new Dataset("base", "http://foo"));
         link.confirmHtml("OK to modify \"@name\"?", data, out);
         assertEquals("confirmation attribute",
                 "onclick=\"if (!confirm(&quot;OK to modify "
@@ -189,8 +189,8 @@ public class LinkTest extends junit.framework.TestCase {
 
 // The following class definition provides a mechanism for accessing
 // protected/private fields and methods.
-class TestLink extends Link {
-    public TestLink(Dataset config) {
+class LinkFixture extends Link {
+    public LinkFixture(Dataset config) {
         super(config);
     }
     public String getIcon() {
