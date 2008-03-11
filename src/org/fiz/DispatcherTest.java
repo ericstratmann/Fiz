@@ -3,7 +3,10 @@
  */
 
 package org.fiz;
+import java.io.File;
 import javax.servlet.http.*;
+import javax.servlet.*;
+
 import org.apache.log4j.Level;
 
 public class DispatcherTest  extends junit.framework.TestCase {
@@ -23,6 +26,17 @@ public class DispatcherTest  extends junit.framework.TestCase {
         Error e = new Dispatcher.UnsupportedUriError("/a/b/c", "smelled funny");
         assertEquals("exception message",
                 "unsupported URI \"/a/b/c\": smelled funny", e.getMessage());
+    }
+
+    public void test_init() throws ServletException {
+        ServletContextFixture context = new ServletContextFixture();
+        ServletConfigFixture config = new ServletConfigFixture(context);
+        Dispatcher dispatcher = new Dispatcher();
+        dispatcher.init(config);
+        assertEquals("Config path", "getRealPath: /WEB-INF/config",
+                Config.getPath()[0]);
+        assertEquals("Css path", "getRealPath: /WEB-INF/css",
+                Css.getPath()[0]);
     }
 
     public void test_destroy() {
@@ -45,6 +59,22 @@ public class DispatcherTest  extends junit.framework.TestCase {
                 DispatcherTest5.destroyCount);
     }
 
+    public void test_service_cssRequest() {
+        (new File("_test1_")).mkdir();
+        Config.init("_test1_");
+        TestUtil.writeFile("_test1_/css.yaml", "age: 24\n");
+        Css.init("_test1_");
+        TestUtil.writeFile("_test1_/main.css", "Bill is @age.");
+
+        Dispatcher dispatcher = new Dispatcher();
+        ServletResponseFixture response = new ServletResponseFixture();
+        dispatcher.service(new DispatcherRequestFixture(
+                "/css/main.css"), response);
+        assertEquals("error message", null, dispatcher.basicMessage);
+        assertEquals("generated css file", "Bill is 24.",
+                response.out.toString());
+        TestUtil.deleteTree("_test1_");
+    }
     public void test_service_parseMethodEndingInSlash() {
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.service(new DispatcherRequestFixture(

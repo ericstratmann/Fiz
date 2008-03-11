@@ -17,7 +17,8 @@ public class Test extends Interactor {
                 + request.getServletContext().getRealPath("///WEB-INF/a/b/c"));
         logger.info("getPathTranslated(): "
                 + request.getServletRequest().getPathTranslated());
-        logger.info("getContextPath(): " + request.getContextPath());
+        logger.info("getContextPath(): "
+                + request.getServletContext().getContextPath());
         logger.info("getMimeType(foo.xls): "
                 + request.getServletContext().getMimeType("foo.xls"));
         logger.info("getMimeType(foo.html): "

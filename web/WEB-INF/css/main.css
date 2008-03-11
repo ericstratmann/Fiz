@@ -5,7 +5,7 @@
  */
 
 body {
-    font-family: Tahoma, Arial, sans-serif;
+    font-family: @fontFamily;
     color: @color;
     background: @background;
     font-size: @fontSize;
