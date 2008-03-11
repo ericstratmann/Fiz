@@ -35,7 +35,7 @@
  *                          removed to avoid reduncant spaces (enclose the
  *                          space in {} to keep this from happening.
  * Encodings: when a dataset element is substituted into a template,
- * special characters in the value will be escaped according to an Encoding
+ * special characters in the value will be escaped according to a SpecialChars
  * enum supplied during expansion.  For example, if HTML encoding has been
  * specified, "<" characters will be translated to the entity reference
  * "&lt;".  Translation occurs only for values coming from the dataset, not
@@ -45,6 +45,7 @@
  */
 
 package org.fiz;
+import java.io.*;
 
 public class Template {
     /**
@@ -72,7 +73,7 @@ public class Template {
      * <p>
      * NONE: don't perform any transformations on the data values.
      */
-    public enum Encoding {HTML, URL, NONE}
+    public enum SpecialChars {HTML, URL, NONE}
 
     // The following class is used internally to pass information between
     // methods.  Among other things, it provides a vehicle for returning
@@ -81,7 +82,8 @@ public class Template {
         CharSequence template;     // The template being processed.
         Dataset data;              // Source of data for expansions.
         StringBuilder out;         // Output information is appended here.
-        Encoding encoding;         // How to transform special characters.
+        SpecialChars quoting;      // How to transform special characters
+                                   // in substituted values.
         boolean conditional;       // True means we are parsing information
                                    // between curly braces, so don't get upset
                                    // if data values can't be found.
@@ -113,7 +115,7 @@ public class Template {
      * @param data                 Provides data to be substituted into the
      *                             template.
      * @param out                  The expanded template is appended here.
-     * @param encoding             Determines whether (and how) special
+     * @param quoting              Determines whether (and how) special
      *                             characters in data values are quoted.
      * @throws Dataset.MissingValueError
      *                             A data value requested outside {}
@@ -121,13 +123,14 @@ public class Template {
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as "@+".
      */
-    public static void expand(CharSequence template, Dataset data, StringBuilder out,
-            Encoding encoding) throws Dataset.MissingValueError, SyntaxError{
+    public static void expand(CharSequence template, Dataset data,
+            StringBuilder out, SpecialChars quoting)
+            throws Dataset.MissingValueError, SyntaxError {
         ParseInfo info = new ParseInfo();
         info.template = template;
         info.data = data;
         info.out = out;
-        info.encoding = encoding;
+        info.quoting = quoting;
         info.conditional = false;
         info.missingData = false;
         info.lastDeletedSpace = -1;
@@ -164,7 +167,7 @@ public class Template {
      */
     public static void expand(CharSequence template, Dataset data,
             StringBuilder out) throws Dataset.MissingValueError, SyntaxError {
-        expand(template, data, out, Encoding.HTML);
+        expand(template, data, out, SpecialChars.HTML);
     }
 
     /**
@@ -231,8 +234,8 @@ public class Template {
         // special-character handling.  To accomplish this, temporarily
         // change the encoding (then change it back before processing the
         // final data value).
-        Encoding oldEncoding = info.encoding;
-        info.encoding = Encoding.NONE;
+        SpecialChars oldQuoting = info.quoting;
+        info.quoting = SpecialChars.NONE;
 
         CharSequence template = info.template;
         for (int i = start; i < template.length(); ) {
@@ -244,7 +247,7 @@ public class Template {
                 info.end = i+1;
                 String name = info.out.substring(oldEnd);
                 info.out.setLength(oldEnd);
-                info.encoding = oldEncoding;
+                info.quoting = oldQuoting;
                 appendValue(info, name);
                 return;
             } else {
@@ -279,9 +282,9 @@ public class Template {
         } else {
             value = info.data.get(name);
         }
-        if (info.encoding == Encoding.HTML) {
+        if (info.quoting == SpecialChars.HTML) {
             Html.escapeHtmlChars(value, info.out);
-        } else if (info.encoding == Encoding.URL) {
+        } else if (info.quoting == SpecialChars.URL) {
             Html.escapeUrlChars(value, info.out);
         } else {
             info.out.append(value);

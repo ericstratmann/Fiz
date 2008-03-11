@@ -3,16 +3,9 @@
  */
 
 package org.fiz;
+import java.io.*;
 
 public class DatasetTest extends junit.framework.TestCase {
-
-    public void test_FileNotFoundError() {
-        Error e = new Dataset.FileNotFoundError("file_name",
-                "foo (security violation)");
-        assertEquals("exception message",
-                "couldn't read dataset file foo (security violation)",
-                e.getMessage());
-    }
 
     public void test_MissingValueError() {
         Error e = new Dataset.MissingValueError("keyName");
@@ -60,15 +53,22 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("number of values", 1, d.size());
     }
 
-    public void test_getFileInstance_noExtension() {
+    public void test_getFileInstance_mustFindExtension() {
+        TestUtil.writeFile("test.yml", "first: abc\nsecond: def\n");
+        Dataset d = Dataset.getFileInstance("test");
+        assertEquals("dataset value", "abc", d.get("first"));
+        TestUtil.deleteTree("test.yml");
+    }
+    public void test_getFileInstance_cantFindExtension() {
         boolean gotException = false;
         try {
-            Dataset d = Dataset.getFileInstance("a/b/bogus_44");
+            Dataset d = Dataset.getFileInstance("a/b/bogus");
         }
-        catch (Dataset.UnsupportedFormatError e) {
+        catch (FileNotFoundError e) {
             assertEquals("exception message",
-                    "couldn't recognize format of dataset file " +
-                    "\"a/b/bogus_44\"", e.getMessage());
+                    "couldn't open dataset file \"a/b/bogus\": couldn't "
+                    + "find a file with a supported extension",
+                    e.getMessage());
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
@@ -77,13 +77,13 @@ public class DatasetTest extends junit.framework.TestCase {
         TestUtil.writeFile("test.yml", "first: abc\nsecond: def\n");
         Dataset d = Dataset.getFileInstance("test.yml");
         assertEquals("check value", "abc", d.get("first"));
-        TestUtil.deleteFile("test.yml");
+        TestUtil.deleteTree("test.yml");
     }
     public void test_getFileInstance_yamlExtension() {
         TestUtil.writeFile("test.yaml", "first: 24\nsecond: 35\n");
         Dataset d = Dataset.getFileInstance("test.yaml");
         assertEquals("check value", "24", d.get("first"));
-        TestUtil.deleteFile("test.yaml");
+        TestUtil.deleteTree("test.yaml");
     }
     public void test_getFileInstance_unknownExtension() {
         boolean gotException = false;
@@ -97,6 +97,72 @@ public class DatasetTest extends junit.framework.TestCase {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
+    }
+
+    public void test_getFileInstanceFromPath_basics() {
+        (new File("_test1_")).mkdir();
+        TestUtil.writeFile("_test1_/test.yaml", "first: 24\nsecond: 35\n");
+        Dataset d = Dataset.getFileInstanceFromPath("test",
+                new String[] {"_test1_"}, Dataset.PathHandling.CHAIN);
+        assertEquals("check value", "24", d.get("first"));
+        TestUtil.deleteTree("_test1_");
+    }
+    public void test_getFileInstanceFromPath_firstOnly() {
+        (new File("_test1_")).mkdir();
+        (new File("_test1_/child")).mkdir();
+        TestUtil.writeFile("_test1_/test.yaml", "first: 24\nsecond: 35\n");
+        TestUtil.writeFile("_test1_/child/test.yaml", "third: value\n");
+        Dataset d = Dataset.getFileInstanceFromPath("test",
+                new String[] {"_test1_", "_test1_/child"},
+                Dataset.PathHandling.FIRST_ONLY);
+        assertEquals("first value should exist", "24", d.get("first"));
+        assertEquals("third value shouldn't exist", null, d.check("third"));
+        TestUtil.deleteTree("_test1_");
+    }
+    public void test_getFileInstanceFromPath_chain() {
+        (new File("_test1_")).mkdir();
+        (new File("_test1_/child")).mkdir();
+        (new File("_test1_/child2")).mkdir();
+        TestUtil.writeFile("_test1_/test.yaml", "first: 24\nsecond: 35\n");
+        TestUtil.writeFile("_test1_/child/test.yaml", "third: value\n");
+        TestUtil.writeFile("_test1_/child2/test.yaml",
+                "first: 99\nfourth: 777\n");
+        Dataset d = Dataset.getFileInstanceFromPath("test",
+                new String[] {"_test1_", "_test1_/child", "_test1_/child2"},
+                Dataset.PathHandling.CHAIN);
+        assertEquals("value from beginning of chain", "24", d.get("first"));
+        assertEquals("value from middle of chain", "value", d.check("third"));
+        assertEquals("value from end of chain", "777", d.check("fourth"));
+        TestUtil.deleteTree("_test1_");
+    }
+    public void test_getFileInstanceFromPath_FileNotFoundError() {
+        (new File("_test1_")).mkdir();
+        (new File("_test1_/child")).mkdir();
+        TestUtil.writeFile("_test1_/child/test.yaml", "third: value\n");
+        Dataset d = Dataset.getFileInstanceFromPath("test",
+                new String[] {"_test1_", "_test1_/child"},
+                Dataset.PathHandling.CHAIN);
+        assertEquals("dataset value", "value", d.check("third"));
+        TestUtil.deleteTree("_test1_");
+    }
+    public void test_getFileInstanceFromPath_datasetNotFound() {
+        (new File("_test1_")).mkdir();
+        (new File("_test1_/child")).mkdir();
+        boolean gotException = false;
+        try {
+            Dataset d = Dataset.getFileInstanceFromPath("sample",
+                    new String[] {"_test1_", "_test1_/child"},
+                    Dataset.PathHandling.FIRST_ONLY);
+        }
+        catch (FileNotFoundError e) {
+            assertEquals("exception message",
+                    "couldn't find dataset file \"sample\" in path "
+                    + "(\"_test1_\", \"_test1_/child\")",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+        TestUtil.deleteTree("_test1_");
     }
 
     public void test_containsKey() {

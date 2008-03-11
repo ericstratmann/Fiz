@@ -250,6 +250,23 @@ public class Util {
     }
 
     /**
+     * Deletes a given file/directory and, in the case of a directory,
+     * all of its descendents.
+     * @param name                    Name of the file or directory to delete.
+     * @return                        Returns true if the deletion was
+     *                                completed successfully, false otherwise.
+     */
+    public static boolean deleteTree(String name) {
+        File file = new File(name);
+        if (file.isDirectory()) {
+            for (String child : file.list()) {
+                deleteTree(name + "/" + child);
+            }
+        }
+        return file.delete();
+    }
+
+    /**
      * Return the contents of a file as the response to an HTTP request.
      * @param input                   Identifies the file to return.
      * @param response                The file is delivered via this object.
@@ -260,5 +277,89 @@ public class Util {
         FileReader in = new FileReader(input);
         copyStream(in, response.getWriter());
         in.close();
+    }
+
+    /**
+     * Given an exception message of the form "fileName (message)", extract
+     * and return just the portion in parentheses.
+     * @param input                   The original exception message
+     * @param fileName                Name of a file, which may appear
+     *                                at the start of the message.
+     * @return                        If <code>input</code> has the form
+     *                                "fileName (message)", just the inner
+     *                                message is returned; otherwise
+     *                                <code>input</code> is returned.
+     */
+    public static String extractInnerMessage(String input, String fileName) {
+        int inputLength = input.length();
+        int nameLength = fileName.length();
+        if (input.startsWith(fileName) && (input.charAt(nameLength) == ' ')
+                && (input.charAt(nameLength+1) == '(')
+                && (input.charAt(inputLength-1) == ')')) {
+            return input.substring(nameLength+2, inputLength-1);
+        }
+        return input;
+    }
+
+    /**
+     * Read a file and return its contents in a StringBuilder object.
+     * @param fileName                Name of the file to read.
+     * @return                        Contents of the file.
+     * @throws FileNotFoundException  The file could not be opened.
+     * @throws IOError                An error happened while reading the
+     *                                file.
+     */
+    public static StringBuilder readFile(String fileName)
+            throws FileNotFoundException {
+        try {
+            FileReader reader = new FileReader(fileName);
+            StringBuilder result = new StringBuilder(
+                    (int) (new File(fileName)).length());
+            char[] buffer = new char[1000];
+            while (true) {
+                int length = reader.read(buffer, 0, buffer.length);
+                if (length < 0) {
+                    break;
+                }
+                result.append(buffer, 0, length);
+            }
+            reader.close();
+            return result;
+        }
+        catch (FileNotFoundException e) {
+            throw e;
+        }
+        catch (IOException e) {
+            throw IOError.getFileInstance(fileName, e.getMessage());
+        }
+    }
+
+    /**
+     * Searches a collection of directories for a file and reads in the first
+     * file found.
+     * @param fileName                Name of the file to read.
+     * @param type                    Type of the file, such as "dataset"
+     *                                or "template"; used only to generate a
+     *                                better error message  if the file can't
+     *                                be found.  Null needs the file doesn't
+     *                                have a meaningful type.
+     * @param path                    One or more directories in which to
+     *                                search for the file.
+     * @return                        Contents of the first file found.
+     * @throws FileNotFoundError      None of the directories in
+     *                                <code>path</code> contained the file.
+     */
+    public static StringBuilder readFileFromPath(String fileName, String type,
+            String... path) throws FileNotFoundError {
+        for (int i = 0; i < path.length; i++) {
+            try {
+                return readFile(path[i] + "/" + fileName);
+            }
+            catch (FileNotFoundException e) {
+                // No template in this directory; go on to the next.
+                continue;
+            }
+        }
+        throw FileNotFoundError.getPathInstance(fileName, type, path);
     }
 }

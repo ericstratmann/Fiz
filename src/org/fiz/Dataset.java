@@ -48,23 +48,17 @@ public class Dataset {
     public enum DesiredType {STRING, DATASET, DATASETS}
 
     /**
-     * FileNotFoundError is thrown when methods such as
-     * <code>getFileInstance</code> can't open the file containing a
-     * dataset.
+     * Instances of this enum are passed to getFileInstanceFromPath
+     * to indicate how to handle the case where the dataset exists
+     * in multiple directories of the path:
+     * <p>
+     * CHAIN: chain all of the datasets together, so that their contents
+     * combined with those from earlier directories in the path getting
+     * priority.
+     * <p>
+     * FIRST_ONLY: use only the first dataset found and ignore any others.
      */
-    public static class FileNotFoundError extends Error {
-        /**
-         * Constructor for FileNotFoundError.
-         * @param fileName         Name of the file that was not found;
-         *                         used to generate a message in the
-         *                         exception
-         * @param message          Explanation of why the file couldn't
-         *                         be opened
-         */
-        public FileNotFoundError(String fileName, String message) {
-            super("couldn't read dataset file " + message);
-        }
-    }
+    public enum PathHandling {CHAIN, FIRST_ONLY}
 
     /**
      * MissingValueError is thrown when methods such as <code>get</code>
@@ -166,21 +160,82 @@ public class Dataset {
 
     /**
      * Creates a Dataset from information contained in a file.
-     * @param fileName             Name of a file in a supported format;
-     *                             the format is inferred from the file's
-     *                             extension (e.g. ".yaml" means the file
-     *                             is in YAML format).
+     * @param fileName             Name of a dataset file in a supported
+     *                             format; the format is inferred from the
+     *                             file's extension (e.g. ".yaml" means the
+     *                             file is in YAML format).  If the name
+     *                             doesn't contain an extension, this method
+     *                             tries all supported extensions until it
+     *                             finds a dataset file that exists.
      * @return                     New Dataset object containing contents
      *                             of <code>fileName</code>
      */
     public static Dataset getFileInstance(String fileName) {
         String extension = Util.fileExtension(fileName);
-        if (extension != null) {
-            if (extension.equals(".yml") || extension.equals(".yaml")) {
-                return YamlDataset.getFileInstance(fileName);
+        if (extension == null) {
+            String newName = Util.findFileWithExtension(fileName,
+                    ".yaml", ".yml");
+            if (newName == null) {
+                throw new FileNotFoundError(fileName, "dataset",
+                        "couldn't find a file with a supported extension");
             }
+            fileName = newName;
+            extension = Util.fileExtension(fileName);
+        }
+        if (extension.equals(".yml") || extension.equals(".yaml")) {
+            return YamlDataset.getFileInstance(fileName);
         }
         throw new UnsupportedFormatError(fileName);
+    }
+
+    /**
+     * Creates a Dataset from information in one or more files found by
+     * searching a collection of directories.
+     * @param name                 Name of the desired dataset file.  If
+     *                             the name has no extension, this method
+     *                             tries all of the supported extensions in
+     *                             order and stops with the first file that
+     *                             exists.  The search for an extension
+     *                             happens separately for each directory in
+     *                             <code>path</code> (a different extension
+     *                             may be chosen for each directory).
+     * @param path                 Directories to search for the dataset.
+     * @param pathHandling         If <code>name</code> exists in more than
+     *                             one directory in <code>path</code>, this
+     *                             parameter indicates whether to use just the
+     *                             first dataset found or chain them together.
+     * @return                     A new Dataset object.
+     */
+    public static Dataset getFileInstanceFromPath(String name,
+            String[] path, PathHandling pathHandling) {
+        Dataset first = null, last = null;
+        for (int i = 0; i < path.length; i++) {
+            String fullName = path[i] + "/" + name;
+            try {
+                Dataset current = Dataset.getFileInstance(fullName);
+                if (pathHandling == PathHandling.FIRST_ONLY) {
+                    return current;
+                }
+
+                // Add the new dataset to the end of the chain of
+                // datasets that will form the result.
+                if (first == null) {
+                    first = last = current;
+                } else {
+                    last.setChain(current);
+                    last = current;
+                }
+            }
+            catch (FileNotFoundError e) {
+                // There isn't a relevant dataset in this directory;
+                // skip it and go on to the next directory.
+                continue;
+            }
+        }
+        if (first == null) {
+            throw FileNotFoundError.getPathInstance(name, "dataset", path);
+        }
+        return first;
     }
 
     /**

@@ -66,7 +66,7 @@ public class YamlDatasetTest extends junit.framework.TestCase {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
-        TestUtil.deleteFile("test.yml");
+        TestUtil.deleteTree("test.yml");
     }
 
     public void test_getFileInstance() {
@@ -74,17 +74,17 @@ public class YamlDatasetTest extends junit.framework.TestCase {
         Dataset d = YamlDataset.getFileInstance("test.yml");
         assertEquals("check value", "abc", d.get("first"));
         assertEquals("check second value", "111", d.get("second"));
-        TestUtil.deleteFile("test.yml");
+        TestUtil.deleteTree("test.yml");
     }
     public void test_getFileInstance_bogusFileName() {
         boolean gotException = false;
         try {
             Dataset d = YamlDataset.getFileInstance("bogus_44.yml");
         }
-        catch (Dataset.FileNotFoundError e) {
+        catch (FileNotFoundError e) {
             assertEquals("exception message",
-                    "couldn't read dataset file bogus_44.yml " +
-                    "(The system cannot find the file specified)",
+                    "couldn't open dataset file \"bogus_44.yml\": The system "
+                    + "cannot find the file specified",
                     e.getMessage());
             gotException = true;
         }
@@ -104,7 +104,7 @@ public class YamlDatasetTest extends junit.framework.TestCase {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
-        TestUtil.deleteFile("test.yml");
+        TestUtil.deleteTree("test.yml");
     }
 
     public void test_containsKey() {

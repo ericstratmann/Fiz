@@ -26,7 +26,7 @@ public class Request implements HttpServletRequest {
      */
     public static class DeprecatedMethodError extends Error {
         /**
-         * Constructor for FileNotFoundError.
+         * Constructor for DeprecatedMethodError.
          * @param methodName       Name of the method that was invoked;
          *                         used to generate a message in the
          *                         exception
@@ -105,7 +105,8 @@ public class Request implements HttpServletRequest {
      *                             this request's servlet.
      */
     public ServletContext getServletContext() {
-        return servlet.getServletContext();
+        ServletConfig config = servlet.getServletConfig();
+        return config.getServletContext();
     }
 
     /**

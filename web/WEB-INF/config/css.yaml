@@ -1,0 +1,18 @@
+# css.yaml -
+#
+# This dataset specifies configuration values that are substituted into
+# stylesheet templates.  Ideally, it should be possible to change
+# overall look and feel information that permeates many stylesheets, such
+# as colors and fonts, simply by making changes here.
+
+# Overall background color:
+background: #FFFFFF
+
+# Overall foreground color:
+color: #000000
+
+# Overall font information; notes: specifying font sizes as percentages
+# rather than absolute size enables features such as control-plus and
+# control-minus in Firefox.
+fontFamily: "Tahoma, Arial, sans-serif"
+fontSize: 70%

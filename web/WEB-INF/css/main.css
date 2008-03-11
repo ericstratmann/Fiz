@@ -1,0 +1,12 @@
+/* main.css -
+ *
+ * This stylesheet is used by default in all pages; it defines overall things
+ * such as default fonts and colors.
+ */
+
+body {
+    font-family: Tahoma, Arial, sans-serif;
+    color: @color;
+    background: @background;
+    font-size: @fontSize;
+}

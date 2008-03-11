@@ -131,7 +131,7 @@ public class Link {
         // query arguments.
         StringBuilder url = new StringBuilder(30);
         String separator = "?";
-        Template.expand(base, data, url, Template.Encoding.NONE);
+        Template.expand(base, data, url, Template.SpecialChars.NONE);
         if (url.indexOf("?") >= 0) {
             separator = "&amp;";
         }
@@ -209,7 +209,7 @@ public class Link {
         // on the entire message.  Then generate the full block of
         // Javascript code, and finally HTML-quote that entire block.
         // Thus the contents of the message get quoted twice.
-        Template.expand(template, data, message, Template.Encoding.NONE);
+        Template.expand(template, data, message, Template.SpecialChars.NONE);
         StringBuilder code = new StringBuilder("if (!confirm(\"");
         Html.escapeStringChars(message.toString(), code);
         code.append("\") {return false;}");

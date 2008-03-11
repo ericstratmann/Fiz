@@ -42,7 +42,7 @@ public class TestUtil {
             Assert.assertEquals("error running xmlvalid: " + e.getMessage(),
                     true, false);
         }
-        deleteFile("xmlvalid.tmp");
+        deleteTree("xmlvalid.tmp");
         if (p != null) {
             p.destroy();
         }
@@ -91,12 +91,13 @@ public class TestUtil {
     }
 
     /**
-     * Deletes a file.  If an error occurs while deleting the file, a test
+     * Deletes a file or directory subtree.  If an error occurs, a test
      * assertion error is generated with error information.
-     * @param fileName                   Name of the desired file
+     * @param fileName                   Name of the file or directory to
+     *                                   delete
      */
-    public static void deleteFile(String fileName) {
-        Assert.assertEquals("delete test file \"" + fileName + "\"",
-                true, new File(fileName).delete());
+    public static void deleteTree(String fileName) {
+        Assert.assertEquals("delete test file/directory \"" + fileName + "\"",
+                true, Util.deleteTree(fileName));
     }
 }

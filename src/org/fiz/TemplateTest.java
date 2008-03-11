@@ -19,7 +19,7 @@ public class TemplateTest extends junit.framework.TestCase {
         Template.expand("<name>: @name", data, out);
         assertEquals("output string", "<name>: &lt;Alice&gt;", out.toString());
         out.setLength(0);
-        Template.expand("<name>: @name", data, out, Template.Encoding.URL);
+        Template.expand("<name>: @name", data, out, Template.SpecialChars.URL);
         assertEquals("output string", "<name>: %3cAlice%3e", out.toString());
     }
 
@@ -78,14 +78,14 @@ public class TemplateTest extends junit.framework.TestCase {
         Dataset data = new Dataset("<name>", "<West>");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.expandParenName("@(<name>)", data, out, false, 2,
-                Template.Encoding.HTML);
+                Template.SpecialChars.HTML);
         assertEquals("output string", "123&lt;West&gt;", out.toString());
     }
     public void test_expandParenName_nestedAtSign() {
         Dataset data = new Dataset("last_name", "West", "name", "last_name");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.expandParenName("@(@name)", data, out, false, 2,
-                Template.Encoding.NONE);
+                Template.SpecialChars.NONE);
         assertEquals("end of specifier", 8, TemplateFixture.end);
         assertEquals("missingData", false, TemplateFixture.missingData);
         assertEquals("output string", "123West", out.toString());
@@ -95,7 +95,7 @@ public class TemplateTest extends junit.framework.TestCase {
                 "name2", "last_name");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.expandParenName("@(@(@name))", data, out, false, 2,
-                Template.Encoding.NONE);
+                Template.SpecialChars.NONE);
         assertEquals("end of specifier", 11, TemplateFixture.end);
         assertEquals("missingData", false, TemplateFixture.missingData);
         assertEquals("output string", "123West", out.toString());
@@ -105,7 +105,7 @@ public class TemplateTest extends junit.framework.TestCase {
                 "name2", "name");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.expandParenName("@(@(name1)_@name2)", data, out, false, 2,
-                Template.Encoding.NONE);
+                Template.SpecialChars.NONE);
         assertEquals("end of specifier", 18, TemplateFixture.end);
         assertEquals("missingData", false, TemplateFixture.missingData);
         assertEquals("output string", "123West", out.toString());
@@ -116,7 +116,7 @@ public class TemplateTest extends junit.framework.TestCase {
             Dataset data = new Dataset();
             StringBuilder out = new StringBuilder("123");
             TemplateFixture.expandParenName("@(abcdef", data, out, false, 2,
-                    Template.Encoding.NONE);
+                    Template.SpecialChars.NONE);
         }
         catch (Template.SyntaxError e) {
             assertEquals("exception message",
@@ -131,7 +131,7 @@ public class TemplateTest extends junit.framework.TestCase {
         Dataset data = new Dataset("last_name", "West");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.appendValue("last_name", data, out, true,
-                Template.Encoding.HTML);
+                Template.SpecialChars.HTML);
         assertEquals("missingData", false, TemplateFixture.missingData);
         assertEquals("output string", "123West", out.toString());
     }
@@ -139,7 +139,7 @@ public class TemplateTest extends junit.framework.TestCase {
         Dataset data = new Dataset("last_name", "West");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.appendValue("first_name", data, out, true,
-                Template.Encoding.HTML);
+                Template.SpecialChars.HTML);
         assertEquals("missingData", true, TemplateFixture.missingData);
         assertEquals("output string", "123", out.toString());
     }
@@ -147,7 +147,7 @@ public class TemplateTest extends junit.framework.TestCase {
         Dataset data = new Dataset("last_name", "West");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.appendValue("last_name", data, out, false,
-                Template.Encoding.HTML);
+                Template.SpecialChars.HTML);
         assertEquals("missingData", false, TemplateFixture.missingData);
         assertEquals("output string", "123West", out.toString());
     }
@@ -157,7 +157,7 @@ public class TemplateTest extends junit.framework.TestCase {
             Dataset data = new Dataset();
             StringBuilder out = new StringBuilder("123");
             TemplateFixture.appendValue("last_name", data, out, false,
-                    Template.Encoding.HTML);
+                    Template.SpecialChars.HTML);
         }
         catch (Dataset.MissingValueError e) {
             assertEquals("exception message",
@@ -171,21 +171,21 @@ public class TemplateTest extends junit.framework.TestCase {
         Dataset data = new Dataset("last_name", "<West>");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.appendValue("last_name", data, out, false,
-                Template.Encoding.HTML);
+                Template.SpecialChars.HTML);
         assertEquals("output string", "123&lt;West&gt;", out.toString());
     }
     public void test_appendValue_UrlEncoding() {
         Dataset data = new Dataset("last_name", "<West>");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.appendValue("last_name", data, out, false,
-                Template.Encoding.URL);
+                Template.SpecialChars.URL);
         assertEquals("output string", "123%3cWest%3e", out.toString());
     }
     public void test_appendValue_NoEncoding() {
         Dataset data = new Dataset("last_name", "<West>");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.appendValue("last_name", data, out, false,
-                Template.Encoding.NONE);
+                Template.SpecialChars.NONE);
         assertEquals("output string", "123<West>", out.toString());
     }
 
@@ -292,12 +292,12 @@ class TemplateFixture extends Template {
 
     public static void expandParenName(String template, Dataset data,
             StringBuilder out, boolean conditional, int start,
-            Template.Encoding encoding) {
+            SpecialChars encoding) {
         Template.ParseInfo info = new Template.ParseInfo();
         info.template = template;
         info.data = data;
         info.out = out;
-        info.encoding = encoding;
+        info.quoting = encoding;
         info.conditional = conditional;
         info.missingData = false;
         info.end = -1;
@@ -308,11 +308,11 @@ class TemplateFixture extends Template {
 
     public static void appendValue(String name, Dataset data,
             StringBuilder out, boolean conditional,
-            Template.Encoding encoding) {
+            SpecialChars encoding) {
         Template.ParseInfo info = new Template.ParseInfo();
         info.data = data;
         info.out = out;
-        info.encoding = encoding;
+        info.quoting = encoding;
         info.conditional = conditional;
         info.missingData = false;
         info.end = -1;

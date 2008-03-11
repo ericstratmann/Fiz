@@ -108,7 +108,8 @@ public class YamlDataset extends Dataset {
             yamlInfo = Yaml.load(in);
         }
         catch (FileNotFoundException e) {
-            throw new FileNotFoundError(fileName, e.getMessage());
+            throw new FileNotFoundError(fileName, "dataset",
+                    e.getMessage());
         }
         catch (YamlException e) {
             throw new SyntaxError(fileName, e.getMessage());

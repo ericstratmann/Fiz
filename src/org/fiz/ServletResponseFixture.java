@@ -18,8 +18,9 @@ public class ServletResponseFixture implements HttpServletResponse{
     // synthesize an appropriate return type (such as getOutputStream).
     public String lastMethod = null;
 
-    // Used as the result of getWriter requests:
-    public PrintWriter writer = new PrintWriter(new StringWriter ());
+    public String contentType;
+    public StringWriter out = new StringWriter();
+    public PrintWriter writer = new PrintWriter(out);
 
     // HttpServletResponse methods:
 
@@ -125,6 +126,7 @@ public class ServletResponseFixture implements HttpServletResponse{
         lastMethod = "setContentLength(" + length + ")";
     }
     public void setContentType(String type) {
+        contentType = type;
         lastMethod = "setContentType(\"" + type + "\")";
     }
     public void setLocale(Locale locale) {

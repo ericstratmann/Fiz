@@ -7,7 +7,7 @@ import java.io.*;
  */
 public class PerfString {
     public static void main(String[] argv) throws IOException {
-        int count = 1000;
+        int count = 10000;
         int code = 0;
         String value = "xyz";
         String value2 = "projectName, procedureName, stepName, propertyName";
@@ -18,10 +18,19 @@ public class PerfString {
         StringBuilder builder1 = new StringBuilder("12345");
         StringBuilder builder2 = new StringBuilder("xxx12345aaa");
         StringReader reader = new StringReader("0123456789abcdefghij");
+        char[] cbuf = new char[4000];
+        for (int i = 0; i < cbuf.length; i++) {
+            cbuf[i] = (char) ('a' + (i & 15));
+        }
+        String value4 = new String(cbuf);
+        StringReader reader2 = new StringReader(value4);
+        StringBuilder builder3 = new StringBuilder();
+        builder3.append(cbuf);
         char c = 'c';
         int result = 44;
+        char[] buffer = new char[4000];
 
-        for (int i= 0; i < 10; i++) {
+        for (int i = 0; i < 10; i++) {
             value = new String("first " + "value");
             int length = value.length();
             long start = System.nanoTime();
@@ -43,13 +52,12 @@ public class PerfString {
 //                }
 //                StringBuilder builder3 = new StringBuilder();
 //                code = builder1.toString().length();
-                CharSequence substring = builder2.subSequence(3, 6);
-                value = substring.toString();
+                value = builder3.toString();
             }
             long finish = System.nanoTime();
             System.out.printf("%.4f us per iteration%n", (finish - start)/(1000.0*count));
         }
-        System.out.printf("Result: %s\n", value);
+        System.out.printf("Result: %s\n", s.substring(100,130));
     }
 
     protected static int inc(int i) {

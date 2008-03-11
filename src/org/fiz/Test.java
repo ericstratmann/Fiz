@@ -18,6 +18,10 @@ public class Test extends Interactor {
         logger.info("getPathTranslated(): "
                 + request.getServletRequest().getPathTranslated());
         logger.info("getContextPath(): " + request.getContextPath());
+        logger.info("getMimeType(foo.xls): "
+                + request.getServletContext().getMimeType("foo.xls"));
+        logger.info("getMimeType(foo.html): "
+                + request.getServletContext().getMimeType("foo.html"));
     }
 
     public void test(Request request) throws IOException {
@@ -55,15 +59,8 @@ public class Test extends Interactor {
     }
 
     public static void main(String[] argv) throws IOException {
-        ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
-        TestFilter stream = new TestFilter(bufferStream);
-        OutputStreamWriter writer = new OutputStreamWriter(stream, "UTF-8");
-        writer.write("abc\u00ffxyz\uaaaa");
-        while (!stream.invoked) {
-            writer.write("abc");
-        }
-        System.out.printf("about to flush\n", bufferStream.size());
-        writer.flush();
-        System.out.printf("bytes buffered: %d\n", bufferStream.size());
+        System.out.printf("os.name: %s\n", System.getProperty("os.name"));
+        System.out.printf("os.version: %s\n", System.getProperty("os.version"));
+        System.out.printf("os.arch: %s\n", System.getProperty("os.arch"));
     }
 }

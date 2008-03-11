@@ -11,7 +11,9 @@ package org.fiz;
 import java.io.*;
 import java.lang.reflect.*;
 import java.util.Hashtable;
+import javax.servlet.*;
 import javax.servlet.http.*;
+
 import org.apache.log4j.Logger;
 
 public class Dispatcher extends HttpServlet {
@@ -84,8 +86,13 @@ public class Dispatcher extends HttpServlet {
      * This method is invoked by the servlet container when the servlet
      * is first loaded; we use it to perform our own initialization.
      */
-    public void init() {
-        // Right now, nothing to do.
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        String contextRoot = config.getServletContext().getRealPath("");
+        Config.init(contextRoot + "/WEB-INF/config");
+        Css.init(contextRoot + "/WEB-INF/css");
+        logger.info("Fiz initializing with context root "
+                + config.getServletContext().getRealPath(""));
     }
 
     /**
@@ -133,6 +140,7 @@ public class Dispatcher extends HttpServlet {
             // See if the URI refers to a generated stylesheet.
             String pathInfo = request.getPathInfo();
             if (pathInfo.startsWith("/css/")) {
+                Css.handleRequest(request, response, pathInfo.substring(5));
                 break handleRequest;
             }
 

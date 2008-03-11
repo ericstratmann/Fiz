@@ -90,8 +90,8 @@ public class UtilTest extends junit.framework.TestCase {
                 Util.findFileWithExtension("_test_", ".def", ".x", ".abc"));
         assertEquals("couldn't find file", null,
                 Util.findFileWithExtension("_test_", ".q", ".y"));
-        TestUtil.deleteFile("_test_.abc");
-        TestUtil.deleteFile("_test_.x");
+        TestUtil.deleteTree("_test_.abc");
+        TestUtil.deleteTree("_test_.x");
     }
 
     public void test_getUriAndQuery() {
@@ -116,6 +116,32 @@ public class UtilTest extends junit.framework.TestCase {
                 out.toString());
     }
 
+    public void test_deleteTree_success() {
+        (new File("_test1_")).mkdir();
+        (new File("_test1_/child")).mkdir();
+        TestUtil.writeFile("_test1_/first", "data for first file");
+        TestUtil.writeFile("_test1_/child/second", "data for second file");
+        assertEquals("successful return value", true,
+                Util.deleteTree("_test1_"));
+        assertEquals("directory is gone", false,
+                (new File("_test1_")).exists());
+    }
+
+    public void test_deleteTree_failure() throws IOException {
+        // This test only works on Windows, where a file cannot be
+        // deleted if it is open.
+        if (!System.getProperty("os.name").startsWith("Windows")) {
+            return;
+        }
+        TestUtil.writeFile("_test", "data");
+        FileReader reader = new FileReader("_test");
+        assertEquals("can't delete open file", false,
+                Util.deleteTree("_test"));
+        reader.close();
+        assertEquals("can delete file once it's closed", true,
+                Util.deleteTree("_test"));
+    }
+
     public void test_respondWithFile() throws IOException {
         TestUtil.writeFile("test.html", "0123456789abcde");
         UtilResponseFixture response = new UtilResponseFixture();
@@ -123,7 +149,68 @@ public class UtilTest extends junit.framework.TestCase {
         assertEquals("content length", 15, response.contentLength);
         assertEquals("returned data", "0123456789abcde",
                 response.writer.toString());
-        TestUtil.deleteFile("test.html");
+        TestUtil.deleteTree("test.html");
+    }
+
+    public void test_readFile_shortFile() throws FileNotFoundException {
+        String contents = "Line 1\nLine 2\n";
+        TestUtil.writeFile("test.foo", contents);
+        StringBuilder s = Util.readFile("test.foo");
+        assertEquals("file length", 14, s.length());
+        assertEquals("file contents", contents, s.toString());
+        TestUtil.deleteTree("test.foo");
+    }
+    public void test_readFile_longFile() throws FileNotFoundException {
+        StringBuilder contents = new StringBuilder();
+        for (int i = 0; i <1000; i++) {
+            contents.append(String.format("This is line #%04d\n", i));
+        }
+        TestUtil.writeFile("test.foo", contents.toString());
+        StringBuilder s = Util.readFile("test.foo");
+        assertEquals("file length", 19000, s.length());
+        assertEquals("check one line", "This is line #0010",
+                s.substring(190, 208));
+        assertEquals("full file contents", contents.toString(), s.toString());
+        TestUtil.deleteTree("test.foo");
+    }
+    public void test_readFile_FileNotFoundException() {
+        boolean gotException = false;
+        try {
+            Util.readFile("bogus/nonexistent");
+        }
+        catch (FileNotFoundException e) {
+            assertEquals("exception message",
+                    "bogus\\nonexistent (The system cannot find the "
+                    + "path specified)", e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_readFileFromPath() throws FileNotFoundError {
+        (new File("_test1_")).mkdir();
+        (new File("_test1_/child")).mkdir();
+        TestUtil.writeFile("_test1_/foo.txt", "_test1_/foo.txt");
+        TestUtil.writeFile("_test1_/child/foo.txt", "_test1_/child/foo.txt");
+        StringBuilder contents = Util.readFileFromPath("foo.txt", "test",
+                ".", "bogus/xyz", "_test1_", "_test1_/child");
+        assertEquals("full file contents", "_test1_/foo.txt",
+                contents.toString());
+        TestUtil.deleteTree("_test1_");
+    }
+    public void test_readFileFromPath_notFound() {
+        boolean gotException = false;
+        try {
+            Util.readFileFromPath("src", "test", ".", "bogus1/a",
+                    "bogus2/x/y");
+        }
+        catch (FileNotFoundError e) {
+            assertEquals("exception message",
+                    "couldn't find test file \"src\" in path "
+                    + "(\".\", \"bogus1/a\", \"bogus2/x/y\")",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
     }
 }
 
