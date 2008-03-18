@@ -11,8 +11,8 @@ background: #FFFFFF
 # Overall foreground color:
 color: #000000
 
-# Overall font information; notes: specifying font sizes as percentages
+# Overall font information.  Note: specifying font sizes as percentages
 # rather than absolute size enables features such as control-plus and
 # control-minus in Firefox.
 fontFamily: "Tahoma, Arial, sans-serif"
-fontSize: 70%
+fontSize: 80%

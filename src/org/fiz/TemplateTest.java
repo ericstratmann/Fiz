@@ -8,12 +8,36 @@ public class TemplateTest extends junit.framework.TestCase {
     public void test_expand_basics() {
         Dataset data = new Dataset("name", "Alice", "age", "28");
         StringBuilder out = new StringBuilder("123");
-        Template.expand("name: @name, age: @age, {weight: @weight} misc: @{@}",
+        Template.expand("name: @name, age: @age, "
+                + "{{weight: @weight}} misc: @{@}",
                 data, out);
         assertEquals("output string", "123name: Alice, age: 28, misc: {}",
                 out.toString());
     }
-    public void test_expand_encoding() {
+    public void test_expand_openBracesAtEnd() {
+        Dataset data = new Dataset("name", "Alice", "age", "28");
+        StringBuilder out = new StringBuilder("123");
+        Template.expand("abc{", data, out);
+        assertEquals("output string", "123abc{", out.toString());
+        boolean gotException = false;
+        try {
+            Template.expand("abc{{", data, out);
+        }
+        catch (Template.SyntaxError e) {
+            assertEquals("exception message",
+                    "unmatched \"{{\" in template \"abc{{\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_expand_singleBrace() {
+        Dataset data = new Dataset("name", "Alice", "age", "28");
+        StringBuilder out = new StringBuilder("123");
+        Template.expand("{}}", data, out);
+        assertEquals("output string", "123{}}", out.toString());
+    }
+    public void test_expand_specialChars() {
         Dataset data = new Dataset("name", "<Alice>", "age", "28");
         StringBuilder out = new StringBuilder();
         Template.expand("<name>: @name", data, out);
@@ -192,62 +216,85 @@ public class TemplateTest extends junit.framework.TestCase {
     public void test_expandBraces_basics() {
         Dataset data = new Dataset("last_name", "West");
         StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandBraces("{abc@last_name@}}x", data, out, 1);
-        assertEquals("end of specifier", 17, TemplateFixture.end);
+        TemplateFixture.expandBraces("{{abc@last_name@}}x}}y", data, out, 2);
+        assertEquals("end of specifier", 21, TemplateFixture.end);
         assertEquals("conditional", false, TemplateFixture.conditional);
-        assertEquals("output string", "123abcWest}", out.toString());
+        assertEquals("output string", "123abcWest}}x", out.toString());
+    }
+    public void test_expandBraces_closeBracesAtEnd() {
+        Dataset data = new Dataset("last_name", "West");
+        StringBuilder out = new StringBuilder("123");
+        TemplateFixture.expandBraces("{{abc}}", data, out, 2);
+        assertEquals("output string", "123abc", out.toString());
+    }
+    public void test_expandBraces_singleCloseBraceAtEnd() {
+        Dataset data = new Dataset("last_name", "West");
+        StringBuilder out = new StringBuilder("123");
+        boolean gotException = false;
+        try {
+            TemplateFixture.expandBraces("{{abc}", data, out, 2);
+        }
+        catch (Template.SyntaxError e) {
+            assertEquals("exception message",
+                    "unmatched \"{{\" in template \"{{abc}\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
     }
     public void test_expandBraces_missingData() {
         Dataset data = new Dataset("last_name", "West");
         StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandBraces("{abc@data.47@data2}x", data, out, 1);
-        assertEquals("end of specifier", 19, TemplateFixture.end);
+        TemplateFixture.expandBraces("{{abc@data.47@data2}}x", data, out, 2);
+        assertEquals("end of specifier", 21, TemplateFixture.end);
         assertEquals("conditional", false, TemplateFixture.conditional);
         assertEquals("output string", "123", out.toString());
     }
     public void test_expandBraces_collapsePrecedingSpace() {
         Dataset data = new Dataset();
         StringBuilder out = new StringBuilder();
-        Template.expand("x {@foo}", data, out);
+        Template.expand("x {{@foo}}", data, out);
         assertEquals("braces at end of string", "x", out.toString());
         out.setLength(0);
-        Template.expand("- {@foo} -", data, out);
+        Template.expand("- {{@foo}} -", data, out);
         assertEquals("spaces on both sides", "- -", out.toString());
         out.setLength(0);
-        Template.expand("x {@x}] x {@x}> x {@x}} x {@x}) x {@x}\" x {@x}\'",
+        Template.expand("x {{@x}}] x {{@x}}> x {{@x}}} x {{@x}}) x "
+                + "{{@x}}\" x {{@x}}\'",
                 data, out);
         assertEquals("close-delimiter follows braces", "x] x> x} x) x\" x'",
                 out.toString());
         out.setLength(0);
         out.append("x ");
-        TemplateFixture.expandBraces("x {@x}]", data, out, 3, -1);
+        TemplateFixture.expandBraces("x {{@x}}]", data, out, 4, -1);
         assertEquals("update lastDeletedSpace", 1,
                 TemplateFixture.lastDeletedSpace);
         out.setLength(0);
-        Template.expand("<{@x} {@x}>", data, out);
+        Template.expand("<{{@x}} {{@x}}>", data, out);
         assertEquals("don't delete the same space twice", "<>",
                 out.toString());
         out.setLength(0);
-        Template.expand("{@x}) + b{@x}> + {@x}y", data, out);
+        Template.expand("{{@x}}) + b{{@x}}> + {{@x}}y", data, out);
         assertEquals("don't remove spaces", ") + b> + y",
                 out.toString());
     }
     public void test_expandBraces_collapseTrailingSpace() {
         Dataset data = new Dataset();
         StringBuilder out = new StringBuilder();
-        Template.expand("{@x} bcd", data, out);
+        Template.expand("{{@x}} bcd", data, out);
         assertEquals("braces at start of string", "bcd", out.toString());
         out.setLength(0);
-        Template.expand("[{@x} + <{@x} + @{{@x} + ({@x} + \"{@x} + \'{@x} +",
+        Template.expand("[{{@x}} + <{{@x}} + @{{{@x}} + ({{@x}} + "
+                + "\"{{@x}} + \'{{@x}} +",
                 data, out);
         assertEquals("open-delimiter precedes braces", "[+ <+ {+ (+ \"+ '+",
                 out.toString());
         out.setLength(0);
-        TemplateFixture.expandBraces("<{@x} abc]", data, out, 2, -1);
-        assertEquals("update lastDeletedSpace", 5,
+        TemplateFixture.expandBraces("<{{@x}} abc]", data, out, 3, -1);
+        assertEquals("update lastDeletedSpace", 7,
                 TemplateFixture.lastDeletedSpace);
         out.setLength(0);
-        Template.expand("<{@x}abc + y{@x}y + <{@x}", data, out);
+        Template.expand("<{{@x}}abc + y{{@x}}y + <{{@x}}", data, out);
         assertEquals("don't remove spaces", "<abc + yy + <",
                 out.toString());
     }
@@ -256,11 +303,11 @@ public class TemplateTest extends junit.framework.TestCase {
         try {
             Dataset data = new Dataset();
             StringBuilder out = new StringBuilder("123");
-            TemplateFixture.expandBraces("{abc", data, out, 1);
+            TemplateFixture.expandBraces("{{abc", data, out, 2);
         }
         catch (Template.SyntaxError e) {
             assertEquals("exception message",
-                    "missing \"}\" in template \"{abc\"",
+                    "unmatched \"{{\" in template \"{{abc\"",
                     e.getMessage());
             gotException = true;
         }

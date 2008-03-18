@@ -116,7 +116,7 @@ public class Request implements HttpServletRequest {
      */
     public Html getHtml() {
         if (html == null) {
-            html = new Html();
+            html = new Html(servletRequest.getContextPath());
         }
         return html;
     }

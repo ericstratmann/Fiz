@@ -19,7 +19,8 @@ public class HtmlTest extends junit.framework.TestCase {
                 + "        \"http://www.w3.org/TR/xhtml1/DTD/"
                 + "xhtml1-strict.dtd\">\n" +
                 "<html xmlns=\"http://www.w3.org/1999/xhtml\" "
-                + "xml:lang=\"en\" lang=\"en\">", (new Html()).getPrologue());
+                + "xml:lang=\"en\" lang=\"en\">",
+                (new Html("/fiz")).getPrologue());
     }
 
     public void test_getAndSetTitle() {
@@ -28,6 +29,16 @@ public class HtmlTest extends junit.framework.TestCase {
         assertEquals("modified value", "new title", html.getTitle());
         html.setTitle(null);
         assertEquals("new null value", null, html.getTitle());
+    }
+
+    public void test_includeCss() {
+        html.setTitle("sample");
+        html.includeCss("fiz/css/alpha.css");
+        html.includeCss("fiz/css/bravo.css");
+        html.includeCss("fiz/css/alpha.css");
+        TestUtil.assertMatch("expected CSS files",
+                "(?s).*alpha\\.css.*bravo\\.css.*main\\.css.*",
+                html.toString());
     }
 
     public void test_print_emptyHtml() {
@@ -45,7 +56,9 @@ public class HtmlTest extends junit.framework.TestCase {
         StringWriter out = new StringWriter();
         html.print(out);
         assertEquals("**Prologue**\n"
-                + "<head>\n</head>\n<body>\nfirst line\nsecond line\n"
+                + "<head>\n    <link href=\"/fiz/fiz/css/main.css\" "
+                + "rel=\"stylesheet\" type=\"text/css\" />\n"
+                + "</head>\n<body>\nfirst line\nsecond line\n"
                 + "</body>\n</html>\n", out.toString());
     }
     public void test_print_withTitle() {
@@ -55,8 +68,21 @@ public class HtmlTest extends junit.framework.TestCase {
         html.print(out);
         assertEquals("**Prologue**\n"
                 + "<head>\n    <title>sample title</title>\n"
+                + "    <link href=\"/fiz/fiz/css/main.css\" "
+                + "rel=\"stylesheet\" type=\"text/css\" />\n"
                 + "</head>\n<body>\nfirst line\n</body>\n</html>\n",
                 out.toString());
+    }
+    public void test_print_css() {
+        html.setTitle("sample");
+        html.includeCss("fiz/css/alpha.css");
+        TestUtil.assertSubstring("header section",
+                "    <title>sample</title>\n"
+                + "    <link href=\"/fiz/fiz/css/alpha.css\" "
+                + "rel=\"stylesheet\" type=\"text/css\" />\n"
+                + "    <link href=\"/fiz/fiz/css/main.css\" "
+                + "rel=\"stylesheet\" type=\"text/css\" />",
+                html.toString());
     }
 
     public void test_toString() {
@@ -64,6 +90,8 @@ public class HtmlTest extends junit.framework.TestCase {
         html.setTitle("sample title");
         assertEquals("**Prologue**\n"
                 + "<head>\n    <title>sample title</title>\n"
+                + "    <link href=\"/fiz/fiz/css/main.css\" "
+                + "rel=\"stylesheet\" type=\"text/css\" />\n"
                 + "</head>\n<body>\nfirst line\n</body>\n</html>\n",
                 html.toString());
     }
@@ -111,6 +139,9 @@ public class HtmlTest extends junit.framework.TestCase {
 // The following class definition provides additional/modified features
 // for testing.
 class HtmlFixture extends Html {
+    public HtmlFixture() {
+        super("/fiz");
+    }
     public String getPrologue() {
         // This method overrides getPrologue: a simpler prologue generates
         // less clutter in tests.

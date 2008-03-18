@@ -10,3 +10,11 @@ body {
     background: @background;
     font-size: @fontSize;
 }
+
+h1 {
+    font-size: 150%;
+}
+
+h2 {
+    font-size: 130%;
+}

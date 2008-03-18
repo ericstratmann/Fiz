@@ -56,12 +56,30 @@ public class TestUtil {
      *                                   error message that is generated.
      * @param substring                  Desired substring.
      * @param actual                     Output from test, which should
-     *                                   contain substring
+     *                                   contain substring.
      */
-    public static void assertSubstring(String message, String substring, String actual) {
+    public static void assertSubstring(String message, String substring,
+                                       String actual) {
         if ((actual == null) || (actual.indexOf(substring) < 0)) {
             Assert.fail(message + "\nExpected substring :" + substring
                     + "\nTest output :" + actual);
+        }
+    }
+
+    /**
+     * Verifies that the test output matches a given regular expression;
+     * generates a junit error message if it doesn't.
+     * @param message                    Message to incorporate in any
+     *                                   error message that is generated.
+     * @param pattern                    Regular expression to match against
+     *                                   the test output.
+     * @param actual                     Output from test, which should match
+     *                                   pattern.
+     */
+    public static void assertMatch(String message, String pattern, String actual) {
+        if ((actual == null) || !actual.matches(pattern)) {
+            Assert.fail(message + "\nPattern :" + pattern
+                    + "\nDidn't match test output :" + actual);
         }
     }
 

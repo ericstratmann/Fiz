@@ -9,6 +9,7 @@
 package org.fiz;
 
 import java.io.*;
+import java.util.*;
 
 public class Html {
     // Contents of the document; see getBody for details.
@@ -16,6 +17,23 @@ public class Html {
 
     // Title for the document; see setTitle for details.
     protected String title = null;
+
+    // The initial portion of all URI's referring to this Web application:
+    // used to generate HTML for stylesheets and Javascript files.
+    protected String contextPath;
+
+    // The following field keeps track of all of the stylesheet files that
+    // are to be included in the HTML document.
+    protected TreeSet<String> stylesheets = new TreeSet<String>();
+
+    /**
+     * Constructor for Html objects.
+     * @param contextPath             The "root URI" corresponding to this
+     *                                Web application.
+     */
+    public Html(String contextPath) {
+        this.contextPath = contextPath;
+    }
 
     /**
      * Returns the StringBuilder object used to assemble the main body of
@@ -69,6 +87,19 @@ public class Html {
     }
 
     /**
+     * This method is used to request that the HTML document reference
+     * a particular stylesheet.
+     * @param uri                     Application-relative URI for the
+     *                                stylesheet; it typically begins with
+     *                                "fiz/css/", in which case the stylesheet
+     *                                is a dynamically generated one whose
+     *                                template is stored under WEB-INF/css.
+     */
+    public void includeCss(String uri) {
+        stylesheets.add(uri);
+    }
+
+    /**
      * Generates a complete HTML document from the information that has been
      * provided so far and writes it on a given Writer.  If no information
      * has been provided for the HTML since the last reset, then no output
@@ -89,6 +120,15 @@ public class Html {
             if (title != null) {
                 writer.write("    <title>" + title + "</title>\n");
             }
+
+            // Output stylesheet links.
+            stylesheets.add("fiz/css/main.css");
+            for (String sheet : stylesheets) {
+                writer.write("    <link href=\"" + contextPath + "/" + sheet
+                        + "\" rel=\"stylesheet\" type=\"text/css\" />\n");
+            }
+
+            // Output body.
             writer.write("</head>\n<body>\n");
             writer.write(body.toString());
             writer.write("</body>\n</html>\n");

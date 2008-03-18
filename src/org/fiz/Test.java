@@ -25,6 +25,16 @@ public class Test extends Interactor {
                 + request.getServletContext().getMimeType("foo.html"));
     }
 
+    public void page(Request request) {
+        Html html = request.getHtml();
+        html.setTitle("Test Page");
+        html.getBody().append("<h1>First Section</h1>\n"
+                + "<p>Here are a couple of lines of sample text.</p>\n"
+                + "<h2>Subsection</h2>\n"
+                + "<p>Check to see that the "
+                + "fonts and colors match the stylesheets.</p>\n");
+    }
+
     public void test(Request request) throws IOException {
         request.setContentType("text/html");
         request.setHeader("Transfer-Encoding", "chunked");

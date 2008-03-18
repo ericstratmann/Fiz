@@ -23,7 +23,7 @@
  * @}                       Append "}" to the output.
  * @*                       Any other occurrence of "@" besides those
  *                          described above is illegal and results in an error.
- * {...}                    Conditional substitution: normally the information
+ * {{...}}                  Conditional substitution: normally the information
  *                          between the braces is processed just like the rest
  *                          of the template (except that the braces are not
  *                          copied to the output).  However, if there is a
@@ -140,8 +140,9 @@ public class Template {
             if (c == '@') {
                 expandAtSign(info, i+1);
                 i = info.end;
-            } else if (c == '{') {
-                expandBraces(info, i+1);
+            } else if ((c == '{') && ((i+1) < template.length())
+                    && (template.charAt(i+1) == '{')) {
+                expandBraces(info, i+2);
                 i = info.end;
             } else {
                 out.append(c);
@@ -299,12 +300,11 @@ public class Template {
      *                             info.out, info.missingInfo, and info.end.
      *                             Info.end will be set to the index of
      *                             the character just after the closing
-     *                             brace.
+     *                             braces.
      * @param start                Index of the character immediately after
-     *                             the "{".
-     *                             and info.conditional is false.
-     * @throws SyntaxError         The template is typical, e.g. it doesn't
-     *                             contain a close-brace.
+     *                             the "{{".
+     * @throws SyntaxError         The template is illegal, e.g. it doesn't
+     *                             contain closing braces.
      */
     protected static void expandBraces(ParseInfo info, int start)
             throws SyntaxError {
@@ -318,42 +318,48 @@ public class Template {
             if (c == '@') {
                 expandAtSign(info, i+1);
                 i = info.end;
-            } else if (c == '}') {
-                info.end = i+1;
+            } else if ((c == '}') && ((i+1) < template.length())
+                    && (template.charAt(i+1) == '}')) {
+                info.end = i+2;
                 if (info.missingData) {
                     // Some of the required data was not available, so
                     // undo all of the output we have generated.  Furthermore,
-                    // if omitting. the material embraces results in redundant
+                    // if omitting the material in braces results in redundant
                     // spaces, then eliminate the space character on one side
                     // of the braces.
 
                     char next;
+                    int indexBeforeBraces = start-3;
+
+                    // If there is a space before the "{{" that hasn't already
+                    // been deleted and the character after the "}}" is
+                    // either a space, a close-delimiter such as ">", or the
+                    // end of the template, delete the space before the "{{".
                     if (info.end < template.length()) {
                         next = template.charAt(info.end);
                     } else {
-                        // The "}" is at the end of the template, so pretend
-                        // the next character is a close-delimiter.
+                        // The "}}" is at the end of the template, so pretend
+                        // the character after the "}}" is a close-delimiter.
                         next = '>';
                     }
-                    if ((info.lastDeletedSpace < (start-2))
-                            && (template.charAt(start-2) == ' ')
+                    if ((info.lastDeletedSpace < indexBeforeBraces)
+                            && (template.charAt(indexBeforeBraces) == ' ')
                             && ((next == ' ') || (next == ']')
                             || (next == '>') || (next == '}')
                             || (next == ')') || (next == '\"')
                             || (next == '\''))) {
-                        // There is a space before the "{" that hasn't already
-                        // been deleted, and the character after the "}"
-                        // is either a space, a close-delimiter such as ">",
-                        // or the end of the template.  Erase the space before
-                        // the "{".
-                        info.lastDeletedSpace = start-2;
+                        info.lastDeletedSpace = indexBeforeBraces;
                         oldEnd--;
                     } else {
+                        // If there is a space after the "}}" and the
+                        // character before the "{{" is an open-delimiter
+                        // such as "<" or the beginning of the string, then
+                        // skip over the trailing space.
                         char prev;
-                        if (start >= 2) {
-                            prev = template.charAt(start-2);
+                        if (start >= 3) {
+                            prev = template.charAt(indexBeforeBraces);
                         } else {
-                            // The "{" is at the beginning of the template,
+                            // The "{{" is at the beginning of the template,
                             // so pretend the previous character is an
                             // open-delimiter.
                             prev = '<';
@@ -362,10 +368,6 @@ public class Template {
                                 || (prev == '<') || (prev == '{')
                                 || (prev == '(') || (prev == '\"')
                                 || (prev == '\''))) {
-                            // There is a space after the "}" and the
-                            // character before the "{" is and open-delimiter
-                            // such as "<" or the beginning of the string.
-                            // Skip over the trailing space.
                             info.lastDeletedSpace = info.end;
                             info.end++;
                         }
@@ -379,7 +381,7 @@ public class Template {
                 i++;
             }
         }
-        throw new SyntaxError("missing \"}\" in template \""
+        throw new SyntaxError("unmatched \"{{\" in template \""
                 + info.template + "\"");
     }
 }
