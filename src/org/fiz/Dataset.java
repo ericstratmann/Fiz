@@ -29,7 +29,7 @@
  */
 
 package org.fiz;
-import java.util.HashMap;
+import java.util.*;
 
 public class Dataset {
     /**
@@ -43,17 +43,17 @@ public class Dataset {
      * dataset in the list will be returned
      * <p>
      * DATASETS: the caller expects the name to refer to zero or more nested
-     * data sets, all of which should be returned
+     * data sets, all of which will be returned
      */
     public enum DesiredType {STRING, DATASET, DATASETS}
 
     /**
-     * Instances of this enum are passed to getFileInstanceFromPath
+     * Instances of this enum are passed to newFileInstanceFromPath
      * to indicate how to handle the case where the dataset exists
      * in multiple directories of the path:
      * <p>
-     * CHAIN: chain all of the datasets together, so that their contents
-     * combined with those from earlier directories in the path getting
+     * CHAIN: chain all of the datasets together so that their contents
+     * combine, with those from earlier directories in the path getting
      * priority.
      * <p>
      * FIRST_ONLY: use only the first dataset found and ignore any others.
@@ -90,14 +90,15 @@ public class Dataset {
          *                         (null if no details are available)
          */
         public SyntaxError(String fileName, String message) {
-            super("syntax error in dataset input"
-                    + ((fileName != null) ? (" file \"" + fileName + "\"") : "")
+            super("syntax error in dataset"
+                    + ((fileName != null) ? (" (file \"" + fileName + "\")")
+                    : "")
                     + ((message != null) ? (": " + message) : ""));
         }
     }
 
     /**
-     * UnsupportedFormat is thrown when getFileInstance is passed a
+     * UnsupportedFormat is thrown when newFileInstance is passed a
      * file name with an unrecognized extension.
      */
     public static class UnsupportedFormatError extends Error {
@@ -127,20 +128,32 @@ public class Dataset {
         }
     }
 
-    // Holds the key-value mappings for the dataset.  Basic Datasets
-    // support only a single level: no nested datasets.
-    protected HashMap<String,String> map;
+    // The following field holds the contents of the dataset.  Keys
+    // are strings, and values can have any of the following types:
+    // String:                 simple value
+    // HashMap:                nested dataset
+    // ArrayList:              list of nested datasets; each element of
+    //                         the list is a HashMap.
+    // It would be better if this field could be declared as
+    // HashMap<String,Object>; unfortunately that won't work, because
+    // we use JYaml to read YAML datasets directly into the map and JYaml
+    // declares its HashMaps without the <String,Object>.
+    protected HashMap map;
 
     // The following field points to another dataset, which is searched
-    // (along with its chain) for any values not found in the dataset.
+    // (along with its chain) for any values not found in this dataset.
     // Null means there is no chain for the dataset.
     protected Dataset chain;
+
+    // If this dataset originated in a file the following variable contains
+    // the name of the file; otherwise it is null.  Used for error messages.
+    protected String fileName;
 
     /**
      * Creates an empty dataset.
      */
     public Dataset() {
-        map = new HashMap<String,String>();
+        map = new HashMap();
     }
 
     /**
@@ -150,12 +163,27 @@ public class Dataset {
      *                             initializing the Dataset; must
      *                             contain an even number of elements
      */
+    @SuppressWarnings("unchecked")
     public Dataset(String... keysAndValues) {
-        map = new HashMap<String,String>();
+        map = new HashMap();
         int last = keysAndValues.length - 2;
         for (int i = 0; i <= last; i += 2) {
             map.put(keysAndValues[i], keysAndValues[i+1]);
         }
+    }
+
+    /**
+     * Private constructor, used by checkValue, newFileInstance, and other
+     * methods.
+     * @param contents             HashMap holding the contents of the
+     *                             dataset.
+     * @param fileName             If the dataset was read from a file this
+     *                             gives the file name (if known); otherwise
+     *                             this is null.
+     */
+    protected Dataset(HashMap contents, String fileName) {
+        map = contents;
+        this.fileName = fileName;
     }
 
     /**
@@ -170,11 +198,11 @@ public class Dataset {
      * @return                     New Dataset object containing contents
      *                             of <code>fileName</code>
      */
-    public static Dataset getFileInstance(String fileName) {
+    public static Dataset newFileInstance(String fileName) {
         String extension = Util.fileExtension(fileName);
         if (extension == null) {
             String newName = Util.findFileWithExtension(fileName,
-                    ".yaml", ".yml");
+                    ".yaml", ".yml", ".xml");
             if (newName == null) {
                 throw new FileNotFoundError(fileName, "dataset",
                         "couldn't find a file with a supported extension");
@@ -183,7 +211,10 @@ public class Dataset {
             extension = Util.fileExtension(fileName);
         }
         if (extension.equals(".yml") || extension.equals(".yaml")) {
-            return YamlDataset.getFileInstance(fileName);
+            return YamlDataset.newFileInstance(fileName);
+        }
+        if (extension.equals(".xml")) {
+            return XmlDataset.newFileInstance(fileName);
         }
         throw new UnsupportedFormatError(fileName);
     }
@@ -206,13 +237,13 @@ public class Dataset {
      *                             first dataset found or chain them together.
      * @return                     A new Dataset object.
      */
-    public static Dataset getFileInstanceFromPath(String name,
+    public static Dataset newFileInstanceFromPath(String name,
             String[] path, PathHandling pathHandling) {
         Dataset first = null, last = null;
         for (int i = 0; i < path.length; i++) {
             String fullName = path[i] + "/" + name;
             try {
-                Dataset current = Dataset.getFileInstance(fullName);
+                Dataset current = Dataset.newFileInstance(fullName);
                 if (pathHandling == PathHandling.FIRST_ONLY) {
                     return current;
                 }
@@ -233,7 +264,7 @@ public class Dataset {
             }
         }
         if (first == null) {
-            throw FileNotFoundError.getPathInstance(name, "dataset", path);
+            throw FileNotFoundError.newPathInstance(name, "dataset", path);
         }
         return first;
     }
@@ -242,31 +273,36 @@ public class Dataset {
      * Given a particular key, returns the value associated with that
      * key, or null if the key is not defined.  This method is identical
      * to <code>get</code> except that it does not generate an exception
-     * if the key is undefined.
+     * if the key is undefined or has the wrong type.
      * @param key                  Name of the desired value
      * @return                     Value associated with <code>key</code>,
      *                             or null if <code>key</code> doesn't
-     *                             exist.
-     * @throws WrongTypeError      Thrown if <code>key</code> corresponds
-     *                             to a nested dataset rather than a string
-     *                             value.e, since
-     *                             we don't support nested datasets)
+     *                             exist or if it corresponds to a nested
+     *                             dataset.
      */
-    public String check(String key) throws WrongTypeError {
-        Object child = lookup(key, DesiredType.STRING);
-        if ((child == null) && (chain != null)) {
-            return chain.check(key);
+    public String check(String key) {
+        try {
+            return (String) lookup(key, DesiredType.STRING);
         }
-        return (String) child;
+        catch (WrongTypeError e) {
+            return null;
+        }
     }
 
     /**
      * Indicates whether a particular key exists in the dataset.
      * @param key                  Name of the desired value
-     * @return                     True if the key exists, false otherwise
+     * @return                     True if the key exists in the top
+     *                             level of the dataset, false otherwise
      */
     public boolean containsKey(String key) {
-        return (map.get(key) != null);
+        if (map.get(key) != null) {
+            return true;
+        }
+        if (chain != null) {
+            return chain.containsKey(key);
+        }
+        return false;
     }
 
     /**
@@ -284,9 +320,6 @@ public class Dataset {
     public String get(String key) throws MissingValueError, WrongTypeError {
         Object child = lookup(key, DesiredType.STRING);
         if (child == null) {
-            if (chain != null) {
-                return chain.get(key);
-            }
             throw new MissingValueError(key);
         }
         return (String) child;
@@ -308,9 +341,6 @@ public class Dataset {
             throws MissingValueError, WrongTypeError {
         Object child = lookup(key, DesiredType.DATASET);
         if (child == null) {
-            if (chain != null) {
-                return chain.getChild(key);
-            }
             throw new MissingValueError(key);
         }
         return (Dataset) child;
@@ -332,9 +362,6 @@ public class Dataset {
     public Dataset[] getChildren(String key) throws WrongTypeError {
         Object children = lookup(key, DesiredType.DATASETS);
         if (children == null) {
-            if (chain != null) {
-                return chain.getChildren(key);
-            }
             return new Dataset[0];
         }
         return (Dataset[]) children;
@@ -359,9 +386,6 @@ public class Dataset {
             throws MissingValueError, WrongTypeError {
         Object child = lookupPath(path, DesiredType.STRING);
         if (child == null) {
-            if (chain != null) {
-                return chain.getPath(path);
-            }
             throw new MissingValueError(path);
         }
         return (String) child;
@@ -372,15 +396,15 @@ public class Dataset {
      * given key, intended primarily for use by other methods such as
      * <code>get</code> and <code>getChildren</code>.  The value must be
      * present in the top level of the dataset (i.e., key is not a path;
-     * use lookupPath if it is).  This method searches only the dataset,
-     * not its chain.
+     * use lookupPath if it is).  This method searches both the dataset
+     * and its chain.
      * @param key                  Name of the desired value
      * @param wanted               Indicates what kind of value is expected
      *                             (string value, nested dataset, etc.)
      * @return                     If <code>key</code> exists and its value
      *                             matches <code>desiredResult</code> then
-     *                             it is returned as a String, YamlDataset,
-     *                             or YamlDataset[] for <code>desiredResult</code>
+     *                             it is returned as a String, Dataset,
+     *                             or Dataset[] for <code>desiredResult</code>
      *                             values of STRING, DATASET, and DATASETS,
      *                             respectively.  If <code>key</code>
      *                             doesn't exist then null is returned.
@@ -390,24 +414,21 @@ public class Dataset {
      */
     public Object lookup(String key, DesiredType wanted)
             throws WrongTypeError {
-        String child = map.get(key);
-        if (child == null) {
-            return null;
+        Object child = map.get(key);
+        if (child != null) {
+            return checkValue(key, wanted, child);
         }
-
-        // If we found a value it must be a string; that's all we support.
-        if (wanted == DesiredType.STRING) {
-            return child;
+        if (chain != null) {
+            return chain.lookup(key, wanted);
         }
-        throw new WrongTypeError("wrong type for dataset key \"" + key
-                + "\": expected nested dataset, found string value");
+        return null;
     }
 
     /**
      * This is a general-purpose method to find the value associated with a
      * hierarchical path, intended primarily for use by other methods such as
      * <code>getPath</code> and <code>getPathChildren</code>.  This method
-     * searches only the dataset, not its chain.
+     * searches both the dataset and its chain.
      * @param path                 A sequence of keys separated by dots.
      *                             For example, "a.b.c" refers to a value
      *                             "c" contained in a nested dataset "b"
@@ -417,8 +438,8 @@ public class Dataset {
      *                             (string value, nested dataset, etc.)
      * @return                     If desired value exists and matches
      *                             <code>desiredResult</code> then
-     *                             it is returned as a String, YamlDataset,
-     *                             or YamlDataset[] for <code>desiredResult</code>
+     *                             it is returned as a String, Dataset,
+     *                             or Dataset[] for <code>desiredResult</code>
      *                             values of STRING, DATASET, and DATASETS,
      *                             respectively.  If the dataset doesn't
      *                             contain a value corresponding to
@@ -427,22 +448,54 @@ public class Dataset {
      *                             its value doesn't correspond to
      *                             <code>desiredResult</code>
      */
-
     public Object lookupPath(String path, DesiredType wanted)
             throws WrongTypeError {
-        // This class doesn't support hierarchical data sets, so if path
-        // contains more than one key we will generate an error.
+        int startIndex = 0;
+        int length = path.length();
+        Object currentObject = map;
+        String key;
 
-        int dot = path.indexOf('.');
-        if (dot == -1) {
-            return map.get(path);
+        // Each iteration through the following loop extracts the next
+        // key from path and looks it up.
+        while (true) {
+            int dot = path.indexOf('.', startIndex);
+            if (dot == -1) {
+                dot = length;
+            }
+            key = path.substring(startIndex, dot);
+            currentObject = ((HashMap) currentObject).get(key);
+            if (currentObject == null) {
+                // The current key doesn't exist.  If this was the first
+                // element in the path then check chained datasets, if
+                // any.  However, if we successfully located the first
+                // element in the path then its contents override any
+                // chained datasets so stop here.
+                if ((startIndex == 0) && (chain != null)) {
+                    return chain.lookupPath(path, wanted);
+                }
+                return null;
+            }
+            startIndex = dot+1;
+            if (startIndex >= length) {
+                break;
+            }
+
+            // This is not the last key; make sure that the current object
+            // is a nested dataset.
+            if (currentObject instanceof ArrayList) {
+                // The child consists of a list of nested datasets; take
+                // the first one.
+                currentObject = ((ArrayList) currentObject).get(0);
+            }
+            if (!(currentObject instanceof HashMap)) {
+                throw new WrongTypeError(wrongTypeMessage(
+                        path.substring(0, dot), DesiredType.DATASET,
+                        currentObject));
+            }
         }
-        String key = path.substring(0, dot);
-        if (map.get(key) == null) {
-            return null;
-        }
-        throw new WrongTypeError("wrong type for dataset element \"" + key
-                + "\": expected nested dataset, found string value");
+
+        // At this point we have found the final value.
+        return checkValue(path, wanted, currentObject);
     }
 
     /**
@@ -472,5 +525,144 @@ public class Dataset {
      */
     public int size() {
         return map.size();
+    }
+
+    /**
+     * Generates a nicely formatted string displaying the contents
+     * of the dataset.
+     * @return                     Pretty-printed string.
+     */
+    public String toString() {
+        StringBuilder out = new StringBuilder();
+        prettyPrint(map, out, "");
+        return out.toString();
+    }
+
+    /**
+     * This recursive method does all of the real work for toString().
+     * @param dataset              Nested dataset to pretty-print.
+     * @param out                  Pretty-printed output gets appended here.
+     * @param indent               String to prefix to each line of
+     *                             output; provides appropriate indentation
+     *                             for the nesting level of this dataset.
+     */
+    @SuppressWarnings("unchecked")
+    protected static void prettyPrint(HashMap dataset, StringBuilder out,
+            String indent) {
+        ArrayList names = new ArrayList();
+        names.addAll(dataset.keySet());
+        Collections.sort(names);
+        for (Object nameObject : names) {
+            String name = (String) nameObject;
+            Object value = dataset.get(name);
+            if (value instanceof HashMap) {
+                out.append(String.format("%s%s:\n", indent, name));
+                prettyPrint((HashMap) value, out, indent + "  ");
+            } else if (value instanceof ArrayList) {
+                ArrayList<HashMap> list = (ArrayList <HashMap>) value;
+                for (int i = 0; i < list.size(); i++) {
+                    out.append(String.format("%s%s[%d]:\n", indent, name, i));
+                    prettyPrint(list.get(i), out, indent + "  ");
+                }
+            } else {
+                out.append(String.format("%s%s: %s\n", indent, name,
+                        value.toString()));
+            }
+        }
+    }
+
+    /**
+     * This method is invoked by the lookup functions to make sure
+     * that the value has the type desired by the caller; it also performs
+     * conversions, such as creating a new Dataset for the value.
+     * @param name                 Name for the value (either a single
+     *                             key or a hierarchical path); used for
+     *                             error messages
+     * @param wanted               The type of value requested by the
+     *                             code that called the lookup function
+     * @param value                Dataset value corresponding to
+     *                             <code>name</code>.
+     * @return                     If <code>value</code>  matches
+     *                             <code>wanted</code> then it is returned
+     *                             as a String, Dataset, or Dataset[]
+     *                             for <code>wanted</code> values of STRING,
+     *                             DATASET, and DATASETS, espectively.
+     * @throws WrongTypeError      Thrown if <code>value</code> doesn't
+     *                             correspond to  <code>wanted</code>.
+     */
+
+    protected final Object checkValue(String name, DesiredType wanted,
+            Object value) throws WrongTypeError {
+        if (wanted == DesiredType.STRING) {
+            if (value instanceof String) {
+                return value;
+            }
+            throw new WrongTypeError(wrongTypeMessage(name, wanted, value));
+        } else {
+            if (value instanceof HashMap) {
+                if (wanted == DesiredType.DATASET) {
+                    return new Dataset((HashMap) value, fileName);
+                }
+                Dataset[] result = new Dataset[1];
+                result[0] = new Dataset((HashMap) value, fileName);
+                return result;
+            } else if (value instanceof ArrayList) {
+                if (wanted == DesiredType.DATASET) {
+                    // The value consists of a list of values; take the first
+                    // one (only if it is a HashMap)
+
+                    Object child2 = ((ArrayList) value).get(0);
+                    if (child2 instanceof HashMap) {
+                        return new Dataset((HashMap) child2, fileName);
+                    }
+                } else {
+                    ArrayList a = (ArrayList) value;
+                    Dataset[] result = new Dataset[a.size()];
+                    for (int i = 0; i < result.length; i++) {
+                        Object listElement = a.get(i);
+                        if (!(listElement instanceof HashMap)) {
+                            throw new WrongTypeError(wrongTypeMessage(name,
+                                    wanted, listElement));
+                        }
+                        result[i] = new Dataset((HashMap) a.get(i), fileName);
+                    }
+                    return result;
+                }
+            }
+        }
+
+        // We get here if value has an unrecognized type or if
+        // desiredType is DATASET and child refers to a list of things that
+        // aren't HashMaps.
+        throw new WrongTypeError(wrongTypeMessage(name, wanted, value));
+    }
+
+    /**
+     * Invoked when other methods encounter values that have the wrong
+     * type (e.g., expected a string value but found a nested dataset);
+     * generates an appropriate message to use in a WrongTypeError exception.
+     * @param name                 Name for the entity that had the wrong
+     *                             type (a top-level key or a hierarchical
+     *                             path)
+     * @param wanted               The type of entity that was desired
+     * @param got                  The object that was encountered, which
+     *                             didn't match <code> wanted</code>
+     * @return                     An appropriate message to use in a
+     *                             WrongTypeError exception.
+     */
+    protected static String wrongTypeMessage(String name, DesiredType wanted,
+            Object got) {
+        String gotType;
+        if (got instanceof HashMap) {
+            gotType = "nested dataset";
+        } else if (got instanceof ArrayList) {
+            gotType = "list";
+        } else {
+            gotType = "string value \"" + Util.excerpt(got.toString(), 20)
+                    + "\"";
+        }
+        return "wrong type for dataset element \"" + name + "\": expected "
+                + ((wanted == DesiredType.STRING) ? "string value"
+                : "nested dataset") + " but found " + gotType;
     }
 }

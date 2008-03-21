@@ -19,7 +19,7 @@ public class PerfYamlDataset {
         int count = 10000;
 
         System.out.printf("9-line document:%n");
-        Dataset top = new YamlDataset(yaml);
+        Dataset top = YamlDataset.newStringInstance(yaml);
         Dataset container = top.getChild("container");
         for (int i= 0; i < 10; i++) {
             long start = System.nanoTime();

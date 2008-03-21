@@ -10,8 +10,8 @@ public class IOErrorTest extends junit.framework.TestCase {
                 e.getMessage());
     }
 
-    public void test_getFileInstance() {
-        Error e = IOError.getFileInstance("foo.yaml",
+    public void test_newFileInstance() {
+        Error e = IOError.newFileInstance("foo.yaml",
                 "foo.yaml (disk exploded)");
         assertEquals("exception message",
                 "I/O error in file \"foo.yaml\": disk exploded",

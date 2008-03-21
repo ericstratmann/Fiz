@@ -7,7 +7,16 @@ import java.io.*;
  */
 public class PerfString {
     public static void main(String[] argv) throws IOException {
-        int count = 10000;
+        String xml =
+            "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" +
+            "<project>\n" +
+            "    <projectName>ElectricCommander build</projectName>\n" +
+            "    <description>Prototype build system for new build management" +
+                    " product</description>\n" +
+            "    <modifyTime>2005-09-22 09:55:00.0</modifyTime>\n" +
+            "    <jobNotesAclTemplateId>23</jobNotesAclTemplateId>\n" +
+            "</project>";
+        int count = 1000;
         int code = 0;
         String value = "xyz";
         String value2 = "projectName, procedureName, stepName, propertyName";
@@ -52,12 +61,13 @@ public class PerfString {
 //                }
 //                StringBuilder builder3 = new StringBuilder();
 //                code = builder1.toString().length();
-                value = builder3.toString();
+                Dataset d = XmlDataset.newFileInstance("test.xml");
+                value = d.get("projectName");
             }
             long finish = System.nanoTime();
             System.out.printf("%.4f us per iteration%n", (finish - start)/(1000.0*count));
         }
-        System.out.printf("Result: %s\n", s.substring(100,130));
+        System.out.printf("Result: %s\n", value);
     }
 
     protected static int inc(int i) {

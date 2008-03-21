@@ -20,12 +20,12 @@ public class FileNotFoundError extends Error {
     public FileNotFoundError(String fileName, String type, String message) {
         super("couldn't open " + ((type != null) ? (type + " ") : "")
                 + "file \"" + fileName + "\": "
-                + Util.extractInnerMessage(message, fileName));
+                + Util.extractInnerMessage(message));
     }
 
     /**
      * Constructor for FileNotFoundError objects.  This constructor is
-     * intended primarily for internal use by getPathInstance.
+     * intended primarily for internal use by newPathInstance.
      * @param message              Information about the problem.
      */
     public FileNotFoundError(String message) {
@@ -42,7 +42,7 @@ public class FileNotFoundError extends Error {
      * @param path                 Directories that were searched for the file..
      * @return                     An Error object ready to throw.
      */
-    public static FileNotFoundError getPathInstance(String fileName,
+    public static FileNotFoundError newPathInstance(String fileName,
             String type, String[] path) {
         return new FileNotFoundError("couldn't find "
                 + ((type != null) ? (type + " ") : "")

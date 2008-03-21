@@ -22,14 +22,14 @@ public class FileNotFoundErrorTest extends junit.framework.TestCase {
                 e.getMessage());
     }
 
-    public void test_getPathInstance() {
-        Error e = FileNotFoundError.getPathInstance("foo.yaml", null,
+    public void test_newPathInstance() {
+        Error e = FileNotFoundError.newPathInstance("foo.yaml", null,
                 new String[] {"/bin", "/usr/local/tools", "C:/code"});
         assertEquals("exception message without type",
                 "couldn't find file \"foo.yaml\" in path (\"/bin\", "
                 + "\"/usr/local/tools\", \"C:/code\")",
                 e.getMessage());
-        e = FileNotFoundError.getPathInstance("foo.yaml", "image",
+        e = FileNotFoundError.newPathInstance("foo.yaml", "image",
                 new String[] {"/bin", "/usr/local/tools", "C:/code"});
         assertEquals("exception message without type",
                 "couldn't find image file \"foo.yaml\" in path (\"/bin\", "

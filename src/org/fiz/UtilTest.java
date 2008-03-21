@@ -70,6 +70,38 @@ public class UtilTest extends junit.framework.TestCase {
                 Util.identifierEnd("abc", 10));
     }
 
+    public void test_isWhitespace() {
+        assertEquals("all whitespace", true, Util.isWhitespace(" \n\r\t "));
+        assertEquals("not all whitespace", false, Util.isWhitespace("  abc "));
+    }
+
+    public void test_isWhitespace_characterArray() {
+        char[] data = new char[] {'a', ' ', '\n', '\r', '\t', ' ', ' ', 'b'};
+        assertEquals("all whitespace", true, Util.isWhitespace(data, 1, 6));
+        assertEquals("leading non-whitespace", false,
+                Util.isWhitespace(data, 0, 3));
+        assertEquals("trailing non-whitespace", false,
+                Util.isWhitespace(data, 4, 4));
+    }
+
+    public void test_excerpt_String() {
+        assertEquals("short value", "abcdef", Util.excerpt("abcdef", 6));
+        assertEquals("long value", "abc...", Util.excerpt("abcdefg", 6));
+    }
+
+    public void test_excerpt_StringBuilder() {
+        assertEquals("short value", "abcdef", Util.excerpt(
+                new StringBuilder("abcdef"), 6));
+        assertEquals("long value", "abc...", Util.excerpt(
+                new StringBuilder("abcdefg"), 6));
+    }
+
+    public void test_newCharArray() {
+        char[] ch = Util.newCharArray("abc");
+        assertEquals("array length", 3, ch.length);
+        assertEquals("array contents", "abc", new String(ch));
+    }
+
     public void test_fileExtension() {
         assertEquals("extension exists", ".java",
                 Util.fileExtension("C:/a/b/c.java"));
@@ -150,6 +182,19 @@ public class UtilTest extends junit.framework.TestCase {
         assertEquals("returned data", "0123456789abcde",
                 response.writer.toString());
         TestUtil.deleteTree("test.html");
+    }
+
+    public void test_extractInnerMessage() {
+        assertEquals("close paren missing", "file (xyzzy",
+                Util.extractInnerMessage("file (xyzzy"));
+        assertEquals("open paren missing", "file xyzzy)",
+                Util.extractInnerMessage("file xyzzy)"));
+        assertEquals("open paren too soon", " (file xyzzy)",
+                Util.extractInnerMessage(" (file xyzzy)"));
+        assertEquals("no space before paren", "a/b/c/test(message2)",
+                Util.extractInnerMessage("a/b/c/test(message2)"));
+        assertEquals("everything matches", "message",
+                Util.extractInnerMessage("abc (message)"));
     }
 
     public void test_readFile_shortFile() throws FileNotFoundException {

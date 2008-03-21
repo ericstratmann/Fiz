@@ -61,7 +61,7 @@ public class Config {
         }
 
         // Not cached; find the mdataset and cache it.
-        result = Dataset.getFileInstanceFromPath(name, path,
+        result = Dataset.newFileInstanceFromPath(name, path,
                 Dataset.PathHandling.CHAIN);
         cache.put(name, result);
         return result;

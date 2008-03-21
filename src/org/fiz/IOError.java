@@ -23,8 +23,8 @@ public class IOError extends Error {
      *                             typically e.getMessage() for an exception.
      * @return                     An Error object ready to throw.
      */
-    public static IOError getFileInstance(String fileName, String details) {
+    public static IOError newFileInstance(String fileName, String details) {
         return new IOError("I/O error in file \"" + fileName + "\": "
-                + Util.extractInnerMessage(details, fileName));
+                + Util.extractInnerMessage(details));
     }
 }

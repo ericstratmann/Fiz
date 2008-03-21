@@ -158,6 +158,81 @@ public class Util {
     }
 
     /**
+     * Determines whether a string value consists entirely of whitespace.
+     * @param s                       String to check.
+     * @return                        Returns true if all of the characters
+     *                                in s are whitespace characters, false
+     *                                if any are not.
+     */
+    public static boolean isWhitespace(CharSequence s) {
+        for (int i = 0; i < s.length(); i++) {
+            if (!Character.isWhitespace(s.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Determines whether a set of characters consists entirely of whitespace.
+     * @param ch                      Character array containing data to check.
+     * @param start                   Index of first character to check.
+     * @param length                  Total number of characters to check.
+     * @return                        Returns true if all of the characters
+     *                                are whitespace characters, false
+     *                                if any are not.
+     */
+    public static boolean isWhitespace(char[] ch, int start, int length) {
+        int end = start + length;
+        for (int i = start; i < end; i++) {
+            if (!Character.isWhitespace(ch[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * This method is used to produce a shortened form of strings that
+     * are too long, typically for use in error messages.
+     * @param s                       Input string
+     * @param maxChars                Maximum number of characters to return
+     *                                result
+     * @return                        If s has no more than maxChars characters
+     *                                than the result is s.  Otherwise, the
+     *                                result consists of the first
+     *                                characters of s, plus " ...".
+     */
+    public static String excerpt (String s, int maxChars) {
+        if (s.length() <= maxChars) {
+            return s;
+        }
+        return s.substring(0, maxChars-3) + "...";
+    }
+    public static String excerpt (StringBuilder s, int maxChars) {
+        if (s.length() <= maxChars) {
+            return s.toString();
+        }
+        return s.substring(0, maxChars-3) + "...";
+    }
+
+    /**
+     * Allocate a new character array and initialize it with the contents
+     * of a string.
+     * @param s                       String that determines the length and
+     *                                contents of the character array.
+     * @return                        Character array with contents equal
+     *                                to s.
+     */
+    public static char[] newCharArray(String s) {
+        char[] ch = new char[s.length()];
+        for (int i = 0; i < s.length(); i++) {
+            ch[i] = s.charAt(i);
+        }
+        return ch;
+    }
+
+    /**
      * Given a file name, this method checks to see if the last element
      * in <code>path</code> contains an extension (i.e., it ends with
      * a construct such as ".java", ".jx", etc.).  If so the extension
@@ -280,23 +355,22 @@ public class Util {
     }
 
     /**
-     * Given an exception message of the form "fileName (message)", extract
+     * Given an exception message of the form "path (message)", extract
      * and return just the portion in parentheses.
      * @param input                   The original exception message
-     * @param fileName                Name of a file, which may appear
-     *                                at the start of the message.
      * @return                        If <code>input</code> has the form
-     *                                "fileName (message)", just the inner
+     *                                "path (message)", just the inner
      *                                message is returned; otherwise
      *                                <code>input</code> is returned.
      */
-    public static String extractInnerMessage(String input, String fileName) {
+    public static String extractInnerMessage(String input) {
         int inputLength = input.length();
-        int nameLength = fileName.length();
-        if (input.startsWith(fileName) && (input.charAt(nameLength) == ' ')
-                && (input.charAt(nameLength+1) == '(')
-                && (input.charAt(inputLength-1) == ')')) {
-            return input.substring(nameLength+2, inputLength-1);
+        if (input.charAt(inputLength-1) != ')') {
+            return input;
+        }
+        int firstParen = input.indexOf('(');
+        if ((firstParen > 2) && (input.charAt(firstParen-1) == ' ')) {
+            return input.substring(firstParen+1, inputLength-1);
         }
         return input;
     }
@@ -330,7 +404,7 @@ public class Util {
             throw e;
         }
         catch (IOException e) {
-            throw IOError.getFileInstance(fileName, e.getMessage());
+            throw IOError.newFileInstance(fileName, e.getMessage());
         }
     }
 
@@ -360,6 +434,6 @@ public class Util {
                 continue;
             }
         }
-        throw FileNotFoundError.getPathInstance(fileName, type, path);
+        throw FileNotFoundError.newPathInstance(fileName, type, path);
     }
 }
