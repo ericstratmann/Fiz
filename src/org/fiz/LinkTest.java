@@ -88,6 +88,15 @@ public class LinkTest extends junit.framework.TestCase {
         assertEquals("HTML for link", "<a href=\"/url?name=Alice"
                 + "&amp;weight=110\">Alice</a>", out.toString());
     }
+    public void test_html_queryNameDifferentFromValue() {
+        StringBuilder out = new StringBuilder();
+        Dataset data = new Dataset("first", "value1", "second", "value2");
+        Link link = new Link(new Dataset("base", "/url",
+                "args", "first:second", "text", "Sample"));
+        link.html(data, out);
+        assertEquals("HTML for link",
+                "<a href=\"/url?first=value2\">Sample</a>", out.toString());
+    }
     public void test_html_noArgsInUrl() {
         StringBuilder out = new StringBuilder();
         Dataset data = new Dataset("name", "Alice", "weight", "110");

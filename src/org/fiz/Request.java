@@ -17,6 +17,7 @@ import java.io.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import java.util.Locale;
+import java.util.Enumeration;
 
 @SuppressWarnings("deprecation")
 public class Request implements HttpServletRequest {
@@ -36,20 +37,22 @@ public class Request implements HttpServletRequest {
         }
     }
 
-    // The following field provides access to the servlet under which
-    // this Request is being processed.
+    // The servlet under which this Request is being processed.
     protected HttpServlet servlet;
 
-    // The following fields provide access to the HttpServletRequest
-    // and HttpServletResponse objects provided by the servlet container.
-    // See documentation for the constructor arguments for more information.
+    // The HttpServletRequest and HttpServletResponse objects provided by
+    // the servlet container.  See documentation for the constructor arguments
+    // for more information.
     protected HttpServletRequest servletRequest;
     protected HttpServletResponse servletResponse;
 
-    // The following field is used while processing the request to
-    // a cumulative information that will eventually be returned as
+    // Used to accumulate information that will eventually be returned as
     // HTML output.
-    protected Html html;
+    protected Html html = null;
+
+    // Top-level dataset for this request.  See getRequest documentation for
+    // details.
+    protected Dataset dataset = null;
 
     /**
      * Constructor for Request objects.  Typically invoked by the
@@ -119,6 +122,30 @@ public class Request implements HttpServletRequest {
             html = new Html(servletRequest.getContextPath());
         }
         return html;
+    }
+
+    /**
+     * Returns the main dataset for this request.  Initially the dataset
+     * contains query values provided in the URL, but requests may choose to
+     * additional data to the dataset in cases where the data needs to be
+     * used globally across the request.
+     * @return                     Global dataset for this request.
+     */
+    public Dataset getDataset() {
+        if (dataset != null) {
+            return dataset;
+        }
+
+        // This is the first time someone has asked for the dataset, so we
+        // need to build it.  Its initial contents consist of the query
+        // data provided to the request, if any.
+        dataset = new Dataset();
+        Enumeration e = servletRequest.getParameterNames();
+        while (e.hasMoreElements()) {
+            String name = (String) e.nextElement();
+            dataset.set(name, servletRequest.getParameter(name));
+        }
+        return dataset;
     }
 
     // The following methods simply reflect HttpServletRequest methods

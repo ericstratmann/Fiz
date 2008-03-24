@@ -5,6 +5,7 @@
 
 package org.fiz;
 import java.io.*;
+import java.util.*;
 import javax.servlet.http.*;
 
 public class Util {
@@ -48,6 +49,28 @@ public class Util {
     }
 
     /**
+     * Concatenates all of the strings in an array.
+     * @param values                   Strings to concatenate
+     * @param separator                Use this as a separator between the
+     *                                 strings.
+     * @return                         Concatenation of all the strings
+     *                                 in <code>values</code>, with
+     *                                 <code>separator</code> between adjacent
+     *                                 values.
+     */
+    public static String join(CharSequence[] values, CharSequence separator) {
+        StringBuilder builder= new StringBuilder(joinedLength(values,
+                separator));
+        CharSequence prefix = "";
+        for (int i = 0; i < values.length; i++) {
+            builder.append(prefix);
+            builder.append(values[i]);
+            prefix = separator;
+        }
+        return builder.toString();
+    }
+
+    /**
      * Concatenates all of the strings in an iterable.
      * @param values                   Strings to concatenate
      * @param separator                Use this as a separator between the
@@ -69,7 +92,7 @@ public class Util {
     }
 
     /**
-     * Concatenates all of the strings in an array.
+     * Concatenates all of the strings in an Enumeration.
      * @param values                   Strings to concatenate
      * @param separator                Use this as a separator between the
      *                                 strings.
@@ -78,13 +101,12 @@ public class Util {
      *                                 <code>separator</code> between adjacent
      *                                 values.
      */
-    public static String join(CharSequence[] values, CharSequence separator) {
-        StringBuilder builder= new StringBuilder(joinedLength(values,
-                separator));
+    public static String join(Enumeration values, CharSequence separator) {
+        StringBuilder builder= new StringBuilder();
         CharSequence prefix = "";
-        for (int i = 0; i < values.length; i++) {
+        while (values.hasMoreElements()) {
             builder.append(prefix);
-            builder.append(values[i]);
+            builder.append(values.nextElement().toString());
             prefix = separator;
         }
         return builder.toString();

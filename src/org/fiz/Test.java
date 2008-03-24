@@ -28,11 +28,34 @@ public class Test extends Interactor {
     public void page(Request request) {
         Html html = request.getHtml();
         html.setTitle("Test Page");
-        html.getBody().append("<h1>First Section</h1>\n"
-                + "<p>Here are a couple of lines of sample text.</p>\n"
-                + "<h2>Subsection</h2>\n"
-                + "<p>Check to see that the "
-                + "fonts and colors match the stylesheets.</p>\n");
+        html.getBody().append("<h1>First Section</h1>\n" +
+                "<p>Here are a couple of lines of sample text.</p>\n" +
+                "<h2>Subsection</h2>\n" +
+                "<p>Check to see that the " +
+                "fonts and colors match the stylesheets.</p>\n");
+    }
+
+    // The following entry point generates 2 different pages (based on
+    // the "current" query value) each of which references the other with
+    // a link.
+    public void link(Request request) {
+        Html html = request.getHtml();
+        Dataset globalData = request.getDataset();
+        if (globalData.get("current").equals("1")) {
+            globalData.set("next", "2");
+        } else {
+            globalData.set("next", "1");
+        }
+        html.setTitle("Link Page");
+        StringBuilder body = html.getBody();
+        Template.expand("<h1>Test Links</h1>\n" +
+                "<p>This is page @current.  Click on the link below " +
+                "to go to page @next.</p>\n" +
+                "<p>", globalData, body);
+        Link link = new Link(new Dataset("text", "Go to page @next",
+                "base", "link", "args", "current: next"));
+        link.html(globalData, body);
+        body.append("</p>\n");
     }
 
     public void test(Request request) throws IOException {

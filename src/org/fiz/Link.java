@@ -75,7 +75,6 @@ public class Link {
             // values may contain colons).  Make another pass-through
             // queryNames to split up the values that contain colons and
             // generate the queryData values.
-
             queryData = new String[queryNames.length];
             for (int i = 0; i < queryNames.length; i++) {
                 String spec = queryNames[i];
@@ -139,7 +138,7 @@ public class Link {
             url.append(separator);
             Html.escapeUrlChars(queryNames[i], url);
             url.append('=');
-            Html.escapeUrlChars(data.get(queryNames[i]), url);
+            Html.escapeUrlChars(data.get(queryData[i]), url);
             separator = "&amp;";
         }
 

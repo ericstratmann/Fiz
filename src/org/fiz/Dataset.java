@@ -11,21 +11,16 @@
  *   - Values can have three forms:
  *     - A string
  *     - A nested dataset (containing additional key-value pairs)
- *     - A list of nested data sets, each containing additional
+ *     - A list of nested datasets, each containing additional
  *       key-value pairs
- *     - Datasets can be implemented in a variety of different ways
- *       (nested hash tables, XML documents, etc.) but their contents
- *       have the logical structure described above.  Some datasets,
- *       like those defined by this base class, support only a single
- *       level (no nested data sets).
+ *     - Datasets can be created from a variety of sources, such as
+ *       XML and YAML files (see classes such as XmlDataset and
+ *       YamlDataset for details on this).
  * In addition to the values it stores internally, each dataset can
  * contain a reference to another dataset.  The term "chain" refers to the
  * referenced dataset as well as any dataset it references, and so on.
  * If a desired value doesn't exist in a dataset, its chain is also
  * searched for the value.
- *
- * This base implementation of Dataset supports a single level
- * structure described by an array of strings.
  */
 
 package org.fiz;
@@ -515,6 +510,94 @@ public class Dataset {
      */
     public Dataset getChain() {
         return chain;
+    }
+
+    /**
+     * Sets a value in the top level of a dataset.  If the value already
+     * exists that it is replaced (even if the value represents a nested
+     * dataset).
+     * @param key                  Name of a value in the top-level of the
+     *                             dataset (not a path).
+     * @param value                New value to associate with the key.
+     */
+    @SuppressWarnings("unchecked")
+    public void set(String key, String value) {
+        map.put(key, value);
+    }
+
+    /**
+     * Removes an entry (or nested dataset) from the top level of a dataset.
+     * If there is no value with the given <code> key</code> then the method
+     * does nothing.
+     * @param key                  Name of a value in the top level of the
+     *                             dataset (not a path).
+     */
+    public void remove(String key) {
+        map.remove(key);
+    }
+
+    /**
+     * Creates an entry in the top level of a dataset that consists of a
+     * nested dataset.  If the key already exists in the dataset then its
+     * previous contents are replaced (regardless of whether they
+     * represent a string value or nested dataset).
+     * @param key                  Name of a value in the top level of the
+     *                             dataset (not a path).
+     */
+    @SuppressWarnings("unchecked")
+    public Dataset setChild(String key) {
+        HashMap childMap = new HashMap();
+        map.put(key, childMap);
+        return new Dataset(childMap, null);
+    }
+
+    /**
+     * Makes one dataset a child of another (from now on, elements in the
+     * child dataset can be referenced either using the child or using the
+     * parent).
+     * @param key                  Name of a value in the top level of the
+     *                             dataset (not a path).  If this key is
+     *                             already defined, the existing value will
+     *                             be discarded
+     * @param child                Existing dataset, which will become a
+     *                             child of <code>this</code>.
+     */
+    @SuppressWarnings("unchecked")
+    public void setChild(String key, Dataset child) {
+        map.put(key, child.map);
+    }
+
+    /**
+     * Given an existing dataset, adds it to <code>this</code> as a top-level
+     * child.  However, if there already exist one or more top-level children
+     * by the same name then the new child is added to them to form a list,
+     * with the new child at the end of the list.
+     * @param key                  Name of a value in the top level of the
+     *                             dataset (not a path).  If this key is
+     *                             already defined as a string value, the
+     *                             existing value will be discarded.
+     * @param child                Existing dataset, which will become a
+     *                             child of <code>this</code>.
+     */
+    @SuppressWarnings("unchecked")
+    public void addChild(String key, Dataset child) {
+        Object existingValue = map.get(key);
+        if (existingValue instanceof HashMap) {
+            // There exists a single child by the given name; turn this
+            // into a list of children.
+            ArrayList list = new ArrayList(2);
+            list.add(existingValue);
+            list.add(child.map);
+            map.put(key, list);
+        } else if (existingValue instanceof ArrayList) {
+            // There's already a list of children; just add the new one.
+            ArrayList list = (ArrayList) existingValue;
+            list.add(child.map);
+        } else {
+            // Either the value doesn't exist or it is a string value;
+            // in either case, ignore it and use the new child as the value.
+            map.put(key, child.map);
+        }
     }
 
     /**

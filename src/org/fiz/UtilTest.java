@@ -3,8 +3,8 @@
  */
 
 package org.fiz;
-import java.util.HashMap;
 import java.io.*;
+import java.util.*;
 
 public class UtilTest extends junit.framework.TestCase {
 
@@ -25,7 +25,7 @@ public class UtilTest extends junit.framework.TestCase {
 
     }
 
-    public void test_joinStringArray() {
+    public void test_join_stringArray() {
         assertEquals("basics", "first, second, third",
                 Util.join(new String[] {"first", "second", "third"}, ", "));
         assertEquals("no strings to join", "",
@@ -33,7 +33,7 @@ public class UtilTest extends junit.framework.TestCase {
 
     }
 
-    public void test_joinIterable() {
+    public void test_join_iterable() {
         HashMap<Integer,String> hash = new HashMap<Integer, String>();
         hash.put(123, "string_123");
         hash.put(99, "string_99");
@@ -41,6 +41,19 @@ public class UtilTest extends junit.framework.TestCase {
         assertEquals("basics", "-48, 99, 123", Util.join(hash.keySet(), ", "));
         assertEquals("no values to join", "",
                 Util.join(new HashMap<String,String>().keySet(), ", "));
+
+    }
+
+    public void test_join_enumeration() {
+        Vector<String> list = new Vector<String>();
+        list.add("123");
+        list.add("99");
+        list.add("-48");
+        assertEquals("basics", "123, 99, -48", Util.join(list.elements(),
+                ", "));
+        list.clear();
+        assertEquals("no values to join", "", Util.join(list.elements(),
+                ", "));
 
     }
 

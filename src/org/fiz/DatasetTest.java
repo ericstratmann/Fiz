@@ -392,6 +392,59 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("chain null again", null, d.getChain());
     }
 
+    public void test_set() {
+        Dataset d = new Dataset("first", "12345");
+        d.set("second", "66");
+        assertEquals("dataset contents", "first: 12345\n" +
+                "second: 66\n", d.toString());
+    }
+
+    public void test_remove() {
+        Dataset d = new Dataset("first", "12345");
+        d.set("second", "66");
+        assertEquals("dataset contents", "first: 12345\n" +
+                "second: 66\n", d.toString());
+    }
+
+    public void test_setChild_key() {
+        Dataset d = new Dataset("first", "12345");
+        d.setChild("child").set ("name", "Alice");
+        assertEquals("dataset contents", "child:\n" +
+                "  name: Alice\n" +
+                "first: 12345\n", d.toString());
+    }
+
+    public void test_setChild_keyAndDataset() {
+        Dataset d = new Dataset("first", "12345");
+        Dataset d2 = new Dataset("name", "Bill", "age", "31");
+        d.setChild("child", d2);
+        assertEquals("dataset contents", "child:\n" +
+                "  age: 31\n" +
+                "  name: Bill\n" +
+                "first: 12345\n", d.toString());
+    }
+
+    public void test_addChild() {
+        Dataset d = new Dataset("first", "12345", "child", "Fred");
+        Dataset d2 = new Dataset("name", "Alice");
+        Dataset d3 = new Dataset("name", "Bob");
+        Dataset d4 = new Dataset("name", "Charlie");
+        Dataset d5 = new Dataset("name", "Donna");
+        d.addChild("child", d2);
+        d.addChild("child", d3);
+        d.addChild("child", d4);
+        d.addChild("wife", d5);
+        assertEquals("dataset contents", "child[0]:\n" +
+                "  name: Alice\n" +
+                "child[1]:\n" +
+                "  name: Bob\n" +
+                "child[2]:\n" +
+                "  name: Charlie\n" +
+                "first: 12345\n" +
+                "wife:\n" +
+                "  name: Donna\n", d.toString());
+    }
+
     // No tests needed for toString() method.
 
     public void test_prettyPrint() {

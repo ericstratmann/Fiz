@@ -5,10 +5,10 @@
 
 package org.fiz;
 
+import java.io.*;
+import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
-import java.util.Vector;
-import java.io.BufferedReader;
 
 @SuppressWarnings("deprecation")
 public class ServletRequestFixture implements HttpServletRequest {
@@ -16,6 +16,28 @@ public class ServletRequestFixture implements HttpServletRequest {
     // were called.  This is used in situations where the method can't easily
     // synthesize an appropriate return type (such as HttpSession).
     public String lastMethod = null;
+
+    // Used to simulate parameter data via setParameters().
+    protected Hashtable<String,String> parameterMap = null;
+
+    public ServletRequestFixture() {
+        parameterMap = new Hashtable<String,String>();
+        parameterMap.put("p1", "param_value1");
+        parameterMap.put("p2", "param_value2");
+    }
+
+    /**
+     * Invoke this method to set up fake parameter data.
+     * @param keysAndValues        Alternating names and values for
+     *                             parameters.
+     */
+    public void setParameters(String... keysAndValues) {
+        parameterMap.clear();
+        int last = keysAndValues.length - 2;
+        for (int i = 0; i <= last; i += 2) {
+            parameterMap.put(keysAndValues[i], keysAndValues[i+1]);
+        }
+    }
 
     // Methods from HttpServletRequest.
     public String getAuthType() {return "authType";}
@@ -106,18 +128,28 @@ public class ServletRequestFixture implements HttpServletRequest {
     }
     public String getLocalName() {return "localName";}
     public int getLocalPort() {return 80;}
-    public String getParameter(String name) {return "parameter " + name;}
+    public String getParameter(String name) {
+        if (parameterMap == null) {
+            return "parameter " + name;
+        }
+        return parameterMap.get(name);
+    }
     public java.util.Map getParameterMap() {
         lastMethod = "getParameterMap";
-        return null;
+        return parameterMap;
     }
     public java.util.Enumeration getParameterNames() {
-        Vector<String> v = new Vector<String>();
-        v.addElement("pname1");
-        return v.elements();
+        return parameterMap.keys();
     }
     public String[] getParameterValues(String name) {
-        return new String[] {"first value", "second value"};
+        String value = parameterMap.get(name);
+        if (value == null) {
+            return null;
+        }
+        String[] values = new String[2];
+        values[0] = value;
+        values[1] = value + "_next";
+        return values;
     }
     public String getProtocol() {return "protocol";}
     public BufferedReader getReader() {

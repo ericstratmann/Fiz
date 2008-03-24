@@ -27,6 +27,16 @@ public class RequestTest  extends junit.framework.TestCase {
         assertEquals(servletResponse, request2.getServletResponse());
     }
 
+    public void test_getDataset() {
+        assertEquals("request data set contents", "p1: param_value1\n" +
+                "p2: param_value2\n", request2.getDataset().toString());
+    }
+    public void test_getDataset_noQueryData() {
+        servletRequest.setParameters();
+        assertEquals("request data set contents", "",
+                request2.getDataset().toString());
+    }
+
     public void test_getAuthType() {
         assertEquals(null, request1.getAuthType());
         assertEquals("authType", request2.getAuthType());
@@ -195,16 +205,17 @@ public class RequestTest  extends junit.framework.TestCase {
     }
     public void test_getParameter() {
         assertEquals(null, request1.getParameter("p1"));
-        assertEquals("parameter p1", request2.getParameter("p1"));
+        assertEquals("param_value1", request2.getParameter("p1"));
     }
     public void test_getParameterNames() {
         assertEquals(null, request1.getParameterNames());
-        assertEquals("pname1",
-                request2.getParameterNames().nextElement().toString());
+        assertEquals("p2, p1",
+                Util.join(request2.getParameterNames(), ", "));
     }
     public void test_getParameterValues() {
         assertEquals(null, request1.getParameterValues("p1"));
-        assertEquals("second value", request2.getParameterValues("p1")[1]);
+        assertEquals("parameter values", "param_value1, param_value1_next",
+                Util.join(request2.getParameterValues("p1"), ", "));
     }
     public void test_getProtocol() {
         assertEquals(null, request1.getProtocol());
