@@ -1,14 +1,14 @@
-/**
- * YamlDataset allows YAML documents to be accessed using the standard
- * Dataset mechanisms.
- */
-
 package org.fiz;
 import java.io.*;
 import java.util.*;
 
 import org.ho.yaml.Yaml;
 import org.ho.yaml.exception.YamlException;
+
+/**
+ * YamlDataset allows YAML documents to be accessed using the standard
+ * Dataset mechanisms.
+ */
 
 public class  YamlDataset extends Dataset {
     /**

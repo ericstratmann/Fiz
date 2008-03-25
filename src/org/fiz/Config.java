@@ -1,14 +1,13 @@
-/**
- * The Config class is used internally by Fiz to manage configuration
- * datasets.  It knows how to find datasets on disk, and it caches them
- * in main memory for faster access.
- *
- * Note: this class must safely handle concurrent execution by multiple
- * threads.
- */
-
 package org.fiz;
 import java.util.HashMap;
+
+/**
+ * The Config class is used internally by Fiz to manage configuration
+ * datasets.  Config knows how to find datasets on disk and it caches
+ * them in main memory for faster access.  The class is designed for
+ * concurrent execution by multiple threads handling requests in parallel
+ * while sharing a collection of configuration datasets.
+ */
 
 public class Config {
     // The following hash table maps from the string name of a dataset,
@@ -46,10 +45,10 @@ public class Config {
      * @param name                 Name of the dataset.  This is typically
      *                             a file name with a single element, such as
      *                             "css" or "main", though it can be a
-     *                             multi-level nine.  The dataset file is
+     *                             multi-level path.  The dataset file is
      *                             located by searching for a file with
-     *                             this name (and a recognized dataset
-     *                             extension such as .yaml) in the directory
+     *                             this name and a recognized dataset
+     *                             extension such as .yaml in the directories
      *                             containing configuration datasets.
      * @return                     Dataset corresponding to name.
      */

@@ -1,8 +1,9 @@
+package org.fiz;
+
 /**
  * Junit tests for the FileNotFoundError class.
  */
 
-package org.fiz;
 public class FileNotFoundErrorTest extends junit.framework.TestCase {
     public void test_FileNotFoundError_nameAndMessage() {
         Error e = new FileNotFoundError("foo.txt", null,

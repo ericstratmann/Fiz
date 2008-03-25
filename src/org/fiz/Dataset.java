@@ -1,7 +1,9 @@
+package org.fiz;
+import java.util.*;
+
 /**
  * Dataset defines general-purpose mechanisms for accessing hierarchical
- * information stored in key-value form, such as XML and YAML documents,
- * HashMaps, and so on.  Datasets are used to hold a variety of data
+ * information stored in key-value form.  Datasets are used to hold a variety of data
  * in Fiz, such as query values from URLs, configuration options,
  * and data coming from data managers.  A dataset has the following
  * general properties:
@@ -22,9 +24,6 @@
  * If a desired value doesn't exist in a dataset, its chain is also
  * searched for the value.
  */
-
-package org.fiz;
-import java.util.*;
 
 public class Dataset {
     /**

@@ -1,14 +1,14 @@
+package org.fiz;
+import java.util.*;
+import org.xml.sax.*;
+import org.xml.sax.helpers.*;
+
 /**
  * This class is used internally by XmlDataset: it provides handlers
  * that are invoked by SAX while parsing an XML document.  The handlers
  * fill in the contents of a dataset been generated, and also generate
  * errors for XML constructs that aren't allowed in datasets.
  */
-
-package org.fiz;
-import java.util.*;
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
 
 class XmlDatasetSAXHandler extends DefaultHandler {
     // Top-level HashMap for the dataset being parsed.

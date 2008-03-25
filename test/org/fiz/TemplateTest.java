@@ -1,8 +1,8 @@
+package org.fiz;
+
 /**
  * Junit tests for the Template class.
  */
-
-package org.fiz;
 
 public class TemplateTest extends junit.framework.TestCase {
     public void test_expand_basics() {

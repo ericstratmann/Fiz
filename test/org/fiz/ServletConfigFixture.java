@@ -1,11 +1,11 @@
+package org.fiz;
+import javax.servlet.*;
+import java.util.*;
+
 /**
  * This class provides a dummy implementation of the ServletConfig
  * interface; it is used for testing.
  */
-
-package org.fiz;
-import javax.servlet.*;
-import java.util.*;
 
 public class ServletConfigFixture implements ServletConfig {
     // Some methods just set the following variable to indicate that they

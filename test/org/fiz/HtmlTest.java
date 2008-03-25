@@ -1,9 +1,9 @@
+package org.fiz;
+import java.io.*;
+
 /**
  * Junit tests for the Html class.
  */
-
-package org.fiz;
-import java.io.*;
 
 public class HtmlTest extends junit.framework.TestCase {
     protected HtmlFixture html = new HtmlFixture();

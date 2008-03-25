@@ -5,6 +5,7 @@ import java.io.*;
  * This class is an application that measures the performance of the
  * various operations on Strings.
  */
+
 public class PerfString {
     public static void main(String[] argv) throws IOException {
         String xml =
@@ -61,7 +62,7 @@ public class PerfString {
 //                }
 //                StringBuilder builder3 = new StringBuilder();
 //                code = builder1.toString().length();
-                Dataset d = XmlDataset.newFileInstance("test.xml");
+                Dataset d = XmlDataset.newStringInstance(xml);
                 value = d.get("projectName");
             }
             long finish = System.nanoTime();

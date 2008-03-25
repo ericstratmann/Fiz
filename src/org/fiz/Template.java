@@ -1,4 +1,7 @@
-/*
+package org.fiz;
+import java.io.*;
+
+/**
  * The Template class provides facilities that substitute values from a
  * Dataset into a template string to produce a new string through a process
  * called "expansion".  Each character from the template is copied to the
@@ -43,9 +46,6 @@
  * characters already obey the output encoding rules.  Translation can be
  * disabled for dataset values by specifying NONE as the encoding.
  */
-
-package org.fiz;
-import java.io.*;
 
 public class Template {
     /**

@@ -1,8 +1,8 @@
+package org.fiz;
+
 /**
  * Junit tests for the Link class.
  */
-
-package org.fiz;
 
 public class LinkTest extends junit.framework.TestCase {
 

@@ -1,8 +1,8 @@
+package org.fiz;
+
 /**
  * Junit tests for the YamlDataset class.
  */
-
-package org.fiz;
 
 public class YamlDatasetTest extends junit.framework.TestCase {
 

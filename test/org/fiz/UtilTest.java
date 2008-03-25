@@ -1,10 +1,10 @@
-/**
- * Junit tests for the Util class.
- */
-
 package org.fiz;
 import java.io.*;
 import java.util.*;
+
+/**
+ * Junit tests for the Util class.
+ */
 
 public class UtilTest extends junit.framework.TestCase {
 

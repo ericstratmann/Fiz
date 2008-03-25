@@ -1,11 +1,11 @@
-/**
- * Junit tests for the XmlDatasetSAXHandler class.
- */
-
 package org.fiz;
 import org.xml.sax.*;
 
 import java.util.*;
+
+/**
+ * Junit tests for the XmlDatasetSAXHandler class.
+ */
 
 public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
     HashMap<String,Object> map;

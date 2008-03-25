@@ -1,14 +1,13 @@
-/**
- * This class provides a dummy implementation of the HttpServletRequest
- * interface; it is used for testing.
- */
-
 package org.fiz;
-
 import java.io.*;
 import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
+
+/**
+ * This class provides a dummy implementation of the HttpServletRequest
+ * interface; it is used for testing.
+ */
 
 @SuppressWarnings("deprecation")
 public class ServletRequestFixture implements HttpServletRequest {

@@ -1,9 +1,9 @@
+package org.fiz;
+import java.io.*;
+
 /**
  * This class tests the speed of manipulating YamlDatasets.
  */
-
-package org.fiz;
-import java.io.*;
 
 public class PerfYamlDataset {
     static final String yaml =

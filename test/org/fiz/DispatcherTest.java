@@ -1,13 +1,13 @@
-/**
- * Junit tests for the Dispatcher class.
- */
-
 package org.fiz;
 import java.io.File;
 import javax.servlet.http.*;
 import javax.servlet.*;
 
 import org.apache.log4j.Level;
+
+/**
+ * Junit tests for the Dispatcher class.
+ */
 
 public class DispatcherTest  extends junit.framework.TestCase {
     public void test_sanityCheck() {

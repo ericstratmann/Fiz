@@ -1,10 +1,9 @@
+package org.fiz;
+import org.xml.sax.*;
+
 /**
  * Junit tests for the XmlDataset class.
  */
-
-package org.fiz;
-
-import org.xml.sax.*;
 
 public class XmlDatasetTest extends junit.framework.TestCase {
     public void test_newStringInstance() {

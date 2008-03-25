@@ -1,8 +1,9 @@
+package org.fiz;
+
 /**
  * Junit tests for the IOError class.
  */
 
-package org.fiz;
 public class IOErrorTest extends junit.framework.TestCase {
     public void test_IOError() {
         Error e = new IOError("sample message");

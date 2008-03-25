@@ -1,9 +1,9 @@
+package org.fiz;
+import java.io.*;
+
 /**
  * Junit tests for the Config class.
  */
-
-package org.fiz;
-import java.io.*;
 
 public class ConfigTest extends junit.framework.TestCase {
     public void test_init() {

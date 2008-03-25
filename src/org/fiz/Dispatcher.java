@@ -1,11 +1,4 @@
-/**
- * The Dispatcher class is the top-level entry point invoked to handle
- * incoming HTTP requests.  Its main job is to pick another class and
- * method to handle the request, based on information in the URL, and
- * invoke that class.  This class also serves as a last-ditch  handler
- * for errors that occur during the request.  This class should be
- * invisible to Fiz applications.
- */
+
 
 package org.fiz;
 import java.io.*;
@@ -16,6 +9,14 @@ import javax.servlet.http.*;
 
 import org.apache.log4j.Logger;
 
+/**
+ * The Dispatcher class is the top-level entry point invoked to handle
+ * incoming HTTP requests.  Its main job is to pick another class and
+ * method to handle the request, based on information in the URL, and
+ * invoke that class.  This class also serves as a last-ditch  handler
+ * for errors that occur during the request.  This class should be
+ * invisible to Fiz applications.
+ */
 public class Dispatcher extends HttpServlet {
     /**
      * UnsupportedUriError is thrown when a URI arrives that can't

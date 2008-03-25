@@ -1,3 +1,7 @@
+package org.fiz;
+import java.io.*;
+import java.util.*;
+
 /**
  * Html objects are used to generate HTML documents.  Each object encapsulates
  * the state of a document, including things such as the document's body
@@ -5,11 +9,6 @@
  * various utility methods that simplify the creation of documents, such as
  * methods for escaping special HTML characters.
  */
-
-package org.fiz;
-
-import java.io.*;
-import java.util.*;
 
 public class Html {
     // Contents of the document; see getBody for details.

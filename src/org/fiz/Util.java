@@ -1,12 +1,12 @@
-/**
- * The Util class defines miscellaneous methods that are generally useful
- * and don't fit anywhere else.
- */
-
 package org.fiz;
 import java.io.*;
 import java.util.*;
 import javax.servlet.http.*;
+
+/**
+ * The Util class defines miscellaneous methods that are generally useful
+ * and don't fit anywhere else.
+ */
 
 public class Util {
     /**

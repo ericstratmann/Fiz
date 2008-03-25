@@ -1,13 +1,13 @@
-/**
- * XmlDataset allows XML documents to be accessed using the standard
- * Dataset mechanisms.
- */
-
 package org.fiz;
 import java.io.*;
 import java.util.*;
 import javax.xml.parsers.*;
 import org.xml.sax.*;
+
+/**
+ * XmlDataset allows XML documents to be accessed using the standard
+ * Dataset mechanisms.
+ */
 
 public class XmlDataset {
     // It is *much* faster to parse an XML document with a reused parser

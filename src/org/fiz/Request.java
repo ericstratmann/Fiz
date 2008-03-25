@@ -1,3 +1,10 @@
+package org.fiz;
+import java.io.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import java.util.Locale;
+import java.util.Enumeration;
+
 /**
  * A Request object provides overall control over the process of handling
  * a Fiz request.   It is typically passed to all of the methods that service
@@ -11,13 +18,6 @@
  * information (this happens when an Interactor overrides the "getRequest"
  * method to create an application-specific Request subclass).
  */
-
-package org.fiz;
-import java.io.*;
-import javax.servlet.*;
-import javax.servlet.http.*;
-import java.util.Locale;
-import java.util.Enumeration;
 
 @SuppressWarnings("deprecation")
 public class Request implements HttpServletRequest {

@@ -1,10 +1,10 @@
-/**
- * Junit tests for the Request class.
- */
-
 package org.fiz;
 import java.io.*;
 import javax.servlet.http.*;
+
+/**
+ * Junit tests for the Request class.
+ */
 
 public class RequestTest  extends junit.framework.TestCase {
     protected ServletRequestFixture servletRequest;

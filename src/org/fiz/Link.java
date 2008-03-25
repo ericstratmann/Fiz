@@ -1,7 +1,9 @@
+package org.fiz;
+
 /**
- * This class provides facilities for rendering HTML links (<a href=...),
- * combining data from a variety of sources.  Links support the following
- * properties:
+ * This class provides facilities for rendering HTML links
+ * ({@code <a href=...}), combining data from a variety of sources.  Links
+ * support the following properties:
  * text -       (optional) Text and/or other HTML to display for the Link;
  *              this is a template that is expanded using the data available
  *              when the Link is rendered.
@@ -26,8 +28,6 @@
  *              is expanded in the context of the data available at
  *              render-time.
  */
-
-package org.fiz;
 
 public class Link {
     /**

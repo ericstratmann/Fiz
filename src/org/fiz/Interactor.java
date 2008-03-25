@@ -1,3 +1,6 @@
+package org.fiz;
+import javax.servlet.http.*;
+
 /**
  * The Interactor class is subclassed by classes that process
  * incoming HTTP requests.  Fiz automatically dispatches incoming
@@ -21,10 +24,6 @@
  * Fiz will automatically load the class and create a single instance
  * during the first request whose URI references the class.
  */
-
-package org.fiz;
-
-import javax.servlet.http.*;
 
 public class Interactor {
 
