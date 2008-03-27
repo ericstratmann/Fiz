@@ -1,14 +1,13 @@
-/**
- * This Interactor is used for temporary tests and has no long-term
- * significance for Fiz.  It can be used either as a stand-alone application
- * or as an Interactor invoked by the Dispatcher.
- */
-
 package org.fiz;
-
 import javax.servlet.*;
 import java.io.*;
 import org.apache.log4j.Logger;
+
+/**
+ * This Interactor is used for temporary tests and has no long-term
+ * significance for Fiz.  It can be run either as a stand-alone application
+ * or as an Interactor invoked by the Dispatcher.
+ */
 
 public class Test extends Interactor {
     protected Logger logger = Logger.getLogger("Test");

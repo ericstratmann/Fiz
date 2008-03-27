@@ -1,13 +1,9 @@
-/**
- * This class manages a String object in a way that allows changes to be
- * detected.
- * User: John Ousterhout
- * Date: Dec 17, 2007
- * Time: 11:22:48 AM
- * To change this template use File | Settings | File Templates.
- */
-
 package org.fiz;
+
+/**
+ * This class is used for testing: it manages a String object in a way
+ * that allows changes to be detected.
+ */
 
 public class Message {
     protected String value;          // Current contents of string.

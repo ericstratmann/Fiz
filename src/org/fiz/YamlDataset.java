@@ -7,20 +7,29 @@ import org.ho.yaml.exception.YamlException;
 
 /**
  * YamlDataset allows YAML documents to be accessed using the standard
- * Dataset mechanisms.
+ * Dataset mechanisms.  A slightly restricted subset of YAML is supported
+ * here: documents must not contain lists of values like the following:
+ * <pre>
+ * foo:
+ *   - first
+ *   - second
+ *   - third
+ * </pre>
+ * List of hashes are OK: these translate into nested datasets.
  */
 
 public class  YamlDataset extends Dataset {
     /**
-     * UnnamedValueError is thrown if we encounter unnamed values in the
-     * YAML, such as a list of values with no names.
+     * UnnamedValueError is thrown if YamlDataset encounters unnamed values
+     * in the YAML, such as a list of values with no names.
      */
     public static class UnnamedValueError extends Error {
         /**
-         * Constructor for UnnamedValueError.
+         * Construct an UnnamedValueError within message including the
+         * name of the YAML file where the problem occurred.
          * @param fileName         If the dataset input came from a file,
          *                         this gives the file name; null means
-         *                         the input didn't come from a file
+         *                         the input didn't come from a file.
          */
         public UnnamedValueError(String fileName) {
             super("YAML dataset contains sequence(s) with unnamed values"
@@ -36,7 +45,7 @@ public class  YamlDataset extends Dataset {
     }
 
     /**
-     * Creates a dataset from a YAML input string.
+     * Create a dataset from a YAML input string.
      * @param s                    String in YAML format
      * @throws SyntaxError         <code> s</code> does not contain
      *                             well-formed YAML
@@ -55,7 +64,7 @@ public class  YamlDataset extends Dataset {
     }
 
     /**
-     * Creates a dataset from information contained in a YAML file.
+     * Create a dataset from information contained in a YAML file.
      * @param fileName             Name of a file in YAML format
      * @return                     New YamlDataset object containing contents
      *                             of <code>fileName</code>

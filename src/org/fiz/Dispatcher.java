@@ -1,5 +1,3 @@
-
-
 package org.fiz;
 import java.io.*;
 import java.lang.reflect.*;
@@ -10,11 +8,11 @@ import javax.servlet.http.*;
 import org.apache.log4j.Logger;
 
 /**
- * The Dispatcher class is the top-level entry point invoked to handle
- * incoming HTTP requests.  Its main job is to pick another class and
- * method to handle the request, based on information in the URL, and
- * invoke that class.  This class also serves as a last-ditch  handler
- * for errors that occur during the request.  This class should be
+ * The Dispatcher class is used internally by Fiz to provide the top-level
+ * entry point for handling requests.  Its main job is to pick another class
+ * and method to handle the request, based on information in the URL, and
+ * invoke that method.  This class also serves as a last-ditch handler
+ * for errors that occur during the request.  Dispatcher should be
  * invisible to Fiz applications.
  */
 public class Dispatcher extends HttpServlet {
@@ -22,7 +20,7 @@ public class Dispatcher extends HttpServlet {
      * UnsupportedUriError is thrown when a URI arrives that can't
      * be mapped to an appopriate method to handle it.
      */
-    public static class UnsupportedUriError extends Error {
+    protected static class UnsupportedUriError extends Error {
         /**
          * Constructor for UnsupportedUriError.
          * @param uri              The incoming URI (the full one).
@@ -99,7 +97,7 @@ public class Dispatcher extends HttpServlet {
     /**
      * This method is invoked by the servlet container when the servlet
      * is about to be unloaded.  Provides us with an opportunity to do
-     * internal cleanups.
+     * internal cleanup.
      */
     public void destroy() {
         logger.info("destroying dispatcher");
@@ -118,13 +116,13 @@ public class Dispatcher extends HttpServlet {
      * matches this application.  The request can be handled in any of
      * the following ways, based on pathInfo (the portion of the URL
      * "owned" by this servlet):
-     * 1. PathInfo has tbe form "/css/...", which means it refers to a
-     *    generated stylesheet.  In this case the stylesheet manager
-     *    is invoked to generate the stylesheet or return a cached copy.
-     * 2. PathInfo has the form "/class/method/...", which means it should
-     *    be handled by method "method" in an Interactor object of class
-     *    "class".  In this case the Interactor class is loaded and
-     *    instantiated if necessary, then the Interactor method is invoked.
+     *  -  PathInfo has tbe form {@code /css/...}, which means it refers to a
+     *     generated stylesheet.  In this case the stylesheet manager
+     *     is invoked to generate the stylesheet or return a cached copy.
+     *  -  PathInfo has the form {@code /class/method/...}, which means it should
+     *     be handled by method "method" in an Interactor object of class
+     *     "class".  In this case the Interactor class is loaded and
+     *     instantiated if necessary, then the Interactor method is invoked.
      * @param request              Information about the HTTP request
      * @param response             Used to generate the response
      */

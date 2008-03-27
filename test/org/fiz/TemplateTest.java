@@ -317,7 +317,7 @@ public class TemplateTest extends junit.framework.TestCase {
 
 // The following class definition provides a mechanism for accessing
 // protected/private fields and methods.
-class TemplateFixture extends Template {
+class TemplateFixture {
     public static boolean missingData;
     public static boolean conditional;
     public static int end;
@@ -339,7 +339,7 @@ class TemplateFixture extends Template {
 
     public static void expandParenName(String template, Dataset data,
             StringBuilder out, boolean conditional, int start,
-            SpecialChars encoding) {
+            Template.SpecialChars encoding) {
         Template.ParseInfo info = new Template.ParseInfo();
         info.template = template;
         info.data = data;
@@ -355,7 +355,7 @@ class TemplateFixture extends Template {
 
     public static void appendValue(String name, Dataset data,
             StringBuilder out, boolean conditional,
-            SpecialChars encoding) {
+            Template.SpecialChars encoding) {
         Template.ParseInfo info = new Template.ParseInfo();
         info.data = data;
         info.out = out;

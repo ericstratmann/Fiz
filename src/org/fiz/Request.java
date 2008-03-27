@@ -6,17 +6,19 @@ import java.util.Locale;
 import java.util.Enumeration;
 
 /**
- * A Request object provides overall control over the process of handling
- * a Fiz request.   It is typically passed to all of the methods that service
- * the request, and provides information that is shared across those methods.
- * Request objects include the HttpServletRequest and HttpServletResponse
- * objects provided by the servlet container and support all of the methods
- * that are valid for those objects.  Requests also provide additional Fiz
- * features such as datasets containing information about query values and
- * configuration information and additional methods for managing the response.  Finally,
- * applications can subclass Request in order to incorporate their own state
- * information (this happens when an Interactor overrides the "getRequest"
- * method to create an application-specific Request subclass).
+ * A Request object provides access to all of the interesting state needed
+ * to process a Fiz request.  It is typically passed to all of the major
+ * methods that service the request. Request objects include the
+ * HttpServletRequest and HttpServletResponse objects provided by the
+ * servlet container and support all of the methods that are valid for
+ * those objects.  Requests also include additional Fiz objects such as
+ * a dataset containing the request's query values and an Html object
+ * for building the response.
+ * <p>
+ * It may be useful for an application to extend Requests with additional
+ * data;  in this case the application should subclass Request to add the
+ * additional fields and override the {@code getRequest} method in the
+ * application's Interactors to supply the Request subclass.
  */
 
 @SuppressWarnings("deprecation")
@@ -27,10 +29,11 @@ public class Request implements HttpServletRequest {
      */
     public static class DeprecatedMethodError extends Error {
         /**
-         * Constructor for DeprecatedMethodError.
+         * Constructs a DeprecatedMethodError with a message describing
+         * the deprecated method that was invoked.
          * @param methodName       Name of the method that was invoked;
          *                         used to generate a message in the
-         *                         exception
+         *                         exception.
          */
         public DeprecatedMethodError(String methodName) {
             super("invoked deprecated method " + methodName);
@@ -55,7 +58,7 @@ public class Request implements HttpServletRequest {
     protected Dataset dataset = null;
 
     /**
-     * Constructor for Request objects.  Typically invoked by the
+     * Constructs a Request object.  Typically invoked by the
      * getRequest method of an Interactor object.
      * @param servlet              Servlet under which this request is running.
      * @param servletRequest       The HttpServletRequest provided by the

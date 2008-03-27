@@ -32,16 +32,17 @@ package org.fiz;
 public class Link {
     /**
      * Instances of this enum are used to indicate how to display a
-     * Link:
-     * <p>
-     * TEXT: render only the text form of the link
-     * <p>
-     * ICON: render only the iconic form of the link
-     * <p>
-     * BOTH: render both the text and the icon, with the icon on the left
-     * and the text on the right.
+     * Link.
      */
-    public enum DisplayForm {TEXT, ICON, BOTH}
+    public enum DisplayForm {
+        /** Render only the text form of the link. */
+        TEXT,
+
+        /** Render only the iconic form of the link. */
+        ICON,
+
+        /** Render both the text and the icon, with the icon on the left. */
+        BOTH}
 
     // The following variables hold configuration information passed
     // to the constructor.  The names and meanings of these variables
@@ -55,7 +56,8 @@ public class Link {
     DisplayForm displayForm;
 
     /**
-     * Constructor for Link objects.
+     * Constructs a Link object with a given set of properties and a
+     * particular display form.
      * @param properties           A collection of values describing the
      *                             configuration of the Link; see above for
      *                             the supported values
@@ -99,8 +101,8 @@ public class Link {
     }
 
     /**
-     * Constructor for Link objects; in this constructor the display form
-     * defaults to BOTH.
+     * Constructs a Link object with a given set of properties (the
+     * display form defaults to {@code BOTH}).
      * @param properties           A collection of values describing the
      *                             configuration of the Link; see above for
      *                             the supported values
@@ -112,8 +114,10 @@ public class Link {
     /**
      * Generates HTML for a Link, using properties passed to the Link
      * constructor and data passed into this method.
-     * @param data                Values in this dataset are used when
-     *                            expanding templates from the properties.
+     * @param data                Values in this dataset are used to
+     *                            expand templates from the properties and
+     *                            to provide other values as needed
+     *                            (such as values for {@code args}).
      * @param out                 HTML for the Link is appended here.
      */
     public void html(Dataset data, StringBuilder out) {

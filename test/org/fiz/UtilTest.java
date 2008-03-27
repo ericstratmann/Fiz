@@ -17,6 +17,12 @@ public class UtilTest extends junit.framework.TestCase {
                 Util.skipSpaces("abc   ", 4));
     }
 
+    public void test_skipSpaces_withEnd() {
+        assertEquals(5, Util.skipSpaces("abc   def", 3, 5));
+        assertEquals(6, Util.skipSpaces("abc   def", 5, 8));
+        assertEquals(5, Util.skipSpaces("abc   def", 5, 5));
+    }
+
     public void test_joinedLength() {
         assertEquals("basics", 20, Util.joinedLength(new String[]
                 {"first", "second", "third"}, ", "));

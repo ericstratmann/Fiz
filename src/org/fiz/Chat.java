@@ -1,10 +1,3 @@
-/**
- * This Interactor provides a simple mechanism to test the notification
- * mechanism provided by the Message class.  Query values:
- * watch -                Index of chat window to observe.
- * source -               Index of chat window that this page can modify.
- */
-
 package org.fiz;
 import org.apache.log4j.Logger;
 
@@ -12,6 +5,13 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.*;
 import java.util.Enumeration;
+
+/**
+ * This Interactor provides a simple mechanism to test the notification
+ * mechanism provided by the Message class.  Query values:
+ * watch -                Index of chat window to observe.
+ * source -               Index of chat window that this page can modify.
+ */
 
 public class Chat extends Interactor {
     protected Message[] messages;

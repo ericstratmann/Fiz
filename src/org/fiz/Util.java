@@ -9,33 +9,55 @@ import javax.servlet.http.*;
  */
 
 public class Util {
+    // No constructor: this class only has a static methods.
+    private Util() {}
+
     /**
      * Find the next non-space character in a string.
      * @param s                        String to search
-     * @param index                    First character to check
-     * @return                         Returns the index in <code>s</code>
+     * @param start                    Index of first character to check
+     * @return                         Returns the index in {@code s}
      *                                 of the next non-space character at or
-     *                                 after <code>index</code>, or the
+     *                                 after {@code start}, or the
      *                                 string length if there are no more
      *                                 non-space characters.
      */
-    public static int skipSpaces(CharSequence s, int index) {
-        while (index < s.length() && (s.charAt(index) == ' ')) {
-            index++;
+    public static int skipSpaces(CharSequence s, int start) {
+        while ((start < s.length()) && (s.charAt(start) == ' ')) {
+            start++;
         }
-        return index;
+        return start;
     }
 
     /**
-     * Utility method used by <code>join</code>: computes the total space
+     * Find the next non-space character in a string.
+     * @param s                        String to search
+     * @param start                    Index of first character to check
+     * @param end                      Index of character just after last
+     *                                 one to check.
+     * @return                         Returns the index in {@code s}
+     *                                 of the next non-space character at or
+     *                                 after {@code start}, or {@code end}
+     *                                 if there are no non-space characters
+     *                                 before {@code end}.
+     */
+    public static int skipSpaces(CharSequence s, int start, int end) {
+        while ((start < end) && (s.charAt(start) == ' ')) {
+            start++;
+        }
+        return start;
+    }
+
+    /**
+     * Utility method used by {@code join}: computes the total space
      * needed to join strings, in order to avoid reallocation in the
      * StringBuilder used for the result.
      * @param values                   Strings to concatenate
      * @param separator                Separator between values.
      * @return                         Total number of characters needed to
      *                                 hold all the strings in
-     *                                 <code>values</code>, with
-     *                                 <code>separator</code> between adjacent
+     *                                 {@code values}, with
+     *                                 {@code separator} between adjacent
      *                                 values.
      */
     public static int joinedLength(CharSequence[] values,
@@ -54,8 +76,8 @@ public class Util {
      * @param separator                Use this as a separator between the
      *                                 strings.
      * @return                         Concatenation of all the strings
-     *                                 in <code>values</code>, with
-     *                                 <code>separator</code> between adjacent
+     *                                 in {@code values}, with
+     *                                 {@code separator} between adjacent
      *                                 values.
      */
     public static String join(CharSequence[] values, CharSequence separator) {
@@ -76,8 +98,8 @@ public class Util {
      * @param separator                Use this as a separator between the
      *                                 strings.
      * @return                         Concatenation of all the strings
-     *                                 in <code>values</code>, with
-     *                                 <code>separator</code> between adjacent
+     *                                 in {@code values}, with
+     *                                 {@code separator} between adjacent
      *                                 values.
      */
     public static String join(Iterable values, CharSequence separator) {
@@ -97,8 +119,8 @@ public class Util {
      * @param separator                Use this as a separator between the
      *                                 strings.
      * @return                         Concatenation of all the strings
-     *                                 in <code>values</code>, with
-     *                                 <code>separator</code> between adjacent
+     *                                 in {@code values}, with
+     *                                 {@code separator} between adjacent
      *                                 values.
      */
     public static String join(Enumeration values, CharSequence separator) {
@@ -165,7 +187,7 @@ public class Util {
      * @param s                       String to search
      * @param start                   Index of first character to consider
      * @return                        Returns the index of the first character
-     *                                at or after <code>start</code> that
+     *                                at or after {@code start} that
      *                                cannot be part of an identifier or is
      *                                past the end of the string.
      */
@@ -201,8 +223,8 @@ public class Util {
      * @param start                   Index of first character to check.
      * @param length                  Total number of characters to check.
      * @return                        Returns true if all of the characters
-     *                                are whitespace characters, false
-     *                                if any are not.
+     *                                in the specified range are whitespace
+     *                                characters, false if any are not.
      */
     public static boolean isWhitespace(char[] ch, int start, int length) {
         int end = start + length;
@@ -220,10 +242,13 @@ public class Util {
      * @param s                       Input string
      * @param maxChars                Maximum number of characters to return
      *                                result
-     * @return                        If s has no more than maxChars characters
-     *                                than the result is s.  Otherwise, the
+     * @return                        If {@code s} has no more than
+     *                                {@code maxChars} characters then the
+     *                                result is {@code s}.  Otherwise, the
      *                                result consists of the first
-     *                                characters of s, plus " ...".
+     *                                characters of {@code s}, plus " ...",
+     *                                for a total of {@code maxChars}
+     *                                characters.
      */
     public static String excerpt (String s, int maxChars) {
         if (s.length() <= maxChars) {
@@ -231,6 +256,21 @@ public class Util {
         }
         return s.substring(0, maxChars-3) + "...";
     }
+
+    /**
+     * This method is used to produce a shortened form of strings that
+     * are too long, typically for use in error messages.
+     * @param s                       Input string
+     * @param maxChars                Maximum number of characters to return
+     *                                result
+     * @return                        If {@code s} has no more than
+     *                                {@code maxChars} characters then the
+     *                                result is {@code s}.  Otherwise, the
+     *                                result consists of the first
+     *                                characters of {@code s}, plus " ...",
+     *                                for a total of {@code maxChars}
+     *                                characters.
+     */
     public static String excerpt (StringBuilder s, int maxChars) {
         if (s.length() <= maxChars) {
             return s.toString();
@@ -256,15 +296,15 @@ public class Util {
 
     /**
      * Given a file name, this method checks to see if the last element
-     * in <code>path</code> contains an extension (i.e., it ends with
+     * in {@code path} contains an extension (i.e., it ends with
      * a construct such as ".java", ".jx", etc.).  If so the extension
      * is returned.
-     * @param path                    A filename such as "/a/b/foo.html";
+     * @param path                    A file withname such as {@code /a/b/foo.html};
      *                                the file need not actually exist.
-     * @return                        If <code>path</code> contains an
+     * @return                        If {@code path} contains an
      *                                extension it is returned (including the
-     *                                ".").  If there is no extension null is
-     *                                returned.
+     *                                {@code .}).  If there is no extension
+     *                                null is returned.
      */
     public static String fileExtension(CharSequence path) {
         // Work backwards from the end of the string to see if we find a
@@ -380,10 +420,10 @@ public class Util {
      * Given an exception message of the form "path (message)", extract
      * and return just the portion in parentheses.
      * @param input                   The original exception message
-     * @return                        If <code>input</code> has the form
+     * @return                        If {@code input} has the form
      *                                "path (message)", just the inner
      *                                message is returned; otherwise
-     *                                <code>input</code> is returned.
+     *                                {@code input} is returned.
      */
     public static String extractInnerMessage(String input) {
         int inputLength = input.length();
@@ -436,14 +476,14 @@ public class Util {
      * @param fileName                Name of the file to read.
      * @param type                    Type of the file, such as "dataset"
      *                                or "template"; used only to generate a
-     *                                better error message  if the file can't
-     *                                be found.  Null needs the file doesn't
+     *                                better error message if the file can't
+     *                                be found.  Null means the file doesn't
      *                                have a meaningful type.
      * @param path                    One or more directories in which to
      *                                search for the file.
      * @return                        Contents of the first file found.
      * @throws FileNotFoundError      None of the directories in
-     *                                <code>path</code> contained the file.
+     *                                {@code path} contained the file.
      */
     public static StringBuilder readFileFromPath(String fileName, String type,
             String... path) throws FileNotFoundError {

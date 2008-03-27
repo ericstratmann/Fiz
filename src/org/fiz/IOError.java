@@ -1,3 +1,5 @@
+package org.fiz;
+
 /**
  * IOError is thrown by various Fiz methods when there are problems reading
  * or writing external data.  Typically, java.io.IOException exceptions are
@@ -5,10 +7,9 @@
  * without having to declare exceptions at every level.
  */
 
-package org.fiz;
 public class IOError extends Error {
     /**
-     * Constructor for IOError objects.
+     * Construct an IOError object with a given message.
      * @param message              Information about the problem
      */
     public IOError(String message) {
@@ -16,7 +17,7 @@ public class IOError extends Error {
     }
 
     /**
-     * This method creates an IOError object suitable for reporting exceptions
+     * Creates an IOError object suitable for reporting exceptions
      * on a named file.
      * @param fileName             Name of the file for which the error occurred
      * @param details              Detailed information about the error;

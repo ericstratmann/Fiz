@@ -6,10 +6,24 @@ import org.xml.sax.*;
 
 /**
  * XmlDataset allows XML documents to be accessed using the standard
- * Dataset mechanisms.
+ * Dataset mechanisms.  XML documents must use a restricted subset of XML
+ * that corresponds to the facilities provided by datasets:
+ *  - Elements with children become nested datasets; elements without
+ *    children become string values.
+ *  - If multiple elements in the same parent have the same name, then they
+ *    must all have children: they become a list of nested data sets.
+ *  - If an element has children than it must not contain any text except
+ *    whitespace (which is ignored).
+ *  - Whitespace is not ignored in elements without children.
+ *  - All attributes are ignored.
+ *  - The name of the top-level element of the XML document is irrelevant
+ *    and ignored.
  */
 
 public class XmlDataset {
+    // No constructor: this class only has a static methods.
+    private XmlDataset() {}
+
     // It is *much* faster to parse an XML document with a reused parser
     // than to create a fresh parser for each document (more than 10x
     // faster for simple documents).  The following variable points to
@@ -21,7 +35,7 @@ public class XmlDataset {
     static SAXParser parser = null;
 
     /**
-     * Creates a dataset from an XML input string.
+     * Create a dataset from an XML input string.
      * @param s                    String in XML format
      * @return                     Dataset containing information from the XML.
      * @throws Dataset.SyntaxError There was a problem with the XML document:
@@ -35,7 +49,7 @@ public class XmlDataset {
     }
 
     /**
-     * Creates a dataset from the contents of an XML file.
+     * Create a dataset from the contents of an XML file.
      * @param fileName             Name of a file describing a dataset in
      *                             XML format.
      * @return                     Dataset containing information from the XML.

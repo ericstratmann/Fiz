@@ -3,11 +3,11 @@ import java.util.*;
 
 /**
  * Dataset defines general-purpose mechanisms for accessing hierarchical
- * information stored in key-value form.  Datasets are used to hold a variety of data
- * in Fiz, such as query values from URLs, configuration options,
- * and data coming from data managers.  A dataset has the following
+ * information stored in key-value form.  Datasets are used to hold a
+ * variety of data in Fiz, such as query values from URLs, configuration
+ * options, and data coming from data managers.  A dataset has the following
  * general properties:
- *   - Each dataset consists of zero or more key-value pairs
+ *   - A dataset consists of key-value pairs
  *   - Keys are arbitrary strings (but it's usually convenient to limit
  *     them to standard identifier characters)
  *   - Values can have three forms:
@@ -15,9 +15,9 @@ import java.util.*;
  *     - A nested dataset (containing additional key-value pairs)
  *     - A list of nested datasets, each containing additional
  *       key-value pairs
- *     - Datasets can be created from a variety of sources, such as
- *       XML and YAML files (see classes such as XmlDataset and
- *       YamlDataset for details on this).
+ *   - Datasets can be created from a variety of sources, such as
+ *     XML and YAML files (see classes such as XmlDataset and
+ *     YamlDataset for details).
  * In addition to the values it stores internally, each dataset can
  * contain a reference to another dataset.  The term "chain" refers to the
  * referenced dataset as well as any dataset it references, and so on.
@@ -27,32 +27,47 @@ import java.util.*;
 
 public class Dataset {
     /**
-     * Instances of this enum are passed to the lookup method to indicate
-     * what sort of value is desired as a result:
-     * <p>
-     * STRING: the caller expects the name to refer to a string value
-     * <p>
-     * DATASET: the caller expects the name to refer to a single nested
-     * dataset;  if it actually refers to a list of datasets, the first
-     * dataset in the list will be returned
-     * <p>
-     * DATASETS: the caller expects the name to refer to zero or more nested
-     * data sets, all of which will be returned
+     * Instances of this enum are passed to Dataset.lookup to indicate
+     * what sort of value is desired as a result.
      */
-    public enum DesiredType {STRING, DATASET, DATASETS}
+    public enum DesiredType {
+        /**
+         * The caller expects the name to refer to a string value.
+         */
+        STRING,
+
+        /**
+         * The caller expects the name to refer to a single nested
+         * dataset;  if it actually refers to a list of datasets,
+         * the first dataset in the list will be returned.
+         */
+        DATASET,
+
+        /**
+         * The caller expects the name to refer to zero or more
+         * nested data sets, all of which will be returned.
+         */
+        DATASETS
+    }
 
     /**
-     * Instances of this enum are passed to newFileInstanceFromPath
+     * Instances of this enum are passed to Dataset.newFileInstanceFromPath
      * to indicate how to handle the case where the dataset exists
-     * in multiple directories of the path:
-     * <p>
-     * CHAIN: chain all of the datasets together so that their contents
-     * combine, with those from earlier directories in the path getting
-     * priority.
-     * <p>
-     * FIRST_ONLY: use only the first dataset found and ignore any others.
+     * in multiple directories of the path.
      */
-    public enum PathHandling {CHAIN, FIRST_ONLY}
+    public enum PathHandling {
+        /**
+         * Chain all of the datasets together so that their contents
+         * combine, with those from earlier directories in the path
+         * getting priority.
+         */
+        CHAIN,
+
+        /**
+         * Use only the first dataset found and ignore any others.
+         */
+        FIRST_ONLY
+    }
 
     /**
      * MissingValueError is thrown when methods such as <code>get</code>
@@ -60,7 +75,8 @@ public class Dataset {
      */
     public static class MissingValueError extends Error {
         /**
-         * Constructor for MissingValueError.
+         * Construct a MissingValueError with a message describing the
+         * key that was not found.
          * @param missingKey       Name of the key that was not found;
          *                         used to generate a message in the
          *                         exception
@@ -76,7 +92,8 @@ public class Dataset {
      */
     public static class SyntaxError extends Error {
         /**
-         * Constructor for SyntaxError.
+         * Construct a SyntaxError with a message that includes the name of
+         * the file in which the error occurred.
          * @param fileName         If the dataset input came from a file,
          *                         this gives the file name; null means
          *                         the input didn't come from a file
@@ -97,7 +114,8 @@ public class Dataset {
      */
     public static class UnsupportedFormatError extends Error {
         /**
-         * Constructor for UnsupportedFormatError.
+         * Construct an UnsupportedFormatError with a message that identifies
+         * the problem file.
          * @param fileName         Name of the file whose extension was
          *                         not recognized
          */
@@ -114,7 +132,7 @@ public class Dataset {
      */
     public static class WrongTypeError extends Error {
         /**
-         * Constructor for WrongTypeError.
+         * Construct a WrongTypeError with a given message.
          * @param message          Message to use for the exception
          */
         public WrongTypeError(String message) {
@@ -151,11 +169,10 @@ public class Dataset {
     }
 
     /**
-     * Creates a dataset from string values passed as arguments.
-     * @param keysAndValues        Array whose elements consist of
-     *                             alternating keys and values for
-     *                             initializing the Dataset; must
-     *                             contain an even number of elements
+     * Creates a dataset from keys and values passed as arguments.
+     * @param keysAndValues        Alternating keys and values for
+     *                             initializing the Dataset; there must be
+     *                             an even number of arguments.
      */
     @SuppressWarnings("unchecked")
     public Dataset(String... keysAndValues) {
@@ -167,7 +184,7 @@ public class Dataset {
     }
 
     /**
-     * Private constructor, used by checkValue, newFileInstance, and other
+     * Private constructor, used by checkVaglue, newFileInstance, and other
      * methods.
      * @param contents             HashMap holding the contents of the
      *                             dataset.
@@ -181,7 +198,7 @@ public class Dataset {
     }
 
     /**
-     * Creates a Dataset from information contained in a file.
+     * Creates a Dataset from information in a file.
      * @param fileName             Name of a dataset file in a supported
      *                             format; the format is inferred from the
      *                             file's extension (e.g. ".yaml" means the
@@ -264,9 +281,9 @@ public class Dataset {
     }
 
     /**
-     * Given a particular key, returns the value associated with that
-     * key, or null if the key is not defined.  This method is identical
-     * to <code>get</code> except that it does not generate an exception
+     * Given a key, returns the value associated with that key, or null
+     * if the key is not defined.  This method is identical to
+     * <code>get</code> except that it does not generate an exception
      * if the key is undefined or has the wrong type.
      * @param key                  Name of the desired value
      * @return                     Value associated with <code>key</code>,
@@ -284,7 +301,7 @@ public class Dataset {
     }
 
     /**
-     * Indicates whether a particular key exists in the dataset.
+     * Indicates whether a key exists in the dataset.
      * @param key                  Name of the desired value
      * @return                     True if the key exists in the top
      *                             level of the dataset, false otherwise
@@ -300,9 +317,9 @@ public class Dataset {
     }
 
     /**
-     * Given a particular key, returns the value associated with that
-     * key, if there is one.  This is a single-level lookup: the key and
-     * value must be present in the top level of the dataset.
+     * Given a key, returns the value associated with that key.  This is
+     * a single-level lookup: the key must be defined in the top level of
+     * the dataset.
      * @param key                  Name of the desired value
      * @return                     Value associated with <code>key</code>
      * @throws MissingValueError   Thrown if <code>key</code> can't be found
@@ -430,7 +447,7 @@ public class Dataset {
      *                             in the current dataset
      * @param wanted               Indicates what kind of value is expected
      *                             (string value, nested dataset, etc.)
-     * @return                     If desired value exists and matches
+     * @return                     If the desired value exists and matches
      *                             <code>desiredResult</code> then
      *                             it is returned as a String, Dataset,
      *                             or Dataset[] for <code>desiredResult</code>
@@ -504,6 +521,8 @@ public class Dataset {
     }
 
     /**
+     * Returns the dataset's chain (the value passed to the last call to
+     * setChain).
      * @return                     Next Dataset to search for values not found
      *                             in the Dataset (null if none).
      */
@@ -513,7 +532,7 @@ public class Dataset {
 
     /**
      * Sets a value in the top level of a dataset.  If the value already
-     * exists that it is replaced (even if the value represents a nested
+     * exists then it is replaced (even if the value represents a nested
      * dataset).
      * @param key                  Name of a value in the top-level of the
      *                             dataset (not a path).
@@ -600,7 +619,7 @@ public class Dataset {
     }
 
     /**
-     * Returns the number of values stored in this Dataset.
+     * Returns the number of values stored in the top level of this Dataset.
      * @return                     Number of values in the Dataset; if
      *                             the dataset is hierarchical, only
      *                             top-level values are counted
@@ -611,7 +630,7 @@ public class Dataset {
 
     /**
      * Generates a nicely formatted string displaying the contents
-     * of the dataset.
+     * of the dataset (intended primarily for testing).
      * @return                     Pretty-printed string.
      */
     public String toString() {

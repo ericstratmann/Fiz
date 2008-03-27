@@ -26,9 +26,10 @@ public class Html {
     protected TreeSet<String> stylesheets = new TreeSet<String>();
 
     /**
-     * Constructor for Html objects.
+     * Constructs an empty Html document.
      * @param contextPath             The "root URI" corresponding to this
-     *                                Web application.
+     *                                Web application.  Used for generating
+     *                                links.
      */
     public Html(String contextPath) {
         this.contextPath = contextPath;
@@ -36,23 +37,24 @@ public class Html {
 
     /**
      * Returns the StringBuilder object used to assemble the main body of
-     * the HTML document.  Typically, information is appended to this
-     * object, but the caller can manipulate it in arbitrary ways.
+     * the HTML document.  Typically the caller will append HTML to this
+     * object.
      * @return                        StringBuilder object; the contents of
      *                                this object will eventually appear
-     *                                between the <body> and </body> tags
-     *                                in the final HTML document.
+     *                                between the {@code <body>} and
+     *                                {@code </body>} tags in the final HTML
+     *                                document.
      */
     public StringBuilder getBody() {
         return body;
     }
 
     /**
-     * This method generates and returns the information that appears at the
-     * beginning of the HTML document; this can include a <?xml> element,
-     * a <!DOCTYPE> element, and the <html> element, but nothing after the
-     * <html> element.  Subclasses can override this method if they want to
-     * supply a custom prologue.
+     * Returns text that should appear at the beginning of each HTML
+     * document; this can include a {@code <?xml>} element and a
+     * {@code <!DOCTYPE>} element, but no {@code <head>} element or
+     * anything that comes after that.  Subclasses can override
+     * this method if they want to supply a custom prologue.
      * @return                        Prologue text for the HTML document.
      */
     public String getPrologue() {
@@ -67,7 +69,8 @@ public class Html {
 
     /**
      * Returns the current title text for the document (this text will
-     * appear between <title> and </title> in the document header).
+     * appear between {@code <title>} and {@code </title>} in the document
+     * header).
      * @return                        Current title text for the document;
      *                                null means no title.
      */
@@ -77,7 +80,7 @@ public class Html {
 
     /**
      * Sets the title text for the document (this text will appear between
-     * <title> and </title> in the document header).
+     * {@code <title>} and {@code </title>} in the document header).
      * @param title                   New title text for the document; null
      *                                means document will have no title.
      */
@@ -90,9 +93,10 @@ public class Html {
      * a particular stylesheet.
      * @param uri                     Application-relative URI for the
      *                                stylesheet; it typically begins with
-     *                                "fiz/css/", in which case the stylesheet
-     *                                is a dynamically generated one whose
-     *                                template is stored under WEB-INF/css.
+     *                                {@code fiz/css/}, in which case the
+     *                                stylesheet is a dynamically generated
+     *                                one whose template is stored under
+     *                                {@code WEB-INF/css}.
      */
     public void includeCss(String uri) {
         stylesheets.add(uri);
@@ -152,7 +156,7 @@ public class Html {
 
     /**
      * Clears all information that has been specified for the HTML, restoring
-     * the object to its initial empty state.
+     * the HTML document to its initial empty state.
      */
     public void reset() {
         title = null;
@@ -161,10 +165,10 @@ public class Html {
 
     /**
      * This method is invoked to replace characters that are special in
-     * HTML (<, >, &, ") with HTML entity references (&lt;, &gt;, &amp;,
-     * and &quot;, respectively); this allows arbitrary data to be
-     * included in HTML without accidentally invoking special HTML
-     * behavior.
+     * HTML ({@code <>&"}) with HTML entity references ({@code &lt;},
+     * {@code &gt;}, {@code &amp;}, and {@code &quot;}, respectively); this
+     * allows arbitrary data to be included in HTML without accidentally
+     * invoking special HTML behavior.
      * @param s                       Input string; may contain arbitrary
      *                                characters
      * @param out                     The contents of <code>s</code> are
@@ -191,12 +195,12 @@ public class Html {
     /**
      * This method transforms a string into a form that may be used in
      * URLs (such as for query values).  It does this by replacing
-     * unusual characters with %xx-sequences as defined by RFC1738.  It
+     * unusual characters with %xx sequences as defined by RFC1738.  It
      * also converts non-ASCII characters to UTF-8 before encoding, as
-     * recommended in  http://www.w3.org/International/O-URL-code.html.
+     * recommended in http://www.w3.org/International/O-URL-code.html.
      * @param s                       Input string; may contain arbitrary
      *                                characters
-     * @param out                     The contents of <code>s</code> are
+     * @param out                     The contents of{@code s} are
      *                                copied here after converting to UTF-8
      *                                and converting nonalphanumeric
      *                                characters to %xx sequences.
@@ -260,16 +264,16 @@ public class Html {
     /**
      * This method transforms a string into a form that may be used safely
      * in a string literal for Javascript and many other languages.  For
-     * example, if <code>s</code> is a\x"z then it gets escaped to
-     * a\\x\"z so that the original value will be regenerated when
+     * example, if {@code s} is {@code a\x"z} then it gets escaped to
+     * {@code a\\x\"z} so that the original value will be regenerated when
      * Javascript evaluates the string literal.
      * @param s                       Value that is to be encoded in a string
      *                                literal.
-     * @param out                     A converted form of <code>s</code>
+     * @param out                     A converted form of {@code s}
      *                                is copied here; if this information
      *                                is used in a Javascript string, it
      *                                will evaluate to exactly the characters
-     *                                in  <code>s</code>.
+     *                                in {@code s}.
      */
     public static void escapeStringChars(String s, StringBuilder out) {
         for (int i = 0; i < s.length(); i++) {

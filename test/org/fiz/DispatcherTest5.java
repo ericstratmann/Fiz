@@ -1,9 +1,9 @@
+package org.fiz;
+
 /**
  * This file defines a class that is used for testing the destroy callbacks
  * made by Dispatcher.java.
  */
-
-package org.fiz;
 
 public class DispatcherTest5 extends Interactor {
     public static int destroyCount= 0;

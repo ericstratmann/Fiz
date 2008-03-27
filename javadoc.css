@@ -1,0 +1,19 @@
+/* javadoc.css -
+ *
+ * This file contains additional style sheet definitions that are appended
+ * to the standard definitions provided by Javadoc.  These styles are used
+ * to format the elements provided by the FizDoc doclet, which is used for
+ * Fiz classes.
+ */
+
+/* The following styles are used for tables that display definition lists. */
+
+.fizterm {
+    padding-right: 10px;
+    vertical-align: top;
+    font-weight: bold;
+}
+.fizdef {
+    padding-bottom: 5px;
+    vertical-align: top;
+}

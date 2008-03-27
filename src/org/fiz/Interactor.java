@@ -6,18 +6,19 @@ import javax.servlet.http.*;
  * incoming HTTP requests.  Fiz automatically dispatches incoming
  * requests to methods of an Interactor subclass based on the URI.  For
  * example, if a class MyClass subclasses Interactor and has methods
- * create and delete, than the create method will be invoked to service
- * URIs of the form /appName/myClass/create/extra:
- *     - "appName" is a URI prefix identifying this particular application;
- *       it can have any number of path levels, including 0.  Tomcat must
- *       have been configured to pass all requests for this prefix to the
- *       Fiz Dispatcher servlet.
- *     - "myClass" is the name of the class, except with a lower-case
+ * {@code create} and {@code delete}, than the {@code create} method will be
+ * invoked to service URIs of the form
+ * {@code /appName/fiz/myClass/create/extra}:
+ *     - {@code appName} is a URI prefix identifying this particular
+ *       application; it can have any number of path levels, including 0.
+ *       Tomcat must have been configured to pass all requests for this
+ *       prefix to the Fiz Dispatcher servlet.
+ *     - {@code myClass} is the name of the class, except with a lower-case
  *       initial letter; this class must be a subclass of Interactor.
- *     - "create" is the name of the method to invoke on an object of
- *       type myClass; this method must be public and take 2 arguments
- *       consisting of an HttpServletRequest and an HttpServletResponse.
- *     - "extra" can be any additional URI information, or nothing; this
+ *     - {@code create} is the name of the method to invoke in
+ *       {@code myClass}; this method must be public and take 1 arguments
+ *       consisting of a Request.
+ *     - {@code extra} can be any additional URI information, or nothing; this
  *       information is made available to the Interactor for its use in
  *       processing the request.
  *

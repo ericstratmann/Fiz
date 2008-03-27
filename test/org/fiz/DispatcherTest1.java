@@ -1,10 +1,10 @@
+package org.fiz;
+import javax.servlet.http.*;
+
 /**
  * This file defines a class that is used for testing Dispatcher.java.
  * See the unit tests in DispatcherTest.java for details.
  */
-
-package org.fiz;
-import javax.servlet.http.*;
 
 public class DispatcherTest1 extends Interactor {
     public static int count = 0;

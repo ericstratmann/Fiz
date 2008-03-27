@@ -4,9 +4,9 @@ import java.util.HashMap;
 /**
  * The Config class is used internally by Fiz to manage configuration
  * datasets.  Config knows how to find datasets on disk and it caches
- * them in main memory for faster access.  The class is designed for
- * concurrent execution by multiple threads handling requests in parallel
- * while sharing a collection of configuration datasets.
+ * them in main memory for faster access.  The static methods of this
+ * class are synchronized, so that they can be invoked by concurrent
+ * threads.
  */
 
 public class Config {
@@ -21,15 +21,18 @@ public class Config {
     // for more information.
     protected static String[] path = new String[] {"."};
 
+    // No constructor: this class only has a static methods.
+    private Config() {}
+
     /**
-     * Clears out any information in the configuration dataset cache and
-     * sets the directories in which to search for configuration data sets.
+     * Clears any information in the configuration dataset cache and sets
+     * the directories in which to search for configuration data sets.
      * @param path                 One or more directories in which to search
      *                             for datasets.  If a given dataset exists
      *                             in multiple directories in the path, all
-     *                             of the datasets will be used during
-     *                             lookups, with datasets from earlier
-     *                             directories taking precedence.
+     *                             of the datasets will be chained together,
+     *                             with datasets from earlier directories
+     *                             taking precedence.
      */
     public static synchronized void init(String... path) {
         cache.clear();
@@ -67,7 +70,7 @@ public class Config {
     }
 
     /**
-     * Returns the search path for system configuration datasets.
+     * Returns the search path for configuration datasets.
      * @return                     Array of directories searched for
      *                             configuration datasets.
      */

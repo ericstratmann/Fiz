@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-This file is the controlling file used by Ant to manage builds and tests
+This is the controlling file used by Ant to manage builds and tests
 in this directory.
---><project>
+-->
+<project>
 
     <target name="clean">
         <delete dir="out"/>
@@ -12,6 +13,25 @@ in this directory.
     <target name="compile">
         <mkdir dir="out/classes"/>
         <javac srcdir="src" destdir="out/classes"/>
+    </target>
+
+    <target name="javadoc">
+        <javadoc sourcepath="src"
+                 destdir="../doc"
+                 public="true"
+                 Windowtitle="Fiz documentation"
+                 docletpath="web/WEB-INF/classes/production/Fiz"
+                 doclet="org.fiz.FizDoc">
+            <classpath>
+                <pathelement location="C:/code/commander/lib/servlet.jar" />
+                <pathelement location="C:/code/commander/lib/log4j.jar" />
+                <pathelement location="C:/code/commander/lib/jyaml.jar" />
+                <pathelement location="C:/cygwin/usr/local/tools/i686_win32/jdk1.6.0_01/lib/tools.jar" />
+            </classpath>
+        </javadoc>
+        <concat destfile="../doc/stylesheet.css" append="true">
+            <filelist dir="." files="javadoc.css"/>
+        </concat>
     </target>
 
 </project>

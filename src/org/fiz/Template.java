@@ -2,25 +2,25 @@ package org.fiz;
 import java.io.*;
 
 /**
- * The Template class provides facilities that substitute values from a
- * Dataset into a template string to produce a new string through a process
- * called "expansion".  Each character from the template is copied to the
- * output string except for the following patterns, which cause substitutions:
- * @name                    Copy the contents of the dataset element named
- *                          <code>name</code> to the output.  <code>name</code>
+ * The Template class substitutes values from a Dataset into a template
+ * string to produce a new string through a process called "expansion".  Each
+ * character from the template is copied to the output string except for
+ * the following patterns, which cause substitutions:
+ * @<i>name</i>             Copy the contents of the dataset element named
+ *                          <i>name</i> to the output.  <i>name</i>
  *                          consists of all the standard Unicode identifier
- *                          characters following the "@".  It is an error
- *                          if the name doesn't exist in the dataset.
- * @(name)                  Copy the contents of the data value named
- *                          <code>name</code> to the output.  <code>name</code>
- *                          consists of all the  characters following the "("
- *                          up to the next ")".  "@" can be used between the
- *                          parentheses to perform substitutions on the name;
- *                          for example, "@(@foo)" finds dataset element "foo",
- *                          uses its value as the name of another dataset
- *                          element, and copies the value of that element
- *                          to the output.  It is an error if the name
- *                          doesn't exist in the dataset.
+ *                          characters following the {@code @}.  It is an
+ *                          error if the name doesn't exist in the dataset.
+ * @(<i>name</i>)           Copy the contents of the data value named
+ *                          <i>name</i> to the output.  <i>name</i>
+ *                          consists of all the characters following the "("
+ *                          up to the next ")".  {@code @} can be used
+ *                          between the parentheses to perform substitutions
+ *                          on the name; for example, {@code @(@foo)} finds
+ *                          dataset element {@code foo}, uses its value as the
+ *                          name of another dataset element, and substitutes
+ *                          the value of that element into the output.  It is
+ *                          an error if the name doesn't exist in the dataset.
  * @@                       Append "@" to the output.
  * @{                       Append "{" to the output.
  * @}                       Append "}" to the output.
@@ -28,32 +28,34 @@ import java.io.*;
  *                          described above is illegal and results in an error.
  * {{...}}                  Conditional substitution: normally the information
  *                          between the braces is processed just like the rest
- *                          of the template (except that the braces are not
- *                          copied to the output).  However, if there is a
+ *                          of the template, except that the braces are not
+ *                          copied to the output.  However, if there is a
  *                          data reference for which the name doesn't exist
  *                          then the information between the braces skipped:
  *                          nothing is copied to the output.  Furthermore, if
  *                          there are space characters next to either of the
  *                          curly braces then one of the spaces may be
  *                          removed to avoid reduncant spaces (enclose the
- *                          space in {} to keep this from happening.
- * Encodings: when a dataset element is substituted into a template,
- * special characters in the value will be escaped according to a SpecialChars
- * enum supplied during expansion.  For example, if HTML encoding has been
- * specified, "<" characters will be translated to the entity reference
- * "&lt;".  Translation occurs only for values coming from the dataset, not
- * for characters in the template itself;  you should ensure that template
- * characters already obey the output encoding rules.  Translation can be
- * disabled for dataset values by specifying NONE as the encoding.
+ *                          space in {{}} to keep this from happening.
+ * When a dataset element is substituted into a template, special characters
+ * in the value will be escaped according to a SpecialChars enum supplied
+ * during expansion.  For example, if HTML encoding has been specified,
+ * {@code <} characters will be translated to the entity reference
+ * {@code &lt;}.  Translation occurs only for values coming from the
+ * dataset, not for characters in the template itself;  you should ensure
+ * that template characters already obey the output encoding rules.
+ * Translation can be disabled for dataset values by specifying {@code NONE}
+ * as the encoding.
  */
 
 public class Template {
     /**
      * SyntaxError is thrown when there is an incorrect construct in a
-     * template, such as an "@" followed by unrecognized character.
+     * template, such as an {@code @} followed by an unrecognized character.
      */
     public static class SyntaxError extends Error {
         /**
+         * Constructs a SyntaxError with a given message.
          * @param message          Detailed information about the problem
          */
         public SyntaxError(String message) {
@@ -63,17 +65,24 @@ public class Template {
 
     /**
      * Instances of this enum indicate how to escape special characters
-     * in data values incorporated into template output:
-     * <p>
-     * HTML: the output will be used in HTML, so replace special HTML
-     * characters such as "<" with HTML entities such as "&lt;".
-     * <p>
-     * URL: the output will be used as part of a URL, so use %xx encoding
-     * for all of the characters that aren't are permitted in URLs.
-     * <p>
-     * NONE: don't perform any transformations on the data values.
+     * in data values incorporated into template output.
      */
-    public enum SpecialChars {HTML, URL, NONE}
+    public enum SpecialChars {
+        /**
+         * The output will be used in HTML, so replace special HTML
+         * characters such as {@code <} with HTML entities such as
+         * {@code &lt;}.
+         */
+        HTML,
+
+        /**
+         * The output will be used as part of a URL, so use {@code %xx}
+         * encoding for any characters that aren't permitted in URLs.
+         */
+        URL,
+
+        /** Don't perform any transformations on the data values. */
+        NONE}
 
     // The following class is used internally to pass information between
     // methods.  Among other things, it provides a vehicle for returning
@@ -106,22 +115,25 @@ public class Template {
                                    // we collapsed out, or -1 if none.
     }
 
+    // No constructor: this class only has a static methods.
+    private Template() {}
+
     /**
      * Substitute data into a template string, appending the result to a
      * StringBuilder.
      * @param template             Contains text to be copied to
-     *                             <code>out</code> plus substitution
-     *                             specifiers, as described above.
+     *                             {@code out} plus substitution
+     *                             specifiers such as {@code @foo}.
      * @param data                 Provides data to be substituted into the
      *                             template.
      * @param out                  The expanded template is appended here.
      * @param quoting              Determines whether (and how) special
      *                             characters in data values are quoted.
      * @throws Dataset.MissingValueError
-     *                             A data value requested outside {}
+     *                             A data value requested outside {{}}
      *                             couldn't be found.
      * @throws SyntaxError         The template contains an illegal construct
-     *                             such as "@+".
+     *                             such as {@code @+}.
      */
     public static void expand(CharSequence template, Dataset data,
             StringBuilder out, SpecialChars quoting)
@@ -153,18 +165,18 @@ public class Template {
 
     /**
      * Substitute data into a template string, appending the result to a
-     * StringBuilder.  In this method the encoding defaults to HTML.
+     * StringBuilder using HTML encoding.
      * @param template             Contains text to be copied to
-     *                             <code>out</code> plus substitution
-     *                             specifiers, as described above.
+     *                             {@code out} plus substitution
+     *                             specifiers such as {@code @foo}.
      * @param data                 Provides data to be substituted into the
      *                             template.
      * @param out                  The expanded template is appended here.
      * @throws Dataset.MissingValueError
-     *                             A data value requested outside {}
+     *                             A data value requested outside {{}}
      *                             couldn't be found.
      * @throws SyntaxError         The template contains an illegal construct
-     *                             such as "@+".
+     *                             such as {@code @+}.
      */
     public static void expand(CharSequence template, Dataset data,
             StringBuilder out) throws Dataset.MissingValueError, SyntaxError {
@@ -179,16 +191,16 @@ public class Template {
      *                             info.out, info.missingInfo, and info.end.
      *                             Info.end is set to the index of the first
      *                             character following the @-specifier (e.g.
-     *                             for "@foo+bar" info.end will refer to the
-     *                             "+" and for "@{abc" info.end will refer
-     *                             to the "a".
+     *                             for {@code @foo+bar} info.end will refer
+     *                             to the {@code +} and for {@code@{abc}
+     *                             info.end will refer to the "a".
      * @param start                Index of the character immediately after
-     *                             the "@".
+     *                             the {@code @}.
      * @throws Dataset.MissingValueError
      *                             Thrown if a data value couldn't be found
      *                             and info.conditional is false.
      * @throws SyntaxError         The template contains an illegal construct
-     *                             such as "@+".
+     *                             such as {@code @+}.
      */
     protected static void expandAtSign(ParseInfo info, int start)
             throws Dataset.MissingValueError {
@@ -223,7 +235,7 @@ public class Template {
      *                             Thrown if a data value couldn't be found
      *                             and info.conditional is false.
      * @throws SyntaxError         The template contains an illegal construct
-     *                             such as "@+".
+     *                             such as {@code @+}.
      */
     protected static void expandParenName(ParseInfo info, int start)
             throws Dataset.MissingValueError, SyntaxError {
