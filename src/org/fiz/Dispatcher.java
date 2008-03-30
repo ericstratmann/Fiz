@@ -221,8 +221,8 @@ public class Dispatcher extends HttpServlet {
 
                     // Scan the methods for the class and remember each method
                     // that is public and takes a single argument that is a
-                    // subclass of Request.
-                    Class<?> requestClass = findClass("org.fiz.Request",
+                    // subclass of ClientRequest.
+                    Class<?> requestClass = findClass("org.fiz.ClientRequest",
                             request);
                     for (Method m : cl.getMethods()) {
                         Class[] parameterTypes = m.getParameterTypes();
@@ -248,9 +248,9 @@ public class Dispatcher extends HttpServlet {
             }
 
             // At this point we have located the method to service this
-            // request.  Package up relevant information into a Request
+            // request.  Package up relevant information into a ClientRequest
             // object and invoke the method.
-            Request fizRequest = method.interactor.getRequest(this, request,
+            ClientRequest fizRequest = method.interactor.getRequest(this, request,
                     response);
             method.method.invoke(method.interactor, fizRequest);
 

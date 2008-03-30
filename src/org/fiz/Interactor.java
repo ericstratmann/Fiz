@@ -17,7 +17,7 @@ import javax.servlet.http.*;
  *       initial letter; this class must be a subclass of Interactor.
  *     - {@code create} is the name of the method to invoke in
  *       {@code myClass}; this method must be public and take 1 arguments
- *       consisting of a Request.
+ *       consisting of a ClientRequest.
  *     - {@code extra} can be any additional URI information, or nothing; this
  *       information is made available to the Interactor for its use in
  *       processing the request.
@@ -47,21 +47,21 @@ public class Interactor {
 
     /**
      * This method is invoked by the dispatcher at the beginning of handling
-     * each request to create a Request object for the request.  Applications
-     * can override this method in their Interactor subclasses, returning
-     * a subclass of Request holding additional application-specific
-     * information.
+     * each request to create a ClientRequest object for the request.
+     * Applications can override this method in their Interactor subclasses,
+     * returning a subclass of ClientRequest holding additional
+     * application-specific nformation.
      * @param servlet              Servlet under which this request is running.
      * @param servletRequest       The HttpServletRequest provided by the
      *                             container.
      * @param servletResponse      The HttpServletResponse provided by the
      *                             container.
-     * @return                     A Request object to use for managing
+     * @return                     A ClientRequest object to use for managing
      *                             the current request.
      */
-    public Request getRequest(HttpServlet servlet,
+    public ClientRequest getRequest(HttpServlet servlet,
             HttpServletRequest servletRequest,
             HttpServletResponse servletResponse) {
-        return new Request(servlet, servletRequest, servletResponse);
+        return new ClientRequest(servlet, servletRequest, servletResponse);
     }
 }

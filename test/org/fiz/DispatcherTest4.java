@@ -1,5 +1,4 @@
 package org.fiz;
-import javax.servlet.http.*;
 
 /**
  * This file defines a class that is used for testing Dispatcher.java.
@@ -10,7 +9,7 @@ import javax.servlet.http.*;
 public class DispatcherTest4 {
     public DispatcherTest4() {
     }
-    public void x(Request request) {
+    public void x(ClientRequest request) {
         throw new Error("error in DispatcherTest4.x");
     }
 }

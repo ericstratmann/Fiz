@@ -17,18 +17,18 @@ public class DispatcherTest1 extends Interactor {
     public void destroy() {
         destroyCount++;
     }
-    public void incCount(Request request) {
+    public void incCount(ClientRequest request) {
         count++;
     }
-    public void resetCount(Request request) {
+    public void resetCount(ClientRequest request) {
         count = 0;
     }
-    public void error(Request request) {
+    public void error(ClientRequest request) {
         throw new Error("error in method");
     }
-    private void privateMethod(Request request) {
+    private void privateMethod(ClientRequest request) {
     }
-    public void twoArgs(Request request, int count) {
+    public void twoArgs(ClientRequest request, int count) {
     }
     public void wrongArgType(HttpServletRequest request) {
     }

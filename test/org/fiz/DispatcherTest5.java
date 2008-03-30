@@ -12,7 +12,7 @@ public class DispatcherTest5 extends Interactor {
     public void destroy() {
         destroyCount += 3;
     }
-    public void x(Request request) {
+    public void x(ClientRequest request) {
         throw new Error("error in DispatcherTest4.x");
     }
 }

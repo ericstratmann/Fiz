@@ -2,9 +2,7 @@ package org.fiz;
 import org.apache.log4j.Logger;
 
 import javax.servlet.*;
-import javax.servlet.http.*;
 import java.io.*;
-import java.util.Enumeration;
 
 /**
  * This Interactor provides a simple mechanism to test the notification
@@ -21,7 +19,7 @@ public class Chat extends Interactor {
         messages = new Message[10];
     }
 
-    public void page(Request request)
+    public void page(ClientRequest request)
             throws ServletException, IOException {
         logger.info("chat initiated");
         StringBuilder out = request.getHtml().getBody();
@@ -67,7 +65,7 @@ public class Chat extends Interactor {
                 + "</script>\n", code));
     }
 
-    public void watch(Request request)
+    public void watch(ClientRequest request)
             throws ServletException, IOException {
         String parameter = request.getParameter("watch");
         int index = (parameter != null) ? Integer.parseInt(parameter) : 0;
@@ -81,7 +79,7 @@ public class Chat extends Interactor {
                 messages[index].getValue());
     }
 
-    public void source(Request request)
+    public void source(ClientRequest request)
             throws ServletException, IOException {
         char buffer[] = new char[1024];
         int length = request.getReader().read(buffer, 0, buffer.length);

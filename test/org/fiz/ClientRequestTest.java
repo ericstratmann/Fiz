@@ -3,20 +3,20 @@ import java.io.*;
 import javax.servlet.http.*;
 
 /**
- * Junit tests for the Request class.
+ * Junit tests for the ClientRequest class.
  */
 
-public class RequestTest  extends junit.framework.TestCase {
+public class ClientRequestTest extends junit.framework.TestCase {
     protected ServletRequestFixture servletRequest;
     protected ServletResponseFixture servletResponse;
-    protected Request request1;
-    protected Request request2;
+    protected ClientRequest request1;
+    protected ClientRequest request2;
 
     public void setUp() {
         servletRequest = new ServletRequestFixture();
         servletResponse = new ServletResponseFixture();
-        request1 = new Request(null, null, null);
-        request2 = new Request(null, servletRequest, servletResponse);
+        request1 = new ClientRequest(null, null, null);
+        request2 = new ClientRequest(null, servletRequest, servletResponse);
     }
 
     public void test_getServletRequest() {
@@ -133,7 +133,7 @@ public class RequestTest  extends junit.framework.TestCase {
         try {
             request1.isRequestedSessionIdFromUrl();
         }
-        catch (Request.DeprecatedMethodError e) {
+        catch (ClientRequest.DeprecatedMethodError e) {
             assertEquals("exception message",
                     "invoked deprecated method isRequestedSessionIdFromUrl",
                     e.getMessage());
@@ -231,7 +231,7 @@ public class RequestTest  extends junit.framework.TestCase {
         try {
             request1.getRealPath("/a/b/c");
         }
-        catch (Request.DeprecatedMethodError e) {
+        catch (ClientRequest.DeprecatedMethodError e) {
             assertEquals("exception message",
                     "invoked deprecated method getRealPath",
                     e.getMessage());
@@ -324,7 +324,7 @@ public class RequestTest  extends junit.framework.TestCase {
         try {
             request1.encodeRedirectUrl("/a/b/c");
         }
-        catch (Request.DeprecatedMethodError e) {
+        catch (ClientRequest.DeprecatedMethodError e) {
             assertEquals("exception message",
                     "invoked deprecated method encodeRedirectUrl",
                     e.getMessage());
@@ -342,7 +342,7 @@ public class RequestTest  extends junit.framework.TestCase {
         try {
             request1.encodeUrl("/a/b/c");
         }
-        catch (Request.DeprecatedMethodError e) {
+        catch (ClientRequest.DeprecatedMethodError e) {
             assertEquals("exception message",
                     "invoked deprecated method encodeUrl",
                     e.getMessage());
@@ -399,7 +399,7 @@ public class RequestTest  extends junit.framework.TestCase {
         try {
             request1.setStatus(44, "status message");
         }
-        catch (Request.DeprecatedMethodError e) {
+        catch (ClientRequest.DeprecatedMethodError e) {
             assertEquals("exception message",
                     "invoked deprecated method setStatus(status, message)",
                     e.getMessage());

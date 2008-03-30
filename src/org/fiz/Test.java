@@ -1,5 +1,4 @@
 package org.fiz;
-import javax.servlet.*;
 import java.io.*;
 import org.apache.log4j.Logger;
 
@@ -11,7 +10,7 @@ import org.apache.log4j.Logger;
 
 public class Test extends Interactor {
     protected Logger logger = Logger.getLogger("Test");
-    public void path(Request request) {
+    public void path(ClientRequest request) {
         logger.info("getRealPath(\"/WEB-INF/a/b/c\"): "
                 + request.getServletContext().getRealPath("///WEB-INF/a/b/c"));
         logger.info("getPathTranslated(): "
@@ -24,7 +23,7 @@ public class Test extends Interactor {
                 + request.getServletContext().getMimeType("foo.html"));
     }
 
-    public void page(Request request) {
+    public void page(ClientRequest request) {
         Html html = request.getHtml();
         html.setTitle("Test Page");
         html.getBody().append("<h1>First Section</h1>\n" +
@@ -37,7 +36,7 @@ public class Test extends Interactor {
     // The following entry point generates 2 different pages (based on
     // the "current" query value) each of which references the other with
     // a link.
-    public void link(Request request) {
+    public void link(ClientRequest request) {
         Html html = request.getHtml();
         Dataset globalData = request.getDataset();
         if (globalData.get("current").equals("1")) {
@@ -57,7 +56,7 @@ public class Test extends Interactor {
         body.append("</p>\n");
     }
 
-    public void test(Request request) throws IOException {
+    public void test(ClientRequest request) throws IOException {
         request.setContentType("text/html");
         request.setHeader("Transfer-Encoding", "chunked");
         PrintWriter writer = request.getWriter();

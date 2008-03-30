@@ -2,27 +2,26 @@ package org.fiz;
 import java.io.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
-import java.util.Locale;
-import java.util.Enumeration;
+import java.util.*;
 
 /**
- * A Request object provides access to all of the interesting state needed
- * to process a Fiz request.  It is typically passed to all of the major
- * methods that service the request. Request objects include the
- * HttpServletRequest and HttpServletResponse objects provided by the
- * servlet container and support all of the methods that are valid for
- * those objects.  Requests also include additional Fiz objects such as
- * a dataset containing the request's query values and an Html object
- * for building the response.
+ * A ClientRequest object provides access to all of the interesting state
+ * needed to process an HTTP request coming from the browser.  It is
+ * typically passed to all of the major methods that service the request.
+ * ClientRequest objects include the HttpServletRequest and
+ * HttpServletResponse objects provided by the servlet container and support
+ * all of the methods that are valid for those objects.  ClientRequests also
+ * include additional Fiz objects such as a dataset containing the request's
+ * query values and an Html object for building the response.
  * <p>
- * It may be useful for an application to extend Requests with additional
- * data;  in this case the application should subclass Request to add the
+ * It may be useful for an application to extend ClientRequests with additional
+ * data;  in this case the application should subclass ClientRequest to add the
  * additional fields and override the {@code getRequest} method in the
- * application's Interactors to supply the Request subclass.
+ * application's Interactors to supply the ClientRequest subclass.
  */
 
 @SuppressWarnings("deprecation")
-public class Request implements HttpServletRequest {
+public class ClientRequest implements HttpServletRequest {
     /**
      * DeprecatedMethodError is thrown when deprecated methods such as
      * isRequestedSessionIdFromUrl are invoked.
@@ -40,7 +39,7 @@ public class Request implements HttpServletRequest {
         }
     }
 
-    // The servlet under which this Request is being processed.
+    // The servlet under which this ClientRequest is being processed.
     protected HttpServlet servlet;
 
     // The HttpServletRequest and HttpServletResponse objects provided by
@@ -58,7 +57,7 @@ public class Request implements HttpServletRequest {
     protected Dataset dataset = null;
 
     /**
-     * Constructs a Request object.  Typically invoked by the
+     * Constructs a ClientRequest object.  Typically invoked by the
      * getRequest method of an Interactor object.
      * @param servlet              Servlet under which this request is running.
      * @param servletRequest       The HttpServletRequest provided by the
@@ -72,7 +71,7 @@ public class Request implements HttpServletRequest {
      *                             container; if null (primarily for testing),
      *                             the corresponding methods become no-ops.
      */
-    public Request(HttpServlet servlet, HttpServletRequest servletRequest,
+    public ClientRequest(HttpServlet servlet, HttpServletRequest servletRequest,
             HttpServletResponse servletResponse) {
         this.servletRequest = servletRequest;
         this.servletResponse = servletResponse;
@@ -80,7 +79,8 @@ public class Request implements HttpServletRequest {
     }
 
     /**
-     * Returns the HttpServletRequest object associated with this Request.
+     * Returns the HttpServletRequest object associated with this
+     * ClientRequest.
      * @return                     HttpServletRequest object managed by the
      *                             underlying servlet container.
      */
@@ -89,7 +89,8 @@ public class Request implements HttpServletRequest {
     }
 
     /**
-     * Returns the HttpServletResponse object associated with this Request.
+     * Returns the HttpServletResponse object associated with this
+     * ClientRequest.
      * @return                     HttpServletResponse object managed by the
      *                             underlying servlet container.
      */
@@ -98,7 +99,7 @@ public class Request implements HttpServletRequest {
     }
 
     /**
-     * Returns information about the servlet under which the Request is
+     * Returns information about the servlet under which the ClientRequest is
      * being processed.
      * @return                     HttpServlet for this request.
      */

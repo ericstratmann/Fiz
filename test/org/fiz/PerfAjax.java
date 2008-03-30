@@ -1,6 +1,5 @@
 package org.fiz;
 import java.io.*;
-import javax.servlet.http.*;
 import javax.servlet.*;
 
 /**
@@ -9,7 +8,7 @@ import javax.servlet.*;
  */
 
 public class PerfAjax extends Interactor {
-    public void ping(Request request)
+    public void ping(ClientRequest request)
             throws ServletException, IOException {
         BufferedReader reader = request.getReader();
         StringBuilder output = new StringBuilder();
