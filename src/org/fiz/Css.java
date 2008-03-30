@@ -78,6 +78,9 @@ class Css {
      */
     public static void handleRequest(HttpServletRequest request,
             HttpServletResponse response, String fileName) throws IOException {
+        // Allow browsers to cache stylesheets for one hour, to reduce
+        // server traffic.
+        response.setHeader("Cache-Control", "max-age=3600");
         response.setContentType("text/css");
         response.getWriter().write(getStylesheet(fileName));
     }

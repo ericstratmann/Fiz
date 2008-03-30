@@ -56,14 +56,6 @@ public class Test extends Interactor {
         body.append("</p>\n");
     }
 
-    public void test(ClientRequest request) throws IOException {
-        request.setContentType("text/html");
-        request.setHeader("Transfer-Encoding", "chunked");
-        PrintWriter writer = request.getWriter();
-        writer.write("abcdef\n");
-        writer.flush();
-    }
-
     static class TestFilter extends FilterOutputStream {
         public boolean invoked = false;
         public TestFilter(OutputStream out) {

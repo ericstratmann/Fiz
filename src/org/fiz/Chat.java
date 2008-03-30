@@ -23,8 +23,8 @@ public class Chat extends Interactor {
             throws ServletException, IOException {
         logger.info("chat initiated");
         StringBuilder out = request.getHtml().getBody();
-        String watch = request.getParameter("watch");
-        String source = request.getParameter("source");
+        String watch = request.getServletRequest().getParameter("watch");
+        String source = request.getServletRequest().getParameter("source");
         StringBuilder code = new StringBuilder();
         int id = 1;
 
@@ -67,32 +67,33 @@ public class Chat extends Interactor {
 
     public void watch(ClientRequest request)
             throws ServletException, IOException {
-        String parameter = request.getParameter("watch");
+        String parameter = request.getServletRequest().getParameter("watch");
         int index = (parameter != null) ? Integer.parseInt(parameter) : 0;
-        parameter = request.getParameter("generation");
+        parameter = request.getServletRequest().getParameter("generation");
         int generation = (parameter != null) ? Integer.parseInt(parameter) : -1;
         if (messages[index] == null) {
             messages[index] = new Message();
         }
         int newGeneration = messages[index].waitChange(generation);
-        request.getWriter().printf("%d:%s", newGeneration,
+        request.getServletResponse().getWriter().printf("%d:%s", newGeneration,
                 messages[index].getValue());
     }
 
     public void source(ClientRequest request)
             throws ServletException, IOException {
         char buffer[] = new char[1024];
-        int length = request.getReader().read(buffer, 0, buffer.length);
+        int length = request.getServletRequest().getReader().read(buffer,
+                0, buffer.length);
         if (length < 0) {
             length = 0;
         }
-        String parameter = request.getParameter("source");
+        String parameter = request.getServletRequest().getParameter("source");
         int index = (parameter != null) ? Integer.parseInt(parameter) : 0;
         if (messages[index] == null) {
             messages[index] = new Message();
         }
         messages[index].setValue(new String(buffer, 0, length));
-        request.getWriter().printf("%s, generation %d",
+        request.getServletResponse().getWriter().printf("%s, generation %d",
                 messages[index].getValue(), messages[index].getGeneration());
     }
 }

@@ -10,7 +10,7 @@ import javax.servlet.*;
 public class PerfAjax extends Interactor {
     public void ping(ClientRequest request)
             throws ServletException, IOException {
-        BufferedReader reader = request.getReader();
+        BufferedReader reader = request.getServletRequest().getReader();
         StringBuilder output = new StringBuilder();
         while (true) {
             String line = reader.readLine();
@@ -20,8 +20,8 @@ public class PerfAjax extends Interactor {
             output.append(line + "\n");
         }
         output.append(System.nanoTime() + "\n");
-        request.setHeader("Content-Length", Integer.toString(output.length()));
-        PrintWriter writer = request.getWriter();
+        request.getServletResponse().setHeader("Content-Length", Integer.toString(output.length()));
+        PrintWriter writer = request.getServletResponse().getWriter();
         writer.write(output.toString());
     }
 }
