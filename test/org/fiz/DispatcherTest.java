@@ -10,6 +10,10 @@ import org.apache.log4j.Level;
  */
 
 public class DispatcherTest  extends junit.framework.TestCase {
+    public void setUp() {
+        Config.setDataset("main", new Dataset("searchPackages", "org.fiz"));
+    }
+
     public void test_sanityCheck() {
         Object o = new DispatcherTest1();
         Interactor i = (Interactor) o;
@@ -114,7 +118,7 @@ public class DispatcherTest  extends junit.framework.TestCase {
         dispatcher.service(new DispatcherRequestFixture("/a/b/c"),
                 new ServletResponseFixture());
         TestUtil.assertSubstring("simplest valid URI",
-                "can't find class \"org.fiz.A\"",
+                "couldn't find class \"A\"",
                 dispatcher.basicMessage);
     }
     public void test_service_nonexistentClass() {
@@ -122,38 +126,14 @@ public class DispatcherTest  extends junit.framework.TestCase {
         dispatcher.service(new DispatcherRequestFixture("/missingClass/a"),
                 new ServletResponseFixture());
         TestUtil.assertSubstring("error message",
-                "can't find class \"org.fiz.MissingClass\"",
-                dispatcher.basicMessage);
-    }
-    public void test_service_classNotInteractorSubclass() {
-        Dispatcher dispatcher = new Dispatcher();
-        dispatcher.service(new DispatcherRequestFixture("/dispatcherTest4/x"),
-                new ServletResponseFixture());
-        TestUtil.assertSubstring("error message",
-                "class \"org.fiz.DispatcherTest4\" isn't a subclass of "
-                + "org.fiz.Interactor", dispatcher.basicMessage);
-    }
-    public void test_service_cantFindConstructor() {
-        Dispatcher dispatcher = new Dispatcher();
-        dispatcher.service(new DispatcherRequestFixture("/dispatcherTest2/a"),
-                new ServletResponseFixture());
-        TestUtil.assertSubstring("error message",
-                "couldn't find no-argument constructor for class "
-                + "\"org.fiz.DispatcherTest2\"", dispatcher.basicMessage);
-    }
-    public void test_service_classCantBeInstantiated() {
-        Dispatcher dispatcher = new Dispatcher();
-        dispatcher.service(new DispatcherRequestFixture("/dispatcherTest3/a"),
-                new ServletResponseFixture());
-        TestUtil.assertSubstring("error message", "couldn't create instance "
-                + "of class \"org.fiz.DispatcherTest3\": sample error",
+                "couldn't find class \"MissingClass\"",
                 dispatcher.basicMessage);
     }
     public void test_service_updateClassMap() {
         DispatcherFixture dispatcher = new DispatcherFixture();
         dispatcher.service(new DispatcherRequestFixture(
                 "/dispatcherTest1/incCount/extra"), new ServletResponseFixture());
-        assertEquals("org.fiz.DispatcherTest1", dispatcher.getClassKeys());
+        assertEquals("DispatcherTest1", dispatcher.getClassKeys());
     }
     public void test_service_invokeInit() {
         DispatcherFixture dispatcher = new DispatcherFixture();
@@ -183,7 +163,7 @@ public class DispatcherTest  extends junit.framework.TestCase {
                 "/dispatcherTest1/twoArgs"), new ServletResponseFixture());
         TestUtil.assertSubstring("error message",
                 "couldn't find method \"twoArgs\" with proper signature "
-                + "in class org.fiz.DispatcherTest1",
+                + "in class DispatcherTest1",
                 dispatcher.basicMessage);
     }
     public void test_service_exceptionInMethod() {

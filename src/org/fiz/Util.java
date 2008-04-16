@@ -1,5 +1,6 @@
 package org.fiz;
 import java.io.*;
+import java.lang.reflect.*;
 import java.util.*;
 import javax.servlet.http.*;
 
@@ -497,5 +498,96 @@ public class Util {
             }
         }
         throw FileNotFoundError.newPathInstance(fileName, type, path);
+    }
+
+    /**
+     * Given the name of a class and various other information, load the
+     * class and construct an instance of it.
+     * @param className            Name of the desired class.  If this
+     *                             name doesn't exist as a class, and it
+     *                             contains no "." characters, then the
+     *                             name will also be searched for in a
+     *                             list of packages determined by configuration
+     *                             information.
+     * @param requiredType         If this is non-null, then the class must
+     *                             be a subclass of this or implement this
+     *                             interface.
+     * @param constructorArgs       Arguments to pass to the constructor; the
+     *                             class must contain a constructor compatible
+     *                             with these arguments.
+     * @return                     The return value is a new instance of
+     *                             the class.
+     */
+    public static Object newInstance(String className, String requiredType,
+            Object... constructorArgs) {
+
+        // Look up the class.
+        Class<?> cl = null;
+        try {
+            cl = Class.forName(className);
+        }
+        catch (ClassNotFoundException e) {
+        }
+        searchPackages: if ((cl == null) && (className.indexOf('.') < 0)) {
+            // Couldn't find the given name; try prepending various package
+            // names provided by configuration information.
+            Dataset config = Config.getDataset("main");
+            String path = config.check("searchPackages");
+            if (path == null) {
+                break searchPackages;
+            }
+            for (String packageName : split(path, ',')) {
+                try {
+                    cl = Class.forName(packageName + "."  + className);
+                    break searchPackages;
+                }
+                catch (ClassNotFoundException e) {
+                }
+            }
+        }
+        if (cl == null) {
+            throw new ClassNotFoundError(className);
+        }
+
+        // Make sure that class has the right type.
+        if (requiredType != null) {
+            Class<?> desiredClass;
+            try {
+                desiredClass = Class.forName(requiredType);
+            }
+            catch (ClassNotFoundException e) {
+                throw new ClassNotFoundError(requiredType);
+            }
+            if (!desiredClass.isAssignableFrom(cl)) {
+                throw new InstantiationError(className,
+                        "class isn't a subclass of " + requiredType);
+            }
+        }
+
+        // Find a constructor with the right signature and create an instance.
+        Constructor constructor;
+        try {
+            Class<?>[] argClasses = new Class<?>[constructorArgs.length];
+            for (int i = 0; i < constructorArgs.length; i++) {
+                argClasses[i] = constructorArgs [i].getClass();
+            }
+            constructor = cl.getConstructor(argClasses);
+        }
+        catch (Exception e) {
+            throw new InstantiationError(className,
+                    "couldn't find appropriate constructor ("
+                    + e.getMessage() + ")");
+        }
+        try {
+            return constructor.newInstance(constructorArgs);
+        }
+        catch (Exception e) {
+            Throwable cause = e.getCause();
+            if (cause == null) {
+                cause = e;
+            }
+            throw new InstantiationError(className,
+                    "exception in constructor: " + cause.getMessage());
+        }
     }
 }

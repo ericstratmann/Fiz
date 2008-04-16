@@ -70,6 +70,17 @@ public class Config {
     }
 
     /**
+     * Explicitly sets the contents of a configuration dataset, overriding
+     * any information that might be on disk.  This method is used primarily
+     * for testing.
+     * @param name                 Name of a configuration dataset.
+     * @param dataset              Contents for the configuration dataset
+     */
+    public static synchronized void setDataset(String name, Dataset dataset) {
+        cache.put(name, dataset);
+    }
+
+    /**
      * Returns the search path for configuration datasets.
      * @return                     Array of directories searched for
      *                             configuration datasets.

@@ -481,12 +481,12 @@ public class DatasetTest extends junit.framework.TestCase {
 
     // No tests needed for size() method.
 
-    public void test_checkValue_foundStringValue() {
+    public void test_checkValue_wantedStringGotString() {
         Dataset d = new Dataset();
         assertEquals("value", "abc", d.checkValue("a",
                 Dataset.DesiredType.STRING, new String("abc")));
     }
-    public void test_checkValue_wantedStringValue() {
+    public void test_checkValue_wantedStringGotChild() {
         boolean gotException = false;
         Dataset d = new Dataset();
         try {
@@ -501,7 +501,37 @@ public class DatasetTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
-    public void test_checkValue_foundDataset() {
+    public void test_checkValue_wantedStringGotList() {
+        boolean gotException = false;
+        Dataset d = new Dataset();
+        try {
+            d.checkValue("a", Dataset.DesiredType.STRING, new ArrayList());
+        }
+        catch (Dataset.WrongTypeError e) {
+            assertEquals("exception message",
+                    "wrong type for dataset element \"a\": expected string "
+                    + "value but found list",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_checkValue_wantedChildGotString() {
+        boolean gotException = false;
+        Dataset d = new Dataset();
+        try {
+            d.checkValue("a", Dataset.DesiredType.DATASET, new String("abc"));
+        }
+        catch (Dataset.WrongTypeError e) {
+            assertEquals("exception message",
+                    "wrong type for dataset element \"a\": expected nested "
+                    + "dataset but found string value \"abc\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_checkValue_wantedChildGotChild() {
         Dataset d = new Dataset();
         HashMap<String,String> map = new HashMap<String,String>();
         map.put("name", "Alice");
@@ -511,20 +541,8 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("contents of returned dataset", "Alice",
                 ((Dataset) result).get("name"));
     }
-    public void test_checkValue_wantedListFoundDataset() {
-        Dataset d = new Dataset();
-        HashMap<String,String> map = new HashMap<String,String>();
-        map.put("name", "Alice");
-        Object result = d.checkValue("a", Dataset.DesiredType.DATASETS, map);
-        assertEquals("class of result", "Dataset[]",
-                result.getClass().getSimpleName());
-        Dataset[] array = (Dataset[]) result;
-        assertEquals("size of array", 1, array.length);
-        assertEquals("contents of returned dataset", "Alice",
-                array[0].get("name"));
-    }
     @SuppressWarnings("unchecked")
-    public void test_checkValue_wantedDatasetFoundList() {
+    public void test_checkValue_wantedDatasetGotList() {
         ArrayList<HashMap> list = new ArrayList<HashMap>();
         list.add(new HashMap());
         list.get(0).put("name", "Bob");
@@ -537,8 +555,35 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("contents of returned dataset", "Bob",
                 ((Dataset) result).get("name"));
     }
+    public void test_checkValue_wantedListGotString() {
+        boolean gotException = false;
+        Dataset d = new Dataset();
+        try {
+            d.checkValue("a", Dataset.DesiredType.DATASETS, new String("abc"));
+        }
+        catch (Dataset.WrongTypeError e) {
+            assertEquals("exception message",
+                    "wrong type for dataset element \"a\": expected nested "
+                    + "dataset but found string value \"abc\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_checkValue_wantedListGotChild() {
+        Dataset d = new Dataset();
+        HashMap<String,String> map = new HashMap<String,String>();
+        map.put("name", "Alice");
+        Object result = d.checkValue("a", Dataset.DesiredType.DATASETS, map);
+        assertEquals("class of result", "Dataset[]",
+                result.getClass().getSimpleName());
+        Dataset[] array = (Dataset[]) result;
+        assertEquals("size of array", 1, array.length);
+        assertEquals("contents of returned dataset", "Alice",
+                array[0].get("name"));
+    }
     @SuppressWarnings("unchecked")
-    public void test_checkValue_FoundList() {
+    public void test_checkValue_WantedListGotList() {
         ArrayList<HashMap> list = new ArrayList<HashMap>();
         list.add(new HashMap());
         list.get(0).put("name", "Bob");
@@ -555,20 +600,38 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("contents of second dataset", "Alice",
                 array[1].get("name"));
     }
-    public void test_checkValue_wantedDatasetFoundString() {
-        boolean gotException = false;
+    public void test_checkValue_wantedAnythingGotString() {
         Dataset d = new Dataset();
-        try {
-            d.checkValue("a", Dataset.DesiredType.DATASET, new String("abc"));
-        }
-        catch (Dataset.WrongTypeError e) {
-            assertEquals("exception message",
-                    "wrong type for dataset element \"a\": expected nested "
-                    + "dataset but found string value \"abc\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
+        assertEquals("value", "abc", d.checkValue("a",
+                Dataset.DesiredType.ANYTHING, new String("abc")));
+    }
+    public void test_checkValue_wantedAnythingGotChild() {
+        Dataset d = new Dataset();
+        HashMap<String,String> map = new HashMap<String,String>();
+        map.put("name", "Alice");
+        Object result = d.checkValue("a", Dataset.DesiredType.ANYTHING, map);
+        assertEquals("class of result", "Dataset",
+                result.getClass().getSimpleName());
+        assertEquals("contents of returned dataset", "Alice",
+                ((Dataset) result).get("name"));
+    }
+    @SuppressWarnings("unchecked")
+    public void test_checkValue_wantedAnythingGotList() {
+        ArrayList<HashMap> list = new ArrayList<HashMap>();
+        list.add(new HashMap());
+        list.get(0).put("name", "Bob");
+        list.add(new HashMap());
+        list.get(1).put("name", "Alice");
+        Dataset d = new Dataset();
+        Object result = d.checkValue("a", Dataset.DesiredType.ANYTHING, list);
+        assertEquals("class of result", "Dataset[]",
+                result.getClass().getSimpleName());
+        Dataset[] array = (Dataset[]) result;
+        assertEquals("size of array", 2, array.length);
+        assertEquals("contents of first dataset", "Bob",
+                array[0].get("name"));
+        assertEquals("contents of second dataset", "Alice",
+                array[1].get("name"));
     }
 
     public void test_wrongTypeMessage_nested() {

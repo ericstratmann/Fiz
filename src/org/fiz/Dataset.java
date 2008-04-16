@@ -47,7 +47,12 @@ public class Dataset {
          * The caller expects the name to refer to zero or more
          * nested data sets, all of which will be returned.
          */
-        DATASETS
+        DATASETS,
+
+        /**
+         * The caller is happy to accept any of the above types.
+         */
+        ANYTHING
     }
 
     /**
@@ -640,6 +645,16 @@ public class Dataset {
     }
 
     /**
+     * Returns a Set containing all of the top-level keys in the dataset.
+     * @return                     All of the keys at the top level of
+     *                             the dataset.
+     */
+    @SuppressWarnings("unchecked")
+    public Set<String> keySet() {
+        return map.keySet();
+    }
+
+    /**
      * This recursive method does all of the real work for toString().
      * @param dataset              Nested dataset to pretty-print.
      * @param out                  Pretty-printed output gets appended here.
@@ -694,19 +709,21 @@ public class Dataset {
 
     protected final Object checkValue(String name, DesiredType wanted,
             Object value) throws WrongTypeError {
-        if (wanted == DesiredType.STRING) {
-            if (value instanceof String) {
+        if (value instanceof String) {
+            if ((wanted == DesiredType.STRING)
+                    || (wanted == DesiredType.ANYTHING)) {
                 return value;
             }
             throw new WrongTypeError(wrongTypeMessage(name, wanted, value));
-        } else {
+        }
+        if (wanted != DesiredType.STRING) {
             if (value instanceof HashMap) {
-                if (wanted == DesiredType.DATASET) {
-                    return new Dataset((HashMap) value, fileName);
+                if (wanted == DesiredType.DATASETS) {
+                    Dataset[] result = new Dataset[1];
+                    result[0] = new Dataset((HashMap) value, fileName);
+                    return result;
                 }
-                Dataset[] result = new Dataset[1];
-                result[0] = new Dataset((HashMap) value, fileName);
-                return result;
+                return new Dataset((HashMap) value, fileName);
             } else if (value instanceof ArrayList) {
                 if (wanted == DesiredType.DATASET) {
                     // The value consists of a list of values; take the first

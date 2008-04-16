@@ -1,0 +1,10 @@
+# main.yaml -
+#
+# This dataset contains overall configuration options for Fiz.
+
+# When attempting to dynamically load a class and the className doesn't
+# include a package name, Fiz first tries the name with no package.  If
+# that class doesn't exist then Fiz tries prepending each of the package
+# names in the following (comma-separated) list:
+searchPackages: "org.fiz"
+

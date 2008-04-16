@@ -38,6 +38,21 @@ public class ConfigTest extends junit.framework.TestCase {
 
     }
 
+    public void test_setDataset() {
+        (new File("_test1_")).mkdir();
+        Config.init("_test1_");
+        TestUtil.writeFile("_test1_/main.yaml",
+                "name1: value1\nname2: value2\n");
+        Dataset d = Config.getDataset("main");
+        assertEquals("value from first call (file from disk)", "value1",
+                d.check("name1"));
+        Config.setDataset("main", new Dataset("name1", "xyzzy"));
+        d = Config.getDataset("main");
+        assertEquals("value from second call (overridden with setDataset)",
+                "xyzzy", d.check("name1"));
+        TestUtil.deleteTree("_test1_");
+
+    }
     public void test_getPath() {
         Config.init("a/b/c", "x/y");
         String[] path = Config.getPath();

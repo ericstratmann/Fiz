@@ -74,7 +74,7 @@ public class Link {
             queryNames = Util.split(args, ',');
 
             // QueryNames is currently in an intermediate form (some of the
-            // values may contain colons).  Make another pass-through
+            // values may contain colons).  Make another pass through
             // queryNames to split up the values that contain colons and
             // generate the queryData values.
             queryData = new String[queryNames.length];

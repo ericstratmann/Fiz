@@ -109,6 +109,10 @@ public class Dispatcher extends HttpServlet {
                     + interactor.getClass().getName());
             interactor.destroy();
         }
+        classMap.clear();
+
+        // Clean up all of the other Fiz modules.
+        DataManager.destroyAll();
     }
 
     /**
@@ -175,56 +179,25 @@ public class Dispatcher extends HttpServlet {
                 // See if we already know about this class.  Note: URI
                 // characters are all lower-case, but class names must have
                 // leading upper-case char.
-                // TODO: must generalize to load classes not in org.fiz
-                String className = "org.fiz."
-                        + Character.toUpperCase(pathInfo.charAt(1))
+                String className = Character.toUpperCase(pathInfo.charAt(1))
                         + pathInfo.substring(2, endOfClass);
                 Interactor interactor = classMap.get(className);
                 if (interactor == null) {
-                    // This is a new class.  First load the class.
-                    Class<?> cl = findClass(className, request);
-
-                    // Make sure the class is a subclass of Interactor.
-                    Class<?> interactorClass = findClass("org.fiz.Interactor",
-                            request);
-                    if (!interactorClass.isAssignableFrom(cl)) {
-                        throw new UnsupportedUriError(request.getRequestURI(),
-                                "class \"" + className
-                                + "\" isn't a subclass of org.fiz.Interactor");
-                    }
-
-                    // Find a no-argument constructor and create an instance.
-                    Constructor constructor;
-                    try {
-                        constructor = cl.getConstructor();
-                    }
-                    catch (Exception e) {
-                        throw new UnsupportedUriError(request.getRequestURI(),
-                                "couldn't find no-argument constructor for "
-                                + "class \"" + className + "\": "
-                                + e.getMessage());
-                    }
-                    try {
-                        interactor = (Interactor) constructor.newInstance();
-                    }
-                    catch (Exception e) {
-                        Throwable cause = e.getCause();
-                        if (cause == null) {
-                            cause = e;
-                        }
-                        throw new UnsupportedUriError(request.getRequestURI(),
-                                "couldn't create instance of class \""
-                                + className + "\": " + cause.getMessage());
-                    }
+                    // The class name is not already known; load the class
+                    // and create an instance of it.
+                    interactor = (Interactor) Util.newInstance(className,
+                            "org.fiz.Interactor");
                     classMap.put(className, interactor);
                     interactor.init();
+                    logger.info("loaded Interactor " +
+                            interactor.getClass().getName());
 
                     // Scan the methods for the class and remember each method
                     // that is public and takes a single argument that is a
                     // subclass of ClientRequest.
                     Class<?> requestClass = findClass("org.fiz.ClientRequest",
                             request);
-                    for (Method m : cl.getMethods()) {
+                    for (Method m : interactor.getClass().getMethods()) {
                         Class[] parameterTypes = m.getParameterTypes();
                         if ((parameterTypes.length != 1)
                                 || !requestClass.isAssignableFrom(

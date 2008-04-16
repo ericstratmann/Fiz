@@ -1,4 +1,7 @@
 package org.fiz;
+import java.lang.reflect.*;
+import java.util.*;
+import org.apache.log4j.*;
 
 /**
  * Data managers are responsible for managing the persistent data of a
@@ -38,5 +41,104 @@ package org.fiz;
  *   - Data managers are responsible for data validation, consistency
  *     checking, and so on.
  */
-public interface DataManager {
+public abstract class DataManager {
+    // The following hash table maps from the string name of a data manager
+    // to the corresponding DataManager object.
+    protected static HashMap<String,DataManager> cache
+            = new HashMap<String,DataManager>();
+
+    // The following variable is used for log4j-based logging.
+    protected static Logger logger = Logger.getLogger("org.fiz.DataManager");
+
+    // Name used to create this data manager.
+    protected String name;
+
+    /**
+     * This method is invoked by DataRequest.start to initiate the
+     * processing of one or more requests for a particular DataManager
+     * (under normal conditions no-one but DataRequest.start should
+     * invoke this method; everyone else should invoke DataRequest.start).
+     * There is no guarantee that any of the requests have been completed
+     * at the time this method returns, though the method may choose to
+     * process some or all of the requests synchronously before it returns.
+     * When a request completes, either before this method returns or
+     * after, this data manager will invoke a method on the request to
+     * indicate completion.
+     * @param requests             Each element of this collection specifies
+     *                             one request to be served by this
+     *                             DataManager.
+     */
+    public abstract void startRequests(Collection<DataRequest> requests);
+
+    /**
+     * This method is invoked to request that the data manager cancel a
+     * particular request if it has not already been completed.  If the
+     * request has been completed, or if the data manager has no record of
+     * this request, or if the data manager does not implement request
+     * cancellation, then this invocation will have no effect.  Normally
+     * the data manager will cancel the request and then invoke
+     * setError on the request to indicate that it has been canceled.
+     * @param request              The request to cancel.
+     */
+    public void cancelRequest(DataRequest request) {
+    }
+
+    /**
+     * This method is invoked to shut down the DataManager; this happens
+     * when DataManager.destroyAll is invoked, which is typically when the
+     * servlet is about to be unloaded.  This provides the data manager
+     * an opportunity to do internal cleanup, such as canceling all
+     * outstanding requests.
+     */
+    public void destroy() {
+    }
+
+    public String toString() {
+        if (name != null) {
+            return name + " data manager";
+        }
+        return "unnamed data manager";
+    }
+
+    /**
+     * Maps from the name of a data manager to a DataManager object
+     * that can be used to issue requests.  Caches these mappings to
+     * avoid duplicate DataManagers and to make calls go faster in the
+     * future .
+     * @param name                 Name of the desired data manager.
+     * @return                     DataManager object corresponding to
+     *                             {@code name}.
+     */
+    public synchronized static DataManager getDataManager(String name) {
+        // See if we have already used this data manager before.
+        DataManager manager = cache.get(name);
+        if (manager != null) {
+            return manager;
+        }
+
+        // We haven't seen this name before.  First, find the configuration
+        // info that describes the data manager, then extract the name of the
+        // DataManager class and instantiate it.
+        Dataset config = Config.getDataset("dataManagers").getChild(name);
+        String dmClass = config.get("class");
+        manager = (DataManager) Util.newInstance(dmClass,
+                "org.fiz.DataManager", config);
+        manager.name = name;
+        cache.put(name, manager);
+        logger.info("loaded DataManager " + manager.getClass().getName());
+        return manager;
+    }
+
+    /**
+     * Shut down all existing data managers and clear the internal cache
+     * that maps from names to data managers.
+     */
+    public synchronized static void destroyAll() {
+        for (DataManager manager : cache.values()) {
+            logger.info("destroying DataManager "
+                    + manager.getClass().getName());
+            manager.destroy();
+        }
+        cache.clear();
+    }
 }

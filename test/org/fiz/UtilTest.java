@@ -276,6 +276,118 @@ public class UtilTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
+
+    public void test_newInstance_classNameWorksImmediately() {
+        Object result = Util.newInstance("org.fiz.Dataset", "org.fiz.Dataset");
+        assertEquals ("class of result", "org.fiz.Dataset",
+                result.getClass().getName());
+    }
+    public void test_newInstance_noSearchPackagesConfig() {
+        Config.setDataset("main", new Dataset());
+        boolean gotException = false;
+        try {
+            Util.newInstance("Dataset", null);
+        }
+        catch (ClassNotFoundError e) {
+            assertEquals("exception message",
+                    "couldn't find class \"Dataset\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_newInstance_classInPackage() {
+        Config.setDataset("main", new Dataset("searchPackages",
+                "foo.bar, org.fiz, bogus.moreBogus"));
+        Object result = Util.newInstance("Dataset", null);
+        assertEquals ("class of result", "org.fiz.Dataset",
+                result.getClass().getName());
+    }
+    public void test_newInstance_notInSearchPackagesg() {
+        Config.setDataset("main", new Dataset("searchPackages",
+                "foo.bar, bogus.moreBogus"));
+        boolean gotException = false;
+        try {
+            Util.newInstance("gorp", null);
+        }
+        catch (ClassNotFoundError e) {
+            assertEquals("exception message",
+                    "couldn't find class \"gorp\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_newInstance_requiredTypeClassNotFound() {
+        boolean gotException = false;
+        try {
+            Util.newInstance("org.fiz.Dataset", "NonexistentType");
+        }
+        catch (ClassNotFoundError e) {
+            assertEquals("exception message",
+                    "couldn't find class \"NonexistentType\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_newInstance_notRequiredType() {
+        boolean gotException = false;
+        try {
+            Util.newInstance("org.fiz.Dataset", "java.lang.String");
+        }
+        catch (InstantiationError e) {
+            assertEquals("exception message",
+                    "couldn't create an instance of class " +
+                    "\"org.fiz.Dataset\": class isn't " +
+                    "a subclass of java.lang.String",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_newInstance_cantFindMatchingConstructor() {
+        boolean gotException = false;
+        try {
+            Util.newInstance("org.fiz.Dataset", null, new int[]{3,4});
+        }
+        catch (InstantiationError e) {
+            assertEquals("exception message",
+                    "couldn't create an instance of class " +
+                    "\"org.fiz.Dataset\": couldn't " +
+                    "find appropriate constructor " +
+                    "(org.fiz.Dataset.<init>([I))",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_newInstance_argumentsForConstructor() {
+        Object result = Util.newInstance("org.fiz.UtilTest1", null,
+                new Dataset("xyz", "abc"), "value1");
+        assertEquals ("class of result", "org.fiz.UtilTest1",
+                result.getClass().getName());
+        assertEquals ("first argument", "abc",
+                ((UtilTest1) result).dataset.get("xyz"));
+        assertEquals ("second argument", "value1",
+                ((UtilTest1) result).string);
+    }
+    public void test_newInstance_exceptionInConstructor() {
+        boolean gotException = false;
+        try {
+            Util.newInstance("org.fiz.UtilTest1", null, new Dataset(),
+                    "error");
+        }
+        catch (InstantiationError e) {
+            assertEquals("exception message",
+                    "couldn't create an instance of class " +
+                    "\"org.fiz.UtilTest1\": exception " +
+                    "in constructor: test exception message",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
 }
 
 // The following class implements just enough of the HttpServletRequest
