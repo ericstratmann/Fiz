@@ -296,18 +296,17 @@ public class Util {
     }
 
     /**
-     * Given a file name, this method checks to see if the last element
-     * in {@code path} contains an extension (i.e., it ends with
-     * a construct such as ".java", ".jx", etc.).  If so the extension
-     * is returned.
-     * @param path                    A file withname such as {@code /a/b/foo.html};
+     * Given a file name, this method checks to see if {@code path} ends
+     * with an extension such as ".java", ".yml", etc.
+     * @param path                    A file name such as {@code /a/b/foo.html};
      *                                the file need not actually exist.
-     * @return                        If {@code path} contains an
-     *                                extension it is returned (including the
-     *                                {@code .}).  If there is no extension
-     *                                null is returned.
+     * @return                        If {@code path} ends with an
+     *                                extension the return value is the index
+     *                                in {@code path} of the extension's
+     *                                initial ".".  Otherwise the return
+     *                                value is -1.
      */
-    public static String fileExtension(CharSequence path) {
+    public static int findExtension(CharSequence path) {
         // Work backwards from the end of the string to see if we find a
         // "." before a "/".
 
@@ -317,15 +316,53 @@ public class Util {
             if (c == '.') {
                 if (i == (length-1)) {
                     // There is a "dot", but there is nothing after it.
-                    return null;
+                    return -1;
                 }
-                return path.subSequence(i, length).toString();
+                return i;
             }
             if ((c == '/') || (c == '\\')) {
-                return null;
+                return -1;
             }
         }
+        return -1;
+    }
+
+    /**
+     * Given a file name, this method checks to see if {@code path} ends
+     * with an extension such as ".java", ".yml", etc.  If so the
+     * extension is returned.
+     * @param path                    A file withname such as {@code /a/b/foo.html};
+     *                                the file need not actually exist.
+     * @return                        If {@code path} ends with an
+     *                                extension it is returned (including the
+     *                                {@code .}).  If there is no extension
+     *                                null is returned.
+     */
+    public static String fileExtension(CharSequence path) {
+        int index = findExtension(path);
+        if (index >= 0) {
+            return path.subSequence(index, path.length()).toString();
+        }
         return null;
+    }
+
+    /**
+     * Adds an extension to a file name if it doesn't already have one.
+     * @param path                 Input file name
+     * @param extension            Extension to add to {@code path} if
+     *                             {@code path} doesn't have an extension
+     *                             of its own.  Should start with a ".".
+     * @return                     If {@code path} already contains an
+     *                             extension then it is returned as-is.
+     *                             Otherwise, {@code extension} is
+     *                             added to the end of {@code path} to
+     *                             form the return value.
+     */
+    public static String addExtension(String path, String extension) {
+        if (fileExtension(path) != null) {
+            return path;
+        }
+        return path + extension;
     }
 
     /**
@@ -512,7 +549,7 @@ public class Util {
      * @param requiredType         If this is non-null, then the class must
      *                             be a subclass of this or implement this
      *                             interface.
-     * @param constructorArgs       Arguments to pass to the constructor; the
+     * @param constructorArgs      Arguments to pass to the constructor; the
      *                             class must contain a constructor compatible
      *                             with these arguments.
      * @return                     The return value is a new instance of

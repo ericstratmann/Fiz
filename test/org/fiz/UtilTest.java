@@ -121,17 +121,32 @@ public class UtilTest extends junit.framework.TestCase {
         assertEquals("array contents", "abc", new String(ch));
     }
 
+    public void test_findExtension() {
+        assertEquals("extension exists", 8,
+                Util.findExtension("C:/a/b/c.java"));
+        assertEquals("nothing after the dot", -1,
+                Util.findExtension("C:/a/b/c."));
+        assertEquals("slash after last dot", -1,
+                Util.findExtension("C:/a/b.test/c"));
+        assertEquals("backslash after last dot", -1,
+                Util.findExtension("C:\\a\\b.test\\c"));
+        assertEquals("no slash, no dot", -1,
+                Util.findExtension("name"));
+    }
+
     public void test_fileExtension() {
         assertEquals("extension exists", ".java",
                 Util.fileExtension("C:/a/b/c.java"));
-        assertEquals("nothing after the dot", null,
-                Util.fileExtension("C:/a/b/c."));
-        assertEquals("slash after last dot", null,
-                Util.fileExtension("C:/a/b.test/c"));
-        assertEquals("backslash after last dot", null,
-                Util.fileExtension("C:\\a\\b.test\\c"));
-        assertEquals("no slash, no dot", null,
+        assertEquals("no extension", null,
                 Util.fileExtension("name"));
+    }
+
+    public void test_addExtension() {
+        assertEquals("path already has extension", "foo.java",
+                Util.addExtension("foo.java", ".yml"));
+        assertEquals("path doesn't already have an extension",
+                "C:/code/foo.xx/bar.yml",
+                Util.addExtension("C:/code/foo.xx/bar", ".yml"));
     }
 
      public void test_findFileWithExtension() {

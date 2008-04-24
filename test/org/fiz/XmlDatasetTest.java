@@ -1,4 +1,5 @@
 package org.fiz;
+import java.io.*;
 import org.xml.sax.*;
 
 /**
@@ -12,33 +13,222 @@ public class XmlDatasetTest extends junit.framework.TestCase {
                 "<child><name>Alice</name></child>\n" +
                 "<child><name>Bob</name></child>\n" +
                 "</head>\n");
-        assertEquals("age:  32 \n" +
-                "child[0]:\n" +
-                "  name: Alice\n" +
-                "child[1]:\n" +
-                "  name: Bob\n" +
-                "name: Bill\n", d.toString());
+        assertEquals("age: \" 32 \"\n" +
+                "child:\n" +
+                "  - name: Alice\n" +
+                "  - name: Bob\n" +
+                "name: Bill\n", YamlDataset.writeString(d));
     }
+
     public void test_newFileInstance() {
         TestUtil.writeFile("test.xml",
                 "<child><name>Alice</name></child>\n");
         Dataset d = XmlDataset.newFileInstance("test.xml");
-        assertEquals("name: Alice\n", d.toString());
+        assertEquals("name: Alice\n", YamlDataset.writeString(d));
         TestUtil.deleteTree("test.xml");
+    }
+
+    public void test_writeString() {
+        Dataset d = new Dataset("first", "332", "second", " ab&cd ");
+        assertEquals("generated XML",
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<dataset>\n" +
+                "  <first>332</first>\n" +
+                "  <second> ab&amp;cd </second>\n" +
+                "</dataset>\n", XmlDataset.writeString(d));
+    }
+
+    public void test_toString() {
+        Dataset d = XmlDataset.newStringInstance(
+                "<head><name>Bill</name><age>32</age>\n" +
+                "<child><name>Alice</name></child>\n" +
+                "</head>\n");
+        assertEquals("generated XML",
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<dataset>\n" +
+                "  <age>32</age>\n" +
+                "  <child>\n" +
+                "    <name>Alice</name>\n" +
+                "  </child>\n" +
+                "  <name>Bill</name>\n" +
+                "</dataset>\n", d.toString());
+    }
+
+    public void test_staticWriteFile_noComment() throws FileNotFoundException {
+        Dataset d = new Dataset("first", "332", "second", "ab&cd");
+        XmlDataset.writeFile(d, "test.xml", null);
+        assertEquals("generated XML",
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<dataset>\n" +
+                "  <first>332</first>\n" +
+                "  <second>ab&amp;cd</second>\n" +
+                "</dataset>\n",
+                Util.readFile("test.xml").toString());
+        TestUtil.deleteTree("test.xml");
+    }
+    public void test_staticWriteFile_addException()
+            throws FileNotFoundException {
+        Dataset d = new Dataset("first", "332");
+        XmlDataset.writeFile(d, "test2", null);
+        assertEquals("generated XML",
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<dataset>\n" +
+                "  <first>332</first>\n" +
+                "</dataset>\n",
+                Util.readFile("test2.xml").toString());
+        TestUtil.deleteTree("test2.xml");
+    }
+    public void test_staticWriteFile_cantOpenFile() {
+        boolean gotException = false;
+        try {
+            Dataset d = new Dataset("first", "332", "second", " ab\tcd ");
+            XmlDataset.writeFile(d, "_bogus_/_missing_/foo.xml", null);
+        }
+        catch (FileNotFoundError e) {
+            assertEquals("exception message",
+                    "couldn't open XML dataset file " +
+                    "\"_bogus_/_missing_/foo.xml\": The system cannot find " +
+                    "the path specified",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_staticWriteFile_withComment()
+            throws FileNotFoundException {
+        Dataset d = new Dataset("first", "332");
+        XmlDataset.writeFile(d, "test.xml", "Line #1\nSecond line");
+        assertEquals("generated XML",
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<!-- Line #1\n" +
+                "     Second line -->\n" +
+                "<dataset>\n" +
+                "  <first>332</first>\n" +
+                "</dataset>\n",
+                Util.readFile("test.xml").toString());
+        TestUtil.deleteTree("test.xml");
+    }
+    public void test_staticWriteFile_ioError() throws FileNotFoundException {
+        Dataset d = new Dataset("value", "332");
+        d.generateIoException = true;
+        boolean gotException = false;
+        try {
+            XmlDataset.writeFile(d, "test.xml", null);
+        }
+        catch (IOError e) {
+            assertEquals("exception message",
+                    "I/O error in file \"test.xml\": error simulated",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+        TestUtil.deleteTree("test.xml");
+    }
+
+    public void test_writeFile() throws FileNotFoundException {
+        XmlDataset d = XmlDataset.newStringInstance(
+                "<head><name>Bill</name><age>32</age>\n</head>\n");
+        d.writeFile("test.xml", "Sample header2");
+        assertEquals("generated XML",
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<!-- Sample header2 -->\n" +
+                "<dataset>\n" +
+                "  <age>32</age>\n" +
+                "  <name>Bill</name>\n" +
+                "</dataset>\n",
+                Util.readFile("test.xml").toString());
+        TestUtil.deleteTree("test.xml");
+    }
+
+    public void test_writeSubtree_basics() {
+        Dataset d = YamlDataset.newStringInstance(
+                "a: 45\n"
+                + "b: Simple  name\n"
+                + "child:\n"
+                + "  - name: Bill\n"
+                + "    age: 18\n"
+                + "  - name: Alice\n"
+                + "    age: 36\n"
+                + "  - name: Susan\n"
+                + "    age: 25\n"
+                + "c:\n"
+                + "  d:\n"
+                + "    e: Arizona\n"
+                + "  f: California\n");
+        assertEquals("generated XML",
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<dataset>\n" +
+                "  <a>45</a>\n" +
+                "  <b>Simple  name</b>\n" +
+                "  <c>\n" +
+                "    <d>\n" +
+                "      <e>Arizona</e>\n" +
+                "    </d>\n" +
+                "    <f>California</f>\n" +
+                "  </c>\n" +
+                "  <child>\n" +
+                "    <age>18</age>\n" +
+                "    <name>Bill</name>\n" +
+                "  </child>\n" +
+                "  <child>\n" +
+                "    <age>36</age>\n" +
+                "    <name>Alice</name>\n" +
+                "  </child>\n" +
+                "  <child>\n" +
+                "    <age>25</age>\n" +
+                "    <name>Susan</name>\n" +
+                "  </child>\n" +
+                "</dataset>\n", XmlDataset.writeString(d));
+    }
+    public void test_writeSubtree_quoting() {
+        Dataset d = YamlDataset.newStringInstance(
+                "a: 45\n"
+                + "b: \"<name>\"\n"
+                + "c: this&that\n");
+        assertEquals("generated XML",
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<dataset>\n" +
+                "  <a>45</a>\n" +
+                "  <b>&lt;name&gt;</b>\n" +
+                "  <c>this&amp;that</c>\n" +
+                "</dataset>\n", XmlDataset.writeString(d));
+    }
+    public void test_writeSubtree_rereadOutput() {
+        Dataset d = YamlDataset.newStringInstance(
+                "a: \"trailing space \"\n"
+                + "b: Simple  name\n"
+                + "children:\n"
+                + "  - name: Bill\n"
+                + "    age: 18\n"
+                + "  - name: Alice\n"
+                + "    age: 36\n"
+                + "c:\n"
+                + "  d: California\n"
+                + "special : \"&abcd\\n\\n\"\n");
+
+        Dataset d2 = XmlDataset.newStringInstance(XmlDataset.writeString(d));
+        assertEquals("element with trailing space", "trailing space ",
+                d2.get("a"));
+        assertEquals("value from list of children", "Bill",
+                d2.getPath("children.name"));
+        assertEquals("bested value", "California",
+                d2.getPath("c.d"));
+        assertEquals("value with special characters", "&abcd\n\n",
+                d2.get("special"));
     }
 
     public void test_parse_string() {
         Dataset d = XmlDataset.parse(
                 "<head><name>Bill</name><age>24</age>\n</head>\n", null);
         assertEquals("age: 24\n" +
-                "name: Bill\n", d.toString());
+                "name: Bill\n", YamlDataset.writeString(d));
     }
     public void test_parse_file() {
         TestUtil.writeFile("test.xml",
                 "<foo><name>Bill</name><age>46</age>\n</foo>\n");
         Dataset d = XmlDataset.parse(null, "test.xml");
         assertEquals("age: 46\n" +
-                "name: Bill\n", d.toString());
+                "name: Bill\n", YamlDataset.writeString(d));
         TestUtil.deleteTree("test.xml");
     }
     public void test_parse_syntaxError() {

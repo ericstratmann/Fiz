@@ -26,8 +26,6 @@ public class DataRequestTest extends junit.framework.TestCase {
                 "manager: testManager\n" +
                 "name: Bob\n",
                 request.request.toString());
-        assertEquals("data manager", "testManager data manager",
-                request.dataManager.toString());
     }
 
     public void test_constructor_withAuxDataset() {
@@ -36,10 +34,8 @@ public class DataRequestTest extends junit.framework.TestCase {
         assertEquals("request dataset", "id: 44\n" +
                 "manager: testManager\n" +
                 "name: Bob\n" +
-                "nickname: @fluffy\n",
+                "nickname: \"@fluffy\"\n",
                 request.request.toString());
-        assertEquals("data manager", "testManager data manager",
-                request.dataManager.toString());
     }
 
     public void test_constructor_withAuxDatasetAndManager() {
@@ -48,10 +44,8 @@ public class DataRequestTest extends junit.framework.TestCase {
         assertEquals("request dataset", "id: 44\n" +
                 "manager: t2\n" +
                 "name: Bob\n" +
-                "nickname: @fluffy\n",
+                "nickname: \"@fluffy\"\n",
                 request.request.toString());
-        assertEquals("data manager", "t2 data manager",
-                request.dataManager.toString());
     }
     public void test_constructor_withAuxDatasetAndManager_managerNull() {
         DataRequest request = new DataRequest("request1",
@@ -59,10 +53,8 @@ public class DataRequestTest extends junit.framework.TestCase {
         assertEquals("request dataset", "id: 44\n" +
                 "manager: testManager\n" +
                 "name: Bob\n" +
-                "nickname: @fluffy\n",
+                "nickname: \"@fluffy\"\n",
                 request.request.toString());
-        assertEquals("data manager", "testManager data manager",
-                request.dataManager.toString());
     }
 
     public void test_start_basics() {
@@ -148,7 +140,7 @@ public class DataRequestTest extends junit.framework.TestCase {
         assertEquals("after completion", true, request.completed);
         assertEquals("result data set", "age: 34\n" +
                 "name: Bob\n",
-                request.response.toString());
+                request.getResponseData().toString());
     }
 
     public void test_getResponseData_notYetStarted() {
@@ -299,7 +291,12 @@ public class DataRequestTest extends junit.framework.TestCase {
     public void test_getDataManager() {
         DataRequest request = new DataRequest(new Dataset(
                 "manager", "t2", "id", "40"));
+        assertEquals("data manager initially null", null,
+                request.dataManager);
         assertEquals("data manager name", "t2 data manager",
+                request.getDataManager().toString());
+        request.request.delete("manager");
+        assertEquals("reuse value once computed", "t2 data manager",
                 request.getDataManager().toString());
     }
 
@@ -322,8 +319,8 @@ public class DataRequestTest extends junit.framework.TestCase {
                 new Dataset("name", "Bob"));
         assertEquals("request dataset", "first: first\n" +
                 "manager: testManager\n" +
-                "second: ouster@electric-cloud\n" +
-                "third: third@@\n",
+                "second: \"ouster@electric-cloud\"\n" +
+                "third: \"third@@\"\n",
                 request.request.toString());
     }
     public void test_makeRequest_doubleAtSign() {
@@ -333,9 +330,9 @@ public class DataRequestTest extends junit.framework.TestCase {
                 "  first: @@x1\n" +
                 "  second: @@first\n"));
         DataRequest request = new DataRequest("request1", new Dataset());
-        assertEquals("request dataset", "first: @x1\n" +
+        assertEquals("request dataset", "first: \"@x1\"\n" +
                 "manager: testManager\n" +
-                "second: @first\n",
+                "second: \"@first\"\n",
                 request.request.toString());
     }
     public void test_makeRequest_atSignSubstitution() {

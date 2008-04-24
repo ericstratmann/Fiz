@@ -20,9 +20,18 @@ import org.xml.sax.*;
  *    and ignored.
  */
 
-public class XmlDataset {
-    // No constructor: this class only has a static methods.
-    private XmlDataset() {}
+public class XmlDataset extends Dataset {
+
+    /**
+     * This method is only for the use of the static constructors
+     * below.
+     * @param contents             Main HashMap for the dataset.
+     * @param fileName             Name of the file from which this dataset
+     *                             was read, or null if none.
+     */
+    private XmlDataset(HashMap contents, String fileName) {
+        super(contents, fileName);
+    }
 
     // It is *much* faster to parse an XML document with a reused parser
     // than to create a fresh parser for each document (more than 10x
@@ -43,7 +52,7 @@ public class XmlDataset {
      *                             XML constructs that aren't supported for
      *                             XMLDatasets.
      */
-    public static synchronized Dataset newStringInstance(String s)
+    public static synchronized XmlDataset newStringInstance(String s)
             throws Dataset.SyntaxError {
         return parse(s, null);
     }
@@ -58,9 +67,155 @@ public class XmlDataset {
      *                             XML constructs that aren't supported for
      *                             XMLDatasets.
      */
-    public static synchronized Dataset newFileInstance(String fileName)
+    public static synchronized XmlDataset newFileInstance(String fileName)
             throws Dataset.SyntaxError {
         return parse(null, fileName);
+    }
+
+    /**
+     * Convert a dataset back to XML format.  This method can be used
+     * on any dataset, even those that didn't originally come from XML.
+     * @param d                    Dataset to convert.
+     * @return                     A string describing the contents of the
+     *                             dataset using XML syntax.
+     */
+    public static String writeString(Dataset d) {
+        try {
+            StringWriter out = new StringWriter();
+            out.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+            out.append("<dataset>\n");
+            writeSubtree(d.map, out, "  ");
+            out.append("</dataset>\n");
+            return out.toString();
+        }
+        catch (IOException e) {
+            throw new IOError(e.getMessage());
+        }
+    }
+
+    /**
+     * Convert the dataset back to XML format.
+     * @return                     A string describing the contents of the
+     *                             dataset using XML syntax.
+     */
+    public String toString() {
+        return XmlDataset.writeString(this);
+    }
+
+    /**
+     * Create a file in XML format describing the contents of a dataset.
+     * This method can be used on any dataset, even one that didn't
+     * originally come from XML.
+     * @param d                    Dataset to write to the file.
+     * @param name                 Name of file; this file will be overwritten
+     *                             if it already exists.  If the name doesn't
+     *                             end with an extension, a ".xml" extension
+     *                             is added.
+     * @param comment              Optional text describing the meaning of
+     *                             the file for humans who might stumble
+     *                             across it.  If non-null, this is turned
+     *                             into an XML comment by adding appropriate
+     *                             comment characters and then output at the
+     *                             beginning of the file, before the generated
+     *                             XML.  May contain embedded newlines,
+     *                             which will result in a multi-line comment.
+     * @throws FileNotFoundError   The file couldn't be opened.
+     * @throws IOError             An error occurred while writing or
+     *                             closing the file.
+     */
+    public static void writeFile(Dataset d, String name, String comment) {
+        FileWriter out;
+        try {
+            name = Util.addExtension(name, ".xml");
+            out = new FileWriter(name);
+        }
+        catch  (IOException e) {
+            throw new FileNotFoundError(name, "XML dataset", e.getMessage());
+        }
+        try {
+            out.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+            if (comment != null) {
+                out.append("<!-- ");
+                out.append(comment.replace("\n", "\n     "));
+                out.append (" -->\n");
+            }
+            out.append("<dataset>\n");
+            writeSubtree(d.map, out, "  ");
+            out.append("</dataset>\n");
+            out.close();
+            if (d.generateIoException) {
+                // We get here only during testing.
+                throw new IOException("error simulated");
+            }
+        }
+        catch (IOException e) {
+            throw IOError.newFileInstance(name, e.getMessage());
+        }
+    }
+
+    /**
+     * Create a file in XML format describing the contents of the dataset.
+     * @param name                 Name of file; this file will be overwritten
+     *                             if it already exists.  If the name doesn't
+     *                             end with an extension, a ".xml" extension
+     *                             is added.
+     * @param comment              Optional text describing the meaning of
+     *                             the file for humans who might stumble
+     *                             across it.  If non-null, this is turned
+     *                             into a XML comment by adding appropriate
+     *                             comment characters and then output at the
+     *                             beginning of the file, before the generated
+     *                             XML.  May contain embedded newlines,
+     *                             which will result in a multi-line comment.
+     * @throws FileNotFoundError   The file couldn't be opened.
+     * @throws IOError             An error occurred while writing or
+     *                             closing the file.
+     */
+    public void writeFile(String name, String comment) {
+        XmlDataset.writeFile(this, name, comment);
+    }
+
+    /**
+     * This recursive method provides most of the functionality for writing
+     * datasets in XML format.  Each invocation is responsible for writing
+     * a subtree of the full dataset.
+     * @param dataset              HashMap that holds the dataset subtree
+     *                             to be written.
+     * @param writer               Append XML information here.
+     * @param indent               Output this string at the beginning of
+     *                             each line of output; contains spaces
+     *                             for indentation.
+     * @throws IOException         Thrown by writer if it encounters a
+     *                             problem.
+     */
+    @SuppressWarnings("unchecked")
+    protected static void writeSubtree(HashMap dataset, Writer writer,
+            String indent) throws IOException {
+        StringBuilder quotedValue = new StringBuilder();
+        ArrayList names = new ArrayList();
+        names.addAll(dataset.keySet());
+        Collections.sort(names);
+        for (Object nameObject: names) {
+            String name = (String) nameObject;
+            Object value = dataset.get(name);
+            if (value instanceof HashMap) {
+                writer.append(String.format("%s<%s>\n", indent, name));
+                writeSubtree((HashMap) value, writer, indent + "  ");
+                writer.append(String.format("%s</%s>\n", indent, name));
+            } else if (value instanceof ArrayList) {
+                ArrayList<HashMap> list = (ArrayList <HashMap>) value;
+                for (int i = 0; i < list.size(); i++) {
+                    writer.append(String.format("%s<%s>\n", indent, name));
+                    writeSubtree(list.get(i), writer, indent + "  ");
+                    writer.append(String.format("%s</%s>\n", indent, name));
+                }
+            } else {
+                quotedValue.setLength(0);
+                Html.escapeHtmlChars(value.toString(), quotedValue);
+                writer.append(String.format("%s<%s>%s</%s>\n", indent, name,
+                        quotedValue.toString(), name));
+            }
+        }
     }
 
     /**
@@ -78,7 +233,7 @@ public class XmlDataset {
      *                             XMLDatasets.
      * @throws IOError             There was an I/O error reading a file.
      */
-    protected static synchronized Dataset parse(String s, String fileName)
+    protected static synchronized XmlDataset parse(String s, String fileName)
             throws Dataset.SyntaxError, IOError {
         try {
             if (parser == null) {
@@ -93,7 +248,7 @@ public class XmlDataset {
             } else {
                 parser.parse(new InputSource(new StringReader(s)), handler);
             }
-            return new Dataset(map, null);
+            return new XmlDataset(map, null);
         }
         catch (SAXException e) {
             throw new Dataset.SyntaxError(null, e.getMessage());

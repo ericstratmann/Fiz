@@ -6,38 +6,39 @@ import org.apache.log4j.*;
 /**
  * Data managers are responsible for managing the persistent data of a
  * Fiz application, such as information in a relational database system.
- * The DataManager interface defines how Interactors and other front-end
- * classes communicate with the back-end data managers.  A request to a
- * data manager consists of a dataset containing input arguments.  In the
- * most common case this is just a collection of name-value pairs, but
- * it is also possible to pass in nested datasets containing complex
- * data structures.  It is up to the data manager to validate the input
- * dataset.  After the data manager has processed a request, it returns
- * a response dataset; the exact format of the response depends on the
- * data manager and the specific requests.
+ * Each subclass of DataManager implements a particular kind of data
+ * storage mechanism.  Interactors and other front-and classes communicate
+ * with data managers using DataRequest objects; see the DataRequest class
+ * for details on how request parameters are provided to data managers
+ * and how data managers respond to requests.
+ * <p>
+ * The {@code dataManagers} dataset provides configuration information
+ * for all of the data managers of the application, with one child dataset
+ * for each data manager.  The name of the child is the name of the data
+ * manager and the values within the child specify the configuration for that
+ * data manager.  There must be a {@code class} value, which specifies
+ * the class that implements that data manager; any other values are used
+ * by the data manager's constructor in a manager-specific fashion.
  * <p>
  * Here are some other properties of the DataManager mechanism:
+ *   - In addition to the abstract methods declared here, each data manager
+ *     must provide a constructor that takes a configuration Dataset as
+ *     argument.
  *   - A DataManager can implement its functionality locally, or it can
  *     serve as a front-and for a remote manager.
  *   - The DataManager mechanism supports batching, where the DataManager
  *     receives multiple requests to handle of the same time; this permits
  *     greater efficiency in some cases (e.g., several requests can be sent
  *     to a remote server in a single message).
- *   - Requests are assumed to be asynchronous: the data manager is invoked
- *     once to begin processing a batch of requests, and again later to
- *     retrieve the response(s).  This allows multiple data managers to
- *     work in parallel on different requests.
- *   - The DataManager includes a well-defined mechanism for reporting
- *     errors and also for returning advisory messages.
- *   - There is no need to register data managers; if a class has a
- *     name ending in DataManager and implements the DataManager interface,
- *     that it can be referenced in requests; the request mechanism will
- *     dynamically load the relevant class.
- *   - The data manager owns the data: front-end classes retain no
- *     persistent data between client requests except some information
- *     in the session, and even that is often accessed through a data
- *     manager.  Caching, if any, is the responsibility of the data
- *     manager.
+ *   - Requests may be handled asynchronously.  A data manager is notified
+ *     when it should begin processing a batch of requests; it can either
+ *     complete the request before it returns, or simply start the processing
+ *     of the request and return before has been completed.  When the request
+ *     eventually completes, the data manager invokes a method on the
+ *     requests to indicate that it is now finished.
+ *   - The data manager owns the data: front-end classes retain no persistent
+ *     data between client requests.  Caching, if any, is the responsibility
+ *     of the data manager.
  *   - Data managers are responsible for data validation, consistency
  *     checking, and so on.
  */
@@ -81,6 +82,16 @@ public abstract class DataManager {
      * @param request              The request to cancel.
      */
     public void cancelRequest(DataRequest request) {
+    }
+
+    /**
+     * If the data manager has cached information locally, this method will
+     * delete all such cached information so that it gets reloaded from
+     * its ultimate source the next time it is referenced.  If the cache
+     * contains modified data that has not been written to the backing
+     * storage, it will be written as part of the flush operation.
+     */
+    public void flush() {
     }
 
     /**

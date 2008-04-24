@@ -1,6 +1,7 @@
 package org.fiz;
 import java.io.*;
 import org.apache.log4j.Logger;
+import org.ho.yaml.YamlEncoder;
 
 /**
  * This Interactor is used for temporary tests and has no long-term
@@ -83,8 +84,18 @@ public class Test extends Interactor {
     }
 
     public static void main(String[] argv) throws IOException {
-        System.out.printf("os.name: %s\n", System.getProperty("os.name"));
-        System.out.printf("os.version: %s\n", System.getProperty("os.version"));
-        System.out.printf("os.arch: %s\n", System.getProperty("os.arch"));
+        Dataset d = YamlDataset.newStringInstance(
+                "name: Alice\n" +
+                "weight: 125\n" +
+                "child:\n" +
+                "  - name: Bob\n" +
+                "    age: 8\n" +
+                "  - name: Carol\n" +
+                "    age: 12\n");
+        FileOutputStream output = new FileOutputStream("out.yaml");
+        YamlEncoder encoder = new YamlEncoder(output);
+        encoder.writeObject(d.map);
+        encoder.close();
+        output.close();
     }
 }

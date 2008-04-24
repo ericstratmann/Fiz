@@ -65,7 +65,9 @@ import java.util.*;
  * request is invoked.
  * <p>
  * There are no particular requirements for response datasets; data
- * managers can define the return values in any way they wish.
+ * managers can define the return values in any way they wish.  Response
+ * datasets should be treated as read-only; they may refer to cached
+ * information, so modifying a response could have unintended side-effects.
  * <p>
  * If an error occurs in processing a request the data manager provides
  * a dataset containing information about the error.  Although the error
@@ -74,8 +76,11 @@ import java.util.*;
  * see the documentation for {@code setError} for details.
  */
 public class DataRequest {
-    // DataManager that will service the request:
-    protected DataManager dataManager;
+    // DataManager that will service the request.  This value isn't computed
+    // until it is actually needed (e.g., in startRequests).  This makes
+    // life a bit easier for tests (they don't have to set up data manager
+    // configuration information in many cases).
+    protected DataManager dataManager = null;
 
     // Information passed to dataManager, which specifies the request:
     protected Dataset request;
@@ -106,7 +111,6 @@ public class DataRequest {
      */
     public DataRequest(Dataset args) {
         request = args;
-        dataManager = DataManager.getDataManager(args.get("manager"));
     }
 
     /**
@@ -119,7 +123,6 @@ public class DataRequest {
      */
     public DataRequest(String name, Dataset aux) {
         makeRequest(name, aux);
-        dataManager = DataManager.getDataManager(request.get("manager"));
     }
 
     /**
@@ -138,10 +141,7 @@ public class DataRequest {
         makeRequest(name, aux);
         if (manager != null) {
             request.set("manager", manager);
-        } else {
-            manager = request.get("manager");
         }
-        dataManager = DataManager.getDataManager(manager);
     }
 
     /**
@@ -155,7 +155,7 @@ public class DataRequest {
         started = true;
         ArrayList<DataRequest> requests = new ArrayList<DataRequest>(1);
         requests.add(this);
-        dataManager.startRequests(requests);
+        getDataManager().startRequests(requests);
     }
 
     /**
@@ -179,15 +179,16 @@ public class DataRequest {
                 continue;
             }
             request.started = true;
-            currentList = map.get(request.dataManager);
+            DataManager manager = request.getDataManager();
+            currentList = map.get(manager);
             if (currentList == null) {
                 currentList = new ArrayList<DataRequest>(5);
-                map.put(request.dataManager, currentList);
+                map.put(manager, currentList);
             }
             currentList.add(request);
         }
         for (ArrayList<DataRequest> collection : map.values()) {
-            collection.get(0).dataManager.startRequests(collection);
+            collection.get(0).getDataManager().startRequests(collection);
         }
     }
 
@@ -225,7 +226,7 @@ public class DataRequest {
      *                             the return value will be null.
      */
     public synchronized Dataset getResponseData() {
-        if (!started) {
+        if (!started && !completed) {
             start();
         }
         while (!completed) {
@@ -392,6 +393,9 @@ public class DataRequest {
      *                             request.
      */
     public DataManager getDataManager() {
+        if (dataManager == null) {
+            dataManager = DataManager.getDataManager(request.get("manager"));
+        }
         return dataManager;
     }
 
