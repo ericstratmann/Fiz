@@ -272,7 +272,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "manager: test\n" +
                 "request: update\n" +
                 "file: test\n" +
-                "dataset: child/grandchild\n" +
+                "dataset: child.grandchild\n" +
                 "values:\n" +
                 "  age: 36\n" +
                 "  height: 65\n"));
@@ -281,8 +281,9 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         manager.startRequests(requests);
         assertEquals("response", null, request.getResponseData());
         assertEquals("error dataset",
-                "message: nested dataset \"child/grandchild\" doesn't exist\n" +
-                "where: dataset\n", request.getErrorData().toString());
+                "culprit: dataset\n" +
+                "message: nested dataset \"child.grandchild\" doesn't exist\n",
+                request.getErrorData().toString());
         assertEquals("dataset file not modified",
                 "child:\n" +
                 "  name: Alice\n" +
@@ -371,8 +372,9 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
         assertEquals("error dataset",
-                "message: nested dataset \"level1.level2\" doesn't exist\n" +
-                "where: dataset\n", request.getErrorData().toString());
+                "culprit: dataset\n" +
+                "message: nested dataset \"level1.level2\" doesn't exist\n",
+                request.getErrorData().toString());
     }
 
     public void test_flush() {

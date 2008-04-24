@@ -112,9 +112,9 @@ public class ClientRequest {
 
     /**
      * Returns the main dataset for this request.  Initially the dataset
-     * contains query values provided in the URL, but requests may choose to
-     * additional data to the dataset in cases where the data needs to be
-     * used globally across the request.
+     * contains query values provided in the URL, but requests may add
+     * values to the dataset in cases where the data needs to be used
+     * globally across the request.
      * @return                     Global dataset for this request.
      */
     public Dataset getDataset() {

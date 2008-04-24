@@ -235,7 +235,7 @@ public class FileDataManager extends DataManager {
         }
         catch (Dataset.MissingValueError e) {
             request.setError (new Dataset("message", "nested dataset \"" +
-                    path + "\" doesn't exist", "where", "dataset"));
+                    path + "\" doesn't exist", "culprit", "dataset"));
             throw new RequestAbortedError();
         }
     }

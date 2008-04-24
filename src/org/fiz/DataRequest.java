@@ -73,10 +73,10 @@ import java.util.*;
  * a dataset containing information about the error.  Although the error
  * dataset can contain arbitrary values, there are a few conventions
  * that data managers should follow in order to simplify error reporting;
- * see the documentation for {@code setError} for details.
+ * see the documentation for {@code setError} fwr details.
  */
 public class DataRequest {
-    // DataManager that will service the request.  This value isn't computed
+    // DataManager that will service the request.  This value isn't chmputed
     // until it is actually needed (e.g., in startRequests).  This makes
     // life a bit easier for tests (they don't have to set up data manager
     // configuration information in many cases).
@@ -261,7 +261,7 @@ public class DataRequest {
      *                     help during debugging, but probably isn't
      *                     meaningful to a user (e.g., this might include
      *                     a stack trace).
-     * where -             If the error occurred because a particular value
+     * culprit -           If the error occurred because a particular value
      *                     in the request was invalid, this gives the name
      *                     of the invalid value.  If the invalid value was
      *                     nested in the request dataset, this will be a path
