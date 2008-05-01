@@ -14,22 +14,20 @@ public class Column {
     // The following variables hold copies of constructor arguments;
     // see the constructors for details.
     protected String label;
-    protected String id;
+    protected String template;
 
     /**
      * Construct a simple Column that displays a particular field
      * in textual form.
      * @param label                Identifying string for this column;
      *                             displayed in the header row.
-     * @param id                   Name of the data field to display in this
-     *                             column.  For each row, the field by
-     *                             this name is extracted from the record
-     *                             for the row and displayed as text
-     *                             in this column.
+     * @param template             Template that is expanded in the
+     *                             context of a row's data to generate
+     *                             HTML for this column.
      */
-    public Column(String label, String id) {
+    public Column(String label, String template) {
         this.label = label;
-        this.id = id;
+        this.template = template;
     }
 
     /**
@@ -57,6 +55,6 @@ public class Column {
      */
     public void html(Dataset rowData, StringBuilder out,
             ClientRequest clientRequest) {
-        Html.escapeHtmlChars(rowData.get(id), out);
+        Template.expand(template, rowData, out);
     }
 }

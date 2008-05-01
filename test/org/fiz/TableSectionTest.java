@@ -9,9 +9,9 @@ public class TableSectionTest extends junit.framework.TestCase {
         ClientRequest clientRequest = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getPeople"),
-                new Column("Name", "name"),
-                new Column("Age", "age"),
-                new Column("Weight", "weight"));
+                new Column("Name", "@name"),
+                new Column("Age", "@age"),
+                new Column("Weight", "@weight"));
         table.registerRequests(clientRequest);
         table.html(clientRequest);
         assertEquals("generated HTML", "\n" +

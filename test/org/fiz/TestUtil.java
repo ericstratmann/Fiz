@@ -6,6 +6,7 @@
 package org.fiz;
 import java.io.*;
 import java.lang.ProcessBuilder;
+import org.apache.log4j.*;
 import org.junit.Assert;
 
 public class TestUtil {
@@ -131,6 +132,7 @@ public class TestUtil {
         Config.init("test/testData");
         DataManager.destroyAll();
         DataManagerFixture.clearLogs();
+        DataManager.logger.setLevel(Level.ERROR);
 
         // Create a ClientRequest and supply some query data for it.
         ClientRequest request = new ClientRequest(null, new ServletRequestFixture(),
