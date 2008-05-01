@@ -119,7 +119,9 @@ public class DataRequest {
      *                             locate a template in the
      *                             {@code dataRequests} configuration dataset.
      * @param aux                  Auxiliary data, some of which may be used
-     *                             in the request.
+     *                             in the request.  This usually consists of
+     *                             the query values in the URI for the current
+     *                             page.
      */
     public DataRequest(String name, Dataset aux) {
         makeRequest(name, aux);

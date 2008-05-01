@@ -8,3 +8,7 @@
 # names in the following (comma-separated) list:
 searchPackages: "org.fiz"
 
+# When a DataRequest returns an error, the following option provides a
+# default template used to generate an HTML message from the error dataset.
+errorTemplate: "Error: @message"
+

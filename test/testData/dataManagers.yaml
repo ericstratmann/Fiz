@@ -1,0 +1,9 @@
+# This file provides the "dataManagers" configuration dataset used during
+# testing.
+
+file:
+  class:   FileDataManager
+  path:    "_testData_, test/testData"
+fixture:
+  class:   DataManagerFixture
+  arg1:    1234

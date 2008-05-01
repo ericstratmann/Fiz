@@ -118,4 +118,29 @@ public class TestUtil {
         Assert.assertEquals("delete test file/directory \"" + fileName + "\"",
                 true, Util.deleteTree(fileName));
     }
+
+    /**
+     * Initializes several different modules in order to create a
+     * working environment in which to run tests.  See the code of the
+     * method for details on what gets initialized and how.  This
+     * method is invoked either at the beginning of a particular test
+     * or in the setUp method for a test class.
+     * @return                     A ClientRequest that can be used in tests.
+     */
+    public static ClientRequest setUp() {
+        Config.init("test/testData");
+        DataManager.destroyAll();
+        DataManagerFixture.clearLogs();
+
+        // Create a ClientRequest and supply some query data for it.
+        ClientRequest request = new ClientRequest(null, new ServletRequestFixture(),
+                new ServletResponseFixture());
+        request.getHtml().setTitle("Test");
+        Dataset main = request.getDataset();
+        main.set("name", "Alice");
+        main.set("age", "36");
+        main.set("height", "66");
+
+        return request;
+    }
 }

@@ -198,7 +198,7 @@ public class Link {
     /**
      * Generates an HTML attribute of the form onclick="..." for use in
      * the Link's <a> element;  this attribute will cause a confirmation
-     * dialogue to be posted when the link is clicked on.
+     * dialog to be posted when the link is clicked.
      * @param template            Template for the confirmation message.
      * @param data                Dataset for expanding the template.
      * @param out                 HTML gets appended here.

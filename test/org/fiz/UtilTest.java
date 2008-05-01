@@ -403,6 +403,26 @@ public class UtilTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
+
+    public void test_getErrorTemplate_inProperties() {
+        Dataset properties = new Dataset("name", "Alice",
+                "errorTemplate", "template47");
+        assertEquals ("return value", "template47",
+                Util.getErrorTemplate(properties));
+    }
+    public void test_getErrorTemplate_inConfig() {
+        Dataset properties = new Dataset("name", "Alice");
+        Config.setDataset("main", new Dataset("cost", "$2.49",
+                "errorTemplate", "template101"));
+        assertEquals ("return value", "template101",
+                Util.getErrorTemplate(properties));
+    }
+    public void test_getErrorTemplate_usedDefault() {
+        Dataset properties = new Dataset("name", "Alice");
+        Config.setDataset("main", new Dataset("cost", "$2.49"));
+        assertEquals ("return value", "Error: @message",
+                Util.getErrorTemplate(properties));
+    }
 }
 
 // The following class implements just enough of the HttpServletRequest

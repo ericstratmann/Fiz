@@ -1,0 +1,28 @@
+# This dataset defines a collection of data requests used during testing.
+
+fixture1:
+  manager:  fixture
+  id:       fixture1
+fixture2:
+  manager:  fixture
+  id:       fixture2
+  name:     @name
+getPeople:
+  manager:  file
+  request:  read
+  file:     fileData.yaml
+  dataset:  people
+getPerson:
+  manager:  file
+  request:  read
+  file:     fileData.yaml
+  dataset:  person
+getNothing:
+  manager:  file
+  request:  read
+  file:     fileData.yaml
+  dataset:  empty
+error:
+  manager:  file
+  request:  bogus
+  file:     _nonexistent_/bogus/foo.yaml

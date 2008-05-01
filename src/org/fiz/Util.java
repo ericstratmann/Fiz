@@ -627,4 +627,30 @@ public class Util {
                     "exception in constructor: " + cause.getMessage());
         }
     }
+
+    /**
+     * Returns a template that can be expanded in the context of an
+     * error response to a DataRequest to produce an HTML error message.
+     * @param properties           If non-null, and if it contains an
+     *                             {@code errorTemplate} value, that value
+     *                             is used as the template.
+     * @return                     Returns the {@code errorTemplate} value
+     *                             from {@code properties}, if it exists,
+     *                             otherwise returns the {@code errorTemplate}
+     *                             value from the main dataset, if it exists,
+     *                             otherwise returns a default value.
+     */
+    public static String getErrorTemplate(Dataset properties) {
+        String template = null;
+        if (properties != null) {
+            template = properties.check("errorTemplate");
+        }
+        if (template == null) {
+            template = Config.getDataset("main").check("errorTemplate");
+        }
+        if (template == null) {
+            template = "Error: @message";
+        }
+        return template;
+    }
 }

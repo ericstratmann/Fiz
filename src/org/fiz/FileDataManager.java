@@ -7,7 +7,7 @@ import java.util.*;
  * testing (to eliminate the need for a "real" data manager) but may have
  * other uses also.
  * <p>
- * The configuration data set for a FileDataManager contains the
+ * The configuration dataset for a FileDataManager contains the
  * following values:
  *   class:    (required) The name of this class.
  *   path:     (required) A list of directories (separated by commas)
@@ -107,8 +107,8 @@ public class FileDataManager extends DataManager {
                 } else {
                     request.setError(new Dataset("message",
                             "unknown request \"" + operation +
-                            "\" in FileDataManager request; must be create, " +
-                            "read, update, or delete,"));
+                            "\" for FileDataManager; must be create, " +
+                            "read, update, or delete"));
                 }
             }
             catch (Dataset.MissingValueError e) {

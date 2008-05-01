@@ -1,11 +1,13 @@
 package org.fiz;
-import java.io.*;
 
 /**
  * The Template class substitutes values from a Dataset into a template
- * string to produce a new string through a process called "expansion".  Each
- * character from the template is copied to the output string except for
- * the following patterns, which cause substitutions:
+ * string to produce a new string through a process called "expansion".
+ * The goal for templates is to provide a simple mechanism for handling
+ * the most common kinds of substitution; more complex forms, such as
+ * iteration or recursion, are left to Java code.  Each character from
+ * the template is copied to the output string except for the following
+ * patterns, which cause substitutions:
  * @<i>name</i>             Copy the contents of the dataset element named
  *                          <i>name</i> to the output.  <i>name</i>
  *                          consists of all the standard Unicode identifier
@@ -21,11 +23,13 @@ import java.io.*;
  *                          name of another dataset element, and substitutes
  *                          the value of that element into the output.  It is
  *                          an error if the name doesn't exist in the dataset.
- * @@                       Append "@" to the output.
- * @{                       Append "{" to the output.
- * @}                       Append "}" to the output.
- * @*                       Any other occurrence of "@" besides those
- *                          described above is illegal and results in an error.
+ * @<i>name</i>?{...}       Default: if <i>name</i> exists in the dataset,
+ *                          copy its contents to the output and skip over
+ *                          {@code ?{...}}.  Otherwise, performed template
+ *                          expansion on the the text between the braces.
+ * @<i>name</i>?{<i>t1</i>|<i>t2</i>}    Choice: if <i>name</i> exists in the
+ *                          dataset perform template expansion on <i>t1</i>.
+ *                          Otherwise perform template expansion on <i>t2</i>.
  * {{...}}                  Conditional substitution: normally the information
  *                          between the braces is processed just like the rest
  *                          of the template, except that the braces are not
@@ -37,6 +41,11 @@ import java.io.*;
  *                          curly braces then one of the spaces may be
  *                          removed to avoid reduncant spaces (enclose the
  *                          space in {{}} to keep this from happening.
+ * @@                       Append "@" to the output.
+ * @{                       Append "{" to the output.
+ * @}                       Append "}" to the output.
+ * @*                       Any other occurrence of "@" besides those
+ *                          described above is illegal and results in an error.
  * When a dataset element is substituted into a template, special characters
  * in the value will be escaped according to a SpecialChars enum supplied
  * during expansion.  For example, if HTML encoding has been specified,
@@ -89,15 +98,26 @@ public class Template {
     // additional results from a method.
     protected static class ParseInfo {
         CharSequence template;     // The template being processed.
+        int templateEnd;           // Stop processing template characters
+                                   // after processing the character just
+                                   // before this one;  used to selectively
+                                   // process portions of the template.
         Dataset data;              // Source of data for expansions.
         StringBuilder out;         // Output information is appended here.
         SpecialChars quoting;      // How to transform special characters
                                    // in substituted values.
-        boolean conditional;       // True means we are parsing information
+        boolean ignoreErrors;      // True means we are processing information
                                    // between curly braces, so don't get upset
                                    // if data values can't be found.
-        boolean missingData;       // True means that a data value requested
-                                   //  between curly braces couldn't be found.
+        boolean missingData;       // True means that a data value couldn't
+                                   // be found but ignoreErrors was true.
+        boolean skip;              // True means we are parsing part of the
+                                   // template without actually expanding it
+                                   // (e.g. in a @foo?{...|...} substitution)
+                                   // so don't bother looking up or copying
+                                   // data values.  Skip other copying also,
+                                   // if it's convenient; anything copied to
+                                   // {@code out} will be discarded.
         int end;                   // Modified by methods such as
                                    // expandName to hold the index of the
                                    // character just after the last one
@@ -143,24 +163,46 @@ public class Template {
         info.data = data;
         info.out = out;
         info.quoting = quoting;
-        info.conditional = false;
+        info.ignoreErrors = false;
         info.missingData = false;
         info.lastDeletedSpace = -1;
+        expandRange(info, 0, template.length());
+    }
 
-        for (int i = 0; i < template.length(); ) {
+    /**
+     * Given a range of characters in a template, expand the characters
+     * in the range.
+     * @param info                 Contains information about the template
+     *                             being expanded.
+     * @param start                Index of the first character to expand.
+     * @param end                  Index of the character just after the last
+     *                             one to expand.
+     * @throws Dataset.MissingValueError
+     *                             Thrown if a data value couldn't be found
+     *                             and info.ignoreErrors is false.
+     * @throws SyntaxError         The template contains an illegal construct.
+     */
+    public static void expandRange(ParseInfo info, int start, int end)
+            throws Dataset.MissingValueError, SyntaxError {
+        CharSequence template = info.template;
+        int oldTemplateEnd = info.templateEnd;
+        info.templateEnd = end;
+
+        for (int i = start; i < info.templateEnd; ) {
             char c = template.charAt(i);
             if (c == '@') {
                 expandAtSign(info, i+1);
                 i = info.end;
-            } else if ((c == '{') && ((i+1) < template.length())
+            } else if ((c == '{') && ((i+1) < info.templateEnd)
                     && (template.charAt(i+1) == '{')) {
                 expandBraces(info, i+2);
                 i = info.end;
             } else {
-                out.append(c);
+                info.out.append(c);
                 i++;
             }
         }
+        info.templateEnd = oldTemplateEnd;
     }
 
     /**
@@ -198,17 +240,27 @@ public class Template {
      *                             the {@code @}.
      * @throws Dataset.MissingValueError
      *                             Thrown if a data value couldn't be found
-     *                             and info.conditional is false.
+     *                             and info.ignoreErrors is false.
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
      */
     protected static void expandAtSign(ParseInfo info, int start)
             throws Dataset.MissingValueError {
+        if (start >= info.templateEnd) {
+            throw new SyntaxError("dangling \"@\" in template \"" +
+                    info.template + "\"");
+        }
         char c = info.template.charAt(start);
         if (Character.isUnicodeIdentifierStart(c)) {
             info.end = Util.identifierEnd(info.template, start);
-            appendValue(info,
-                    info.template.subSequence(start, info.end).toString());
+            String name = info.template.subSequence(start,
+                    info.end).toString();
+            if ((info.end < info.templateEnd)
+                    && (info.template.charAt(info.end) == '?'))  {
+                expandChoice(info, name, info.end+1);
+            } else {
+                appendValue(info, name);
+            }
         } else if (c == '(') {
             expandParenName(info, start+1);
         } else if ((c == '@') || (c == '{') || (c == '}')) {
@@ -217,6 +269,61 @@ public class Template {
         } else {
             throw new SyntaxError("invalid sequence \"@" + c
                     + "\" in template \"" + info.template + "\"");
+        }
+    }
+
+    /**
+     * This method is invoked to expand substitutions  that start with
+     * {@code @name?}.
+     * @param info                 Overall information about the template
+     *                             expansion.  This method appends text to
+     *                             info.out and sets info.end to the index
+     *                             of the first character after the end of
+     *                             this substitution.  Info.missingInfo may
+     *                             also get set.
+     * @param name                 The name of the variable (everything
+     *                             between the "@" and the "?").
+     * @param start                Index in info.template of the character
+     *                             just after the "?".
+     * @throws Dataset.MissingValueError
+     *                             Thrown if a data value couldn't be found
+     *                             and info.ignoreErrors is false.
+     * @throws SyntaxError         The template contains an illegal construct.
+     */
+    protected static void expandChoice(ParseInfo info, String name,
+            int start) throws Dataset.MissingValueError, SyntaxError {
+        CharSequence template = info.template;
+        if ((start >= info.templateEnd) || (template.charAt(start) != '{')) {
+            throw new SyntaxError("missing \"{\" after \"?\" " +
+                    "in template \"" + template + "\"");
+        }
+        int first = start + 1;
+        int second = skipTo(info, start, '|', '}');
+        if (second >= info.templateEnd) {
+            throw new SyntaxError("incomplete @...?{...} substitution " +
+                    "in template \"" + template + "\"");
+        }
+        if (template.charAt(second) == '}') {
+            // This substitution has the form "@name?{template}".
+            if (info.data.check(name) != null) {
+                appendValue(info, name);
+            } else {
+                expandRange(info, first, second);
+            }
+            info.end = second+1;
+        } else {
+            // This substitution has the form "@name?{template1|template2}".
+            int third = skipTo(info, start, '}', '}');
+            if (third >= info.templateEnd) {
+                throw new SyntaxError("incomplete @...?{...} substitution " +
+                        "in template \"" + template + "\"");
+            }
+            if (info.data.check(name) != null) {
+                expandRange(info, first, second);
+            } else {
+                expandRange(info, second+1, third);
+            }
+            info.end = third+1;
         }
     }
 
@@ -233,7 +340,7 @@ public class Template {
      *                             the "@(".
      * @throws Dataset.MissingValueError
      *                             Thrown if a data value couldn't be found
-     *                             and info.conditional is false.
+     *                             and info.ignoreErrors is false.
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
      */
@@ -241,7 +348,7 @@ public class Template {
             throws Dataset.MissingValueError, SyntaxError {
         // Note: we use info.out to collect the name of the dataset value,
         // then erase this from info.out before appending the value.
-        int oldEnd = info.out.length();
+        int oldLength = info.out.length();
 
         // While we are collecting the name, we don't want to do any
         // special-character handling.  To accomplish this, temporarily
@@ -251,15 +358,15 @@ public class Template {
         info.quoting = SpecialChars.NONE;
 
         CharSequence template = info.template;
-        for (int i = start; i < template.length(); ) {
+        for (int i = start; i < info.templateEnd; ) {
             char c = template.charAt(i);
             if (c == '@') {
                 expandAtSign(info, i+1);
                 i = info.end;
             } else if (c == ')') {
                 info.end = i+1;
-                String name = info.out.substring(oldEnd);
-                info.out.setLength(oldEnd);
+                String name = info.out.substring(oldLength);
+                info.out.setLength(oldLength);
                 info.quoting = oldQuoting;
                 appendValue(info, name);
                 return;
@@ -281,12 +388,15 @@ public class Template {
      * @param name                 Name of the desired dataset element.
      * @throws Dataset.MissingValueError
      *                             Thrown if the data value couldn't be found
-     *                             and info.conditional is false.
+     *                             and info.ignoreErrors is false.
      */
     protected static void appendValue(ParseInfo info, String name)
             throws Dataset.MissingValueError {
         String value;
-        if (info.conditional) {
+        if (info.skip) {
+            return;
+        }
+        if (info.ignoreErrors) {
             value = info.data.check(name);
             if (value == null) {
                 info.missingData = true;
@@ -320,17 +430,17 @@ public class Template {
      */
     protected static void expandBraces(ParseInfo info, int start)
             throws SyntaxError {
-        info.conditional = true;
+        info.ignoreErrors = true;
         info.missingData = false;
         int oldEnd = info.out.length();
         CharSequence template = info.template;
 
-        for (int i = start; i < template.length(); ) {
+        for (int i = start; i < info.templateEnd; ) {
             char c = template.charAt(i);
             if (c == '@') {
                 expandAtSign(info, i+1);
                 i = info.end;
-            } else if ((c == '}') && ((i+1) < template.length())
+            } else if ((c == '}') && ((i+1) < info.templateEnd)
                     && (template.charAt(i+1) == '}')) {
                 info.end = i+2;
                 if (info.missingData) {
@@ -347,7 +457,7 @@ public class Template {
                     // been deleted and the character after the "}}" is
                     // either a space, a close-delimiter such as ">", or the
                     // end of the template, delete the space before the "{{".
-                    if (info.end < template.length()) {
+                    if (info.end < info.templateEnd) {
                         next = template.charAt(info.end);
                     } else {
                         // The "}}" is at the end of the template, so pretend
@@ -386,7 +496,7 @@ public class Template {
                     }
                     info.out.setLength(oldEnd);
                 }
-                info.conditional = false;
+                info.ignoreErrors = false;
                 return;
             } else {
                 info.out.append(c);
@@ -395,5 +505,61 @@ public class Template {
         }
         throw new SyntaxError("unmatched \"{{\" in template \""
                 + info.template + "\"");
+    }
+
+    /**
+     * This method is used to skip over parts of the template; it is
+     * used to parse parts of the template that may or may not actually
+     * be expanded.  Given a starting position, it scans forward to find
+     * the next unquoted character at this level that matches either of two
+     * input characters (characters that are part of a {@code @} or
+     * {@code {{...}} structure are skipped}.  This method does not
+     * reference any data values or copy any information to the output.
+     * @param info                 Information about the template
+     *                             expansion.
+     * @param start                First character to check for punctuation.
+     * @param c1                   Desired character: stop when this
+     *                             character is found.
+     * @param c2                   Another desired character: stop when this
+     *                             character is found.
+     * @return                     The index of the first unquoted character
+     *                             equal to c1 or c2, or info.templateEnd
+     *                             if no such character is found.
+     */
+    protected static int skipTo(ParseInfo info, int start, char c1,
+            char c2) {
+        CharSequence template = info.template;
+        int i;
+
+        // This method invokes the same procedures that do actual
+        // expansions, except that (a) we set the "skip" flag to avoid
+        // some operations, and (b) we record some of the state of the
+        // expansion and restore it the end to cancel any other side
+        // effects.
+        boolean oldSkip = info.skip;
+        info.skip = true;
+        int oldLength = info.out.length();
+
+        for (i = start; i < info.templateEnd; ) {
+            char c = template.charAt(i);
+            if (c == '@') {
+                expandAtSign(info, i+1);
+                i = info.end;
+            } else if ((c == '{') && ((i+1) < info.templateEnd)
+                    && (template.charAt(i+1) == '{')) {
+                expandBraces(info, i+2);
+                i = info.end;
+            } else if ((c == c1) || (c == c2)) {
+                break;
+            } else {
+                i++;
+            }
+        }
+
+        // Discard anything that was appended to the output during this
+        // method and restore the other state that we saved.
+        info.out.setLength(oldLength);
+        info.skip = oldSkip;
+        return i;
     }
 }

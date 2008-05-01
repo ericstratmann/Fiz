@@ -110,7 +110,7 @@ public class LinkTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder();
         Dataset data = new Dataset("name", "Alice", "weight", "110");
         Link link = new Link(new Dataset("base", "/url", "text", "@name",
-                "confirm", "Do you really want to delete @name?"));
+                "confirm", "Do you really want to delete @(name)?"));
         link.html(data, out);
         assertEquals("HTML for link", "<a href=\"/url\" onclick=\"if "
                 + "(!confirm(&quot;Do you really want to delete Alice?&quot;) "

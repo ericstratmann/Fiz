@@ -18,7 +18,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "  path: \"bogus,_testData_\"\n"));
         Config.setDataset("main", YamlDataset.newStringInstance(
                 "searchPackages: org.fiz\n"));
-        DataManager.getDataManager("test").flush();
+        DataManager.destroyAll();
     }
 
     public void tearDown() {
@@ -127,8 +127,9 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         manager.startRequests(requests);
         assertEquals("response", null, request.getResponseData());
         assertEquals("error information",
-                "message: \"unknown request \\\"bogus\\\" in FileDataManager " +
-                "request; must be create, read, update, or delete,\"\n",
+                "message: \"unknown request \\\"bogus\\\" for " +
+                "FileDataManager; must be create, read, update, or " +
+                "delete\"\n",
                 request.getErrorData().toString());
     }
     public void test_startRequests_missingParameter_operationNonNull() {

@@ -30,6 +30,7 @@ public class PathCacheTest extends junit.framework.TestCase {
         // the file has now been deleted.
         assertEquals("result", "_test1_/child/sample",
                 p.find("child/sample"));
+        TestUtil.deleteTree("_test1_");
     }
     public void test_find_fileNotFound() {
         PathCache p = new PathCache("_bogus_", "_test1_", "test1_/child");
@@ -48,8 +49,9 @@ public class PathCacheTest extends junit.framework.TestCase {
     }
 
     public void test_clear() {
-        PathCache p = new PathCache("_bogus_", "_test1_", "test1_/child");
+        (new File("_test1_/child")).mkdirs();
         TestUtil.writeFile("_test1_/child/sample", "test data");
+        PathCache p = new PathCache("_bogus_", "_test1_", "test1_/child");
         p.find("child/sample");
         TestUtil.deleteTree("_test1_");
         p.flush();
