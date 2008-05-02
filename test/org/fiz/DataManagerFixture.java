@@ -46,7 +46,7 @@ public class DataManagerFixture extends DataManager {
     // Invoke the following method in "setUp" methods for tests to
     // create configuration information that defines a data manager
     // named "testManager" implemented by this class.  This method
-    // will overwrite the "dataManagers" configuration data set
+    // will overwrite the "dataManagers" configuration dataset
     // and delete any existing data managers.
     public static void init() {
         Config.setDataset("dataManagers", YamlDataset.newStringInstance(

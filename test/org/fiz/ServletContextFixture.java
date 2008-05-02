@@ -17,6 +17,10 @@ public class ServletContextFixture implements ServletContext {
     // synthesize an appropriate return type.
     public String lastMethod = null;
 
+    // Tests can set the values below to prespecify the return values
+    // from some methods.
+    public String contextRoot = null;
+
     public Object getAttribute(String name) {
         return "getAttribute: " + name;
     }
@@ -55,7 +59,11 @@ public class ServletContextFixture implements ServletContext {
         return null;
     }
     public String getRealPath(String path) {
-        return "getRealPath: " + path;
+        if (contextRoot == null) {
+            return "getRealPath: " + path;
+        } else {
+            return contextRoot + path;
+        }
     }
     public RequestDispatcher getRequestDispatcher(String path) {
         lastMethod = "getRequestDispatcher(\"" + path + "\")";

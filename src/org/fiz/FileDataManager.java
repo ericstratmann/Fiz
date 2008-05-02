@@ -9,9 +9,14 @@ import java.util.*;
  * <p>
  * The configuration dataset for a FileDataManager contains the
  * following values:
- *   class:    (required) The name of this class.
- *   path:     (required) A list of directories (separated by commas)
- *             that will be searched for dataset files specified in requests.
+ *   class:            (required) The name of this class.
+ *   pathTemplate:     (required) Template that is expanded in the context
+ *                     of the main configuration dataset to produce a list
+ *                     of directories (separated by commas) that will be
+ *                     searched for dataset files specified in requests.
+ *                     Typically "@home" is used in the path to generate
+ *                     directory names that are descendents of the run-time
+ *                     home directory.
  * <p>
  * The following fields are defined for requests:
  *   request:  (required) Specifies the operation to be performed; must be
@@ -77,7 +82,10 @@ public class FileDataManager extends DataManager {
      *                             for supported values.
      */
     public FileDataManager (Dataset config) {
-        path = Util.split(config.get("path"), ',');
+        StringBuilder expandedPath = new StringBuilder();
+        Template.expand(config.get("pathTemplate"), Config.getDataset("main"),
+                expandedPath, Template.SpecialChars.NONE);
+        path = Util.split(expandedPath.toString(), ',');
     }
 
     /**
@@ -241,7 +249,7 @@ public class FileDataManager extends DataManager {
     }
 
     /**
-     * Flushes all data sets that have been cached in memory, so that they
+     * Flushes all datasets that have been cached in memory, so that they
      * will be reread from disk the next time they are needed.
      */
     public void flush() {

@@ -4,8 +4,7 @@ import java.lang.reflect.*;
 import java.util.Hashtable;
 import javax.servlet.*;
 import javax.servlet.http.*;
-
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
 
 /**
  * The Dispatcher class is used internally by Fiz to provide the top-level
@@ -81,17 +80,28 @@ public class Dispatcher extends HttpServlet {
     protected String fullMessage;     // The complete error message logged
                                       // by "service", including stack trace.
 
+    // If the following variable is true, it means we are running tests
+    // and should configure slightly differently.
+    protected static boolean testMode = false;
+
     /**
      * This method is invoked by the servlet container when the servlet
      * is first loaded; we use it to perform our own initialization.
      */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
+        if (testMode) {
+            // Reduce the level of logging while running tests.
+            logger.setLevel(Level.ERROR);
+        }
         String contextRoot = config.getServletContext().getRealPath("");
+        logger.info("Fiz initializing with context root " + contextRoot);
         Config.init(contextRoot + "/WEB-INF/config");
+        Dataset main = Config.getDataset("main");
+        main.set("home", contextRoot);
+        logger.info("main configuration dataset:\n    " +
+                main.toString().trim().replace("\n", "\n    "));
         Css.init(contextRoot + "/WEB-INF/css");
-        logger.info("Fiz initializing with context root "
-                + config.getServletContext().getRealPath(""));
     }
 
     /**

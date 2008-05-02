@@ -1,0 +1,25 @@
+/* TableSection.css -
+ *
+ * This file defines styles that are used in TableSections that don't
+ * specify an explicit class.
+ */
+
+table.TableSection td {
+    padding: @topBotPadding @sidePadding @topBotPadding @sidePadding;
+    border-top: 1px solid #FFFFFF;
+    border-left: none;
+    border-right: none;
+    vertical-align: top;
+    background: @background1;
+}
+
+table.TableSection tr.header td {
+    border-top: none;
+    background: @reverseBackground;
+    color: @reverseColor;
+    white-space: nowrap;
+}
+
+table.TableSection tr.even td {
+    background: @background2;
+}

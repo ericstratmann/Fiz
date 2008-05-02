@@ -1,0 +1,22 @@
+# This file contains data that is returned by various data requests
+# used by the Demo interactor.
+
+people:
+  record:
+    - name: Alice
+      age: 24
+      height: 65
+      ssn: 242-88-1702
+      weight: 110
+    - name: Bill
+      age: 41
+      height: 73
+      weight: 195
+    - name: Carol
+      age: 12
+      height: 60
+      weight: 85
+    - name: David
+      age: 66
+      weight: 220
+      height: 71

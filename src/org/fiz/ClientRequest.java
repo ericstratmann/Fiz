@@ -210,6 +210,24 @@ public class ClientRequest {
     }
 
     /**
+     * Generate HTML for one or more Sections, appending it to the response
+     * from this ClientRequest.  Each Section is first given a chance to
+     * specify the DataRequests needed to supply its data, then the requests
+     * are processed, then each Section uses the request results to
+     * generate its HTML.
+     * @param sections             Contents of the page: any number of Sections.
+     */
+    public void showSections(Section ... sections) {
+        for (Section section : sections) {
+            section.registerRequests(this);
+        }
+        startDataRequests();
+        for (Section section : sections) {
+            section.html(this);
+        }
+    }
+
+    /**
      * Begin processing all of the DataRequests that have been registered
      * so far.  This method is typically invoked after all of the Sections
      * in a page have had a chance to register their requests; delaying

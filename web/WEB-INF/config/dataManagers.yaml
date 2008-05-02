@@ -1,0 +1,9 @@
+# dataManagers.yaml --
+#
+# This dataset defines the "built-in" data managers for Fiz.  These
+# data managers are used primarily for demonstration purposes.
+
+# Used by demos to read datasets from disk files.
+demo:
+  class:         FileDataManager
+  pathTemplate:  @home/WEB-INF/demo

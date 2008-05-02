@@ -130,9 +130,10 @@ public class DataRequest {
     /**
      * Construct a DataRequest object using a template.  This form of the
      * constructor overrides the {@code manager} request property.
-     * @param name                 Symbolic name for the request; used to
-     *                             locate a template in the
-     *                             {@code dataRequests} configuration dataset.
+     * @param name                 Symbolic name for the request; a path
+     *                             used to locate a template dataset within
+     *                             the {@code dataRequests} configuration
+     *                             dataset.
      * @param aux                  Auxiliary data, some of which may be used
      *                             in the request.
      * @param manager              If non-null, gives the name of the data
@@ -414,16 +415,16 @@ public class DataRequest {
     /**
      * Compute the input data for the request by substituting values into
      * a template dataset.
-     * @param name                 Symbolic name for the request; used to
+     * @param path                 Symbolic name for the request; used to
      *                             locate a template in the
      *                             {@code dataRequests} configuration dataset.
      * @param aux                  Auxiliary data, some of which may be used
      *                             in the request.
      */
-    protected void makeRequest(String name, Dataset aux) {
+    protected void makeRequest(String path, Dataset aux) {
         request = new Dataset();
         Dataset config = Config.getDataset("dataRequests");
-        Dataset template = config.getChild(name);
+        Dataset template = config.getChildPath(path);
         for (String key : template.keySet()) {
             String value = template.get(key);
             if ((value.length() < 1) || (value.charAt(0) != '@')) {

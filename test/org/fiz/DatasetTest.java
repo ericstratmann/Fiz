@@ -260,7 +260,7 @@ public class DatasetTest extends junit.framework.TestCase {
                 "list:\n" +
                 "  - name: Alice\n" +
                 "  - name: Bill\n" +
-                "  - age: 28\n" +
+                "  - age:  28\n" +
                 "    name: Carol\n", clone.toString());
     }
     public void test_clone_copyChain() {
@@ -308,7 +308,7 @@ public class DatasetTest extends junit.framework.TestCase {
         source.getChild("a").set("name", "333");
         assertEquals("cloned dataset",
                 "a:\n" +
-                "    age: 24\n" +
+                "    age:  24\n" +
                 "    name: Alice\n" +
                 "b: b_value\n" +
                 "c: xyzzy\n", dest.toString());
@@ -328,12 +328,12 @@ public class DatasetTest extends junit.framework.TestCase {
         Dataset d2 = d.createChild("child", new Dataset("age", "6",
                 "name", "Carol"));
         d2.set("id", "9924");
-        assertEquals("child contents", "age: 6\n" +
-                "id: 9924\n" +
+        assertEquals("child contents", "age:  6\n" +
+                "id:   9924\n" +
                 "name: Carol\n", d2.toString());
         assertEquals("dataset contents", "child:\n" +
-                "    age: 6\n" +
-                "    id: 9924\n" +
+                "    age:  6\n" +
+                "    id:   9924\n" +
                 "    name: Carol\n", d.toString());
     }
 
@@ -360,13 +360,13 @@ public class DatasetTest extends junit.framework.TestCase {
         Dataset d2 = d.createChildPath("level1.level2",
                 new Dataset("age", "6", "name", "Carol"));
         d2.set("id", "9924");
-        assertEquals("child contents", "age: 6\n" +
-                "id: 9924\n" +
+        assertEquals("child contents", "age:  6\n" +
+                "id:   9924\n" +
                 "name: Carol\n", d2.toString());
         assertEquals("dataset contents", "level1:\n" +
                 "    level2:\n" +
-                "        age: 6\n" +
-                "        id: 9924\n" +
+                "        age:  6\n" +
+                "        id:   9924\n" +
                 "        name: Carol\n", d.toString());
     }
 
@@ -397,7 +397,7 @@ public class DatasetTest extends junit.framework.TestCase {
         d.deletePath("level1.level2.bogus");
         assertEquals("dataset contents", "level1:\n" +
                 "    level2:\n" +
-                "        first: 1\n" +
+                "        first:  1\n" +
                 "        second: 2\n", d.toString());
     }
 
@@ -631,7 +631,7 @@ public class DatasetTest extends junit.framework.TestCase {
     public void test_set() {
         Dataset d = new Dataset("first", "12345");
         d.set("second", "66");
-        assertEquals("dataset contents", "first: 12345\n" +
+        assertEquals("dataset contents", "first:  12345\n" +
                 "second: 66\n", d.toString());
     }
 
@@ -821,7 +821,7 @@ public class DatasetTest extends junit.framework.TestCase {
     public void test_createChildInternal_childExists() {
         Dataset d = YamlDataset.newStringInstance("child:\n  name: Alice\n"
                 + "  age: 24\n");
-        assertEquals("child contents", "age: 24\n" +
+        assertEquals("child contents", "age:  24\n" +
                 "name: Alice\n", d.createChildInternal(
                 d.map, "child").toString());
     }
@@ -832,7 +832,7 @@ public class DatasetTest extends junit.framework.TestCase {
                 "    age:  24\n" +
                 "  - name: Bill\n" +
                 "  age: 22\n");
-        assertEquals("child contents", "age: 24\n" +
+        assertEquals("child contents", "age:  24\n" +
                 "name: Alice\n", d.createChildInternal(
                 d.map, "child").toString());
     }
@@ -874,7 +874,7 @@ public class DatasetTest extends junit.framework.TestCase {
                 "list:\n" +
                 "  - name: Alice\n" +
                 "  - name: Bill\n" +
-                "  - age: 28\n" +
+                "  - age:  28\n" +
                 "    name: Carol\n", clone.toString());
     }
 
@@ -933,7 +933,7 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("last name", "foo", info.lastName);
 
         // Add a unique value to the parent map, then check that this value
-        // appears in the right place in the overall data set.
+        // appears in the right place in the overall dataset.
         info.parentMap.put("value", "12345");
         assertEquals("overall dataset contents", "level1:\n" +
                 "    level2:\n" +
@@ -951,7 +951,7 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("last name", "foo", info.lastName);
 
         // Add a unique value to the parent map, then check that this value
-        // appears in the right place in the overall data set.
+        // appears in the right place in the overall dataset.
         info.parentMap.put("value", "12345");
         assertEquals("overall dataset contents", "level1:\n" +
                 "    level2:\n" +

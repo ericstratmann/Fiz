@@ -18,6 +18,8 @@ public class Test extends Interactor {
                 + request.getServletRequest().getPathTranslated());
         logger.info("getContextPath(): "
                 + request.getServletContext().getContextPath());
+        logger.info("working directory: "
+                + System.getProperty("user.dir"));
         logger.info("getMimeType(foo.xls): "
                 + request.getServletContext().getMimeType("foo.xls"));
         logger.info("getMimeType(foo.html): "

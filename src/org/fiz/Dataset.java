@@ -45,7 +45,7 @@ public class Dataset implements Cloneable {
 
         /**
          * The caller expects the name to refer to zero or more
-         * nested data sets, all of which will be returned.
+         * nested datasets, all of which will be returned.
          */
         DATASETS,
 
@@ -433,7 +433,7 @@ public class Dataset implements Cloneable {
     /**
      * Returns a nested dataset if it exists, creates a new dataset
      * if the child doesn't exist.  If {@code key} corresponds to a
-     * list of nested data sets than the first child in the list is returned.
+     * list of nested datasets than the first child in the list is returned.
      * If {@code key} corresponds to a string value then the string value
      * is replaced with a new empty dataset.
      * @param key                  Name of the desired child (in the
@@ -451,7 +451,7 @@ public class Dataset implements Cloneable {
      * in this Dataset object.  If you don't want this behavior, clone
      * {@code dataset} before calling this method.
      * @param key                  Name of a nested dataset within the
-     *                             top-level data set (not a path).
+     *                             top-level dataset (not a path).
      * @param dataset              Same as the {@code dataset} argument.
      */
     @SuppressWarnings("unchecked")
@@ -463,8 +463,8 @@ public class Dataset implements Cloneable {
     /**
      * If a path refers to a nested dataset, returns that nested dataset;
      * if the path already has a defined value that is a list or string
-     * value, replaces the old value with a new empty data set.  If the path
-     * doesn't currently exist, creates a new empty data set at the specified
+     * value, replaces the old value with a new empty dataset.  If the path
+     * doesn't currently exist, creates a new empty dataset at the specified
      * location, filling in any missing parent datasets along the path.
      * @param path                 One or more keys, separated by dots.
      * @return                     Dataset corresponding to {@path}.
@@ -691,7 +691,7 @@ public class Dataset implements Cloneable {
      * @param path                 A sequence of keys separated by dots.
      *                             For example, "a.b.c" refers to a value
      *                             "c" contained in a nested dataset "b"
-     *                             contained in a data set "a" contained
+     *                             contained in a dataset "a" contained
      *                             in the current dataset
      * @param wanted               Indicates what kind of value is expected
      *                             (string value, nested dataset, etc.)
@@ -766,7 +766,7 @@ public class Dataset implements Cloneable {
      * @param path                 A sequence of keys separated by dots.
      *                             For example, "a.b.c" refers to a value
      *                             "c" contained in a nested dataset "b"
-     *                             contained in a data set "a" contained
+     *                             contained in a dataset "a" contained
      *                             in the current dataset
      * @return                     Value associated with {@code path}
      * @throws MissingValueError   Thrown if one of the keys in {@code path}
@@ -914,7 +914,7 @@ public class Dataset implements Cloneable {
     /**
      * This internal method does most of the work of the {@code clone}
      * method.  It returns a deep copy of {@code source}, calling itself
-     * recursively to copy nested data sets.
+     * recursively to copy nested datasets.
      * @param source               Object to copy; contents must conform
      *                             to those expected for a dataset.
      * @param dest                 Copy everything from {@code source} to
@@ -930,7 +930,7 @@ public class Dataset implements Cloneable {
 
         // Each iteration through the following loop copies one key-value
         // pair from source to dest; it will invoke this method recursively
-        // to copy the contents of nested data sets.
+        // to copy the contents of nested datasets.
         for (Map.Entry<String,Object> pair :
                 ((HashMap<String,Object>) source).entrySet()) {
             Object value = pair.getValue();

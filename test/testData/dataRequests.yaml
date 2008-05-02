@@ -1,5 +1,9 @@
 # This dataset defines a collection of data requests used during testing.
 
+error:
+  manager:  file
+  request:  bogus
+  file:     _nonexistent_/bogus/foo.yaml
 fixture1:
   manager:  fixture
   id:       fixture1
@@ -7,6 +11,11 @@ fixture2:
   manager:  fixture
   id:       fixture2
   name:     @name
+getNothing:
+  manager:  file
+  request:  read
+  file:     fileData.yaml
+  dataset:  empty
 getPeople:
   manager:  file
   request:  read
@@ -17,12 +26,8 @@ getPerson:
   request:  read
   file:     fileData.yaml
   dataset:  person
-getNothing:
+getState:
   manager:  file
   request:  read
   file:     fileData.yaml
-  dataset:  empty
-error:
-  manager:  file
-  request:  bogus
-  file:     _nonexistent_/bogus/foo.yaml
+  dataset:  state

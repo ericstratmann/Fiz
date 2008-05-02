@@ -11,7 +11,7 @@ import org.xml.sax.*;
  *  - Elements with children become nested datasets; elements without
  *    children become string values.
  *  - If multiple elements in the same parent have the same name, then they
- *    must all have children: they become a list of nested data sets.
+ *    must all have children: they become a list of nested datasets.
  *  - If an element has children than it must not contain any text except
  *    whitespace (which is ignored).
  *  - Whitespace is not ignored in elements without children.

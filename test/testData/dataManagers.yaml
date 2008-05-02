@@ -2,8 +2,8 @@
 # testing.
 
 file:
-  class:   FileDataManager
-  path:    "_testData_, test/testData"
+  class:        FileDataManager
+  pathTemplate: "_testData_, test/testData"
 fixture:
   class:   DataManagerFixture
   arg1:    1234

@@ -237,6 +237,19 @@ public class  YamlDataset extends Dataset {
         names.addAll(dataset.keySet());
         Collections.sort(names);
         String prefix = firstPrefix;
+
+        // Find the length of the longest name, so that we can format
+        // the output in two columns.
+        int maxLength = 0;
+        for (Object nameObject: names) {
+            String name = (String) nameObject;
+            if ((name.length() > maxLength)
+                    && (dataset.get(name) instanceof String)) {
+                maxLength = name.length();
+            }
+        }
+
+        // Make a second pass through all of the entries to print them.
         for (Object nameObject: names) {
             String name = (String) nameObject;
             Object value = dataset.get(name);
@@ -256,6 +269,10 @@ public class  YamlDataset extends Dataset {
                 }
             } else {
                 writer.append(": ");
+                int padding = maxLength - name.length();
+                if (padding > 0) {
+                    writer.append(String.format("%" +  padding + "s", ""));
+                }
                 writer.append(escapeYamlChars(value.toString()));
                 writer.append("\n");
             }
@@ -334,7 +351,7 @@ public class  YamlDataset extends Dataset {
      *                             is supposed to be a HashMap; if it isn't,
      *                             it's because the YAML source contained
      *                             list values, which are illegal for us.
-     * @param fileName             Name of the file from which the data set
+     * @param fileName             Name of the file from which the dataset
      *                             was read, for null if none.  Used for error
      *                             messages.
      */

@@ -1,0 +1,12 @@
+# dataRequests.yaml --
+#
+# This dataset defines the official "built-in" data requests for Fiz.
+# Most of these are used primarily for demonstration purposes.
+
+# The following requests are used by the Demo class.
+demo:
+  getPeople:
+    manager: demo
+    request: read
+    file:    demo
+    dataset: people

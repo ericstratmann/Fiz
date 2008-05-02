@@ -13,7 +13,7 @@ public class XmlDatasetTest extends junit.framework.TestCase {
                 "<child><name>Alice</name></child>\n" +
                 "<child><name>Bob</name></child>\n" +
                 "</head>\n");
-        assertEquals("age: \" 32 \"\n" +
+        assertEquals("age:  \" 32 \"\n" +
                 "child:\n" +
                 "  - name: Alice\n" +
                 "  - name: Bob\n" +
@@ -220,14 +220,14 @@ public class XmlDatasetTest extends junit.framework.TestCase {
     public void test_parse_string() {
         Dataset d = XmlDataset.parse(
                 "<head><name>Bill</name><age>24</age>\n</head>\n", null);
-        assertEquals("age: 24\n" +
+        assertEquals("age:  24\n" +
                 "name: Bill\n", YamlDataset.writeString(d));
     }
     public void test_parse_file() {
         TestUtil.writeFile("test.xml",
                 "<foo><name>Bill</name><age>46</age>\n</foo>\n");
         Dataset d = XmlDataset.parse(null, "test.xml");
-        assertEquals("age: 46\n" +
+        assertEquals("age:  46\n" +
                 "name: Bill\n", YamlDataset.writeString(d));
         TestUtil.deleteTree("test.xml");
     }

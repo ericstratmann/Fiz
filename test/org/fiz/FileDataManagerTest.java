@@ -1,6 +1,7 @@
 package org.fiz;
 import java.io.*;
 import java.util.*;
+import org.apache.log4j.Level;
 
 /**
  * Junit tests for the FileDataManager class.
@@ -9,13 +10,15 @@ import java.util.*;
 public class FileDataManagerTest extends junit.framework.TestCase {
     protected FileDataManager manager = null;
     public void setUp() {
+        Config.setDataset("main", new Dataset());
+        DataManager.logger.setLevel(Level.ERROR);
         (new File("_testData_")).mkdir();
-        manager = new FileDataManager(new Dataset("path",
+        manager = new FileDataManager(new Dataset("pathTemplate",
                 "bogus,_testData_"));
         Config.setDataset("dataManagers", YamlDataset.newStringInstance(
                 "test:\n" +
                 "  class: FileDataManager\n" +
-                "  path: \"bogus,_testData_\"\n"));
+                "  pathTemplate: \"bogus,_testData_\"\n"));
         Config.setDataset("main", YamlDataset.newStringInstance(
                 "searchPackages: org.fiz\n"));
         DataManager.destroyAll();
@@ -23,6 +26,16 @@ public class FileDataManagerTest extends junit.framework.TestCase {
 
     public void tearDown() {
         TestUtil.deleteTree("_testData_");
+    }
+
+    public void test_constructor() {
+        Config.setDataset("main", new Dataset("home", "/a/b/c",
+                "test", "<test>, xyz"));
+        manager = new FileDataManager(new Dataset("pathTemplate",
+                "@home/myDir, /demo/@test"));
+        assertEquals("path size", 3, manager.path.length);
+        assertEquals("expanded path", "/a/b/c/myDir, /demo/<test>, xyz",
+                Util.join(manager.path, ", "));
     }
 
     public void test_startRequests_create() throws IOException {
@@ -45,10 +58,10 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         assertEquals("response", "", request.getResponseData().toString());
         assertEquals("dataset file",
                 "child:\n" +
-                "    age: 21\n" +
+                "    age:  21\n" +
                 "    name: Alice\n" +
                 "child2:\n" +
-                "    age: 36\n" +
+                "    age:    36\n" +
                 "    height: 65\n",
                 Util.readFile("_testData_/test.yml").toString());
     }
@@ -69,12 +82,12 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         requests.add(request2);
         manager.startRequests(requests);
         assertEquals("response for first request",
-                "first: abc\n" +
+                "first:  abc\n" +
                 "level1:\n" +
                 "    x: 47\n" +
                 "    y: 58\n" +
                 "second: def\n" +
-                "third: ghi\n", request1.getResponseData().toString());
+                "third:  ghi\n", request1.getResponseData().toString());
         assertEquals("response for first request",
                 "x: 47\n" +
                 "y: 58\n", request2.getResponseData().toString());
@@ -95,7 +108,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         assertEquals("dataset file",
                 "age: 36\n" +
                 "child:\n" +
-                "    age: 21\n" +
+                "    age:  21\n" +
                 "    name: Alice\n",
                 Util.readFile("_testData_/test.yml").toString());
     }
@@ -115,7 +128,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         assertEquals("error dataset", null, request.getErrorData());
         assertEquals("dataset file",
                 "child:\n" +
-                "    age: 21\n" +
+                "    age:  21\n" +
                 "    name: Alice\n",
                 Util.readFile("_testData_/test.yml").toString());
     }
@@ -182,7 +195,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         manager.createOperation(request, parameters);
         assertEquals("response", "", request.getResponseData().toString());
         assertEquals("dataset file", "first: 123\n" +
-                "new: 456\n",
+                "new:   456\n",
                 Util.readFile("_testData_/test.yml").toString());
     }
     public void test_createOperation_modifyNested() throws IOException {
@@ -199,13 +212,13 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         DataRequest request = new DataRequest(new Dataset());
         manager.createOperation(request, parameters);
         assertEquals("response", "", request.getResponseData().toString());
-        assertEquals("dataset file", "first: abc\n" +
+        assertEquals("dataset file", "first:  abc\n" +
                 "level1:\n" +
                 "    level2:\n" +
                 "        first: 123\n" +
-                "        new: 456\n" +
+                "        new:   456\n" +
                 "second: def\n" +
-                "third: ghi\n",
+                "third:  ghi\n",
                 Util.readFile("_testData_/test.yml").toString());
     }
 
@@ -219,12 +232,12 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "third: ghi\n");
         DataRequest request = new DataRequest(new Dataset("manager", "test"));
         manager.readOperation(request, new Dataset("file", "test"));
-        assertEquals("response", "first: abc\n" +
+        assertEquals("response", "first:  abc\n" +
                 "level1:\n" +
                 "    x: 47\n" +
                 "    y: 58\n" +
                 "second: def\n" +
-                "third: ghi\n", request.getResponseData().toString());
+                "third:  ghi\n", request.getResponseData().toString());
     }
 
     public void test_updateOperation_modifyRoot() throws IOException {
@@ -239,8 +252,8 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         DataRequest request = new DataRequest(new Dataset());
         manager.updateOperation(request, parameters);
         assertEquals("response", "", request.getResponseData().toString());
-        assertEquals("dataset file", "first: 123\n" +
-                "new: 456\n" +
+        assertEquals("dataset file", "first:  123\n" +
+                "new:    456\n" +
                 "second: def\n",
                 Util.readFile("_testData_/test.yml").toString());
     }
@@ -259,9 +272,9 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         manager.updateOperation(request, parameters);
         assertEquals("response", "", request.getResponseData().toString());
         assertEquals("dataset file", "child:\n" +
-                "    age: 36\n" +
+                "    age:    36\n" +
                 "    height: 65\n" +
-                "    name: Alice\n",
+                "    name:   Alice\n",
                 Util.readFile("_testData_/test.yml").toString());
     }
     public void test_updateOperation_nonexistentChild() throws IOException {
@@ -326,7 +339,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "first: abc\n" +
                 "second: def\n");
         Dataset d = manager.loadDataset("test");
-        assertEquals("returned dataset", "first: abc\n" +
+        assertEquals("returned dataset", "first:  abc\n" +
                 "second: def\n", d.toString());
     }
     public void test_loadDataset_cached() {
@@ -336,7 +349,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         manager.loadDataset("test");
         TestUtil.deleteTree("_testData_/test.yml");
         Dataset d = manager.loadDataset("test");
-        assertEquals("returned dataset", "first: abc\n" +
+        assertEquals("returned dataset", "first:  abc\n" +
                 "second: def\n", d.toString());
     }
 

@@ -107,7 +107,7 @@ public class YamlDatasetTest extends junit.framework.TestCase {
     public void test_writeString() {
         Dataset d = new Dataset("first", "332", "second", " ab\tcd ");
         assertEquals("generated YAML",
-                "first: 332\n" +
+                "first:  332\n" +
                 "second: \" ab\\tcd \"\n", YamlDataset.writeString(d));
     }
     public void test_writeString_ioError() {
@@ -140,7 +140,7 @@ public class YamlDatasetTest extends junit.framework.TestCase {
         Dataset d = new Dataset("first", "332", "second", " ab\tcd ");
         YamlDataset.writeFile(d, "test.yml", null);
         assertEquals("generated YAML",
-                "first: 332\n" +
+                "first:  332\n" +
                 "second: \" ab\\tcd \"\n",
                 Util.readFile("test.yml").toString());
         TestUtil.deleteTree("test.yml");
@@ -228,20 +228,20 @@ public class YamlDatasetTest extends junit.framework.TestCase {
                 + "  f: California\n"
                 + "funny : \" abcd\\n\\n\"\n");
         assertEquals("generated YAML",
-                "a: 45\n" +
-                "b: Simple  name\n" +
-                "c:\n" +
-                "    d:\n" +
-                "        e: Arizona\n" +
-                "    f: California\n" +
-                "children:\n" +
-                "  - age: 18\n" +
-                "    name: Bill\n" +
-                "  - age: 36\n" +
-                "    name: Alice\n" +
-                "  - age: 25\n" +
-                "    name: Susan\n" +
-                "funny: \" abcd\\n\\n\"\n", d.toString());
+                "a:     45\n" +
+                        "b:     Simple  name\n" +
+                        "c:\n" +
+                        "    d:\n" +
+                        "        e: Arizona\n" +
+                        "    f: California\n" +
+                        "children:\n" +
+                        "  - age:  18\n" +
+                        "    name: Bill\n" +
+                        "  - age:  36\n" +
+                        "    name: Alice\n" +
+                        "  - age:  25\n" +
+                        "    name: Susan\n" +
+                        "funny: \" abcd\\n\\n\"\n", d.toString());
     }
     public void test_writeSubtree_rereadOutput() {
         Dataset d = YamlDataset.newStringInstance(

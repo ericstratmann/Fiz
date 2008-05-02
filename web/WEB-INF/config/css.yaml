@@ -6,13 +6,30 @@
 # as colors and fonts, simply by making changes here.
 
 # Overall background color:
-background: #FFFFFF
+background:        #FFFFFF
 
 # Overall foreground color:
-color: #000000
+color:             #000000
+
+# Colors to use in "reverse video" situations, with light text on a
+# dark background:
+reverseBackground: #687291
+reverseColor:      #FFFFFF
+
+# A series of compatible background colors, in order from lightest to
+# darkest (used for odd-even table shadings, etc.):
+background1:       #EEEFF2
+background2:       #DFE1E7
+background3:       #C9D0DC
+background4:       #B0BCC8
 
 # Overall font information.  Note: specifying font sizes as percentages
 # rather than absolute size enables features such as control-plus and
 # control-minus in Firefox.
-fontFamily: "Tahoma, Arial, sans-serif"
-fontSize: 80%
+fontFamily:       "Tahoma, Arial, sans-serif"
+fontSize:         80%
+
+# Padding around table entries and similar things where text is
+# enclosed in a region:
+sidePadding:      10px
+topBotPadding:    2px

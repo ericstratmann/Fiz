@@ -20,12 +20,12 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_getDataset() {
-        assertEquals("request data set contents", "p1: param_value1\n" +
+        assertEquals("request dataset contents", "p1: param_value1\n" +
                 "p2: param_value2\n", request2.getDataset().toString());
     }
     public void test_getDataset_noQueryData() {
         servletRequest.setParameters();
-        assertEquals("request data set contents", "",
+        assertEquals("request dataset contents", "",
                 request2.getDataset().toString());
     }
 
@@ -58,9 +58,9 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("count of registered requests", 2,
                 request.namedRequests.size());
         assertEquals("share duplicate requests", data1, data3);
-        assertEquals("contents of request", "id: fixture2\n" +
+        assertEquals("contents of request", "id:      fixture2\n" +
                 "manager: fixture\n" +
-                "name: Alice\n",
+                "name:    Alice\n",
                 data2.getRequestData().toString());
     }
 
@@ -75,6 +75,21 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("contents of request", "name: Carol\n",
                 request.unnamedRequests.get(1).getRequestData().toString());
     }
+
+    public void test_showSections() {
+        ClientRequest clientRequest = TestUtil.setUp();
+        clientRequest.showSections(
+                new TemplateSection("first\n"),
+                new TemplateSection("getState", "second: @name\n"),
+                new TemplateSection("getState", "third: @capital\n"));
+        assertEquals("generated HTML", "first\n" +
+                "second: California\n" +
+                "third: Sacramento\n",
+                clientRequest.getHtml().getBody().toString());
+        assertEquals("registered requests", "getState",
+                clientRequest.getRequestNames());
+    }
+
     public void test_startDataRequests_namedAndUnnamed() {
         ClientRequest request = TestUtil.setUp();
         DataRequest data1 = request.registerDataRequest("fixture1");

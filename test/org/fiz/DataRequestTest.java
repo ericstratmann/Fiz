@@ -22,18 +22,18 @@ public class DataRequestTest extends junit.framework.TestCase {
     public void test_constructor() {
         DataRequest request = new DataRequest(new Dataset(
                 "name", "Bob", "manager", "testManager", "age", "18"));
-        assertEquals("request dataset", "age: 18\n" +
+        assertEquals("request dataset", "age:     18\n" +
                 "manager: testManager\n" +
-                "name: Bob\n",
+                "name:    Bob\n",
                 request.request.toString());
     }
 
     public void test_constructor_withAuxDataset() {
         DataRequest request = new DataRequest("request1",
                 new Dataset("name", "Bob"));
-        assertEquals("request dataset", "id: 44\n" +
-                "manager: testManager\n" +
-                "name: Bob\n" +
+        assertEquals("request dataset", "id:       44\n" +
+                "manager:  testManager\n" +
+                "name:     Bob\n" +
                 "nickname: \"@fluffy\"\n",
                 request.request.toString());
     }
@@ -41,18 +41,18 @@ public class DataRequestTest extends junit.framework.TestCase {
     public void test_constructor_withAuxDatasetAndManager() {
         DataRequest request = new DataRequest("request1",
                 new Dataset("name", "Bob"), "t2");
-        assertEquals("request dataset", "id: 44\n" +
-                "manager: t2\n" +
-                "name: Bob\n" +
+        assertEquals("request dataset", "id:       44\n" +
+                "manager:  t2\n" +
+                "name:     Bob\n" +
                 "nickname: \"@fluffy\"\n",
                 request.request.toString());
     }
     public void test_constructor_withAuxDatasetAndManager_managerNull() {
         DataRequest request = new DataRequest("request1",
                 new Dataset("name", "Bob"), null);
-        assertEquals("request dataset", "id: 44\n" +
-                "manager: testManager\n" +
-                "name: Bob\n" +
+        assertEquals("request dataset", "id:       44\n" +
+                "manager:  testManager\n" +
+                "name:     Bob\n" +
                 "nickname: \"@fluffy\"\n",
                 request.request.toString());
     }
@@ -138,7 +138,7 @@ public class DataRequestTest extends junit.framework.TestCase {
         assertEquals("before completion", false, request.completed);
         request.setComplete(new Dataset("name", "Bob", "age", "34"));
         assertEquals("after completion", true, request.completed);
-        assertEquals("result data set", "age: 34\n" +
+        assertEquals("result dataset", "age:  34\n" +
                 "name: Bob\n",
                 request.getResponseData().toString());
     }
@@ -154,7 +154,7 @@ public class DataRequestTest extends junit.framework.TestCase {
         long stop = System.nanoTime();
         assertEquals("request started", true, request.started);
         assertEquals("request completed", true, request.completed);
-        assertEquals("result data set", "result: success\n",
+        assertEquals("result dataset", "result: success\n",
                 result.toString());
         assertEquals("data manager log", "t2 started 707",
                 DataManagerFixture.getLogs());
@@ -171,7 +171,7 @@ public class DataRequestTest extends junit.framework.TestCase {
         request.setComplete(new Dataset("status", "ok"));
         DataManagerFixture.clearLogs();
         Dataset result = request.getResponseData();
-        assertEquals("result data set", "status: ok\n",
+        assertEquals("result dataset", "status: ok\n",
                 result.toString());
         assertEquals("data manager log", "",
                 DataManagerFixture.getLogs());
@@ -189,7 +189,7 @@ public class DataRequestTest extends junit.framework.TestCase {
         Dataset result = request.getResponseData();
         long stop = System.nanoTime();
         assertEquals("request completed", true, request.completed);
-        assertEquals("result data set", null, result);
+        assertEquals("result dataset", null, result);
         assertEquals("data manager log", "",
                 DataManagerFixture.getLogs());
         double delay = (stop - start)/1000000.0;
@@ -197,7 +197,7 @@ public class DataRequestTest extends junit.framework.TestCase {
             fail(String.format("delay too short: expected 10ms, got %.2fms",
                     delay));
         }
-        assertEquals("error data set", "problem: core dump\n",
+        assertEquals("error dataset", "problem: core dump\n",
                 request.getErrorData().toString());
     }
 
@@ -210,7 +210,7 @@ public class DataRequestTest extends junit.framework.TestCase {
         assertEquals("error data before completion", null,
                 request.getErrorData());
         request.setError(new Dataset("cause", "core dump"));
-        assertEquals("error data set", "cause: core dump\n",
+        assertEquals("error dataset", "cause: core dump\n",
                 request.getErrorData().toString());
     }
 
@@ -303,11 +303,26 @@ public class DataRequestTest extends junit.framework.TestCase {
     public void test_getRequestData() {
         DataRequest request = new DataRequest(new Dataset(
                 "manager", "t2", "id", "40"));
-        assertEquals("contents of request dataset", "id: 40\n" +
+        assertEquals("contents of request dataset", "id:      40\n" +
                 "manager: t2\n",
                 request.getRequestData().toString());
     }
 
+    public void test_makeRequest_findTemplateUsingPath() {
+        Config.setDataset("dataRequests", YamlDataset.newStringInstance(
+                "demo:\n" +
+                "  read:\n" +
+                "    manager: testManager\n" +
+                "    id: read\n" +
+                "  write:\n" +
+                "    manager: testManager\n" +
+                "    id: write\n"));
+        DataRequest request = new DataRequest("demo.read",
+                new Dataset());
+        assertEquals("request dataset", "id:      read\n" +
+                "manager: testManager\n",
+                request.request.toString());
+    }
     public void test_makeRequest_simpleValues() {
         Config.setDataset("dataRequests", YamlDataset.newStringInstance(
                 "request1:\n" +
@@ -317,10 +332,10 @@ public class DataRequestTest extends junit.framework.TestCase {
                 "  third: third@@\n"));
         DataRequest request = new DataRequest("request1",
                 new Dataset("name", "Bob"));
-        assertEquals("request dataset", "first: first\n" +
+        assertEquals("request dataset", "first:   first\n" +
                 "manager: testManager\n" +
-                "second: \"ouster@electric-cloud\"\n" +
-                "third: \"third@@\"\n",
+                "second:  \"ouster@electric-cloud\"\n" +
+                "third:   \"third@@\"\n",
                 request.request.toString());
     }
     public void test_makeRequest_doubleAtSign() {
@@ -330,9 +345,9 @@ public class DataRequestTest extends junit.framework.TestCase {
                 "  first: @@x1\n" +
                 "  second: @@first\n"));
         DataRequest request = new DataRequest("request1", new Dataset());
-        assertEquals("request dataset", "first: \"@x1\"\n" +
+        assertEquals("request dataset", "first:   \"@x1\"\n" +
                 "manager: testManager\n" +
-                "second: \"@first\"\n",
+                "second:  \"@first\"\n",
                 request.request.toString());
     }
     public void test_makeRequest_atSignSubstitution() {
@@ -343,9 +358,9 @@ public class DataRequestTest extends junit.framework.TestCase {
                 "  second: @first\n"));
         DataRequest request = new DataRequest("request1",
                 new Dataset("x1", "999", "first", "Alice"));
-        assertEquals("request dataset", "first: 999\n" +
+        assertEquals("request dataset", "first:   999\n" +
                 "manager: testManager\n" +
-                "second: Alice\n",
+                "second:  Alice\n",
                 request.request.toString());
     }
 }

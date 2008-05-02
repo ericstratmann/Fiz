@@ -47,18 +47,21 @@ public class TableSection implements Section {
 
     /**
      * This method is invoked during the final phase of rendering a page;
-     * it generates HTML for this section and append it to the Html
-     * object associated with {@code request}.
+     * it generates HTML for this section and appends it to the Html
+     * object associated with {@code clientRequest}.
      * @param clientRequest        Information about the request being
-     *                             processed; HTML should get appended to
-     *                             {@code request.getHtml()}.
+     *                             processed; HTML will be appended to
+     *                             {@code clientRequest.getHtml()}.
      */
     public void html(ClientRequest clientRequest) {
-        String className = properties.check("class");
-        StringBuilder out = clientRequest.getHtml().getBody();
+        Html html = clientRequest.getHtml();
+        StringBuilder out = html.getBody();
         Dataset mainDataset = clientRequest.getDataset();
 
         // Start.
+        if (properties.check("class") == null) {
+            html.includeCss("fiz/css/TableSection.css");
+        }
         Template.expand("\n<!-- Start TableSection {{@id}} -->\n" +
                 "<table {{id=\"@id\"}} class=\"@class?{TableSection}\" " +
                 "cellspacing=\"0\">\n",

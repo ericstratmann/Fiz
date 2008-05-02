@@ -11,6 +11,7 @@ import org.apache.log4j.Level;
 
 public class DispatcherTest  extends junit.framework.TestCase {
     public void setUp() {
+        Dispatcher.testMode = true;
         Config.setDataset("main", new Dataset("searchPackages", "org.fiz"));
     }
 
@@ -19,6 +20,7 @@ public class DispatcherTest  extends junit.framework.TestCase {
         Interactor i = (Interactor) o;
         i.destroy();
         Dispatcher dispatcher = new Dispatcher();
+        dispatcher.logger.setLevel(Level.FATAL);
         DispatcherTest1.count = 43;
         dispatcher.service(new DispatcherRequestFixture(
                 "/dispatcherTest1/incCount/extra"), new ServletResponseFixture());
@@ -33,14 +35,20 @@ public class DispatcherTest  extends junit.framework.TestCase {
     }
 
     public void test_init() throws ServletException {
+        (new File("_test1_/WEB-INF/config")).mkdirs();
         ServletContextFixture context = new ServletContextFixture();
+        context.contextRoot = "_test1_";
+        TestUtil.writeFile("_test1_/WEB-INF/config/main.yaml",
+                "home: xyzzy\n");
         ServletConfigFixture config = new ServletConfigFixture(context);
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.init(config);
-        assertEquals("Config path", "getRealPath: /WEB-INF/config",
+        assertEquals("Config path", "_test1_/WEB-INF/config",
                 Config.getPath()[0]);
-        assertEquals("Css path", "getRealPath: /WEB-INF/css",
-                Css.getPath()[0]);
+        assertEquals("home entry in main config dataset", "_test1_",
+                Config.getDataset("main").check("home"));
+        assertEquals("Css path", "_test1_/WEB-INF/css", Css.getPath()[0]);
+        TestUtil.deleteTree("_test1_");
     }
 
     public void test_destroy() {

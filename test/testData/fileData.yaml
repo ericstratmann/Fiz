@@ -30,3 +30,11 @@ person:
 
 empty:
   sample: value
+
+state:
+  name: California
+  country: USA
+  population: "37,000,000"
+  capital: Sacramento
+  nearestOcean: Pacific
+  governor: Schwarzenegger

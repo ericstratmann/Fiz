@@ -26,7 +26,7 @@ public class Config {
 
     /**
      * Clears any information in the configuration dataset cache and sets
-     * the directories in which to search for configuration data sets.
+     * the directories in which to search for configuration datasets.
      * @param path                 One or more directories in which to search
      *                             for datasets.  If a given dataset exists
      *                             in multiple directories in the path, all
