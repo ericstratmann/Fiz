@@ -5,8 +5,23 @@
 
 # The following requests are used by the Demo class.
 demo:
-  getPeople:
-    manager: demo
-    request: read
-    file:    demo
-    dataset: people
+    error:
+        manager: demo
+        request: read
+        file:    demo
+        dataset: bogus.nonexistent
+    getCart:
+        manager: demo
+        request: read
+        file:    demo
+        dataset: shoppingCart
+    getPeople:
+        manager: demo
+        request: read
+        file:    demo
+        dataset: people
+    noData:
+        manager: demo
+        request: read
+        file:    demo
+        dataset: empty

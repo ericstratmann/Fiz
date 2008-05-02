@@ -1,0 +1,18 @@
+/* shoppingCart.css -
+ *
+ * Styles used to display a shopping cart in demo/tableSection.
+ */
+
+table.shoppingCart td {
+    padding: 1px @sidePadding 1px @sidePadding;
+    vertical-align: top;
+}
+
+table.shoppingCart tr.last td {
+    border-top: 2px solid #000000;
+    font-weight: bold;
+}
+
+table.shoppingCart td.right {
+    text-align: right;
+}

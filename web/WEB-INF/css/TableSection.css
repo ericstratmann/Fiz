@@ -7,8 +7,6 @@
 table.TableSection td {
     padding: @topBotPadding @sidePadding @topBotPadding @sidePadding;
     border-top: 1px solid #FFFFFF;
-    border-left: none;
-    border-right: none;
     vertical-align: top;
     background: @background1;
 }
@@ -20,6 +18,6 @@ table.TableSection tr.header td {
     white-space: nowrap;
 }
 
-table.TableSection tr.even td {
+table.TableSection tr.odd td {
     background: @background2;
 }

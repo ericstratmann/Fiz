@@ -23,6 +23,9 @@ background2:       #DFE1E7
 background3:       #C9D0DC
 background4:       #B0BCC8
 
+# Color to use for displaying error messages that need to stand out:
+errorColor:        #DD0000
+
 # Overall font information.  Note: specifying font sizes as percentages
 # rather than absolute size enables features such as control-plus and
 # control-minus in Firefox.
@@ -33,3 +36,7 @@ fontSize:         80%
 # enclosed in a region:
 sidePadding:      10px
 topBotPadding:    2px
+
+# IE and Firefox have different default margins around the entire page
+# body; this constant makes IE like Firefox.
+pageMargin:       8px

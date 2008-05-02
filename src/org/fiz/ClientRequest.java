@@ -118,17 +118,10 @@ public class ClientRequest {
      *                             alphabetical order.
      */
     public String getRequestNames() {
-        StringBuffer result = new StringBuffer();
-        String prefix = "";
         ArrayList<String> names = new ArrayList<String>();
         names.addAll(namedRequests.keySet());
         Collections.sort(names);
-        for (String name: names) {
-            result.append(prefix);
-            result.append(name);
-            prefix = ", ";
-        }
-        return result.toString();
+        return Util.join(names, ", ");
     }
 
     /**

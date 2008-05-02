@@ -18,6 +18,12 @@ package org.fiz;
  *                   property is omitted, then a default is supplied.
  *   id:             (optional) Used as the {@code id} attribute for the
  *                   HTML table that displays the TableSection.
+ *   lastRowClass:   (optional) If this property is defined, its value will
+ *                   be used as the class for the bottom row in the table.
+ *                   This can be used to display the bottom row differently,
+ *                   e.g. for totals.
+ *   noHeader:       (optional) If this property is defined, then the
+ *                   header row for the table will not be displayed.
  *   request:        (required) Name of the DataRequest that will supply
  *                   data to display in the TableSection; the response to
  *                   this request must contain one {@code record} child for
@@ -57,9 +63,10 @@ public class TableSection implements Section {
         Html html = clientRequest.getHtml();
         StringBuilder out = html.getBody();
         Dataset mainDataset = clientRequest.getDataset();
+        String lastRowClass = properties.check("lastRowClass");
 
         // Start.
-        if (properties.containsKey("class")) {
+        if (!properties.containsKey("class")) {
             html.includeCssFile("TableSection.css");
         }
         Template.expand("\n<!-- Start TableSection {{@id}} -->\n" +
@@ -68,13 +75,15 @@ public class TableSection implements Section {
                 properties, out);
 
         // Header row.
-        out.append("  <tr class=\"header\">\n");
-        for (int i = 0; i < columns.length; i++) {
-            printTd(i, out);
-            columns[i].headerHtml(out, clientRequest);
-            out.append("</td>\n");
+        if (!properties.containsKey("noHeader")) {
+            out.append("  <tr class=\"header\">\n");
+            for (int col = 0; col < columns.length; col++) {
+                printTd(col, out);
+                columns[col].headerHtml(out, clientRequest);
+                out.append("</td>\n");
+            }
+            out.append("  </tr>\n");
         }
-        out.append("  </tr>\n");
 
         // Body rows.
         Dataset response = dataRequest.getResponseData();
@@ -105,14 +114,20 @@ public class TableSection implements Section {
                 out.append("</td>\n  </tr>\n");
             } else {
                 // Normal case: there are records to display.
-                boolean odd = true;
-                for (Dataset rowData : rows) {
+                for (int i = 0; i < rows.length; i++) {
+                    Dataset rowData = rows[i];
                     out.append("  <tr class=\"");
-                    out.append(odd ? "odd\">\n" : "even\">\n");
-                    odd = !odd;
-                    for (int i = 0; i < columns.length; i++) {
-                        printTd(i, out);
-                        columns[i].html(rowData, out, clientRequest);
+                    if ((i == (rows.length-1)) && (lastRowClass != null)) {
+                        out.append(lastRowClass);
+                        out.append("\">\n");
+                    } else if ((i & 1) != 0) {
+                        out.append("odd\">\n");
+                    } else {
+                        out.append("even\">\n");
+                    }
+                    for (int col = 0; col < columns.length; col++) {
+                        printTd(col, out);
+                        columns[col].html(rowData, out, clientRequest);
                         out.append("</td>\n");
                     }
                     out.append("  </tr>\n");

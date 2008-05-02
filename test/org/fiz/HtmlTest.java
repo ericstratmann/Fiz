@@ -15,6 +15,22 @@ public class HtmlTest extends junit.framework.TestCase {
     }
     // No tests for getBody; too trivial.
 
+    public void test_getCssFiles() {
+        (new File("_test_")).mkdir();
+        TestUtil.writeFile("_test_/first.css", "first.css");
+        TestUtil.writeFile("_test_/second.css", "second.css");
+        TestUtil.writeFile("_test_/third.css", "third.css");
+        Css.init("_test_");
+        html.setTitle("sample");
+        html.includeCssFile("second.css");
+        html.includeCssFile("first.css");
+        html.includeCssFile("third.css");
+        TestUtil.assertSubstring("CSS file names",
+                "first.css, second.css, third.css",
+                html.getCssFiles());
+        Util.deleteTree("_test_");
+    }
+
     public void test_getPrologue() {
         assertEquals("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
                 + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"

@@ -47,6 +47,25 @@ public class TableSectionTest extends junit.framework.TestCase {
                 clientRequest.getHtml().getBody().toString());
         TestUtil.assertXHTML(clientRequest.getHtml().toString());
     }
+    public void test_html_includeCss() {
+        ClientRequest clientRequest = TestUtil.setUp();
+        TableSection table = new TableSection(
+                new Dataset("request", "getPerson", "id", "id.44"));
+        clientRequest.showSections(table);
+        String html = clientRequest.getHtml().getBody().toString();
+        TestUtil.assertSubstring("CSS files requested",
+                "TableSection.css",
+                clientRequest.getHtml().getCssFiles());
+    }
+    public void test_html_dontIncludeCss() {
+        ClientRequest clientRequest = TestUtil.setUp();
+        TableSection table = new TableSection(
+                new Dataset("request", "getPerson", "class", "special"));
+        clientRequest.showSections(table);
+        String html = clientRequest.getHtml().getBody().toString();
+        TestUtil.assertSubstring("CSS files requested",
+                "", clientRequest.getHtml().getCssFiles());
+    }
     public void test_html_idAndClass() {
         ClientRequest clientRequest = TestUtil.setUp();
         TableSection table = new TableSection(

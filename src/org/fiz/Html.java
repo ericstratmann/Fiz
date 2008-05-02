@@ -55,6 +55,20 @@ public class Html {
     }
 
     /**
+     * Generate a string containing the names of all of the CSS files
+     * that have been requested using includeCssFile.  This method is used
+     * primarily for testing.
+     * @return                     A comma-separated list of filenames, sorted
+     *                             alphabetically.
+     */
+    public String getCssFiles() {
+        ArrayList<String> names = new ArrayList<String>();
+        names.addAll(cssFiles);
+        Collections.sort(names);
+        return Util.join(names, ", ");
+    }
+
+    /**
      * Returns text that should appear at the beginning of each HTML
      * document; this can include a {@code <?xml>} element and a
      * {@code <!DOCTYPE>} element, but no {@code <head>} element or

@@ -1,22 +1,40 @@
 # This file contains data that is returned by various data requests
 # used by the Demo interactor.
 
+empty:
+    dummy: 42
+
 people:
-  record:
-    - name: Alice
-      age: 24
-      height: 65
-      ssn: 242-88-1702
-      weight: 110
-    - name: Bill
-      age: 41
-      height: 73
-      weight: 195
-    - name: Carol
-      age: 12
-      height: 60
-      weight: 85
-    - name: David
-      age: 66
-      weight: 220
-      height: 71
+    record:
+        - name: Alice
+          age: 24
+          height: 65
+          ssn: 242-88-1702
+          weight: 110
+        - name: Bill
+          age: 41
+          height: 73
+          weight: 195
+        - name: Carol
+          age: 12
+          height: 60
+          weight: 85
+        - name: David
+          age: 66
+          weight: 220
+          height: 71
+
+shoppingCart:
+    record:
+        - item:  Thin spaghetti
+          price: $0.89
+        - item:  Large Grade AA eggs
+          price: $2.19
+        - item:  Reduced fat milk
+          price: $1.42
+        - item:  93% lean ground beef
+          price: $5.29
+        - item:  Corn flakes
+          price: $4.27
+        - item:  Total
+          price: $14.06

@@ -9,12 +9,20 @@ body {
     color: @color;
     background: @background;
     font-size: @fontSize;
+    margin: @pageMargin;
 }
 
 h1 {
     font-size: 150%;
+    margin: 15px 0px 5px 0px;
 }
 
 h2 {
     font-size: 130%;
+    margin: 12px 0px 5px 0px;
+}
+
+/* Default color for text displayed in elements related to errors. */
+.error {
+    color: @errorColor;
 }
