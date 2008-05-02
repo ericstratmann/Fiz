@@ -12,8 +12,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 new Column("Name", "@name"),
                 new Column("Age", "@age"),
                 new Column("Weight", "@weight"));
-        table.registerRequests(clientRequest);
-        table.html(clientRequest);
+        clientRequest.showSections(table);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start TableSection -->\n" +
                 "<table class=\"TableSection\" cellspacing=\"0\">\n" +
@@ -22,28 +21,50 @@ public class TableSectionTest extends junit.framework.TestCase {
                 "    <td>Age</td>\n" +
                 "    <td class=\"right\">Weight</td>\n" +
                 "  </tr>\n" +
-                "  <tr class=\"odd\">\n" +
+                "  <tr class=\"even\">\n" +
                 "    <td class=\"left\">Alice</td>\n" +
                 "    <td>24</td>\n" +
                 "    <td class=\"right\">110</td>\n" +
                 "  </tr>\n" +
-                "  <tr class=\"even\">\n" +
+                "  <tr class=\"odd\">\n" +
                 "    <td class=\"left\">Bill</td>\n" +
                 "    <td>41</td>\n" +
                 "    <td class=\"right\">195</td>\n" +
                 "  </tr>\n" +
-                "  <tr class=\"odd\">\n" +
+                "  <tr class=\"even\">\n" +
                 "    <td class=\"left\">Carol</td>\n" +
                 "    <td>12</td>\n" +
                 "    <td class=\"right\">85</td>\n" +
                 "  </tr>\n" +
-                "  <tr class=\"even\">\n" +
+                "  <tr class=\"odd\">\n" +
                 "    <td class=\"left\">David</td>\n" +
                 "    <td>66</td>\n" +
                 "    <td class=\"right\">220</td>\n" +
                 "  </tr>\n" +
                 "</table>\n" +
                 "<!-- End TableSection -->\n",
+                clientRequest.getHtml().getBody().toString());
+        TestUtil.assertXHTML(clientRequest.getHtml().toString());
+    }
+    public void test_html_noHeader() {
+        ClientRequest clientRequest = TestUtil.setUp();
+        TableSection table = new TableSection(
+                new Dataset("request", "getPerson", "id", "id.44",
+                "noHeader", "true"),
+                new Column("Name", "@name"),
+                new Column("Age", "@age"));
+        clientRequest.showSections(table);
+        String html = clientRequest.getHtml().getBody().toString();
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start TableSection id.44 -->\n" +
+                "<table id=\"id.44\" class=\"TableSection\" " +
+                "cellspacing=\"0\">\n" +
+                "  <tr class=\"even\">\n" +
+                "    <td class=\"left\">David</td>\n" +
+                "    <td class=\"right\">66</td>\n" +
+                "  </tr>\n" +
+                "</table>\n" +
+                "<!-- End TableSection id.44 -->\n",
                 clientRequest.getHtml().getBody().toString());
         TestUtil.assertXHTML(clientRequest.getHtml().toString());
     }
@@ -71,9 +92,9 @@ public class TableSectionTest extends junit.framework.TestCase {
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44",
                 "class", "<class>"),
-                new Column("Name", "name"),
-                new Column("Age", "age"),
-                new Column("Weight", "weight"));
+                new Column("Name", "@name"),
+                new Column("Age", "@age"),
+                new Column("Weight", "@weight"));
         table.registerRequests(clientRequest);
         table.html(clientRequest);
         String html = clientRequest.getHtml().getBody().toString();
@@ -92,9 +113,9 @@ public class TableSectionTest extends junit.framework.TestCase {
         TableSection table = new TableSection(
                 new Dataset("request", "error",
                 "errorTemplate", "Error for @name: @message"),
-                new Column("Name", "name"),
-                new Column("Age", "age"),
-                new Column("Weight", "weight"));
+                new Column("Name", "@name"),
+                new Column("Age", "@age"),
+                new Column("Weight", "@weight"));
         table.registerRequests(clientRequest);
         table.html(clientRequest);
         String html = clientRequest.getHtml().getBody().toString();
@@ -112,9 +133,9 @@ public class TableSectionTest extends junit.framework.TestCase {
         TableSection table = new TableSection(
                 new Dataset("request", "getNothing",
                 "emptyTemplate", "No data for @name"),
-                new Column("Name", "name"),
-                new Column("Age", "age"),
-                new Column("Weight", "weight"));
+                new Column("Name", "@name"),
+                new Column("Age", "@age"),
+                new Column("Weight", "@weight"));
         table.registerRequests(clientRequest);
         table.html(clientRequest);
         String html = clientRequest.getHtml().getBody().toString();
@@ -129,9 +150,9 @@ public class TableSectionTest extends junit.framework.TestCase {
         ClientRequest clientRequest = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getNothing"),
-                new Column("Name", "name"),
-                new Column("Age", "age"),
-                new Column("Weight", "weight"));
+                new Column("Name", "@name"),
+                new Column("Age", "@age"),
+                new Column("Weight", "@weight"));
         table.registerRequests(clientRequest);
         table.html(clientRequest);
         String html = clientRequest.getHtml().getBody().toString();
@@ -139,6 +160,28 @@ public class TableSectionTest extends junit.framework.TestCase {
                "  <tr class=\"empty\">\n" +
                 "    <td colspan=\"3\">There are no records to display</td>\n" +
                 "  </tr>\n",
+                clientRequest.getHtml().getBody().toString());
+        TestUtil.assertXHTML(clientRequest.getHtml().toString());
+    }
+    public void test_html_lastRowClass() {
+        ClientRequest clientRequest = TestUtil.setUp();
+        TableSection table = new TableSection(
+                new Dataset("request", "getPerson", "id", "id.44",
+                "noHeader", "true", "lastRowClass", "last"),
+                new Column("Name", "@name"),
+                new Column("Age", "@age"));
+        clientRequest.showSections(table);
+        String html = clientRequest.getHtml().getBody().toString();
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start TableSection id.44 -->\n" +
+                "<table id=\"id.44\" class=\"TableSection\" " +
+                "cellspacing=\"0\">\n" +
+                "  <tr class=\"last\">\n" +
+                "    <td class=\"left\">David</td>\n" +
+                "    <td class=\"right\">66</td>\n" +
+                "  </tr>\n" +
+                "</table>\n" +
+                "<!-- End TableSection id.44 -->\n",
                 clientRequest.getHtml().getBody().toString());
         TestUtil.assertXHTML(clientRequest.getHtml().toString());
     }
@@ -156,10 +199,10 @@ public class TableSectionTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder();
         TableSection table = new TableSection(
                 new Dataset("request", "getPeople"),
-                new Column("Name", "name"),
-                new Column("Age", "age"),
-                new Column("Religion", "religion"),
-                new Column("Social Security", "ssn"));
+                new Column("Name", "@name"),
+                new Column("Age", "@age"),
+                new Column("Religion", "@religion"),
+                new Column("Social Security", "@ssn"));
         table.printTd(0, out);
         assertEquals("first column", "    <td class=\"left\">",
                 out.toString());
