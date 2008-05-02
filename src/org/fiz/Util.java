@@ -296,6 +296,25 @@ public class Util {
     }
 
     /**
+     * This method is invoked to ensure that a blank line appears between
+     * sections in a string being built up.  If {@code s} is not empty,
+     * a newline is appended to it; if the previous last line did not end
+     * in a newline, then an additional newline is appended.
+     * @param s                    String under construction.
+     */
+    public static void addBlankLine(StringBuilder s) {
+        int length = s.length();
+        if (length == 0) {
+            return;
+        }
+        if (s.charAt(length-1) != '\n') {
+            s.append("\n\n");
+        } else {
+            s.append('\n');
+        }
+    }
+
+    /**
      * Given a file name, this method checks to see if {@code path} ends
      * with an extension such as ".java", ".yml", etc.
      * @param path                    A file name such as {@code /a/b/foo.html};

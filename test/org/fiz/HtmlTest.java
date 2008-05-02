@@ -10,6 +10,8 @@ public class HtmlTest extends junit.framework.TestCase {
 
     public void setUp() {
         html = new HtmlFixture();
+        Css.init("test/testData");
+        Config.init("test/testData");
     }
     // No tests for getBody; too trivial.
 
@@ -19,7 +21,7 @@ public class HtmlTest extends junit.framework.TestCase {
                 + "        \"http://www.w3.org/TR/xhtml1/DTD/"
                 + "xhtml1-strict.dtd\">\n" +
                 "<html xmlns=\"http://www.w3.org/1999/xhtml\" "
-                + "xml:lang=\"en\" lang=\"en\">",
+                + "xml:lang=\"en\" lang=\"en\">\n",
                 (new Html("/fiz")).getPrologue());
     }
 
@@ -31,14 +33,39 @@ public class HtmlTest extends junit.framework.TestCase {
         assertEquals("new null value", null, html.getTitle());
     }
 
+    public void test_includeCssFile() {
+        (new File("_test_")).mkdir();
+        TestUtil.writeFile("_test_/first.css", "Sample css with newline\n");
+        TestUtil.writeFile("_test_/second.css", "Css with no newline");
+        TestUtil.writeFile("_test_/third.css", "Line #1\nLine #2\n");
+        Css.init("_test_");
+        html.includeCssFile("first.css");
+        html.includeCssFile("first.css");
+        html.includeCssFile("first.css");
+        assertEquals("simple CSS", "Sample css with newline\n",
+                html.css.toString());
+        html.includeCssFile("second.css");
+        html.includeCssFile("third.css");
+        assertEquals("check blank lines", "Sample css with newline\n" +
+                "\n" +
+                "Css with no newline\n" +
+                "\n" +
+                "Line #1\n" +
+                "Line #2\n",
+                html.css.toString());
+        Util.deleteTree("_test_");
+    }
+
     public void test_includeCss() {
-        html.setTitle("sample");
-        html.includeCss("fiz/css/alpha.css");
-        html.includeCss("fiz/css/bravo.css");
-        html.includeCss("fiz/css/alpha.css");
-        TestUtil.assertMatch("expected CSS files",
-                "(?s).*alpha\\.css.*bravo\\.css.*main\\.css.*",
-                html.toString());
+        html.includeCss("/* Sample comment */");
+        html.includeCss("h1 {color: red}\n");
+        html.includeCss("/* Another comment */");
+        assertEquals("simple CSS", "/* Sample comment */\n" +
+                "\n" +
+                "h1 {color: red}\n" +
+                "\n" +
+                "/* Another comment */",
+                html.css.toString());
     }
 
     public void test_print_emptyHtml() {
@@ -55,44 +82,107 @@ public class HtmlTest extends junit.framework.TestCase {
         html.getBody().append("first line\nsecond line\n");
         StringWriter out = new StringWriter();
         html.print(out);
-        assertEquals("**Prologue**\n"
-                + "<head>\n    <link href=\"/fiz/fiz/css/main.css\" "
-                + "rel=\"stylesheet\" type=\"text/css\" />\n"
-                + "</head>\n<body>\nfirst line\nsecond line\n"
-                + "</body>\n</html>\n", out.toString());
+        assertEquals("**Prologue**\n" +
+                "<head>\n" +
+                "<style type=\"text/css\">\n" +
+                "/* Dummy version of main.css for tests */\n" +
+                "body {color: #000000}\n" +
+                "</style>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "first line\n" +
+                "second line\n" +
+                "</body>\n" +
+                "</html>\n", out.toString());
     }
     public void test_print_withTitle() {
         html.getBody().append("first line\n");
         html.setTitle("sample title");
         StringWriter out = new StringWriter();
         html.print(out);
-        assertEquals("**Prologue**\n"
-                + "<head>\n    <title>sample title</title>\n"
-                + "    <link href=\"/fiz/fiz/css/main.css\" "
-                + "rel=\"stylesheet\" type=\"text/css\" />\n"
-                + "</head>\n<body>\nfirst line\n</body>\n</html>\n",
+        assertEquals("**Prologue**\n" +
+                "<head>\n" +
+                "<title>sample title</title>\n" +
+                "<style type=\"text/css\">\n" +
+                "/* Dummy version of main.css for tests */\n" +
+                "body {color: #000000}\n" +
+                "</style>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "first line\n" +
+                "</body>\n" +
+                "</html>\n",
                 out.toString());
     }
     public void test_print_css() {
+        (new File("_test_")).mkdir();
+        TestUtil.writeFile("_test_/first.css", "first.css\n");
+        TestUtil.writeFile("_test_/main.css", "main.css\n");
+        Css.init("_test_");
         html.setTitle("sample");
-        html.includeCss("fiz/css/alpha.css");
+        html.includeCssFile("first.css");
         TestUtil.assertSubstring("header section",
-                "    <title>sample</title>\n"
-                + "    <link href=\"/fiz/fiz/css/alpha.css\" "
-                + "rel=\"stylesheet\" type=\"text/css\" />\n"
-                + "    <link href=\"/fiz/fiz/css/main.css\" "
-                + "rel=\"stylesheet\" type=\"text/css\" />",
+                "<head>\n" +
+                "<title>sample</title>\n" +
+                "<style type=\"text/css\">\n" +
+                "main.css\n" +
+                "\n" +
+                "first.css\n" +
+                "</style>\n" +
+                "</head>\n",
                 html.toString());
+        Util.deleteTree("_test_");
+    }
+    public void test_print_css_newlinesMissing() {
+        (new File("_test_")).mkdir();
+        TestUtil.writeFile("_test_/first.css", "first.css");
+        TestUtil.writeFile("_test_/main.css", "main.css");
+        Css.init("_test_");
+        html.setTitle("sample");
+        html.includeCssFile("first.css");
+        TestUtil.assertSubstring("header section",
+                "<head>\n" +
+                "<title>sample</title>\n" +
+                "<style type=\"text/css\">\n" +
+                "main.css\n" +
+                "\n" +
+                "first.css\n" +
+                "</style>\n" +
+                "</head>\n",
+                html.toString());
+        Util.deleteTree("_test_");
+    }
+    public void test_print_css_noCssButMain() {
+        (new File("_test_")).mkdir();
+        TestUtil.writeFile("_test_/main.css", "main.css");
+        Css.init("_test_");
+        html.setTitle("sample");
+        TestUtil.assertSubstring("header section",
+                "<head>\n" +
+                "<title>sample</title>\n" +
+                "<style type=\"text/css\">\n" +
+                "main.css\n" +
+                "</style>\n" +
+                "</head>\n",
+                html.toString());
+        Util.deleteTree("_test_");
     }
 
     public void test_toString() {
         html.getBody().append("first line\n");
         html.setTitle("sample title");
-        assertEquals("**Prologue**\n"
-                + "<head>\n    <title>sample title</title>\n"
-                + "    <link href=\"/fiz/fiz/css/main.css\" "
-                + "rel=\"stylesheet\" type=\"text/css\" />\n"
-                + "</head>\n<body>\nfirst line\n</body>\n</html>\n",
+        assertEquals("**Prologue**\n" +
+                "<head>\n" +
+                "<title>sample title</title>\n" +
+                "<style type=\"text/css\">\n" +
+                "/* Dummy version of main.css for tests */\n" +
+                "body {color: #000000}\n" +
+                "</style>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "first line\n" +
+                "</body>\n" +
+                "</html>\n",
                 html.toString());
     }
 

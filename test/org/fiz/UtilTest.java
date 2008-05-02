@@ -121,6 +121,18 @@ public class UtilTest extends junit.framework.TestCase {
         assertEquals("array contents", "abc", new String(ch));
     }
 
+    public void test_addBlankLine() {
+        StringBuilder s = new StringBuilder();
+        Util.addBlankLine(s);
+        assertEquals("string initially empty", "", s.toString());
+        s = new StringBuilder("abc");
+        Util.addBlankLine(s);
+        assertEquals("last line not terminated", "abc\n\n", s.toString());
+        s = new StringBuilder("abc\n");
+        Util.addBlankLine(s);
+        assertEquals("last line terminated", "abc\n\n", s.toString());
+    }
+
     public void test_findExtension() {
         assertEquals("extension exists", 8,
                 Util.findExtension("C:/a/b/c.java"));

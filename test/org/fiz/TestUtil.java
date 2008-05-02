@@ -129,7 +129,8 @@ public class TestUtil {
      * @return                     A ClientRequest that can be used in tests.
      */
     public static ClientRequest setUp() {
-        Config.init("test/testData");
+        Config.init("test/testData", "web/WEB-INF/config");
+        Css.init("web/WEB-INF/css");
         DataManager.destroyAll();
         DataManagerFixture.clearLogs();
         DataManager.logger.setLevel(Level.ERROR);

@@ -41,13 +41,6 @@ public class CssTest extends junit.framework.TestCase {
         assertEquals("use caches for second call", "Sample: 99234", css);
     }
 
-    public void test_handleRequest() throws IOException {
-        ServletResponseFixture response = new ServletResponseFixture();
-        Css.handleRequest(null, response, "test.css");
-        assertEquals("first call: nothing cached", "Sample: 99234",
-                response.out.toString());
-    }
-
     public void test_getPath() {
         Css.init("a/b", "y/z");
         String[] path = Css.getPath();

@@ -22,8 +22,13 @@ public class Html {
     protected String contextPath;
 
     // The following field keeps track of all of the stylesheet files that
-    // are to be included in the HTML document.
-    protected TreeSet<String> stylesheets = new TreeSet<String>();
+    // have already been included in the HTML document.
+    protected HashSet<String> cssFiles = new HashSet<String>();
+
+    // The following field accumulates CSS information as the document
+    // is being generated (includes everything requested via
+    // includeCss and includeCssFile).
+    protected StringBuilder css = new StringBuilder(1000);
 
     /**
      * Constructs an empty Html document.
@@ -64,7 +69,7 @@ public class Html {
                 + "        \"http://www.w3.org/TR/xhtml1/DTD/"
                 + "xhtml1-strict.dtd\">\n"
                 + "<html xmlns=\"http://www.w3.org/1999/xhtml\" "
-                + "xml:lang=\"en\" lang=\"en\">";
+                + "xml:lang=\"en\" lang=\"en\">\n";
     }
 
     /**
@@ -89,17 +94,38 @@ public class Html {
     }
 
     /**
-     * This method is used to request that the HTML document reference
-     * a particular stylesheet.
-     * @param uri                     Application-relative URI for the
-     *                                stylesheet; it typically begins with
-     *                                {@code fiz/css/}, in which case the
-     *                                stylesheet is a dynamically generated
-     *                                one whose template is stored under
-     *                                {@code WEB-INF/css}.
+     * Include a particular stylesheet file in the document, if it hasn't
+     * been included already.  The accumulated CSS will eventually be
+     * output as part of the document header.  If {@code fileName} has
+     * already been included via an earlier call this method, then the
+     * current invocation has no effect.
+     * @param fileName                Name of a CSS file.  The file must be
+     *                                in one of the directories in the path
+     *                                managed by the Css class.  The file's
+     *                                contents are actually the template, which
+     *                                will be expanded in the context of
+     *                                the css configuration dataset.
      */
-    public void includeCss(String uri) {
-        stylesheets.add(uri);
+    public void includeCssFile(String fileName) {
+        if (cssFiles.contains(fileName)) {
+            return;
+        }
+        cssFiles.add(fileName);
+        Util.addBlankLine(css);
+        css.append(Css.getStylesheet(fileName));
+    }
+
+    /**
+     * Add a chunk of style information to the CSS that will eventually
+     * be output as part of the document header.
+     * @param styleInfo            CSS information.  To help debug HTML
+     *                             documents, this should start with a short
+     *                             comment indicating where this information
+     *                             came from.
+     */
+    public void includeCss(CharSequence styleInfo) {
+        Util.addBlankLine(css);
+        css.append(styleInfo);
     }
 
     /**
@@ -121,15 +147,24 @@ public class Html {
             writer.write(getPrologue());
             writer.write("<head>\n");
             if (title != null) {
-                writer.write("    <title>" + title + "</title>\n");
+                writer.write("<title>" + title + "</title>\n");
             }
 
-            // Output stylesheet links.
-            stylesheets.add("fiz/css/main.css");
-            for (String sheet : stylesheets) {
-                writer.write("    <link href=\"" + contextPath + "/" + sheet
-                        + "\" rel=\"stylesheet\" type=\"text/css\" />\n");
+            // Output CSS info.
+            writer.write("<style type=\"text/css\">\n");
+            String mainCss = Css.getStylesheet("main.css");
+            writer.write(mainCss);
+            if (mainCss.charAt(mainCss.length()-1) != '\n') {
+                writer.write('\n');
             }
+            if (css.length() > 0) {
+                writer.write('\n');
+                writer.write(css.toString());
+            }
+            if ((css.length() > 0) && (css.charAt(css.length()-1) != '\n')) {
+                writer.write('\n');
+            }
+            writer.write("</style>\n");
 
             // Output body.
             writer.write("</head>\n<body>\n");

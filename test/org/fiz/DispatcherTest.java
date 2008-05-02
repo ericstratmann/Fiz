@@ -70,23 +70,7 @@ public class DispatcherTest  extends junit.framework.TestCase {
         assertEquals("second interactor destroyed", 3,
                 DispatcherTest5.destroyCount);
     }
-
-    public void test_service_cssRequest() {
-        (new File("_test1_")).mkdir();
-        Config.init("_test1_");
-        TestUtil.writeFile("_test1_/css.yaml", "age: 24\n");
-        Css.init("_test1_");
-        TestUtil.writeFile("_test1_/main.css", "Bill is @age.");
-
-        Dispatcher dispatcher = new Dispatcher();
-        ServletResponseFixture response = new ServletResponseFixture();
-        dispatcher.service(new DispatcherRequestFixture(
-                "/css/main.css"), response);
-        assertEquals("error message", null, dispatcher.basicMessage);
-        assertEquals("generated css file", "Bill is 24.",
-                response.out.toString());
-        TestUtil.deleteTree("_test1_");
-    }
+    
     public void test_service_parseMethodEndingInSlash() {
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.service(new DispatcherRequestFixture(

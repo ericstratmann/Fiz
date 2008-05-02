@@ -137,12 +137,12 @@ public class Dispatcher extends HttpServlet {
      *     be handled by method "method" in an Interactor object of class
      *     "class".  In this case the Interactor class is loaded and
      *     instantiated if necessary, then the Interactor method is invoked.
-     * @param request              Information about the HTTP request
-     * @param response             Used to generate the response
+     * @param request              Information about the HTTP request.
+     * @param response             Used to generate the response.
      */
     public void service (HttpServletRequest request,
         HttpServletResponse response) {
-        handleRequest: try {
+        try {
             if (logger.isTraceEnabled()) {
                 logger.trace("incoming URI: " + Util.getUriAndQuery(request));
             }
@@ -150,18 +150,12 @@ public class Dispatcher extends HttpServlet {
             // Use UTF-8 as the default encoding for all responses.
             response.setCharacterEncoding("UTF-8");
 
-            // See if the URI refers to a generated stylesheet.
-            String pathInfo = request.getPathInfo();
-            if (pathInfo.startsWith("/css/")) {
-                Css.handleRequest(request, response, pathInfo.substring(5));
-                break handleRequest;
-            }
-
             // The "pathInfo" portion of the URI (the part that belongs to
             // us) must have the form /class/method/... Peel off the
             // "class/method" part and see if we already have information
             // about the method.
 
+            String pathInfo = request.getPathInfo();
             String methodKey = null;
             InteractorMethod method = null;
             int endOfMethod = -1;

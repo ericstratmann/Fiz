@@ -59,8 +59,8 @@ public class TableSection implements Section {
         Dataset mainDataset = clientRequest.getDataset();
 
         // Start.
-        if (properties.check("class") == null) {
-            html.includeCss("fiz/css/TableSection.css");
+        if (properties.containsKey("class")) {
+            html.includeCssFile("TableSection.css");
         }
         Template.expand("\n<!-- Start TableSection {{@id}} -->\n" +
                 "<table {{id=\"@id\"}} class=\"@class?{TableSection}\" " +
