@@ -33,28 +33,25 @@ public class Column {
     /**
      * Generate HTML for the column header (everything that goes inside
      * the {@code <td>} element).
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
      * @param out                  HTML gets appended here.
-     * @param clientRequest        Provides information about the overall
-     *                             request being processed, in case it is
-     *                             needed.
      */
-    public void headerHtml(StringBuilder out, ClientRequest clientRequest) {
+    public void headerHtml(ClientRequest cr, StringBuilder out) {
         Html.escapeHtmlChars(label, out);
     }
 
     /**
      * Generate HTML for this column in a particular row (everything that
      * goes inside the {@code <td>} element).
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
      * @param rowData              Data available for this row (typically
-     *                             includes row-specific data with a chain to
-     *                             the main dataset for {@code clientRequest}.
-     * @param out                  HTML gets appended here
-     * @param clientRequest        Provides information about the overall
-     *                             request being processed, in case it is
-     *                             needed.
+ *                                 includes row-specific data with a chain to
+ *                                 the main dataset for {@code cr}.
+     * @param out                  HTML gets appended here.
      */
-    public void html(Dataset rowData, StringBuilder out,
-            ClientRequest clientRequest) {
+    public void html(ClientRequest cr, Dataset rowData, StringBuilder out) {
         Template.expand(template, rowData, out);
     }
 }

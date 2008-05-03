@@ -9,13 +9,14 @@ public class Demo extends Interactor {
     /**
      * Display a page with various demonstrations of the TableSection
      * class.
-     * @param clientRequest        Information about the incoming request.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
      */
-    public void tableSection(ClientRequest clientRequest) {
-        Html html = clientRequest.getHtml();
+    public void tableSection(ClientRequest cr) {
+        Html html = cr.getHtml();
         html.setTitle("TableSection Demos");
         html.includeCssFile("demo/shoppingCart.css");
-        clientRequest.showSections(
+        cr.showSections(
                 new TemplateSection("<h1>TableSection Demos</h1>\n"),
 
                 new TemplateSection("<h2>Basic table:</h2>\n"),

@@ -18,20 +18,20 @@ package org.fiz;
 public interface Section {
     /**
      * This method is invoked during the first phase of rendering a page;
-     * it calls {@code clientRequest.registerDataRequest} for each of the
+     * it calls {@code cr.registerDataRequest} for each of the
      * DataRequests needed by this section to gather data to be displayed.
-     * @param clientRequest        Information about the request being
-     *                             processed.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
      */
-    public void registerRequests(ClientRequest clientRequest);
+    public void registerRequests(ClientRequest cr);
 
     /**
      * This method is invoked during the final phase of rendering a page;
      * it generates HTML for this section and append it to the Html
      * object associated with {@code request}.
-     * @param clientRequest        Information about the request being
-     *                             processed; HTML should get appended to
+     * @param cr                   Overall information about the client
+     *                             request being serviced; HTML should get appended to
      *                             {@code request.getHtml()}.
      */
-    public void html(ClientRequest clientRequest);
+    public void html(ClientRequest cr);
 }

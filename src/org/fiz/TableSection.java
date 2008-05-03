@@ -54,15 +54,16 @@ public class TableSection implements Section {
     /**
      * This method is invoked during the final phase of rendering a page;
      * it generates HTML for this section and appends it to the Html
-     * object associated with {@code clientRequest}.
-     * @param clientRequest        Information about the request being
-     *                             processed; HTML will be appended to
-     *                             {@code clientRequest.getHtml()}.
+     * object associated with {@code cr}.
+     * @param cr                   Overall information about the client
+     *                             request being serviced; HTML will be
+     *                             appended to {@code cr.getHtml()}.
      */
-    public void html(ClientRequest clientRequest) {
-        Html html = clientRequest.getHtml();
+    @Override
+    public void html(ClientRequest cr) {
+        Html html = cr.getHtml();
         StringBuilder out = html.getBody();
-        Dataset mainDataset = clientRequest.getDataset();
+        Dataset mainDataset = cr.getDataset();
         String lastRowClass = properties.check("lastRowClass");
 
         // Start.
@@ -79,7 +80,7 @@ public class TableSection implements Section {
             out.append("  <tr class=\"header\">\n");
             for (int col = 0; col < columns.length; col++) {
                 printTd(col, out);
-                columns[col].headerHtml(out, clientRequest);
+                columns[col].headerHtml(cr, out);
                 out.append("</td>\n");
             }
             out.append("  </tr>\n");
@@ -127,7 +128,7 @@ public class TableSection implements Section {
                     }
                     for (int col = 0; col < columns.length; col++) {
                         printTd(col, out);
-                        columns[col].html(rowData, out, clientRequest);
+                        columns[col].html(cr, rowData, out);
                         out.append("</td>\n");
                     }
                     out.append("  </tr>\n");
@@ -142,13 +143,14 @@ public class TableSection implements Section {
 
     /**
      * This method is invoked during the first phase of rendering a page;
-     * it calls {@code clientRequest.registerDataRequest} for each of the
+     * it calls {@code cr.registerDataRequest} for each of the
      * DataRequests needed by this section to gather data to be displayed.
-     * @param clientRequest        Information about the request being
-     *                             processed.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
      */
-    public void registerRequests(ClientRequest clientRequest) {
-        dataRequest = clientRequest.registerDataRequest(
+    @Override
+    public void registerRequests(ClientRequest cr) {
+        dataRequest = cr.registerDataRequest(
                 properties.get("request"));
     }
 

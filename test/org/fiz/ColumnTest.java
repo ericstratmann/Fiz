@@ -14,14 +14,14 @@ public class ColumnTest extends junit.framework.TestCase {
     public void test_headerHtml() {
         Column c = new Column ("<label>", "id44");
         StringBuilder out = new StringBuilder();
-        c.headerHtml(out, null);
+        c.headerHtml(null, out);
         assertEquals("generated HTML", "&lt;label&gt;", out.toString());
     }
 
     public void test_html() {
         Column c = new Column ("<label>", "@id44");
         StringBuilder out = new StringBuilder();
-        c.html(new Dataset("name", "Alice", "id44", "a&b"), out, null);
+        c.html(null, new Dataset("name", "Alice", "id44", "a&b"), out);
         assertEquals("generated HTML", "a&amp;b", out.toString());
     }
 }

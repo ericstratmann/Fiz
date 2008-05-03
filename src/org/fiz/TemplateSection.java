@@ -58,33 +58,35 @@ public class TemplateSection implements Section {
     /**
      * This method is invoked during the final phase of rendering a page;
      * it generates HTML for this section and appends it to the Html
-     * object associated with {@code clientRequest}.
-     * @param clientRequest        Information about the request being
-     *                             processed; HTML will be appended to
-     *                             {@code clientRequest.getHtml()}.
+     * object associated with {@code cr}.
+     * @param cr                   Overall information about the client
+     *                             request being serviced; HTML will be
+     *                             appended to {@code cr.getHtml()}.
      */
-    public void html(ClientRequest clientRequest) {
+    @Override
+    public void html(ClientRequest cr) {
         Dataset data;
         if (dataRequest != null) {
             // TODO: must handle errors.
             data = dataRequest.getResponseData();
-            data.setChain(clientRequest.getDataset());
+            data.setChain(cr.getDataset());
         } else {
-            data = clientRequest.getDataset();
+            data = cr.getDataset();
         }
-        Template.expand(template, data, clientRequest.getHtml().getBody());
+        Template.expand(template, data, cr.getHtml().getBody());
     }
 
     /**
      * This method is invoked during the first phase of rendering a page;
-     * it calls {@code clientRequest.registerDataRequest} for the
+     * it calls {@code cr.registerDataRequest} for the
      * DataRequest needed by this section (if any).
-     * @param clientRequest        Information about the request being
-     *                             processed.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
      */
-    public void registerRequests(ClientRequest clientRequest) {
+    @Override
+    public void registerRequests(ClientRequest cr) {
         if (request != null) {
-            dataRequest = clientRequest.registerDataRequest(request);
+            dataRequest = cr.registerDataRequest(request);
         }
     }
 }

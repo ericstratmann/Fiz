@@ -88,6 +88,7 @@ public class Dispatcher extends HttpServlet {
      * This method is invoked by the servlet container when the servlet
      * is first loaded; we use it to perform our own initialization.
      */
+    @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         if (testMode) {
@@ -109,6 +110,7 @@ public class Dispatcher extends HttpServlet {
      * is about to be unloaded.  Provides us with an opportunity to do
      * internal cleanup.
      */
+    @Override
     public void destroy() {
         logger.info("destroying dispatcher");
 
@@ -140,6 +142,7 @@ public class Dispatcher extends HttpServlet {
      * @param request              Information about the HTTP request.
      * @param response             Used to generate the response.
      */
+    @Override
     public void service (HttpServletRequest request,
         HttpServletResponse response) {
         try {

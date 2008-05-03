@@ -467,7 +467,7 @@ public class Dataset implements Cloneable {
      * doesn't currently exist, creates a new empty dataset at the specified
      * location, filling in any missing parent datasets along the path.
      * @param path                 One or more keys, separated by dots.
-     * @return                     Dataset corresponding to {@path}.
+     * @return                     Dataset corresponding to {@code path}.
      */
     public Dataset createChildPath(String path) {
         ParentInfo info = lookupParent(path, true);
@@ -483,7 +483,7 @@ public class Dataset implements Cloneable {
      * this method.
      * @param path                 One or more keys, separated by dots.
      * @param dataset              Contents for the nested dataset.
-     * @return                     Dataset corresponding to {@path}.
+     * @return                     Dataset corresponding to {@code path}.
      */
     @SuppressWarnings("unchecked")
     public Dataset createChildPath(String path, Dataset dataset) {

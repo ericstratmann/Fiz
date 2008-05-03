@@ -7,7 +7,7 @@ import org.apache.log4j.*;
  * Data managers are responsible for managing the persistent data of a
  * Fiz application, such as information in a relational database system.
  * Each subclass of DataManager implements a particular kind of data
- * storage mechanism.  Interactors and other front-and classes communicate
+ * storage mechanism.  Interactors and other front-end classes communicate
  * with data managers using DataRequest objects; see the DataRequest class
  * for details on how request parameters are provided to data managers
  * and how data managers respond to requests.

@@ -5,18 +5,30 @@ import javax.servlet.http.*;
 import java.util.*;
 
 /**
- * A ClientRequest object provides access to all of the interesting state
- * needed to process an HTTP request coming from the browser.  It is
- * typically passed to all of the major methods that service the request.
- * ClientRequest objects include the HttpServletRequest, HttpServletResponse,
- * and HttpServlet objects provided by the servlet container .  ClientRequests
- * also include additional Fiz objects such as a dataset containing the
- * request's query values and an Html object for building the response.
+ * A ClientRequest object is the master data structure providing access
+ * to everything needed to serve an incoming HTTP request.  Each incoming
+ * request is allocated its own ClientRequest object, which stays with
+ * the request until it has completed.  A ClientRequest provides access
+ * to the following things:
+ *   * Information about the request itself, such as the HttpServletRequest
+ *     object and a Dataset called the "main dataset" that holds the request's
+ *     query values and other global information.
+ *   * Information about the response generated for the request, including
+ *     the HttpServletResponse object and a Fiz Html object.
+ *   * Global information about the application, including the HttpServlet
+ *     object for the servlet container and additional Fiz information such
+ *     as configuration datasets, the CSS cache, and data managers.
+ * Most of the major methods for servicing a request take a ClientRequest
+ * object as their first argument; the ClientRequest is always referred to
+ * with a variable named {@code cr}.
  * <p>
- * It may be useful for an application to extend ClientRequests with additional
- * data;  in this case the application should subclass ClientRequest to add the
- * additional fields and override the {@code getRequest} method in the
- * application's Interactors to supply the ClientRequest subclass.
+ * Individual applications may have additional global data that needs to
+ * be accessible throughout the application.  They can achieve this by
+ * creating a subclass of ClientRequest that holds the additional data,
+ * then override the {@code getRequest} method in the application's
+ * Interactor(s) to supply an instance of the ClientRequest subclass.
+ * Alternatively, the application can store its data as attributes in the
+ * ServletContext ({@code cr.getServletContext.getAttribute()}).
  */
 
 @SuppressWarnings("deprecation")

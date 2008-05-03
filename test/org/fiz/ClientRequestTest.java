@@ -77,17 +77,17 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_showSections() {
-        ClientRequest clientRequest = TestUtil.setUp();
-        clientRequest.showSections(
+        ClientRequest cr = TestUtil.setUp();
+        cr.showSections(
                 new TemplateSection("first\n"),
                 new TemplateSection("getState", "second: @name\n"),
                 new TemplateSection("getState", "third: @capital\n"));
         assertEquals("generated HTML", "first\n" +
                 "second: California\n" +
                 "third: Sacramento\n",
-                clientRequest.getHtml().getBody().toString());
+                cr.getHtml().getBody().toString());
         assertEquals("registered requests", "getState",
-                clientRequest.getRequestNames());
+                cr.getRequestNames());
     }
 
     public void test_startDataRequests_namedAndUnnamed() {

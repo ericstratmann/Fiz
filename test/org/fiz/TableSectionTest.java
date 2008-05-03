@@ -6,13 +6,13 @@ package org.fiz;
 
 public class TableSectionTest extends junit.framework.TestCase {
     public void test_html_basics() {
-        ClientRequest clientRequest = TestUtil.setUp();
+        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getPeople"),
                 new Column("Name", "@name"),
                 new Column("Age", "@age"),
                 new Column("Weight", "@weight"));
-        clientRequest.showSections(table);
+        cr.showSections(table);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start TableSection -->\n" +
                 "<table class=\"TableSection\" cellspacing=\"0\">\n" +
@@ -43,18 +43,18 @@ public class TableSectionTest extends junit.framework.TestCase {
                 "  </tr>\n" +
                 "</table>\n" +
                 "<!-- End TableSection -->\n",
-                clientRequest.getHtml().getBody().toString());
-        TestUtil.assertXHTML(clientRequest.getHtml().toString());
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_html_noHeader() {
-        ClientRequest clientRequest = TestUtil.setUp();
+        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44",
                 "noHeader", "true"),
                 new Column("Name", "@name"),
                 new Column("Age", "@age"));
-        clientRequest.showSections(table);
-        String html = clientRequest.getHtml().getBody().toString();
+        cr.showSections(table);
+        String html = cr.getHtml().getBody().toString();
         assertEquals("generated HTML", "\n" +
                 "<!-- Start TableSection id.44 -->\n" +
                 "<table id=\"id.44\" class=\"TableSection\" " +
@@ -65,39 +65,39 @@ public class TableSectionTest extends junit.framework.TestCase {
                 "  </tr>\n" +
                 "</table>\n" +
                 "<!-- End TableSection id.44 -->\n",
-                clientRequest.getHtml().getBody().toString());
-        TestUtil.assertXHTML(clientRequest.getHtml().toString());
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_html_includeCss() {
-        ClientRequest clientRequest = TestUtil.setUp();
+        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44"));
-        clientRequest.showSections(table);
-        String html = clientRequest.getHtml().getBody().toString();
+        cr.showSections(table);
+        String html = cr.getHtml().getBody().toString();
         TestUtil.assertSubstring("CSS files requested",
                 "TableSection.css",
-                clientRequest.getHtml().getCssFiles());
+                cr.getHtml().getCssFiles());
     }
     public void test_html_dontIncludeCss() {
-        ClientRequest clientRequest = TestUtil.setUp();
+        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "class", "special"));
-        clientRequest.showSections(table);
-        String html = clientRequest.getHtml().getBody().toString();
+        cr.showSections(table);
+        String html = cr.getHtml().getBody().toString();
         TestUtil.assertSubstring("CSS files requested",
-                "", clientRequest.getHtml().getCssFiles());
+                "", cr.getHtml().getCssFiles());
     }
     public void test_html_idAndClass() {
-        ClientRequest clientRequest = TestUtil.setUp();
+        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44",
                 "class", "<class>"),
                 new Column("Name", "@name"),
                 new Column("Age", "@age"),
                 new Column("Weight", "@weight"));
-        table.registerRequests(clientRequest);
-        table.html(clientRequest);
-        String html = clientRequest.getHtml().getBody().toString();
+        table.registerRequests(cr);
+        table.html(cr);
+        String html = cr.getHtml().getBody().toString();
         TestUtil.assertSubstring("table prolog",
                 "<!-- Start TableSection id.44 -->\n" +
                 "<table id=\"id.44\" class=\"&lt;class&gt;\" " +
@@ -106,72 +106,72 @@ public class TableSectionTest extends junit.framework.TestCase {
         TestUtil.assertSubstring("table prolog",
                 "<!-- End TableSection id.44 -->\n",
                 html);
-        TestUtil.assertXHTML(clientRequest.getHtml().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_html_errorInRequest() {
-        ClientRequest clientRequest = TestUtil.setUp();
+        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "error",
                 "errorTemplate", "Error for @name: @message"),
                 new Column("Name", "@name"),
                 new Column("Age", "@age"),
                 new Column("Weight", "@weight"));
-        table.registerRequests(clientRequest);
-        table.html(clientRequest);
-        String html = clientRequest.getHtml().getBody().toString();
+        table.registerRequests(cr);
+        table.html(cr);
+        String html = cr.getHtml().getBody().toString();
         TestUtil.assertSubstring("row with empty message",
                "  <tr class=\"error\">\n" +
                "    <td colspan=\"3\">Error for Alice: unknown request " +
                "&quot;bogus&quot; for FileDataManager; must be " +
                "create, read, update, or delete</td>\n" +
                "  </tr>\n",
-                clientRequest.getHtml().getBody().toString());
-        TestUtil.assertXHTML(clientRequest.getHtml().toString());
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_html_emptyWithTemplate() {
-        ClientRequest clientRequest = TestUtil.setUp();
+        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getNothing",
                 "emptyTemplate", "No data for @name"),
                 new Column("Name", "@name"),
                 new Column("Age", "@age"),
                 new Column("Weight", "@weight"));
-        table.registerRequests(clientRequest);
-        table.html(clientRequest);
-        String html = clientRequest.getHtml().getBody().toString();
+        table.registerRequests(cr);
+        table.html(cr);
+        String html = cr.getHtml().getBody().toString();
         TestUtil.assertSubstring("row with empty message",
                "  <tr class=\"empty\">\n" +
                 "    <td colspan=\"3\">No data for Alice</td>\n" +
                 "  </tr>\n",
-                clientRequest.getHtml().getBody().toString());
-        TestUtil.assertXHTML(clientRequest.getHtml().toString());
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_html_emptyUseDefaultTemplate() {
-        ClientRequest clientRequest = TestUtil.setUp();
+        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getNothing"),
                 new Column("Name", "@name"),
                 new Column("Age", "@age"),
                 new Column("Weight", "@weight"));
-        table.registerRequests(clientRequest);
-        table.html(clientRequest);
-        String html = clientRequest.getHtml().getBody().toString();
+        table.registerRequests(cr);
+        table.html(cr);
+        String html = cr.getHtml().getBody().toString();
         TestUtil.assertSubstring("wrote with empty message",
                "  <tr class=\"empty\">\n" +
                 "    <td colspan=\"3\">There are no records to display</td>\n" +
                 "  </tr>\n",
-                clientRequest.getHtml().getBody().toString());
-        TestUtil.assertXHTML(clientRequest.getHtml().toString());
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_html_lastRowClass() {
-        ClientRequest clientRequest = TestUtil.setUp();
+        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44",
                 "noHeader", "true", "lastRowClass", "last"),
                 new Column("Name", "@name"),
                 new Column("Age", "@age"));
-        clientRequest.showSections(table);
-        String html = clientRequest.getHtml().getBody().toString();
+        cr.showSections(table);
+        String html = cr.getHtml().getBody().toString();
         assertEquals("generated HTML", "\n" +
                 "<!-- Start TableSection id.44 -->\n" +
                 "<table id=\"id.44\" class=\"TableSection\" " +
@@ -182,17 +182,17 @@ public class TableSectionTest extends junit.framework.TestCase {
                 "  </tr>\n" +
                 "</table>\n" +
                 "<!-- End TableSection id.44 -->\n",
-                clientRequest.getHtml().getBody().toString());
-        TestUtil.assertXHTML(clientRequest.getHtml().toString());
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
     }
 
     public void test_registerRequests() {
-        ClientRequest clientRequest = TestUtil.setUp();
+        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(new Dataset(
                 "request", "getPeople"));
-        table.registerRequests(clientRequest);
+        table.registerRequests(cr);
         assertEquals("names of registered requests", "getPeople",
-                clientRequest.getRequestNames());
+                cr.getRequestNames());
     }
 
     public void test_printTd() {
