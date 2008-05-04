@@ -45,9 +45,9 @@ public class CssTest extends junit.framework.TestCase {
         Css.init("a/b", "y/z");
         String[] path = Css.getPath();
         assertEquals("directories in path", "a/b, y/z",
-                Util.join(path, ", "));
+                StringUtil.join(path, ", "));
         path[0] = "modified";
         assertEquals("make sure result is cloned", "a/b, y/z",
-                Util.join(Css.getPath(), ", "));
+                StringUtil.join(Css.getPath(), ", "));
     }
 }

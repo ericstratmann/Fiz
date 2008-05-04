@@ -85,7 +85,7 @@ public class FileDataManager extends DataManager {
         StringBuilder expandedPath = new StringBuilder();
         Template.expand(config.get("pathTemplate"), Config.getDataset("main"),
                 expandedPath, Template.SpecialChars.NONE);
-        path = Util.split(expandedPath.toString(), ',');
+        path = StringUtil.split(expandedPath.toString(), ',');
     }
 
     /**

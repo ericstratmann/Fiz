@@ -35,7 +35,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "@home/myDir, /demo/@test"));
         assertEquals("path size", 3, manager.path.length);
         assertEquals("expanded path", "/a/b/c/myDir, /demo/<test>, xyz",
-                Util.join(manager.path, ", "));
+                StringUtil.join(manager.path, ", "));
     }
 
     public void test_startRequests_create() throws IOException {

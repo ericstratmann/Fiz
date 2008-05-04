@@ -171,9 +171,9 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
     public void test_characters() throws SAXException {
         handler.startElement("url", "localName", "qName", null);
         handler.startElement("url", "localName", "child", null);
-        handler.characters(Util.newCharArray("abcprefixdef"), 3, 6);
+        handler.characters(StringUtil.newCharArray("abcprefixdef"), 3, 6);
         assertEquals("elementText", "prefix", handler.elementText.toString());
-        handler.characters(Util.newCharArray("suffix"), 0, 6);
+        handler.characters(StringUtil.newCharArray("suffix"), 0, 6);
         assertEquals("elementText", "prefixsuffix",
                 handler.elementText.toString());
     }
@@ -182,7 +182,7 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
         handler.startElement("url", "localName", "qName", null);
         handler.startElement("url", "localName", "child", null);
         handler.elementChildren = new HashMap<String,Object>();
-        handler.characters(Util.newCharArray("  \n\t"), 0, 4);
+        handler.characters(StringUtil.newCharArray("  \n\t"), 0, 4);
         assertEquals("elementText", "", handler.elementText.toString());
     }
     public void test_characters_conflict()
@@ -192,7 +192,7 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
         handler.elementChildren = new HashMap<String,Object>();
         boolean gotException = false;
         try {
-            handler.characters(Util.newCharArray("abcd"), 0, 4);
+            handler.characters(StringUtil.newCharArray("abcd"), 0, 4);
         }
         catch (SAXException e) {
             assertEquals("exception message",

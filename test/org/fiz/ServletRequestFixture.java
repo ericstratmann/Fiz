@@ -22,6 +22,8 @@ public class ServletRequestFixture implements HttpServletRequest {
     // The following variables provide return values for some of the methods;
     // tests can modify these variables to test different scenarios.
     public String servletPath = "/servlet/path";
+    public String uri = "uriString";
+    public String queryString = "a=b&c=d";
 
     public ServletRequestFixture() {
         parameterMap = new Hashtable<String,String>();
@@ -64,10 +66,10 @@ public class ServletRequestFixture implements HttpServletRequest {
     public String getMethod() {return "method";}
     public String getPathInfo() {return "pathInfo";}
     public String getPathTranslated() {return "pathTranslated";}
-    public String getQueryString() {return "queryString";}
+    public String getQueryString() {return queryString;}
     public String getRemoteUser() {return "remoteUser";}
     public String getRequestedSessionId() {return "requestedSessionId";}
-    public String getRequestURI() {return "requestURI";}
+    public String getRequestURI() {return uri;}
     public StringBuffer getRequestURL() {return new StringBuffer("requestURL");}
     public String getServletPath() {return servletPath;}
     public HttpSession getSession() {

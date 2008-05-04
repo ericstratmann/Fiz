@@ -252,7 +252,7 @@ public class Template {
         }
         char c = info.template.charAt(start);
         if (Character.isUnicodeIdentifierStart(c)) {
-            info.end = Util.identifierEnd(info.template, start);
+            info.end = StringUtil.identifierEnd(info.template, start);
             String name = info.template.subSequence(start,
                     info.end).toString();
             if ((info.end < info.templateEnd)

@@ -21,6 +21,11 @@ public class ServletResponseFixture implements HttpServletResponse{
     public String contentType;
     public StringWriter out = new StringWriter();
     public PrintWriter writer = new PrintWriter(out);
+    public int contentLength = 0;
+
+    // The following variables determine the output from certain methods.
+    String uri = "uriString";
+    String queryString = "?a=b&c=d";
 
     // HttpServletResponse methods:
 
@@ -123,6 +128,7 @@ public class ServletResponseFixture implements HttpServletResponse{
         lastMethod = "setCharacterEncoding(\"" + charset + "\")";
     }
     public void setContentLength(int length) {
+        contentLength = length;
         lastMethod = "setContentLength(" + length + ")";
     }
     public void setContentType(String type) {

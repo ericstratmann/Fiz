@@ -126,7 +126,7 @@ public class XmlDataset extends Dataset {
     public static void writeFile(Dataset d, String name, String comment) {
         FileWriter out;
         try {
-            name = Util.addExtension(name, ".xml");
+            name = StringUtil.addExtension(name, ".xml");
             out = new FileWriter(name);
         }
         catch  (IOException e) {

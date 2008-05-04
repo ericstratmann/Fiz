@@ -209,7 +209,7 @@ public class DocTranslator {
 
         // Skip over leading spaces to find the left edge of the line's
         // real content, then check for a blank line.
-        left = Util.skipSpaces(input, start, lineEnd);
+        left = StringUtil.skipSpaces(input, start, lineEnd);
         textIndent = left - start;
         if (left >= lineEnd) {
             type = LineType.NORMAL;
@@ -231,7 +231,7 @@ public class DocTranslator {
         c = input.charAt(left);
         if (((c == '-') || (c == '*')) && ((left+1) < lineEnd)
                 && (input.charAt(left+1) == ' ')) {
-            textIndent = Util.skipSpaces(input, left+2, lineEnd) - start;
+            textIndent = StringUtil.skipSpaces(input, left+2, lineEnd) - start;
             type = LineType.BULLET;
             return;
         }
@@ -266,7 +266,7 @@ public class DocTranslator {
                 } else {
                     term = input.substring(left, i);
                 }
-                textIndent = Util.skipSpaces(input, i+2, lineEnd) - start;
+                textIndent = StringUtil.skipSpaces(input, i+2, lineEnd) - start;
                 type = LineType.DEFINITION;
                 return;
             }

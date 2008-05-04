@@ -21,7 +21,7 @@ public class FileNotFoundError extends Error {
     public FileNotFoundError(String fileName, String type, String message) {
         super("couldn't open " + ((type != null) ? (type + " ") : "")
                 + "file \"" + fileName + "\": "
-                + Util.extractInnerMessage(message));
+                + StringUtil.extractInnerMessage(message));
     }
 
     /**
@@ -48,6 +48,6 @@ public class FileNotFoundError extends Error {
         return new FileNotFoundError("couldn't find "
                 + ((type != null) ? (type + " ") : "")
                 + "file \"" + fileName + "\" in path (\""
-                + Util.join(path, "\", \"") + "\")");
+                + StringUtil.join(path, "\", \"") + "\")");
     }
 }

@@ -224,10 +224,10 @@ class DispatcherFixture extends Dispatcher {
         logger.setLevel(Level.FATAL);
     }
     public String getClassKeys() {
-        return Util.join(classMap.keySet(), ", ");
+        return StringUtil.join(classMap.keySet(), ", ");
     }
     public String getMethodKeys() {
-        return Util.join(methodMap.keySet(), ", ");
+        return StringUtil.join(methodMap.keySet(), ", ");
     }
     public Class<?> findClass(String className, HttpServletRequest request) {
         return super.findClass(className, request);

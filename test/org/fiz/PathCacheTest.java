@@ -9,7 +9,7 @@ public class PathCacheTest extends junit.framework.TestCase {
     public void test_constructor() {
         PathCache p = new PathCache("a/b", "c/d", "e/f");
         assertEquals("saved path", "a/b; c/d; e/f",
-                Util.join(p.path, "; "));
+                StringUtil.join(p.path, "; "));
     }
 
     public void test_find_searchThroughPath() {

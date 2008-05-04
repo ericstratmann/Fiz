@@ -138,7 +138,7 @@ public class ClientRequest {
         ArrayList<String> names = new ArrayList<String>();
         names.addAll(namedRequests.keySet());
         Collections.sort(names);
-        return Util.join(names, ", ");
+        return StringUtil.join(names, ", ");
     }
 
     /**

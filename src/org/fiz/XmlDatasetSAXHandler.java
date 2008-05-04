@@ -86,10 +86,10 @@ class XmlDatasetSAXHandler extends DefaultHandler {
         // 2. If we haven't already created a HashMap to hold the
         //    children of the current element, create it now.
 
-        if (!Util.isWhitespace(elementText)) {
+        if (!StringUtil.isWhitespace(elementText)) {
             throw new SAXException("improper use of XML"
                     + locationMessage() + ": element contains both text (\""
-                    + Util.excerpt(elementText, 20) + "\") and child ("
+                    + StringUtil.excerpt(elementText, 20) + "\") and child ("
                     + qName + ")");
         }
         if (elementChildren == null) {
@@ -194,12 +194,12 @@ class XmlDatasetSAXHandler extends DefaultHandler {
 
         // The current element is a dataset so text isn't allowed:
         // ignore whitespace, but generate errors for anything else.
-        if (Util.isWhitespace(ch, start, length)) {
+        if (StringUtil.isWhitespace(ch, start, length)) {
             return;
         }
         throw new SAXException("improper use of XML" + locationMessage() +
                 ": element contains both text (\""
-                + Util.excerpt(new String(ch, start, length), 20)
+                + StringUtil.excerpt(new String(ch, start, length), 20)
                 + "\") and child");
     }
 

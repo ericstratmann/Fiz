@@ -26,6 +26,6 @@ public class IOError extends Error {
      */
     public static IOError newFileInstance(String fileName, String details) {
         return new IOError("I/O error in file \"" + fileName + "\": "
-                + Util.extractInnerMessage(details));
+                + StringUtil.extractInnerMessage(details));
     }
 }

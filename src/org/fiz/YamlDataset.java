@@ -166,7 +166,7 @@ public class  YamlDataset extends Dataset {
     public static void writeFile(Dataset d, String name, String comment) {
         FileWriter out;
         try {
-            name = Util.addExtension(name, ".yml");
+            name = StringUtil.addExtension(name, ".yml");
             out = new FileWriter(name);
         }
         catch  (IOException e) {

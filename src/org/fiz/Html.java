@@ -65,7 +65,7 @@ public class Html {
         ArrayList<String> names = new ArrayList<String>();
         names.addAll(cssFiles);
         Collections.sort(names);
-        return Util.join(names, ", ");
+        return StringUtil.join(names, ", ");
     }
 
     /**
@@ -125,7 +125,7 @@ public class Html {
             return;
         }
         cssFiles.add(fileName);
-        Util.addBlankLine(css);
+        StringUtil.addBlankLine(css);
         css.append(Css.getStylesheet(fileName));
     }
 
@@ -138,7 +138,7 @@ public class Html {
      *                             came from.
      */
     public void includeCss(CharSequence styleInfo) {
-        Util.addBlankLine(css);
+        StringUtil.addBlankLine(css);
         css.append(styleInfo);
     }
 

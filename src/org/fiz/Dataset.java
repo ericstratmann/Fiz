@@ -261,7 +261,7 @@ public class Dataset implements Cloneable {
      *                             of {@code fileName}
      */
     public static Dataset newFileInstance(String fileName) {
-        String extension = Util.fileExtension(fileName);
+        String extension = StringUtil.fileExtension(fileName);
         if (extension == null) {
             String newName = Util.findFileWithExtension(fileName,
                     ".yaml", ".yml", ".xml");
@@ -270,7 +270,7 @@ public class Dataset implements Cloneable {
                         "couldn't find a file with a supported extension");
             }
             fileName = newName;
-            extension = Util.fileExtension(fileName);
+            extension = StringUtil.fileExtension(fileName);
         }
         if (extension.equals(".yml") || extension.equals(".yaml")) {
             return YamlDataset.newFileInstance(fileName);
@@ -1056,7 +1056,7 @@ public class Dataset implements Cloneable {
         } else if (got instanceof ArrayList) {
             gotType = "list";
         } else {
-            gotType = "string value \"" + Util.excerpt(got.toString(), 20)
+            gotType = "string value \"" + StringUtil.excerpt(got.toString(), 20)
                     + "\"";
         }
         return "wrong type for dataset element \"" + name + "\": expected "
