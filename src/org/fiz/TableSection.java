@@ -47,12 +47,18 @@ public class TableSection implements Section {
      *                             for the table; see description above.
      * @param columns              The remaining arguments describe the
      *                             columns of the table, in order from
-     *                             left to right.  Each argument can be
-     *                             either a Column (in which case it knows
-     *                             how to display a column header as well as
-     *                             information for each row of the table)
-     *                             or just a Formatter (in which case there
-     *                             will be no header for this column).
+     *                             left to right.  For each record returned
+     *                             by {@code request} one row will be
+     *                             generated in the table; each column's
+     *                             {@code html} method will be invoked to
+     *                             generate the HTML between the {@code <td>}
+     *                             and the {@code </td>}) for that column.
+     *                             The dataset passed to the {@code html}
+     *                             methods will include the information for
+     *                             the row as well as the main dataset for the
+     *                             client request.  If a column is also a
+     *                             Column then it will also be invoked to
+     *                             generate header HTML for the column.
      */
     public TableSection(Dataset properties, Formatter ... columns) {
         this.properties = properties;

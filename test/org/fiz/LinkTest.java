@@ -24,6 +24,62 @@ public class LinkTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
     }
 
+    public void test_constructor_withPropertiesAndDisplayForm () {
+        StringBuilder out = new StringBuilder();
+        Link link = new Link(new Dataset("text", "name", "url", "/a/b/c",
+                "iconUrl", "/x/y"), Link.DisplayForm.TEXT);
+        link.html(cr, new Dataset(), out);
+        assertEquals("HTML for link", "<a href=\"/a/b/c\">name</a>",
+                out.toString());
+        TestUtil.assertXHTML(out.toString());
+
+    }
+
+    public void test_constructor_withPropertiesOnly () {
+        StringBuilder out = new StringBuilder();
+        Link link = new Link(new Dataset("text", "name", "url", "/a/b/c",
+                "iconUrl", "/x/y"));
+        link.html(cr, new Dataset(), out);
+        assertEquals("HTML for link", "<a href=\"/a/b/c\"><table " +
+                "class=\"Link\" cellspacing=\"0\"><tr><td><img " +
+                "class=\"Link\" src=\"/x/y\" alt=\"\" /></td><td " +
+                "class=\"text\">name</td></tr></table></a>",
+                out.toString());
+        TestUtil.assertXHTML(out.toString());
+    }
+
+    public void test_constructor_withNameAndDisplayForm () {
+        StringBuilder out = new StringBuilder();
+        Config.setDataset ("links", YamlDataset.newStringInstance(
+                "first:\n" +
+                "  text: name\n" +
+                "  url: /a/b/c\n" +
+                "  iconUrl: /x/y/z\n"));
+        Link link = new Link("first", Link.DisplayForm.TEXT);
+        link.html(cr, new Dataset(), out);
+        assertEquals("HTML for link", "<a href=\"/a/b/c\">name</a>",
+                out.toString());
+        TestUtil.assertXHTML(out.toString());
+    }
+
+    public void test_constructor_withNameOnly () {
+        StringBuilder out = new StringBuilder();
+        Config.setDataset ("links", YamlDataset.newStringInstance(
+                "first:\n" +
+                "  text: name\n" +
+                "  url: /a/b/c\n" +
+                "  iconUrl: /x/y/z\n"));
+        Link link = new Link("first");
+        link.html(cr, new Dataset(), out);
+        assertEquals("HTML for link",
+                "<a href=\"/a/b/c\"><table class=\"Link\" cellspacing" +
+                "=\"0\"><tr><td><img class=\"Link\" src=\"/x/y/z\" " +
+                "alt=\"\" /></td><td class=\"text\">name</td></tr>" +
+                "</table></a>",
+                out.toString());
+        TestUtil.assertXHTML(out.toString());
+    }
+
     public void test_html_setDisplayText() {
         StringBuilder out = new StringBuilder("123");
         Link link = new Link(new Dataset("url", "http://foo",

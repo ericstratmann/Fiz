@@ -50,7 +50,7 @@ public class Link implements Formatter {
     DisplayForm displayForm;
 
     /**
-     * Constructs a Link object with a given set of properties and a
+     * Construct a Link object with a given set of properties and a
      * particular display form.
      * @param properties           A collection of values describing the
      *                             configuration of the Link; see above for
@@ -68,7 +68,7 @@ public class Link implements Formatter {
     }
 
     /**
-     * Constructs a Link object with a given set of properties (the
+     * Construct a Link object with a given set of properties (the
      * display form defaults to {@code BOTH}).
      * @param properties           A collection of values describing the
      *                             configuration of the Link; see above for
@@ -76,6 +76,28 @@ public class Link implements Formatter {
      */
     public Link(Dataset properties) {
         this(properties, DisplayForm.BOTH);
+    }
+
+    /**
+     * Construct a Link using a named dataset within the {@code links}
+     * configuration dataset.
+     * @param name                 Name of a nested dataset within the
+     *                             "links" configuration dataset.
+     * @param displayForm          Indicates whether to render the link's text,
+     *                             icon, or both.
+     */
+    public Link(String name, DisplayForm displayForm) {
+        this(Config.getDataset("links").getChild(name), displayForm);
+    }
+
+    /**
+     * Construct a Link using a named dataset within the {@code links}
+     * configuration dataset.  The display form will be {@code BOTH}.
+     * @param name                 Name of a nested dataset within the
+     *                             "links" configuration dataset.
+     */
+    public Link(String name) {
+        this(Config.getDataset("links").getChild(name), DisplayForm.BOTH);
     }
 
     /**
