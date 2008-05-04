@@ -24,7 +24,7 @@ package org.fiz;
  *              Javascript{@code confirm} function).
  */
 
-public class Link {
+public class Link implements Formatter {
     /**
      * Instances of this enum are used to indicate how to display a
      * Link.

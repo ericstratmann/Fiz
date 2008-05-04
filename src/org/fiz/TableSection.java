@@ -23,7 +23,10 @@ package org.fiz;
  *                   This can be used to display the bottom row differently,
  *                   e.g. for totals.
  *   noHeader:       (optional) If this property is defined, then the
- *                   header row for the table will not be displayed.
+ *                   header row for the table will not be displayed, even
+ *                   if some of the columns offer header information.
+ *                   Regardless of this property, the header row will be
+ *                   omitted if none of the columns generate header info.
  *   request:        (required) Name of the DataRequest that will supply
  *                   data to display in the TableSection; the response to
  *                   this request must contain one {@code record} child for
@@ -33,7 +36,7 @@ public class TableSection implements Section {
     // The following variables are copies of constructor arguments.  See
     // the constructor documentation for details.
     protected Dataset properties;
-    protected Column[] columns;
+    protected Formatter[] columns;
 
     // Source of data for the rows of the table:
     protected DataRequest dataRequest;
@@ -44,9 +47,14 @@ public class TableSection implements Section {
      *                             for the table; see description above.
      * @param columns              The remaining arguments describe the
      *                             columns of the table, in order from
-     *                             left to right.
+     *                             left to right.  Each argument can be
+     *                             either a Column (in which case it knows
+     *                             how to display a column header as well as
+     *                             information for each row of the table)
+     *                             or just a Formatter (in which case there
+     *                             will be no header for this column).
      */
-    public TableSection(Dataset properties, Column ... columns) {
+    public TableSection(Dataset properties, Formatter ... columns) {
         this.properties = properties;
         this.columns = columns;
     }
@@ -77,13 +85,33 @@ public class TableSection implements Section {
 
         // Header row.
         if (!properties.containsKey("noHeader")) {
+            int oldLength = out.length();
+            boolean anyHeaders = false;
             out.append("  <tr class=\"header\">\n");
+
+            // Each iteration through the following loop generates the header
+            // for one column.  While doing this, see if any of the columns
+            // produce actual headers (if not, we will omit the entire
+            // header row).
             for (int col = 0; col < columns.length; col++) {
                 printTd(col, out);
-                columns[col].headerHtml(cr, out);
+                int headerStart = out.length();
+                Formatter f = columns[col];
+                if (f instanceof Column) {
+                    ((Column) f).headerHtml(cr, out);
+                }
+                if (out.length() > headerStart) {
+                    anyHeaders = true;
+                }
                 out.append("</td>\n");
             }
-            out.append("  </tr>\n");
+            if (anyHeaders) {
+                out.append("  </tr>\n");
+            } else {
+                // None of the columns had a header to display; omit the
+                // entire header row.
+                out.setLength(oldLength);
+            }
         }
 
         // Body rows.
