@@ -120,7 +120,7 @@ public class DataRequest {
      *                             {@code dataRequests} configuration dataset.
      * @param aux                  Auxiliary data, some of which may be used
      *                             in the request.  This usually consists of
-     *                             the query values in the URI for the current
+     *                             the query values in the URL for the current
      *                             page.
      */
     public DataRequest(String name, Dataset aux) {

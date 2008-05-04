@@ -4,12 +4,12 @@ import javax.servlet.http.*;
 /**
  * The Interactor class is subclassed by classes that process
  * incoming HTTP requests.  Fiz automatically dispatches incoming
- * requests to methods of an Interactor subclass based on the URI.  For
+ * requests to methods of an Interactor subclass based on the URL.  For
  * example, if a class MyClass subclasses Interactor and has methods
  * {@code create} and {@code delete}, than the {@code create} method will be
- * invoked to service URIs of the form
+ * invoked to service URLs of the form
  * {@code /appName/fiz/myClass/create/extra}:
- *     - {@code appName} is a URI prefix identifying this particular
+ *     - {@code appName} is a URL prefix identifying this particular
  *       application; it can have any number of path levels, including 0.
  *       Tomcat must have been configured to pass all requests for this
  *       prefix to the Fiz Dispatcher servlet.
@@ -18,12 +18,12 @@ import javax.servlet.http.*;
  *     - {@code create} is the name of the method to invoke in
  *       {@code myClass}; this method must be public and take 1 arguments
  *       consisting of a ClientRequest.
- *     - {@code extra} can be any additional URI information, or nothing; this
+ *     - {@code extra} can be any additional URL information, or nothing; this
  *       information is made available to the Interactor for its use in
  *       processing the request.
  *
  * Fiz will automatically load the class and create a single instance
- * during the first request whose URI references the class.
+ * during the first request whose URL references the class.
  */
 
 public class Interactor {

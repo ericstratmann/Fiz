@@ -63,7 +63,7 @@ public class TableSection implements Section {
     public void html(ClientRequest cr) {
         Html html = cr.getHtml();
         StringBuilder out = html.getBody();
-        Dataset mainDataset = cr.getDataset();
+        Dataset mainDataset = cr.getMainDataset();
         String lastRowClass = properties.check("lastRowClass");
 
         // Start.

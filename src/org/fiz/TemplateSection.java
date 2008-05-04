@@ -69,9 +69,9 @@ public class TemplateSection implements Section {
         if (dataRequest != null) {
             // TODO: must handle errors.
             data = dataRequest.getResponseData();
-            data.setChain(cr.getDataset());
+            data.setChain(cr.getMainDataset());
         } else {
-            data = cr.getDataset();
+            data = cr.getMainDataset();
         }
         Template.expand(template, data, cr.getHtml().getBody());
     }

@@ -24,27 +24,27 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
     }
 
     public void test_startElement_notStarted() throws SAXException {
-        handler.startElement("uri", "localName", "qName", null);
+        handler.startElement("url", "localName", "qName", null);
         assertEquals("notStarted", false, handler.notStarted);
         assertEquals("ancestors length", map, handler.elementChildren);
         assertEquals("elementChildren", 0, handler.ancestors.size());
     }
     public void test_startElement_started() throws SAXException {
-        handler.startElement("uri", "localName", "qName", null);
+        handler.startElement("url", "localName", "qName", null);
         handler.elementText.append("   ");
-        handler.startElement("uri", "localName", "child", null);
+        handler.startElement("url", "localName", "child", null);
         assertEquals("elementChildren", null, handler.elementChildren);
         assertEquals("ancestors length", 1, handler.ancestors.size());
         assertEquals("elementText", "", handler.elementText.toString());
-        handler.startElement("uri", "localName", "child", null);
+        handler.startElement("url", "localName", "child", null);
         assertEquals("ancestors length", 2, handler.ancestors.size());
     }
     public void test_startElement_nonblankText() throws SAXException {
-        handler.startElement("uri", "localName", "qName", null);
+        handler.startElement("url", "localName", "qName", null);
         handler.elementText.append("abc");
         boolean gotException = false;
         try {
-            handler.startElement("uri", "localName", "child", null);
+            handler.startElement("url", "localName", "child", null);
         }
         catch (SAXException e) {
             assertEquals("exception message",
@@ -57,19 +57,19 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
     }
 
     public void test_endElement_outermost() throws SAXException {
-        handler.startElement("uri", "localName", "qName", null);
+        handler.startElement("url", "localName", "qName", null);
         handler.elementText.append("xyz");
-        handler.endElement("uri", "localName", "qName");
+        handler.endElement("url", "localName", "qName");
         assertEquals("elementText", "xyz", handler.elementText.toString());
     }
     public void test_endElement_illegalText() throws SAXException {
-        handler.startElement("uri", "localName", "qName", null);
-        handler.startElement("uri", "localName", "child", null);
+        handler.startElement("url", "localName", "qName", null);
+        handler.startElement("url", "localName", "child", null);
         handler.elementText.append("abc");
         map.put("child", "text");
         boolean gotException = false;
         try {
-            handler.endElement("uri", "localName", "child");
+            handler.endElement("url", "localName", "child");
         }
         catch (SAXException e) {
             assertEquals("exception message",
@@ -81,19 +81,19 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
     }
     public void test_endElement_childIsString() throws SAXException {
-        handler.startElement("uri", "localName", "qName", null);
-        handler.startElement("uri", "localName", "child", null);
+        handler.startElement("url", "localName", "qName", null);
+        handler.startElement("url", "localName", "child", null);
         handler.elementText.append("xyz");
-        handler.endElement("uri", "localName", "child");
+        handler.endElement("url", "localName", "child");
         assertEquals("value of new element", "xyz",
                 map.get("child").toString());
     }
     public void test_endElement_childIsDataset() throws SAXException {
-        handler.startElement("uri", "localName", "qName", null);
-        handler.startElement("uri", "localName", "child", null);
+        handler.startElement("url", "localName", "qName", null);
+        handler.startElement("url", "localName", "child", null);
         handler.elementChildren = new HashMap<String,Object>();
         handler.elementChildren.put("key 46", "value 18");
-        handler.endElement("uri", "localName", "child");
+        handler.endElement("url", "localName", "child");
         assertEquals("class of new value", "HashMap",
                 map.get("child").getClass().getSimpleName());
         assertEquals("value in new dataset", "value 18",
@@ -102,14 +102,14 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
     @SuppressWarnings("unchecked")
     public void test_endElement_newDatasetWithExistingDataset()
             throws SAXException {
-        handler.startElement("uri", "localName", "qName", null);
-        handler.startElement("uri", "localName", "child", null);
+        handler.startElement("url", "localName", "qName", null);
+        handler.startElement("url", "localName", "child", null);
         HashMap<String,Object> oldChild = new HashMap<String,Object>();
         map.put("child", oldChild);
         HashMap<String,Object> newChild = new HashMap<String,Object>();
         handler.elementChildren = newChild;
         newChild.put("key 46", "value 18");
-        handler.endElement("uri", "localName", "child");
+        handler.endElement("url", "localName", "child");
         assertEquals("class of new value", "ArrayList",
                 map.get("child").getClass().getSimpleName());
         ArrayList<HashMap<String,Object>> list =
@@ -121,8 +121,8 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
     @SuppressWarnings("unchecked")
     public void test_endElement_newDatasetWithExistingList()
             throws SAXException {
-        handler.startElement("uri", "localName", "qName", null);
-        handler.startElement("uri", "localName", "child", null);
+        handler.startElement("url", "localName", "qName", null);
+        handler.startElement("url", "localName", "child", null);
         ArrayList<HashMap<String,Object>> list
                 = new ArrayList<HashMap<String,Object>>();
         list.add(new HashMap<String,Object>());
@@ -132,22 +132,22 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
         HashMap<String,Object> newChild = new HashMap<String,Object>();
         handler.elementChildren = newChild;
         newChild.put("key 46", "value 18");
-        handler.endElement("uri", "localName", "child");
+        handler.endElement("url", "localName", "child");
         assertEquals("child object", list, map.get("child"));
         assertEquals("size of list", 4, list.size());
         assertEquals("second dataset in list", newChild, list.get(3));
     }
     public void test_endElement_newDatasetWithExistingText()
             throws SAXException {
-        handler.startElement("uri", "localName", "qName", null);
-        handler.startElement("uri", "localName", "child2", null);
+        handler.startElement("url", "localName", "qName", null);
+        handler.startElement("url", "localName", "child2", null);
         map.put("child2", "text");
         HashMap<String,Object> newChild = new HashMap<String,Object>();
         handler.elementChildren = newChild;
         newChild.put("key 46", "value 18");
         boolean gotException = false;
         try {
-            handler.endElement("uri", "localName", "child2");
+            handler.endElement("url", "localName", "child2");
         }
         catch (SAXException e) {
             assertEquals("exception message",
@@ -159,18 +159,18 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
     }
     public void test_endElement_popStateBackToParent() throws SAXException {
-        handler.startElement("uri", "localName", "qName", null);
-        handler.startElement("uri", "localName", "child", null);
+        handler.startElement("url", "localName", "qName", null);
+        handler.startElement("url", "localName", "child", null);
         handler.elementText.append("xyz");
-        handler.endElement("uri", "localName", "child");
+        handler.endElement("url", "localName", "child");
         assertEquals("elementChildren", map, handler.elementChildren);
         assertEquals("ancestors length", 0, handler.ancestors.size());
         assertEquals("elementText", "", handler.elementText.toString());
     }
 
     public void test_characters() throws SAXException {
-        handler.startElement("uri", "localName", "qName", null);
-        handler.startElement("uri", "localName", "child", null);
+        handler.startElement("url", "localName", "qName", null);
+        handler.startElement("url", "localName", "child", null);
         handler.characters(Util.newCharArray("abcprefixdef"), 3, 6);
         assertEquals("elementText", "prefix", handler.elementText.toString());
         handler.characters(Util.newCharArray("suffix"), 0, 6);
@@ -179,16 +179,16 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
     }
     public void test_characters_ignoreWhitespaceIfConflict()
             throws SAXException {
-        handler.startElement("uri", "localName", "qName", null);
-        handler.startElement("uri", "localName", "child", null);
+        handler.startElement("url", "localName", "qName", null);
+        handler.startElement("url", "localName", "child", null);
         handler.elementChildren = new HashMap<String,Object>();
         handler.characters(Util.newCharArray("  \n\t"), 0, 4);
         assertEquals("elementText", "", handler.elementText.toString());
     }
     public void test_characters_conflict()
             throws SAXException {
-        handler.startElement("uri", "localName", "qName", null);
-        handler.startElement("uri", "localName", "child", null);
+        handler.startElement("url", "localName", "qName", null);
+        handler.startElement("url", "localName", "child", null);
         handler.elementChildren = new HashMap<String,Object>();
         boolean gotException = false;
         try {

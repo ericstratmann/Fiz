@@ -1,5 +1,4 @@
 package org.fiz;
-import java.io.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import java.util.*;
@@ -48,7 +47,7 @@ public class ClientRequest {
 
     // Top-level dataset for this request.  See getRequest documentation for
     // details.
-    protected Dataset dataset = null;
+    protected Dataset mainDataset = null;
 
     // Hash table that maps from the {@code name} argument passed to
     // {@code registerDataRequest} to the DataRequest that was returned
@@ -62,6 +61,10 @@ public class ClientRequest {
     // that aren't in the {@code namedRequests} table).
     protected ArrayList<DataRequest> unnamedRequests =
             new ArrayList<DataRequest>();
+
+    // The following variable equals the return value from the last call to
+    // getUrlPrefix, or null if that method hasn't yet been called.
+    protected String urlPrefix = null;
 
     /**
      * Constructs a ClientRequest object.  Typically invoked by the
@@ -87,26 +90,28 @@ public class ClientRequest {
 
     /**
      * Returns the main dataset for this request.  Initially the dataset
-     * contains query values provided in the URI, but requests may add
+     * contains query values provided in the URL, but requests may add
      * values to the dataset in cases where the data needs to be used
-     * globally across the request.
+     * globally across the request.  This dataset will be available in
+     * (almost question mark) all template expansions used while processing
+     * the request.
      * @return                     Global dataset for this request.
      */
-    public Dataset getDataset() {
-        if (dataset != null) {
-            return dataset;
+    public Dataset getMainDataset() {
+        if (mainDataset != null) {
+            return mainDataset;
         }
 
         // This is the first time someone has asked for the dataset, so we
         // need to build it.  Its initial contents consist of the query
         // data provided to the request, if any.
-        dataset = new Dataset();
+        mainDataset = new Dataset();
         Enumeration e = servletRequest.getParameterNames();
         while (e.hasMoreElements()) {
             String name = (String) e.nextElement();
-            dataset.set(name, servletRequest.getParameter(name));
+            mainDataset.set(name, servletRequest.getParameter(name));
         }
-        return dataset;
+        return mainDataset;
     }
 
     /**
@@ -175,6 +180,25 @@ public class ClientRequest {
     }
 
     /**
+     * This method returns a string representing the path prefix that
+     * is shared by all URL's in this application that refer to
+     * Fiz Interactors.  In other words, if the full URL to invoke
+     * method {@code method} in class {@code class} is
+     * {@code http://www.company.com/a/b/c/class/method}, this method
+     * will return {@code /a/b/c}.  The return value does not end with
+     * a slash.  In servlet terms, the return value is the concatenation
+     * of the servlet path and the context path.
+     * @return                     See above.
+     */
+    public String getUrlPrefix() {
+        if (urlPrefix == null) {
+            urlPrefix = getServletRequest().getServletPath () +
+                    getServletContext().getContextPath();
+        }
+        return urlPrefix;
+    }
+
+    /**
      * This method is typically invoked by the {@code registerDataRequests}
      * methods of Sections to specify the data they will need to display
      * themselves.  This object keeps track of all of the requests that have
@@ -194,7 +218,7 @@ public class ClientRequest {
     public DataRequest registerDataRequest(String name) {
         DataRequest result = namedRequests.get(name);
         if (result == null) {
-            result = new DataRequest(name, getDataset());
+            result = new DataRequest(name, getMainDataset());
             namedRequests.put(name, result);
         }
         return result;

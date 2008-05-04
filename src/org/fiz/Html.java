@@ -17,7 +17,7 @@ public class Html {
     // Title for the document; see setTitle for details.
     protected String title = null;
 
-    // The initial portion of all URI's referring to this Web application:
+    // The initial portion of all URL's referring to this Web application:
     // used to generate HTML for stylesheets and Javascript files.
     protected String contextPath;
 
@@ -32,7 +32,7 @@ public class Html {
 
     /**
      * Constructs an empty Html document.
-     * @param contextPath             The "root URI" corresponding to this
+     * @param contextPath             The "root URL" corresponding to this
      *                                Web application.  Used for generating
      *                                links.
      */
@@ -224,7 +224,7 @@ public class Html {
      *                                copied here, replacing special characters
      *                                with entity references
      */
-    public static void escapeHtmlChars(String s, StringBuilder out) {
+    public static void escapeHtmlChars(CharSequence s, StringBuilder out) {
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             if (c == '\"') {
@@ -254,7 +254,7 @@ public class Html {
      *                                and converting nonalphanumeric
      *                                characters to %xx sequences.
      */
-    public static void escapeUrlChars(String s, StringBuilder out) {
+    public static void escapeUrlChars(CharSequence s, StringBuilder out) {
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             if ((c >= 'a') && (c <= 'z') || (c >= 'A') && (c <= 'Z')
@@ -324,7 +324,7 @@ public class Html {
      *                                will evaluate to exactly the characters
      *                                in {@code s}.
      */
-    public static void escapeStringChars(String s, StringBuilder out) {
+    public static void escapeStringChars(CharSequence s, StringBuilder out) {
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             if (c <= '\037') {

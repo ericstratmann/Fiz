@@ -16,19 +16,19 @@ import org.apache.log4j.*;
  */
 public class Dispatcher extends HttpServlet {
     /**
-     * UnsupportedUriError is thrown when a URI arrives that can't
+     * UnsupportedUriError is thrown when a URL arrives that can't
      * be mapped to an appopriate method to handle it.
      */
-    protected static class UnsupportedUriError extends Error {
+    protected static class UnsupportedUrlError extends Error {
         /**
          * Constructor for UnsupportedUriError.
-         * @param uri              The incoming URI (the full one).
+         * @param url              The incoming URL (the full one).
          * @param message          More details about why we couldn't find
-         *                         a method to handle this URI, or null
+         *                         a method to handle this URL, or null
          *                         if no additional information available.
          */
-        public UnsupportedUriError(String uri, String message) {
-            super("unsupported URI \"" + uri
+        public UnsupportedUrlError(String url, String message) {
+            super("unsupported URL \"" + url
                     + ((message != null) ? "\": " + message : "\""));
         }
     }
@@ -128,17 +128,12 @@ public class Dispatcher extends HttpServlet {
     }
 
     /**
-     * This method is invoked for each incoming HTTP request whose URI
-     * matches this application.  The request can be handled in any of
-     * the following ways, based on pathInfo (the portion of the URL
-     * "owned" by this servlet):
-     *  -  PathInfo has tbe form {@code /css/...}, which means it refers to a
-     *     generated stylesheet.  In this case the stylesheet manager
-     *     is invoked to generate the stylesheet or return a cached copy.
-     *  -  PathInfo has the form {@code /class/method/...}, which means it should
-     *     be handled by method "method" in an Interactor object of class
-     *     "class".  In this case the Interactor class is loaded and
-     *     instantiated if necessary, then the Interactor method is invoked.
+     * This method is invoked for each incoming HTTP request whose URL
+     * matches this application.  PathInfo (the portion of the URL
+     * "owned" by this servlet) must have the form {@code /class/method/...},
+     * which means it should be handled by method "method" in an Interactor
+     * object of class "class".  The Interactor class is loaded and
+     * instantiated if necessary, then the Interactor method is invoked.
      * @param request              Information about the HTTP request.
      * @param response             Used to generate the response.
      */
@@ -147,13 +142,13 @@ public class Dispatcher extends HttpServlet {
         HttpServletResponse response) {
         try {
             if (logger.isTraceEnabled()) {
-                logger.trace("incoming URI: " + Util.getUriAndQuery(request));
+                logger.trace("incoming URL: " + Util.getUrlWithQuery(request));
             }
 
             // Use UTF-8 as the default encoding for all responses.
             response.setCharacterEncoding("UTF-8");
 
-            // The "pathInfo" portion of the URI (the part that belongs to
+            // The "pathInfo" portion of the URL (the part that belongs to
             // us) must have the form /class/method/... Peel off the
             // "class/method" part and see if we already have information
             // about the method.
@@ -175,15 +170,15 @@ public class Dispatcher extends HttpServlet {
             if (method == null) {
                 // We don't currently have any information about this method.
                 // If we haven't already done so, scan the class specified
-                // in the URI and update our tables with information about it.
+                // in the URL and update our tables with information about it.
 
                 if ((endOfClass < 2) || (endOfMethod < (endOfClass+2))) {
-                    throw new UnsupportedUriError(request.getRequestURI(),
-                            "URI doesn't contain class name and/or method "
+                    throw new UnsupportedUrlError(request.getRequestURI(),
+                            "URL doesn't contain class name and/or method "
                             + "name");
                 }
 
-                // See if we already know about this class.  Note: URI
+                // See if we already know about this class.  Note: URL
                 // characters are all lower-case, but class names must have
                 // leading upper-case char.
                 String className = Character.toUpperCase(pathInfo.charAt(1))
@@ -220,7 +215,7 @@ public class Dispatcher extends HttpServlet {
                     method = methodMap.get(methodKey);
                 }
                 if (method == null) {
-                    throw new UnsupportedUriError(request.getRequestURI(),
+                    throw new UnsupportedUrlError(request.getRequestURI(),
                             "couldn't find method \""
                             + pathInfo.substring(endOfClass+1, endOfMethod)
                             + "\" with proper signature in class " + className);
@@ -259,8 +254,8 @@ public class Dispatcher extends HttpServlet {
             }
             basicMessage = cause.getMessage();
             cause.printStackTrace(new PrintWriter(sWriter));
-            fullMessage = "unhandled exception for URI \""
-                    + Util.getUriAndQuery(request) + "\"\n"
+            fullMessage = "unhandled exception for URL \""
+                    + Util.getUrlWithQuery(request) + "\"\n"
                     + sWriter.toString();
             logger.error(fullMessage);
         }
@@ -280,7 +275,7 @@ public class Dispatcher extends HttpServlet {
             return Class.forName(className);
         }
         catch (ClassNotFoundException e) {
-            throw new UnsupportedUriError(request.getRequestURI(),
+            throw new UnsupportedUrlError(request.getRequestURI(),
                     "can't find class \"" + className + "\"");
         }
     }

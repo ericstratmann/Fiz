@@ -211,7 +211,7 @@ public class HtmlTest extends junit.framework.TestCase {
 
     public void test_escapeHtmlChars() {
         StringBuilder out = new StringBuilder();
-        Html.escapeHtmlChars("abc123", out);
+        Html.escapeHtmlChars(new StringBuffer("abc123"), out);
         assertEquals("no special characters", "abc123", out.toString());
         out.setLength(0);
         Html.escapeHtmlChars("!\"#%&';<=>?", out);
@@ -221,7 +221,7 @@ public class HtmlTest extends junit.framework.TestCase {
 
     public void test_escapeUrlChars() {
         StringBuilder out = new StringBuilder();
-        Html.escapeUrlChars(" +,-./@ABYZ[`abyz{", out);
+        Html.escapeUrlChars(new StringBuffer(" +,-./@ABYZ[`abyz{"), out);
         assertEquals("ASCII characters", "+%2b%2c-.%2f%40ABYZ%5b%60abyz%7b",
                 out.toString());
         out.setLength(0);

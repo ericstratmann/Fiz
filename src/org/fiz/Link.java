@@ -1,32 +1,27 @@
 package org.fiz;
 
 /**
- * This class provides facilities for rendering HTML links
- * ({@code <a href=...}), combining data from a variety of sources.  Links
- * support the following properties:
- * text -       (optional) Text and/or other HTML to display for the Link;
- *              this is a template that is expanded using the data available
- *              when the Link is rendered.
- * icon -       (optional) URL for an image to display to the left of the text.
- * alt -        (optional) "Alt" string to include in the icon.  Defaults
- *              to an empty string.
- * base -       Template for base URL that will be visited when the text or
- *              icon is clicked (extended with arguments specified by "args").
- *              May contain some initial query values.  Must contain only
- *              proper URL characters: no escaping will be done on this
- *              value.
- * args -       (optional) Describes query information to be added to the
- *              URL; contains one or more specifiers separated by commas.
- *              Specifiers can have a long form "queryName: dataName"
- *              or a short form "name".  For example, "foo: bar"
- *              means find the data value named "bar" and use its value
- *              for the query option "foo".  The short form "foo" is
- *              the same as "foo: foo".
+ * This class provides facilities for rendering either text or an image
+ * or both as an HTML link ({@code <a href=...}).  Links support the
+ * following properties; most of them are templates, which are expanded
+ * in the context of the dataset passed to {@code html}.
+ * text -       (optional) Template for text and/or other HTML to display
+ *              for the Link.
+ * iconUrl -    (optional) URL for an image to display to the left of the
+ *              text.  This is also a template.  If this URL isn't complete
+ *              (as defined by Util.urlComplete), the Fiz prefix (as defined
+ *              by cr.getUrlPrefix is prepended to it to make it complete.
+ * alt -        (optional) Template for the {@code alt} attribute for the
+ *              icon.  Defaults to an empty string.
+ * url -        Template for URL that will be visited when the text or
+ *              icon is clicked.  May include query values.  If this
+ *              URL isn't complete (as defined by Util.urlComplete),
+ *              the the Fiz prefix (as defined by cr.getUrlPrefix is
+ *              prepended to it to make it complete.
  * confirm -    (optional) If specified, the user will be asked to
  *              confirm before the URL is visited, and this text is a
- *              template for the confirmation message.  The template
- *              is expanded in the context of the data available at
- *              render-time.
+ *              template for the confirmation message (passed to the
+ *              Javascript{@code confirm} function).
  */
 
 public class Link {
@@ -49,8 +44,7 @@ public class Link {
     // are the same as described in the configuration option documentation
     // above.  If an option is omitted, the corresponding variable will
     // have a null value.
-    protected String text, icon, alt, base, confirm;
-    protected String[] queryNames, queryData;
+    protected String text, iconUrl, alt, url, confirm;
 
     // Copy of the constructor argument by the same name.
     DisplayForm displayForm;
@@ -60,42 +54,15 @@ public class Link {
      * particular display form.
      * @param properties           A collection of values describing the
      *                             configuration of the Link; see above for
-     *                             the supported values
+     *                             the supported values.
      * @param displayForm          Indicates whether to render the link's text,
-     *                             icon, or both
+     *                             icon, or both.
      */
     public Link(Dataset properties, DisplayForm displayForm) {
         text = properties.check("text");
-        icon = properties.check("icon");
+        iconUrl = properties.check("iconUrl");
         alt = properties.check("alt");
-        base = properties.get("base");
-        String args = properties.check("args");
-        if (args != null) {
-            queryNames = Util.split(args, ',');
-
-            // QueryNames is currently in an intermediate form (some of the
-            // values may contain colons).  Make another pass through
-            // queryNames to split up the values that contain colons and
-            // generate the queryData values.
-            queryData = new String[queryNames.length];
-            for (int i = 0; i < queryNames.length; i++) {
-                String spec = queryNames[i];
-                int colon = spec.indexOf(':');
-                if (colon < 0) {
-                    // Only one name, so queryNames[i] is already in the
-                    // correct form.
-                    queryData[i] = spec;
-                } else {
-                    // Two names: separate them and ignore spaces after the
-                    // colon.
-                    queryData[i] = spec.substring(
-                            Util.skipSpaces(spec, colon+1));
-                    queryNames[i] = spec.substring(0, colon);
-                }
-            }
-        } else {
-            queryNames = queryData = new String[0];
-        }
+        url = properties.get("url");
         confirm = properties.check("confirm");
         this.displayForm = displayForm;
     }
@@ -114,42 +81,32 @@ public class Link {
     /**
      * Generates HTML for a Link, using properties passed to the Link
      * constructor and data passed into this method.
-     * @param data                Values in this dataset are used to
-     *                            expand templates from the properties and
-     *                            to provide other values as needed
-     *                            (such as values for {@code args}).
-     * @param out                 HTML for the Link is appended here.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @param data                 Values in this dataset are used to
+     *                             expand templates from the properties.
+     * @param out                  HTML for the Link is appended here.
      */
-    public void html(Dataset data, StringBuilder out) {
+    public void html(ClientRequest cr, Dataset data, StringBuilder out) {
         boolean displayText = (displayForm != DisplayForm.ICON)
                 && (text != null);
         boolean displayIcon = (displayForm != DisplayForm.TEXT)
-                && (icon != null);
+                && (iconUrl != null);
         if (!displayText && !displayIcon) {
             // Nothing to display, so return immediately.
             return;
         }
 
-        // Generate the URL, which consists of the base plus some number of
-        // query arguments.
-        StringBuilder url = new StringBuilder(30);
-        String separator = "?";
-        Template.expand(base, data, url, Template.SpecialChars.NONE);
-        if (url.indexOf("?") >= 0) {
-            separator = "&amp;";
-        }
-        for (int i = 0; i < queryNames.length; i++) {
-            url.append(separator);
-            Html.escapeUrlChars(queryNames[i], url);
-            url.append('=');
-            Html.escapeUrlChars(data.get(queryData[i]), url);
-            separator = "&amp;";
-        }
-
         // Generate the <a> element, including an event handler for
         // confirmation, if requested.
+        StringBuilder expandedUrl = new StringBuilder(url.length());
+        Template.expand(url, data, expandedUrl, Template.SpecialChars.URL);
         out.append("<a href=\"");
-        out.append(url);
+        if (!Util.urlComplete(expandedUrl)) {
+            out.append(cr.getUrlPrefix());
+            out.append('/');
+        }
+        Html.escapeHtmlChars(expandedUrl, out);
         if (confirm != null) {
             out.append("\" ");
             confirmHtml(confirm, data, out);
@@ -162,10 +119,10 @@ public class Link {
         if (displayText && displayIcon) {
             // Display both image and text.  Use a table for this, because
             // it allows the text to wrap cleanly (i.e. not under the image).
-            out.append("<table class=\"link_table\" cellspacing=\"0\">"
+            out.append("<table class=\"Link\" cellspacing=\"0\">"
                     + "<tr><td>");
-            iconHtml(data, out);
-            out.append("</td><td class=\"link_text\">");
+            iconHtml(cr, data, out);
+            out.append("</td><td class=\"text\">");
             Template.expand(text, data, out);
             out.append("</td></tr></table>");
         } else if (displayText) {
@@ -173,7 +130,7 @@ public class Link {
             Template.expand(text, data, out);
         } else {
             // Display only an image.
-            iconHtml(data, out);
+            iconHtml(cr, data, out);
         }
 
         // Finish off the link.
@@ -181,13 +138,22 @@ public class Link {
     }
 
     /**
-     * Generates an HTML <img> element for the link's icon.
-     * @param data                Used for expanding "alt" template.
-     * @param out                 HTML gets appended here.
+     * Generate an HTML <img> element for the link's icon.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @param data                 Used for expanding "alt" template.
+     * @param out                  HTML gets appended here.
      */
-    protected void iconHtml(Dataset data, StringBuilder out) {
-        out.append("<img class=\"link_image\" src=\"");
-        out.append(icon);
+    protected void iconHtml(ClientRequest cr, Dataset data,
+            StringBuilder out) {
+        StringBuilder expandedUrl = new StringBuilder(iconUrl.length());
+        Template.expand(iconUrl, data, expandedUrl, Template.SpecialChars.URL);
+        out.append("<img class=\"Link\" src=\"");
+        if (!Util.urlComplete(expandedUrl)) {
+            out.append(cr.getUrlPrefix());
+            out.append('/');
+        }
+        Html.escapeHtmlChars(expandedUrl, out);
         out.append("\" alt=\"");
         if (alt != null) {
             Template.expand(alt, data, out);
@@ -196,12 +162,12 @@ public class Link {
     }
 
     /**
-     * Generates an HTML attribute of the form onclick="..." for use in
+     * Generate an HTML attribute of the form onclick="..." for use in
      * the Link's <a> element;  this attribute will cause a confirmation
      * dialog to be posted when the link is clicked.
-     * @param template            Template for the confirmation message.
-     * @param data                Dataset for expanding the template.
-     * @param out                 HTML gets appended here.
+     * @param template             Template for the confirmation message.
+     * @param data                 Dataset for expanding the template.
+     * @param out                  HTML gets appended here.
      */
     protected void confirmHtml(String template, Dataset data,
             StringBuilder out) {

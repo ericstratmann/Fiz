@@ -1,14 +1,13 @@
-/**
- * This class provides a dummy implementation of the ServletContext
- * interface; it is used for testing.
- */
-
 package org.fiz;
-
 import java.io.*;
 import java.util.*;
 import java.net.*;
 import javax.servlet.*;
+
+/**
+ * This class provides a dummy implementation of the ServletContext
+ * interface; it is used for testing.
+ */
 
 @SuppressWarnings("deprecation")
 public class ServletContextFixture implements ServletContext {
@@ -20,6 +19,7 @@ public class ServletContextFixture implements ServletContext {
     // Tests can set the values below to prespecify the return values
     // from some methods.
     public String contextRoot = null;
+    public String contextPath = "/context/path";
 
     public Object getAttribute(String name) {
         return "getAttribute: " + name;
@@ -35,7 +35,7 @@ public class ServletContextFixture implements ServletContext {
         return null;
     }
     public String getContextPath() {
-        return "getContextPath";
+        return contextPath;
     }
     public String getInitParameter(String name) {
         return "getInitParameter: " + name;

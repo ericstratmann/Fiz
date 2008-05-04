@@ -19,6 +19,10 @@ public class ServletRequestFixture implements HttpServletRequest {
     // Used to simulate parameter data via setParameters().
     protected Hashtable<String,String> parameterMap = null;
 
+    // The following variables provide return values for some of the methods;
+    // tests can modify these variables to test different scenarios.
+    public String servletPath = "/servlet/path";
+
     public ServletRequestFixture() {
         parameterMap = new Hashtable<String,String>();
         parameterMap.put("p1", "param_value1");
@@ -65,7 +69,7 @@ public class ServletRequestFixture implements HttpServletRequest {
     public String getRequestedSessionId() {return "requestedSessionId";}
     public String getRequestURI() {return "requestURI";}
     public StringBuffer getRequestURL() {return new StringBuffer("requestURL");}
-    public String getServletPath() {return "servletPath";}
+    public String getServletPath() {return servletPath;}
     public HttpSession getSession() {
         lastMethod = "getSession";
         return null;

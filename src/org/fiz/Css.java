@@ -39,7 +39,7 @@ class Css {
     /**
      * Returns the contents of a dynamically generated stylesheet.
      * @param name                 Path for the stylesheet.  This is the
-     *                             the remainder of the URI after "fiz/css";
+     *                             the remainder of the URL after "fiz/css";
      *                             it can be a multi-level path but is
      *                             typically a simple filename such as foo.css.
      *                             The path must exist as a template file

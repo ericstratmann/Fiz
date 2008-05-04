@@ -1,5 +1,4 @@
 package org.fiz;
-import java.io.*;
 import javax.servlet.http.*;
 
 /**
@@ -9,24 +8,31 @@ import javax.servlet.http.*;
 public class ClientRequestTest extends junit.framework.TestCase {
     protected ServletRequestFixture servletRequest;
     protected ServletResponseFixture servletResponse;
+    protected ServletContextFixture servletContext;
+    protected ServletConfigFixture servletConfig;
+    protected HttpServlet servlet;
     protected ClientRequest request1;
     protected ClientRequest request2;
 
     public void setUp() {
         servletRequest = new ServletRequestFixture();
         servletResponse = new ServletResponseFixture();
+        servletContext = new ServletContextFixture();
+        servletConfig = new ServletConfigFixture(servletContext);
+        servlet = new ServletFixture(servletConfig);
         request1 = new ClientRequest(null, null, null);
-        request2 = new ClientRequest(null, servletRequest, servletResponse);
+        request2 = new ClientRequest(servlet, servletRequest,
+                servletResponse);
     }
 
     public void test_getDataset() {
         assertEquals("request dataset contents", "p1: param_value1\n" +
-                "p2: param_value2\n", request2.getDataset().toString());
+                "p2: param_value2\n", request2.getMainDataset().toString());
     }
     public void test_getDataset_noQueryData() {
         servletRequest.setParameters();
         assertEquals("request dataset contents", "",
-                request2.getDataset().toString());
+                request2.getMainDataset().toString());
     }
 
     public void test_getRequestNames() {
@@ -48,6 +54,16 @@ public class ClientRequestTest extends junit.framework.TestCase {
 
     public void test_getServletResponse() {
         assertEquals(servletResponse, request2.getServletResponse());
+    }
+
+    public void test_getUrlPrefix_useSavedValue() {
+        request1.urlPrefix = "/foo/bar";
+        assertEquals("request already has a value", "/foo/bar",
+                request1.getUrlPrefix());
+    }
+    public void test_getUrlPrefix_generateValue() {
+        assertEquals("computed value", "/servlet/path/context/path",
+                request2.getUrlPrefix());
     }
 
     public void test_registerDataRequest_byName() {

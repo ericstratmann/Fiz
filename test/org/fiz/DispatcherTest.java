@@ -29,9 +29,9 @@ public class DispatcherTest  extends junit.framework.TestCase {
     }
 
     public void test_UnsupportedUriError() {
-        Error e = new Dispatcher.UnsupportedUriError("/a/b/c", "smelled funny");
+        Error e = new Dispatcher.UnsupportedUrlError("/a/b/c", "smelled funny");
         assertEquals("exception message",
-                "unsupported URI \"/a/b/c\": smelled funny", e.getMessage());
+                "unsupported URL \"/a/b/c\": smelled funny", e.getMessage());
     }
 
     public void test_init() throws ServletException {
@@ -70,7 +70,7 @@ public class DispatcherTest  extends junit.framework.TestCase {
         assertEquals("second interactor destroyed", 3,
                 DispatcherTest5.destroyCount);
     }
-    
+
     public void test_service_parseMethodEndingInSlash() {
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.service(new DispatcherRequestFixture(
@@ -92,24 +92,24 @@ public class DispatcherTest  extends junit.framework.TestCase {
         dispatcher.service(new DispatcherRequestFixture("abc"),
                 new ServletResponseFixture());
         TestUtil.assertSubstring("no slashes",
-                "URI doesn't contain class name and/or method name",
+                "URL doesn't contain class name and/or method name",
                 dispatcher.basicMessage);
         dispatcher.basicMessage = null;
         dispatcher.service(new DispatcherRequestFixture("//a/b/c"),
                 new ServletResponseFixture());
         TestUtil.assertSubstring("empty class name",
-                "URI doesn't contain class name and/or method name",
+                "URL doesn't contain class name and/or method name",
                 dispatcher.basicMessage);
         dispatcher.basicMessage = null;
         dispatcher.service(new DispatcherRequestFixture("/a//b/c"),
                 new ServletResponseFixture());
         TestUtil.assertSubstring("empty method name",
-                "URI doesn't contain class name and/or method name",
+                "URL doesn't contain class name and/or method name",
                 dispatcher.basicMessage);
         dispatcher.basicMessage = null;
         dispatcher.service(new DispatcherRequestFixture("/a/b/c"),
                 new ServletResponseFixture());
-        TestUtil.assertSubstring("simplest valid URI",
+        TestUtil.assertSubstring("simplest valid URL",
                 "couldn't find class \"A\"",
                 dispatcher.basicMessage);
     }
@@ -172,7 +172,7 @@ public class DispatcherTest  extends junit.framework.TestCase {
         assertEquals("error message", "error in method",
                 dispatcher.basicMessage);
         String message = dispatcher.fullMessage.replaceAll("\\r\\n", "\n");
-        TestUtil.assertSubstring("error message", "unhandled exception for URI "
+        TestUtil.assertSubstring("error message", "unhandled exception for URL "
                 + "\"/a/b/c?day=Monday\"\n"
                 + "java.lang.Error: error in method\n"
                 + "\tat org.fiz.DispatcherTest1.error",
@@ -189,9 +189,9 @@ public class DispatcherTest  extends junit.framework.TestCase {
             dispatcher.findClass("bogus_xyz",
                     new DispatcherRequestFixture("/first/second"));
         }
-        catch (Dispatcher.UnsupportedUriError e) {
+        catch (Dispatcher.UnsupportedUrlError e) {
             assertEquals("exception message",
-                    "unsupported URI \"/a/b/c\": can't find class "
+                    "unsupported URL \"/a/b/c\": can't find class "
                     + "\"bogus_xyz\"", e.getMessage());
             gotException = true;
         }

@@ -174,9 +174,9 @@ public class UtilTest extends junit.framework.TestCase {
 
     public void test_getUriAndQuery() {
         assertEquals("no query data", "/a/b",
-                Util.getUriAndQuery(new UtilRequestFixture("/a/b", null)));
+                Util.getUrlWithQuery(new UtilRequestFixture("/a/b", null)));
         assertEquals("query data", "/a/b?x=24&y=13",
-                Util.getUriAndQuery(new UtilRequestFixture("/a/b", "x=24&y=13")));
+                Util.getUrlWithQuery(new UtilRequestFixture("/a/b", "x=24&y=13")));
     }
 
     public void test_copyStream() throws IOException {
@@ -419,21 +419,34 @@ public class UtilTest extends junit.framework.TestCase {
     public void test_getErrorTemplate_inProperties() {
         Dataset properties = new Dataset("name", "Alice",
                 "errorTemplate", "template47");
-        assertEquals ("return value", "template47",
+        assertEquals("return value", "template47",
                 Util.getErrorTemplate(properties));
     }
     public void test_getErrorTemplate_inConfig() {
         Dataset properties = new Dataset("name", "Alice");
         Config.setDataset("main", new Dataset("cost", "$2.49",
                 "errorTemplate", "template101"));
-        assertEquals ("return value", "template101",
+        assertEquals("return value", "template101",
                 Util.getErrorTemplate(properties));
     }
     public void test_getErrorTemplate_usedDefault() {
         Dataset properties = new Dataset("name", "Alice");
         Config.setDataset("main", new Dataset("cost", "$2.49"));
-        assertEquals ("return value", "Error: @message",
+        assertEquals("return value", "Error: @message",
                 Util.getErrorTemplate(properties));
+    }
+
+    public void test_urlComplete() {
+        assertEquals("url /a/b/c", true,
+                Util.urlComplete(new StringBuffer("/a/b/c")));
+        assertEquals("url a/b/c", false,
+                Util.urlComplete("a/b/c"));
+        assertEquals("url http://www.xyz/com/foo", true,
+                Util.urlComplete("http://www.xyz/com/foo"));
+        assertEquals("url ftp://cs.berkeley.edu/foo", true,
+                Util.urlComplete("ftp://cs.berkeley.edu/foo"));
+        assertEquals("url noSlashes", false,
+                Util.urlComplete("noSlashes"));
     }
 }
 

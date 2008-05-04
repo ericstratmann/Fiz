@@ -139,7 +139,7 @@ public class TestUtil {
         ClientRequest request = new ClientRequest(null, new ServletRequestFixture(),
                 new ServletResponseFixture());
         request.getHtml().setTitle("Test");
-        Dataset main = request.getDataset();
+        Dataset main = request.getMainDataset();
         main.set("name", "Alice");
         main.set("age", "36");
         main.set("height", "66");

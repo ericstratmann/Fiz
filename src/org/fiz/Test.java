@@ -11,23 +11,25 @@ import org.ho.yaml.YamlEncoder;
 
 public class Test extends Interactor {
     protected Logger logger = Logger.getLogger("Test");
-    public void path(ClientRequest request) {
+    public void path(ClientRequest cr) {
         logger.info("getRealPath(\"/WEB-INF/a/b/c\"): "
-                + request.getServletContext().getRealPath("///WEB-INF/a/b/c"));
+                + cr.getServletContext().getRealPath("///WEB-INF/a/b/c"));
         logger.info("getPathTranslated(): "
-                + request.getServletRequest().getPathTranslated());
+                + cr.getServletRequest().getPathTranslated());
+        logger.info("getServletPath(): "
+                + cr.getServletRequest().getServletPath());
         logger.info("getContextPath(): "
-                + request.getServletContext().getContextPath());
+                + cr.getServletContext().getContextPath());
         logger.info("working directory: "
                 + System.getProperty("user.dir"));
         logger.info("getMimeType(foo.xls): "
-                + request.getServletContext().getMimeType("foo.xls"));
+                + cr.getServletContext().getMimeType("foo.xls"));
         logger.info("getMimeType(foo.html): "
-                + request.getServletContext().getMimeType("foo.html"));
+                + cr.getServletContext().getMimeType("foo.html"));
     }
 
-    public void page(ClientRequest request) {
-        Html html = request.getHtml();
+    public void page(ClientRequest cr) {
+        Html html = cr.getHtml();
         html.setTitle("Test Page");
         html.getBody().append("<h1>First Section</h1>\n" +
                 "<p>Here are a couple of lines of sample text.</p>\n" +
@@ -39,13 +41,15 @@ public class Test extends Interactor {
     // The following entry point generates 2 different pages (based on
     // the "current" query value) each of which references the other with
     // a link.
-    public void link(ClientRequest request) {
-        Html html = request.getHtml();
-        Dataset globalData = request.getDataset();
-        if (globalData.get("current").equals("1")) {
-            globalData.set("next", "2");
-        } else {
+    public void link(ClientRequest cr) {
+        Html html = cr.getHtml();
+        Dataset globalData = cr.getMainDataset();
+        String current = globalData.check("current");
+        if ((current != null) && (current.equals("2"))) {
             globalData.set("next", "1");
+        } else {
+            globalData.set("next", "2");
+            globalData.set("current", "1");
         }
         html.setTitle("Link Page");
         StringBuilder body = html.getBody();
@@ -54,8 +58,8 @@ public class Test extends Interactor {
                 "to go to page @next.</p>\n" +
                 "<p>", globalData, body);
         Link link = new Link(new Dataset("text", "Go to page @next",
-                "base", "link", "args", "current: next"));
-        link.html(globalData, body);
+                "url", "test/link?current=@next"));
+        link.html(cr, globalData, body);
         body.append("</p>\n");
     }
 
