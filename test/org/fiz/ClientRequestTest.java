@@ -1,4 +1,5 @@
 package org.fiz;
+import java.io.*;
 import javax.servlet.http.*;
 
 /**
@@ -6,6 +7,17 @@ import javax.servlet.http.*;
  */
 
 public class ClientRequestTest extends junit.framework.TestCase {
+    // The following class is used to test for proper handling of exceptions
+    // during I/O.
+    protected static class ExceptionReader extends BufferedReader {
+        public ExceptionReader(Reader reader) {
+            super(reader);
+        }
+        public int read() throws IOException {
+            throw new IOException("simulated error");
+        }
+    }
+
     protected ServletRequestFixture servletRequest;
     protected ServletResponseFixture servletResponse;
     protected ServletContextFixture servletContext;
@@ -25,13 +37,58 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 servletResponse);
     }
 
-    public void test_getDataset() {
-        assertEquals("request dataset contents", "p1: param_value1\n" +
+    public void test_getMainDataset_ajaxDataOnly() {
+        request2.setAjax(true);
+        servletRequest.setParameters();
+        servletRequest.contentType = "text/plain";
+        servletRequest.inputReader = new BufferedReader(new StringReader(
+                "2.p2(1.a3.999\n1.b2.88\n)\n4.name5.Alice\n"));
+        assertEquals("main dataset contents", "name: Alice\n" +
+                "p2:\n" +
+                "    a: 999\n" +
+                "    b: 88\n", request2.getMainDataset().toString());
+    }
+    public void test_getMainDataset_ajaxButWrongContentType() {
+        request2.setAjax(true);
+        servletRequest.setParameters();
+        servletRequest.contentType = "bogus";
+        servletRequest.inputReader = new BufferedReader(new StringReader(
+                "2.p2(1.a3.999\n1.b2.88\n)\n4.name5.Alice\n"));
+        assertEquals("main dataset contents", "",
+                request2.getMainDataset().toString());
+    }
+    public void test_getMainDataset_exceptionReadingAjaxData() {
+        request2.setAjax(true);
+        servletRequest.contentType = "text/plain";
+        servletRequest.inputReader = new ExceptionReader(
+                new StringReader("2.p2.88\n"));
+        boolean gotException = false;
+        try {
+            request2.getMainDataset();
+        }
+        catch (IOError e) {
+            assertEquals("exception message",
+                    "error reading Ajax data: simulated error", e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_getMainDataset_queryDataOnly() {
+        assertEquals("main dataset contents", "p1: param_value1\n" +
                 "p2: param_value2\n", request2.getMainDataset().toString());
     }
-    public void test_getDataset_noQueryData() {
+    public void test_getMainDataset_queryDataAndAjax() {
+        request2.setAjax(true);
+        servletRequest.contentType = "text/plain";
+        servletRequest.inputReader = new BufferedReader(new StringReader(
+                "2.p2(1.a3.999\n1.b2.88\n)\n4.name5.Alice\n"));
+        assertEquals("main dataset contents", "name: Alice\n" +
+                "p1:   param_value1\n" +
+                "p2:   param_value2\n", request2.getMainDataset().toString());
+    }
+    public void test_getMainDataset_noDataAtAll() {
         servletRequest.setParameters();
-        assertEquals("request dataset contents", "",
+        assertEquals("main dataset contents", "",
                 request2.getMainDataset().toString());
     }
 
@@ -66,6 +123,8 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 request2.getUrlPrefix());
     }
 
+    // isAjax is tested by the tests for setAjax.
+
     public void test_registerDataRequest_byName() {
         ClientRequest request = TestUtil.setUp();
         DataRequest data1 = request.registerDataRequest("fixture1");
@@ -90,6 +149,15 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 request.unnamedRequests.size());
         assertEquals("contents of request", "name: Carol\n",
                 request.unnamedRequests.get(1).getRequestData().toString());
+    }
+
+    public void test_setAjax() {
+        ClientRequest cr = TestUtil.setUp();
+        assertEquals("initially false", false, cr.isAjax());
+        cr.setAjax(true);
+        assertEquals("set to true", true, cr.isAjax());
+        cr.setAjax(false);
+        assertEquals("set to false", false, cr.isAjax());
     }
 
     public void test_showSections() {
@@ -125,3 +193,4 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("data manager log", "", DataManagerFixture.getLogs());
     }
 }
+

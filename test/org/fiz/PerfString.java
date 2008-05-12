@@ -8,67 +8,37 @@ import java.io.*;
 
 public class PerfString {
     public static void main(String[] argv) throws IOException {
-        String xml =
-            "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" +
-            "<project>\n" +
-            "    <projectName>ElectricCommander build</projectName>\n" +
-            "    <description>Prototype build system for new build management" +
-                    " product</description>\n" +
-            "    <modifyTime>2005-09-22 09:55:00.0</modifyTime>\n" +
-            "    <jobNotesAclTemplateId>23</jobNotesAclTemplateId>\n" +
-            "</project>";
-        int count = 1000;
-        int code = 0;
-        String value = "xyz";
-        String value2 = "projectName, procedureName, stepName, propertyName";
-        String value3 = "0123456789012345678(";
-        String compare = "first value";
-        char[] chars = value3.toCharArray();
+        int count = 1;
+        Dataset d = new Dataset();
         StringBuilder s = new StringBuilder();
-        StringBuilder builder1 = new StringBuilder("12345");
-        StringBuilder builder2 = new StringBuilder("xxx12345aaa");
-        StringReader reader = new StringReader("0123456789abcdefghij");
-        char[] cbuf = new char[4000];
-        for (int i = 0; i < cbuf.length; i++) {
-            cbuf[i] = (char) ('a' + (i & 15));
+        for (int i = 0; i < 1000; i++) {
+            String name = "item" + i;
+            String value = "value " + i;
+            s.append(name.length() + "."  + name + value.length() + "." +
+                    value + "\n");
         }
-        String value4 = new String(cbuf);
-        StringReader reader2 = new StringReader(value4);
-        StringBuilder builder3 = new StringBuilder();
-        builder3.append(cbuf);
-        char c = 'c';
-        int result = 44;
-        char[] buffer = new char[4000];
+        String ajaxData = s.toString();
+        Runtime runtime = Runtime.getRuntime();
 
         for (int i = 0; i < 10; i++) {
-            value = new String("first " + "value");
-            int length = value.length();
+            long startingUsage = runtime.totalMemory()
+                    - runtime.freeMemory();
             long start = System.nanoTime();
             for (int j= 0; j < count; j++) {
-//                code = inc(code);
-//                code = value.hashCode();
-//                code += (stringEquals(value, compare) ? 1 : 0);
-//                code += (value.equals(compare) ? 1 : 0);
-//                code += value.compareTo(compare);
-//                s.delete(0, s.length());
-//                for (int k = 0; k < value3.length(); k++) {
-//                     s.append(value3.charAt(k));
-//                }
-//                code = 0;
-//                for (int k = 0; k < value3.length(); k++) {
-//                    if (Character.isUnicodeIdentifierPart(value3.charAt(k))) {
-//                        code++;
-//                    }
-//                }
-//                StringBuilder builder3 = new StringBuilder();
-//                code = builder1.toString().length();
-                Dataset d = XmlDataset.newStringInstance(xml);
-                value = d.get("projectName");
+                d = new Dataset("name", "Alice", "age", "24", "weight", "140",
+                        "height", "64", "ssn", "xxx-yy-zzzz");
             }
             long finish = System.nanoTime();
+            long endingUsage = runtime.totalMemory()
+                    - runtime.freeMemory();
+            System.out.printf("Initial usage: %d bytes\n", startingUsage);
+            System.out.printf("Ending usage: %d bytes\n", endingUsage);
+            System.out.printf("%d bytes per dataset\n",
+                    (endingUsage - startingUsage)/count);
             System.out.printf("%.4f us per iteration%n", (finish - start)/(1000.0*count));
         }
-        System.out.printf("Result: %s\n", value);
+        System.out.printf("%d bytes Ajax data\n", ajaxData.length());
+        // System.out.printf("Dataset: %s\n", d.toString());
     }
 
     protected static int inc(int i) {

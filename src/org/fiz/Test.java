@@ -1,7 +1,10 @@
 package org.fiz;
 import java.io.*;
+import java.util.*;
+
 import org.apache.log4j.Logger;
 import org.ho.yaml.YamlEncoder;
+import org.mozilla.javascript.*;
 
 /**
  * This Interactor is used for temporary tests and has no long-term
@@ -36,6 +39,26 @@ public class Test extends Interactor {
                 "<h2>Subsection</h2>\n" +
                 "<p>Check to see that the " +
                 "fonts and colors match the stylesheets.</p>\n");
+    }
+
+    public void showTime(ClientRequest cr) {
+        Html html = cr.getHtml();
+        html.setTitle("Ajax Test Page");
+        String code = "new Fiz.Ajax({url: '/fiz/fiz/test/ajaxUpdateTime'}); " +
+                "return false;";
+        html.getBody().append("<h1>Ajax Demo</h1>\n" +
+                "<script type=\"text/javascript\" src=\"/fiz/Ajax.js\"></script>\n" +
+                "<p>This page demonstrates a simple Ajax updater.  " +
+                "Click <a href=\"#\" onclick=\"" + code + "\">here</a> " +
+                "to update the time below.</p>\n" +
+                "<p>Latest date/time from Ajax: " +
+                "<span id=\"updateMe\">None</span></p>\n");
+    }
+
+    public void ajaxUpdateTime(ClientRequest cr) throws IOException {
+        cr.getServletResponse().getWriter().write(
+                "actions = [{type: \"update\", id: \"updateMe\", " +
+                "html: \"" + (new Date()).toString() + "\"}];");
     }
 
     // The following entry point generates 2 different pages (based on
@@ -89,19 +112,17 @@ public class Test extends Interactor {
         }
     }
 
+    // Test the Rhino Javascript engine.
+    public static void rhino() {
+        Context cx = Context.enter();
+        Scriptable scope = cx.initStandardObjects();
+        Object result = cx.evaluateString(scope, "print(\"Hi there\");",
+                "<cmd>", 1, null);
+        System.out.printf("result: %s\n", cx.toString(result));
+        Context.exit();
+    }
+
     public static void main(String[] argv) throws IOException {
-        Dataset d = YamlDataset.newStringInstance(
-                "name: Alice\n" +
-                "weight: 125\n" +
-                "child:\n" +
-                "  - name: Bob\n" +
-                "    age: 8\n" +
-                "  - name: Carol\n" +
-                "    age: 12\n");
-        FileOutputStream output = new FileOutputStream("out.yaml");
-        YamlEncoder encoder = new YamlEncoder(output);
-        encoder.writeObject(d.map);
-        encoder.close();
-        output.close();
+        rhino();
     }
 }

@@ -10,6 +10,7 @@ public class DispatcherTest1 extends Interactor {
     public static int count = 0;
     public static int initCount = 0;
     public static int destroyCount = 0;
+    public static boolean isAjax = false;
     public void DispatcherTest1() {}
     public void init() {
         initCount++;
@@ -17,18 +18,23 @@ public class DispatcherTest1 extends Interactor {
     public void destroy() {
         destroyCount++;
     }
-    public void incCount(ClientRequest request) {
+    public void ajaxIncCount(ClientRequest cr) {
         count++;
+        isAjax = cr.isAjax();
     }
-    public void resetCount(ClientRequest request) {
+    public void incCount(ClientRequest cr) {
+        count++;
+        isAjax = cr.isAjax();
+    }
+    public void resetCount(ClientRequest cr) {
         count = 0;
     }
-    public void error(ClientRequest request) {
+    public void error(ClientRequest cr) {
         throw new Error("error in method");
     }
-    private void privateMethod(ClientRequest request) {
+    private void privateMethod(ClientRequest cr) {
     }
-    public void twoArgs(ClientRequest request, int count) {
+    public void twoArgs(ClientRequest cr, int count) {
     }
     public void wrongArgType(HttpServletRequest request) {
     }

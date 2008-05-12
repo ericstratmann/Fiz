@@ -1,7 +1,8 @@
 package org.fiz;
+import java.io.*;
+import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
-import java.util.*;
 
 /**
  * A ClientRequest object is the master data structure providing access
@@ -62,9 +63,13 @@ public class ClientRequest {
     protected ArrayList<DataRequest> unnamedRequests =
             new ArrayList<DataRequest>();
 
-    // The following variable equals the return value from the last call to
+    // The following variable contains the return value from the last call to
     // getUrlPrefix, or null if that method hasn't yet been called.
     protected String urlPrefix = null;
+
+    // The following variable indicates whether this request is an Ajax
+    // request (false means it is a normal HTML request).
+    protected boolean ajaxRequest = false;
 
     /**
      * Constructs a ClientRequest object.  Typically invoked by the
@@ -89,32 +94,6 @@ public class ClientRequest {
     }
 
     /**
-     * Returns the main dataset for this request.  Initially the dataset
-     * contains query values provided in the URL, but requests may add
-     * values to the dataset in cases where the data needs to be used
-     * globally across the request.  This dataset will be available in
-     * (almost question mark) all template expansions used while processing
-     * the request.
-     * @return                     Global dataset for this request.
-     */
-    public Dataset getMainDataset() {
-        if (mainDataset != null) {
-            return mainDataset;
-        }
-
-        // This is the first time someone has asked for the dataset, so we
-        // need to build it.  Its initial contents consist of the query
-        // data provided to the request, if any.
-        mainDataset = new Dataset();
-        Enumeration e = servletRequest.getParameterNames();
-        while (e.hasMoreElements()) {
-            String name = (String) e.nextElement();
-            mainDataset.set(name, servletRequest.getParameter(name));
-        }
-        return mainDataset;
-    }
-
-    /**
      * Returns an object used to generate and buffer the request's HTML
      * output.
      * @return                     Html object for this request.
@@ -124,6 +103,61 @@ public class ClientRequest {
             html = new Html(servletRequest.getContextPath());
         }
         return html;
+    }
+
+    /**
+     * Returns the main dataset for this request.  Initially the dataset
+     * contains all of the data that arrived with the request, including
+     * query values from the URL and POST data (either URL-encoded or in
+     * the special Fiz Ajax format excepted by {@code Ajax.readInputData}.
+     * If the same name is used both in a URL query value and in POST data,
+     * the query value is used and the POST data is ignored.  In addition
+     * to the initial values, requests may add values to the main dataset
+     * in cases where the data needs to be used globally across the request.
+     * This dataset will be available in (almost?) all template expansions
+     * used while processing the request.
+     * @return                     Global dataset for this request.
+     */
+    public Dataset getMainDataset() {
+        if (mainDataset != null) {
+            return mainDataset;
+        }
+
+        // This is the first time someone has asked for the dataset, so we
+        // need to build it.  First, if this is an Ajax request read in the
+        // POST data for the request, extract the Ajax data from it, and
+        // add that to the main dataset.
+        mainDataset = new Dataset();
+        if (ajaxRequest) {
+            String contentType = (servletRequest.getContentType());
+            if ((contentType != null) && (contentType.equals("text/plain"))) {
+                // First, read the data into a string.
+                StringBuilder postData = new StringBuilder();
+                try {
+                    BufferedReader reader = servletRequest.getReader();
+                    while (true) {
+                        int c = reader.read();
+                        if (c == -1) {
+                            break;
+                        }
+                        postData.append((char) c);
+                    }
+                }
+                catch (IOException e) {
+                    throw new IOError("error reading Ajax data: " +
+                            e.getMessage());
+                }
+                Ajax.readInputData(postData, mainDataset);
+            }
+        }
+
+        // Next, load any query data provided to the request.
+        Enumeration params = servletRequest.getParameterNames();
+        while (params.hasMoreElements()) {
+            String name = (String) params.nextElement();
+            mainDataset.set(name, servletRequest.getParameter(name));
+        }
+        return mainDataset;
     }
 
     /**
@@ -199,6 +233,15 @@ public class ClientRequest {
     }
 
     /**
+     * Returns true if this client request is an Ajax request, false
+     * if it is a traditional HTTP/HTML request.
+     * @return                     See above.
+     */
+    public boolean isAjax() {
+        return ajaxRequest;
+    }
+
+    /**
      * This method is typically invoked by the {@code registerDataRequests}
      * methods of Sections to specify the data they will need to display
      * themselves.  This object keeps track of all of the requests that have
@@ -236,6 +279,18 @@ public class ClientRequest {
     public DataRequest registerDataRequest(DataRequest request) {
         unnamedRequests.add(request);
         return request;
+    }
+
+    /**
+     * This method is invoked (typically by the dispatcher) to indicate
+     * what kind of request this is.
+     * @param isAjax               True means the current request should be
+     *                             processed using the Fiz Ajax protocol;
+     *                             false means it is a traditional HTML
+     *                             request.
+     */
+    public void setAjax(boolean isAjax) {
+        ajaxRequest = isAjax;
     }
 
     /**

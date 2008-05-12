@@ -8,6 +8,28 @@ import java.util.*;
  */
 
 public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
+    // The following class provides a dummy invitation of Locator to allow
+    // more precise control during testing.
+    protected static class LocatorFixture implements Locator {
+        int lineNumber;
+
+        public LocatorFixture(int lineNumber) {
+            this.lineNumber = lineNumber;
+        }
+        public int getColumnNumber() {
+            return 16;
+        }
+        public int getLineNumber() {
+            return lineNumber;
+        }
+        public String getPublicId() {
+            return "public id";
+        }
+        public String getSystemId() {
+            return "system id";
+        }
+    }
+
     HashMap<String,Object> map;
     XmlDatasetSAXHandler handler;
 
@@ -213,27 +235,5 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
         handler.locator = new LocatorFixture(47);
         assertEquals("line number available", " (line 47)",
                 handler.locationMessage());
-    }
-}
-
-// The following class provides a dummy invitation of Locator to allow
-// more precise control during testing.
-class LocatorFixture implements Locator {
-    int lineNumber;
-
-    public LocatorFixture(int lineNumber) {
-        this.lineNumber = lineNumber;
-    }
-    public int getColumnNumber() {
-        return 16;
-    }
-    public int getLineNumber() {
-        return lineNumber;
-    }
-    public String getPublicId() {
-        return "public id";
-    }
-    public String getSystemId() {
-        return "system id";
     }
 }

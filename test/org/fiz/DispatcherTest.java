@@ -10,6 +10,42 @@ import org.apache.log4j.Level;
  */
 
 public class DispatcherTest  extends junit.framework.TestCase {
+    // The following class implements just enough of the HttpServletRequest
+    // interface to provide request objects for tests.
+    protected static class DispatcherRequestFixture
+            extends ServletRequestFixture {
+        public String pathInfo;
+        public StringBuffer url = new StringBuffer("http://localhost/a/b/c");
+        public String uri = "/a/b/c";
+        public String queryString = "day=Monday";
+
+        public DispatcherRequestFixture(String path) {
+            pathInfo = path;
+        }
+
+        public String getPathInfo() {return pathInfo;}
+        public String getQueryString() {return queryString;}
+        public String getRequestURI() {return uri;}
+        public StringBuffer getRequestURL() {return url;}
+    }
+
+    // The following class definition provides a mechanism for accessing
+    // protected/private fields and methods.
+    protected static class DispatcherFixture extends Dispatcher {
+        public DispatcherFixture() {
+            logger.setLevel(Level.FATAL);
+        }
+        public String getClassKeys() {
+            return StringUtil.join(classMap.keySet(), ", ");
+        }
+        public String getMethodKeys() {
+            return StringUtil.join(methodMap.keySet(), ", ");
+        }
+        public Class<?> findClass(String className, HttpServletRequest request) {
+            return super.findClass(className, request);
+        }
+    }
+
     public void setUp() {
         Dispatcher.testMode = true;
         Config.setDataset("main", new Dataset("searchPackages", "org.fiz"));
@@ -55,20 +91,20 @@ public class DispatcherTest  extends junit.framework.TestCase {
         DispatcherFixture dispatcher = new DispatcherFixture();
         DispatcherTest1.count = 0;
         DispatcherTest1.destroyCount = 0;
-        DispatcherTest5.destroyCount = 0;
+        DispatcherTest2.destroyCount = 0;
         dispatcher.service(new DispatcherRequestFixture(
                 "/dispatcherTest1/incCount"), new ServletResponseFixture());
-        dispatcher.service(new DispatcherRequestFixture("/dispatcherTest5/xyz"),
+        dispatcher.service(new DispatcherRequestFixture("/dispatcherTest2/xyz"),
                 new ServletResponseFixture());
         assertEquals("first interactor not yet destroyed", 0,
                 DispatcherTest1.destroyCount);
         assertEquals("second interactor not yet destroyed", 0,
-                DispatcherTest5.destroyCount);
+                DispatcherTest2.destroyCount);
         dispatcher.destroy();
         assertEquals("first interactor destroyed", 1,
                 DispatcherTest1.destroyCount);
         assertEquals("second interactor destroyed", 3,
-                DispatcherTest5.destroyCount);
+                DispatcherTest2.destroyCount);
     }
 
     public void test_service_parseMethodEndingInSlash() {
@@ -146,17 +182,30 @@ public class DispatcherTest  extends junit.framework.TestCase {
         DispatcherFixture dispatcher = new DispatcherFixture();
         dispatcher.service(new DispatcherRequestFixture(
                 "/dispatcherTest1/incCount/extra"), new ServletResponseFixture());
-        assertEquals("dispatcherTest1/incCount, dispatcherTest1/resetCount"
-                + ", dispatcherTest1/error", dispatcher.getMethodKeys());
+        assertEquals("dispatcherTest1/incCount, " +
+                "dispatcherTest1/ajaxIncCount, dispatcherTest1/resetCount" +
+                ", dispatcherTest1/error", dispatcher.getMethodKeys());
     }
     public void test_service_methodNotFound() {
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.service(new DispatcherRequestFixture(
                 "/dispatcherTest1/twoArgs"), new ServletResponseFixture());
         TestUtil.assertSubstring("error message",
-                "couldn't find method \"twoArgs\" with proper signature "
-                + "in class DispatcherTest1",
+                "couldn't find method \"twoArgs\" with proper signature " +
+                "in class DispatcherTest1",
                 dispatcher.basicMessage);
+    }
+    public void test_service_setAjax() {
+        DispatcherFixture dispatcher = new DispatcherFixture();
+        DispatcherTest1.count = 0;
+        dispatcher.service(new DispatcherRequestFixture(
+                "/dispatcherTest1/incCount"), new ServletResponseFixture());
+        assertEquals("non-Ajax request", false, DispatcherTest1.isAjax);
+        dispatcher.service(new DispatcherRequestFixture(
+                "/dispatcherTest1/ajaxIncCount"),
+                new ServletResponseFixture());
+        assertEquals("Ajax request", true, DispatcherTest1.isAjax);
+        assertEquals("count variable", 2, DispatcherTest1.count);
     }
     public void test_service_exceptionInMethod() {
         Dispatcher dispatcher = new Dispatcher();
@@ -172,10 +221,10 @@ public class DispatcherTest  extends junit.framework.TestCase {
         assertEquals("error message", "error in method",
                 dispatcher.basicMessage);
         String message = dispatcher.fullMessage.replaceAll("\\r\\n", "\n");
-        TestUtil.assertSubstring("error message", "unhandled exception for URL "
-                + "\"/a/b/c?day=Monday\"\n"
-                + "java.lang.Error: error in method\n"
-                + "\tat org.fiz.DispatcherTest1.error",
+        TestUtil.assertSubstring("error message",
+                "unhandled exception for URL \"/a/b/c?day=Monday\"\n" +
+                "java.lang.Error: error in method\n" +
+                "\tat org.fiz.DispatcherTest1.error",
                 message);
     }
 
@@ -191,45 +240,10 @@ public class DispatcherTest  extends junit.framework.TestCase {
         }
         catch (Dispatcher.UnsupportedUrlError e) {
             assertEquals("exception message",
-                    "unsupported URL \"/a/b/c\": can't find class "
-                    + "\"bogus_xyz\"", e.getMessage());
+                    "unsupported URL \"/a/b/c\": can't find class " +
+                    "\"bogus_xyz\"", e.getMessage());
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
-    }
-}
-
-// The following class implements just enough of the HttpServletRequest
-// interface to provide request objects for tests.
-class DispatcherRequestFixture extends ServletRequestFixture {
-    public String pathInfo;
-    public StringBuffer url = new StringBuffer("http://localhost/a/b/c");
-    public String uri = "/a/b/c";
-    public String queryString = "day=Monday";
-
-    public DispatcherRequestFixture(String path) {
-        pathInfo = path;
-    }
-
-    public String getPathInfo() {return pathInfo;}
-    public String getQueryString() {return queryString;}
-    public String getRequestURI() {return uri;}
-    public StringBuffer getRequestURL() {return url;}
-}
-
-// The following class definition provides a mechanism for accessing
-// protected/private fields and methods.
-class DispatcherFixture extends Dispatcher {
-    public DispatcherFixture() {
-        logger.setLevel(Level.FATAL);
-    }
-    public String getClassKeys() {
-        return StringUtil.join(classMap.keySet(), ", ");
-    }
-    public String getMethodKeys() {
-        return StringUtil.join(methodMap.keySet(), ", ");
-    }
-    public Class<?> findClass(String className, HttpServletRequest request) {
-        return super.findClass(className, request);
     }
 }

@@ -647,6 +647,15 @@ public class DatasetTest extends junit.framework.TestCase {
 
     // No tests needed for size() method.
 
+    public void test_toJavascript() {
+        StringBuilder out = new StringBuilder("var obj = ");
+        Dataset d = new Dataset("name", "Alice", "age", "32");
+        d.toJavascript(out);
+        assertEquals("generated Javascript",
+                "var obj = {age: \"32\", name: \"Alice\"}",
+                out.toString());
+    }
+
     // No tests needed for toString() method.
 
     public void test_writeFile() {
@@ -818,6 +827,34 @@ public class DatasetTest extends junit.framework.TestCase {
                 array[1].get("name"));
     }
 
+    public void test_cloneHelper() {
+        Dataset d = YamlDataset.newStringInstance(
+                "a: a_value\n" +
+                "b: b_value\n" +
+                "level1:\n" +
+                "  level2:\n" +
+                "    c: c_value\n" +
+                "    d: d_value\n" +
+                "list:\n" +
+                "  - name: Alice\n" +
+                "  - name: Bill\n" +
+                "  - name: Carol\n" +
+                "    age: 28\n");
+        Dataset clone = d.clone();
+        assertEquals("cloned dataset",
+                "a: a_value\n" +
+                "b: b_value\n" +
+                "level1:\n" +
+                "    level2:\n" +
+                "        c: c_value\n" +
+                "        d: d_value\n" +
+                "list:\n" +
+                "  - name: Alice\n" +
+                "  - name: Bill\n" +
+                "  - age:  28\n" +
+                "    name: Carol\n", clone.toString());
+    }
+
     public void test_createChildInternal_childExists() {
         Dataset d = YamlDataset.newStringInstance("child:\n  name: Alice\n"
                 + "  age: 24\n");
@@ -850,32 +887,45 @@ public class DatasetTest extends junit.framework.TestCase {
                 "wife: Alice\n", d.toString());
     }
 
-    public void test_cloneHelper() {
-        Dataset d = YamlDataset.newStringInstance(
-                "a: a_value\n" +
-                "b: b_value\n" +
-                "level1:\n" +
-                "  level2:\n" +
-                "    c: c_value\n" +
-                "    d: d_value\n" +
-                "list:\n" +
+    public void test_javascriptForSubtree_emptyDataset() {
+        StringBuilder out = new StringBuilder("var obj = ");
+        Dataset d = new Dataset();
+        d.toJavascript(out);
+        assertEquals("generated Javascript", "var obj = {}", out.toString());
+    }
+    public void test_javascriptForSubtree_nestedDatasets() {
+        StringBuilder out = new StringBuilder();
+        Dataset d = YamlDataset.newStringInstance("child:\n" +
+                "  name: Alice\n" +
+                "  child:\n" +
+                "    name: Bill\n" +
+                "    age: 16\n");
+        d.toJavascript(out);
+        assertEquals("generated Javascript",
+                "{child: {child: {age: \"16\", name: \"Bill\"}, " +
+                "name: \"Alice\"}}",
+                out.toString());
+    }
+    public void test_javascriptForSubtree_listOfChildren() {
+        StringBuilder out = new StringBuilder();
+        Dataset d = YamlDataset.newStringInstance("child:\n" +
                 "  - name: Alice\n" +
                 "  - name: Bill\n" +
                 "  - name: Carol\n" +
-                "    age: 28\n");
-        Dataset clone = d.clone();
-        assertEquals("cloned dataset",
-                "a: a_value\n" +
-                "b: b_value\n" +
-                "level1:\n" +
-                "    level2:\n" +
-                "        c: c_value\n" +
-                "        d: d_value\n" +
-                "list:\n" +
-                "  - name: Alice\n" +
-                "  - name: Bill\n" +
-                "  - age:  28\n" +
-                "    name: Carol\n", clone.toString());
+                "    age: 16\n");
+        d.toJavascript(out);
+        assertEquals("generated Javascript",
+                "{child: [{name: \"Alice\"}, {name: \"Bill\"}, " +
+                "{age: \"16\", name: \"Carol\"}]}",
+                out.toString());
+    }
+    public void test_javascriptForSubtree_quoteStringCharacters() {
+        StringBuilder out = new StringBuilder();
+        Dataset d = new Dataset("value", "xyz&<\n\"\'\0");
+        d.toJavascript(out);
+        assertEquals("generated Javascript",
+                "{value: \"xyz&<\\n\\\"'\\x00\"}",
+                out.toString());
     }
 
     public void test_lookupParent_noDotsInPath() {

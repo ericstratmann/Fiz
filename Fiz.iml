@@ -8,6 +8,7 @@
         </descriptors>
         <webroots>
           <root url="file://$MODULE_DIR$/web" relative="/" />
+          <root url="file://$MODULE_DIR$/javascript" relative="/" />
         </webroots>
         <sourceRoots>
           <root url="file://$MODULE_DIR$/src" />
@@ -28,14 +29,18 @@
             <attribute name="method" value="1" />
             <attribute name="URI" value="/WEB-INF/classes" />
           </containerElement>
-          <containerElement type="library" level="module">
+          <containerElement type="library" name="Java tools" level="module">
             <attribute name="method" value="0" />
-            <attribute name="URI" value="&lt;N/A&gt;" />
-            <url>jar://$APPLICATION_HOME_DIR$/lib/javaee.jar!/</url>
+            <attribute name="URI" value="/WEB-INF/lib" />
           </containerElement>
           <containerElement type="library" name="commander" level="project">
             <attribute name="method" value="1" />
             <attribute name="URI" value="/WEB-INF/lib" />
+          </containerElement>
+          <containerElement type="library" level="module">
+            <attribute name="method" value="0" />
+            <attribute name="URI" value="&lt;N/A&gt;" />
+            <url>jar://$APPLICATION_HOME_DIR$/lib/javaee.jar!/</url>
           </containerElement>
         </packaging>
       </configuration>

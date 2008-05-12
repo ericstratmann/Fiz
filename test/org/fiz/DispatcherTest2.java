@@ -5,9 +5,9 @@ package org.fiz;
  * made by Dispatcher.java.
  */
 
-public class DispatcherTest5 extends Interactor {
+public class DispatcherTest2 extends Interactor {
     public static int destroyCount= 0;
-    public DispatcherTest5() {
+    public DispatcherTest2() {
     }
     public void destroy() {
         destroyCount += 3;

@@ -6,6 +6,33 @@ import java.util.*;
  */
 
 public class DataRequestTest extends junit.framework.TestCase {
+    // The following class is used to signal completion on a request
+    // after a specifiable delay.
+    protected static class DataRequestTestCompleter extends Thread {
+        protected DataRequest request;
+        protected int delayMs;
+        protected Dataset result;
+        protected boolean error;
+        public DataRequestTestCompleter(DataRequest request,
+                int delayMs, Dataset result, boolean error) {
+            this.request = request;
+            this.delayMs = delayMs;
+            this.result = result;
+            this.error = error;
+        }
+        public void run() {
+            try {
+                Thread.sleep(delayMs);
+            }
+            catch (InterruptedException e) {}
+            if (error) {
+                request.setError(result);
+            } else {
+                request.setComplete(result);
+            }
+        }
+    }
+
     public void setUp() {
         DataManagerFixture.init();
         Config.setDataset("dataRequests", YamlDataset.newStringInstance(
@@ -362,32 +389,5 @@ public class DataRequestTest extends junit.framework.TestCase {
                 "manager: testManager\n" +
                 "second:  Alice\n",
                 request.request.toString());
-    }
-}
-
-// The following class is used to signal completion on a request
-// after a specifiable delay.
-class DataRequestTestCompleter extends Thread {
-    protected DataRequest request;
-    protected int delayMs;
-    protected Dataset result;
-    protected boolean error;
-    public DataRequestTestCompleter(DataRequest request,
-            int delayMs, Dataset result, boolean error) {
-        this.request = request;
-        this.delayMs = delayMs;
-        this.result = result;
-        this.error = error;
-    }
-    public void run() {
-        try {
-            Thread.sleep(delayMs);
-        }
-        catch (InterruptedException e) {}
-        if (error) {
-            request.setError(result);
-        } else {
-            request.setComplete(result);
-        }
     }
 }

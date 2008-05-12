@@ -1,7 +1,7 @@
 package org.fiz;
 
 /**
- * Junit tests for the ClassNotFoundError class.
+ * Junit tests for the InstantiationError class.
  */
 
 public class InstantiationErrorTest extends junit.framework.TestCase {

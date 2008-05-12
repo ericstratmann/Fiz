@@ -820,6 +820,16 @@ public class Dataset implements Cloneable {
     }
 
     /**
+     * Generate a Javascript description of the database contents, in the form
+     * of a Javascript Object literal enclosed in braces.
+     * @param out                  The Javascript is appended to this
+     *                             StringBuilder.
+     */
+    public void toJavascript(StringBuilder out) {
+        javascriptForSubtree(map, out);
+    }
+
+    /**
      * Generates a nicely formatted string displaying the contents
      * of the dataset (intended primarily for testing).  By default
      * the dataset is formatted using YAML syntax.
@@ -973,6 +983,48 @@ public class Dataset implements Cloneable {
         child = new HashMap();
         map.put(key, child);
         return new Dataset((HashMap) child, fileName);
+    }
+
+    /**
+     * This recursive method does all the real work for the
+     * {@code toJavascript} method, generating a Javascript description
+     * of the contents of a dataset.
+     * @param map                  HashMap that holds the dataset subtree
+     *                             to be written.
+     * @param out                  The Javascript for the dataset gets
+     *                             appended here in the form of an Object
+     *                             literal (enclosed in braces).
+     */
+    @SuppressWarnings("unchecked")
+    public void javascriptForSubtree(HashMap map, StringBuilder out) {
+        out.append('{');
+        String prefix = "";
+        for (Object nameObject: map.keySet()) {
+            String name = (String) nameObject;
+            out.append(prefix);
+            out.append(name);
+            out.append(": ");
+            Object value = map.get(name);
+            if (value instanceof HashMap) {
+                javascriptForSubtree((HashMap) value, out);
+            } else if (value instanceof ArrayList) {
+                out.append('[');
+                ArrayList<HashMap> list = (ArrayList <HashMap>) value;
+                String listPrefix = "";
+                for (int i = 0; i < list.size(); i++) {
+                    out.append(listPrefix);
+                    javascriptForSubtree(list.get(i), out);
+                    listPrefix = ", ";
+                }
+                out.append(']');
+            } else {
+                out.append('"');
+                Html.escapeStringChars(value.toString(), out);
+                out.append('"');
+            }
+            prefix = ", ";
+        }
+        out.append('}');
     }
 
     /**

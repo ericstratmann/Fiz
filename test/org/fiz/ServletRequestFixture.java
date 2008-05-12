@@ -24,6 +24,8 @@ public class ServletRequestFixture implements HttpServletRequest {
     public String servletPath = "/servlet/path";
     public String uri = "uriString";
     public String queryString = "a=b&c=d";
+    public String contentType = "contentType";
+    public BufferedReader inputReader = null;
 
     public ServletRequestFixture() {
         parameterMap = new Hashtable<String,String>();
@@ -117,7 +119,7 @@ public class ServletRequestFixture implements HttpServletRequest {
     }
     public String getCharacterEncoding() {return "characterEncoding";}
     public int getContentLength() {return 444;}
-    public String getContentType() {return "contentType";}
+    public String getContentType() {return contentType;}
     public ServletInputStream getInputStream() {
         lastMethod = "getInputStream";
         return null;
@@ -159,7 +161,7 @@ public class ServletRequestFixture implements HttpServletRequest {
     public String getProtocol() {return "protocol";}
     public BufferedReader getReader() {
         lastMethod = "getReader";
-        return null;
+        return inputReader;
     }
     public String getRealPath(String path) {return "path " + path;}
     public String getRemoteAddr() {return "remoteAddr";}

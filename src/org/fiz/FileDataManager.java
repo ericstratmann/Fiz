@@ -81,7 +81,7 @@ public class FileDataManager extends DataManager {
      *                             see top-level class documentation
      *                             for supported values.
      */
-    public FileDataManager (Dataset config) {
+    public FileDataManager(Dataset config) {
         StringBuilder expandedPath = new StringBuilder();
         Template.expand(config.get("pathTemplate"), Config.getDataset("main"),
                 expandedPath, Template.SpecialChars.NONE);

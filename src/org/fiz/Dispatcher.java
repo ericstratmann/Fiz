@@ -225,15 +225,18 @@ public class Dispatcher extends HttpServlet {
             // At this point we have located the method to service this
             // request.  Package up relevant information into a ClientRequest
             // object and invoke the method.
-            ClientRequest fizRequest = method.interactor.getRequest(this, request,
-                    response);
-            method.method.invoke(method.interactor, fizRequest);
+            ClientRequest cr = method.interactor.getRequest(this,
+                    request, response);
+            if (pathInfo.startsWith("ajax", endOfClass+1)) {
+                cr.setAjax(true);
+            }
+            method.method.invoke(method.interactor, cr);
 
             // The service method has completed successfully.  Output the
             // HTML that was generated.
             // TODO: figure out a way to set Content-Length for output.
             PrintWriter out = response.getWriter();
-            fizRequest.getHtml().print(out);
+            cr.getHtml().print(out);
             if (out.checkError()) {
                 throw new IOException("I/O error while outputting HTML");
             }
