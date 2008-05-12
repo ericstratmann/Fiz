@@ -1,9 +1,42 @@
-// Ajax.js --
-//
-// This file implements the browser side of Ajax support in Fiz.  This
-// is not a general-purpose implementation of Ajax, but rather is designed
-// to work with the Ajax class in Fiz.
-// TODO: more complete Ajax documentation
+/** Ajax.js --
+ *
+ * This file implements the browser side of Ajax support in Fiz.  This
+ * is not a general-purpose implementation of Ajax; it is designed
+ * to work with the Ajax class in Fiz:
+ *   * Each Ajax request can include a dataset containing parameter
+ *     information.  The dataset is transmitted using the POST message
+ *     using a custom Fiz format (see the {@code readInputData} method
+ *     of the Ajax class for details.  Parameters can also be supplied
+ *     using query values attached to the URL.
+ *   * Each Ajax response consists of Javascript code that, when evaluated,
+ *     will create a Javascript array named {@code Actions}.  Each element
+ *     of this array is a Javascript Object whose properties specify an
+ *     action for the browser to take.  The {@code type} property specifies
+ *     the kind of action, and other properties provide additional parameters
+ *     depending on {@code type}.  The action types currently supported are:
+ *       update:       Replace the value of a DOM element.  The {@code id}
+ *                     property gives the id of the element, and the
+ *                     {@code html} property contains the new HTML for the
+ *                     element.
+ *       eval:         Execute Javascript code.  The {@code javascript}
+ *                     property contains the code to evaluate.
+ *       error:        Register an error using whatever mechanism was
+ *                     defined for the request.  The {@code properties}
+ *                     property contains a dataset (nested Objects and Arrays)
+ *                     with information about the error.  All errors have
+ *                     at least a {@code message} value in {@code properties}
+ *                     which contains a human-readable message.  Other
+ *                     values may be available on a case-by-case basis.
+ *     * The result of an Ajax request is determined entirely by the server.
+ *       The initiating Javascript code provides information for the request
+ *       but it does not tell how to handle the response;  the server
+ *       determines that by creating {@code update}, {@code eval}, and
+ *       {@code error} actions in the response.  If Javascript code wishes
+ *       to update a particular {@code <div>} it might include the id for
+ *       the {@code <div>} in the Ajax request, but it is up to the server
+ *       to decide whether to honor that id or specify something else in the
+ *       response.  The initiating code has control only over error handling.
+ */
 
 // Create the overall Fiz container if it doesn't already exist.
 try {Fiz} catch (e) {Fiz = Object();}
@@ -13,11 +46,8 @@ try {Fiz} catch (e) {Fiz = Object();}
  * returns when the request has been initiated, but before it has been
  * completed.  When the response is eventually received, the actions
  * described in the response will be executed.  The following values are
- * supported within {@code properties}:
+ * supported in {@code properties}:
  *   url:                          (required) Send the request to this URL.
- *   timeout:                      (optional) Abort the request with an error
- *                                 if a response has not been received in this
- *                                 many milliseconds.
  *   errorHandler:                 (optional) If an error occurs the
  *                                 {@code ajaxError} method will be invoked
  *                                 on this object, with a single parameter
@@ -30,6 +60,10 @@ try {Fiz} catch (e) {Fiz = Object();}
  *                                 some kinds of errors.
  * @param properties               Object whose properties describe the
  *                                 request.  See above for supported values.
+ *                                 Or, this parameter can be a string
+ *                                 whose value is the {@code url} property,
+ *                                 in which case all other properties are
+ *                                 considered to be unspecified.
  * @param data                     (optional) Object whose contents will be
  *                                 sent in the request as parameters.  May
  *                                 contain nested objects and arrays of
@@ -40,9 +74,13 @@ try {Fiz} catch (e) {Fiz = Object();}
  *                                 dataset in the server.
  */
 Fiz.Ajax = function(properties, data) {
-    this.url = properties.url;
-    this.timeout = properties.timeout;
-    this.errorHandler = properties.errorHandler;
+    if ((typeof properties) == "string") {
+        this.url = properties;
+        this.errorHandler = undefined;
+    } else {
+        this.url = properties.url;
+        this.errorHandler = properties.errorHandler;
+    }
     this.xmlhttp = null;           // XMLHTTP object for controlling the
                                    // request.
 

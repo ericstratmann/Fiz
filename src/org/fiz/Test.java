@@ -67,6 +67,9 @@ public class Test extends Interactor {
     public void link(ClientRequest cr) {
         Html html = cr.getHtml();
         Dataset globalData = cr.getMainDataset();
+        globalData.set("name", "Alice");
+        globalData.set("age", "21");
+        globalData.set("saying", "\"All's well that ends well\"");
         String current = globalData.check("current");
         if ((current != null) && (current.equals("2"))) {
             globalData.set("next", "1");
@@ -77,6 +80,7 @@ public class Test extends Interactor {
         html.setTitle("Link Page");
         StringBuilder body = html.getBody();
         Template.expand("<h1>Test Links</h1>\n" +
+                "<p>This page demonstrates several uses of links.</p>\n" +
                 "<p>This is page @current.  Click on the link below " +
                 "to go to page @next.</p>\n" +
                 "<p>", globalData, body);
@@ -84,6 +88,22 @@ public class Test extends Interactor {
                 "url", "test/link?current=@next"));
         link.html(cr, globalData, body);
         body.append("</p>\n");
+        body.append("<p>The following link uses Javascript to display " +
+                "an alert: ");
+        Link link2 = new Link(new Dataset("text", "Click me",
+                "javascript",
+                "alert(\"Her name is @name, favorite saying @saying\");"));
+        link2.html(cr, globalData, body);
+        body.append("</p>\n");
+        Link link3 = new Link(new Dataset("text", "here",
+                "ajaxUrl", "test/ajaxUpdateTime"));
+        body.append("<script type=\"text/javascript\" src=\"/fiz/Ajax.js\">" +
+                "</script>\n" +
+                "<p>Click ");
+        link3.html(cr, globalData, body);
+        body.append(" to update the time below.</p>\n" +
+                "<p>Latest date/time from Ajax: " +
+                "<span id=\"updateMe\">None</span></p>\n");
     }
 
     static class TestFilter extends FilterOutputStream {

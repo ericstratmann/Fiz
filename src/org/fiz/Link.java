@@ -1,23 +1,38 @@
 package org.fiz;
 
 /**
- * This class provides facilities for rendering either text or an image
- * or both as an HTML link ({@code <a href=...}).  Links support the
- * following properties; most of them are templates, which are expanded
- * in the context of the dataset passed to {@code html}.
+ * The Link class displays text or an image in a "hot" form where clicking
+ * on the text/image causes one of the following things to occur:
+ *   * Display the page at a given URL.  This is the most common form;
+ *     it produces a standard HTML link ({@code <a href=...}).
+ *   * Invoke an Ajax request.
+ *   * Invoke arbitrary Javascript code.
+ * Links support the following properties; most of them are templates, which
+ * are expanded in the context of the dataset passed to {@code html}.
  * text -       (optional) Template for text and/or other HTML to display
  *              for the Link.
+ * url -        (optional) Template for URL that will be visited when the
+ *              text or icon is clicked.  May include query values.  If this
+ *              URL isn't complete (as defined by Util.urlComplete), then
+ *              the Fiz prefix (as defined by cr.getUrlPrefix is prepended
+ *              to it to make it complete.  Note: either this property or
+ *              {@code ajaxUrl} or {@code javascript} should be specified.
+ * ajaxUrl -    (optional) If this property is specified, clicking on the
+ *              text or image will invoke an Ajax request; the value of this
+ *              property is a template for the URL of the Ajax request,
+ *              expanded and completed in the same way as {@code url}.  This
+ *              property is ignored if {@code url} is specified.
+ * javascript - (optional) If this property specified, clicking on the text
+ *              or image will cause the value of this property to be invoked
+ *              as Javascript code.  The property value is a template,
+ *              expanded using Javascript string quoting.  This property is
+ *              ignored if {@code url} or {@code ajaxUrl} is specified.
  * iconUrl -    (optional) URL for an image to display to the left of the
  *              text.  This is also a template.  If this URL isn't complete
  *              (as defined by Util.urlComplete), the Fiz prefix (as defined
  *              by cr.getUrlPrefix is prepended to it to make it complete.
  * alt -        (optional) Template for the {@code alt} attribute for the
  *              icon.  Defaults to an empty string.
- * url -        Template for URL that will be visited when the text or
- *              icon is clicked.  May include query values.  If this
- *              URL isn't complete (as defined by Util.urlComplete),
- *              the the Fiz prefix (as defined by cr.getUrlPrefix is
- *              prepended to it to make it complete.
  * confirm -    (optional) If specified, the user will be asked to
  *              confirm before the URL is visited, and this text is a
  *              template for the confirmation message (passed to the
@@ -44,7 +59,7 @@ public class Link implements Formatter {
     // are the same as described in the configuration option documentation
     // above.  If an option is omitted, the corresponding variable will
     // have a null value.
-    protected String text, iconUrl, alt, url, confirm;
+    protected String text, url, ajaxUrl, javascript, iconUrl, alt, confirm;
 
     // Copy of the constructor argument by the same name.
     DisplayForm displayForm;
@@ -60,9 +75,11 @@ public class Link implements Formatter {
      */
     public Link(Dataset properties, DisplayForm displayForm) {
         text = properties.check("text");
+        url = properties.check("url");
+        ajaxUrl = properties.check("ajaxUrl");
+        javascript = properties.check("javascript");
         iconUrl = properties.check("iconUrl");
         alt = properties.check("alt");
-        url = properties.get("url");
         confirm = properties.check("confirm");
         this.displayForm = displayForm;
     }
@@ -121,14 +138,44 @@ public class Link implements Formatter {
 
         // Generate the <a> element, including an event handler for
         // confirmation, if requested.
-        StringBuilder expandedUrl = new StringBuilder(url.length());
-        Template.expand(url, data, expandedUrl, Template.SpecialChars.URL);
         out.append("<a href=\"");
-        if (!Util.urlComplete(expandedUrl)) {
-            out.append(cr.getUrlPrefix());
-            out.append('/');
+        if (url != null) {
+            // Normal href.
+            StringBuilder expandedUrl = new StringBuilder(url.length());
+            Template.expand(url, data, expandedUrl, Template.SpecialChars.URL);
+            if (!Util.urlComplete(expandedUrl)) {
+                out.append(cr.getUrlPrefix());
+                out.append('/');
+            }
+            Html.escapeHtmlChars(expandedUrl, out);
+        } else if (ajaxUrl != null) {
+            // Ajax request.  Quoting is tricky:
+            //   * Must first use URL quoting.
+            //   * Would normally apply string quoting next (because the URL
+            //     will be passed in a Javascript string) but we can skip this
+            //     because URL quoting has already quoted all the characters
+            //     that are special in strings.
+            //   * Apply HTML quoting because the entire Javascript script
+            //     is stored in the HTML.
+            // TODO: Indicate that Ajax.js needs to be included in the HTML.
+            StringBuilder expandedUrl = new StringBuilder(ajaxUrl.length());
+            Template.expand(ajaxUrl, data, expandedUrl,
+                    Template.SpecialChars.URL);
+            Html.escapeHtmlChars("javascript:void new Fiz.Ajax(\"", out);
+            if (!Util.urlComplete(expandedUrl)) {
+                out.append(cr.getUrlPrefix());
+                out.append('/');
+            }
+            Html.escapeHtmlChars(expandedUrl, out);
+            Html.escapeHtmlChars("\");", out);
+        } else if (javascript != null) {
+            // Javascript code.
+            StringBuilder expanded = new StringBuilder(javascript.length());
+            Template.expand(javascript, data, expanded,
+                    Template.SpecialChars.JAVASCRIPT);
+            out.append("javascript: ");
+            Html.escapeHtmlChars(expanded, out);
         }
-        Html.escapeHtmlChars(expandedUrl, out);
         if (confirm != null) {
             out.append("\" ");
             confirmHtml(confirm, data, out);

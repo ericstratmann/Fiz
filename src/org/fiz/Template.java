@@ -85,6 +85,13 @@ public class Template {
         HTML,
 
         /**
+         * The output will be used as Javascript code; assume that all
+         * substituted data values will be used in Javascript strings,
+         * so use backslashes to quote special characters.
+         */
+        JAVASCRIPT,
+
+        /**
          * The output will be used as part of a URL, so use {@code %xx}
          * encoding for any characters that aren't permitted in URLs.
          */
@@ -407,6 +414,8 @@ public class Template {
         }
         if (info.quoting == SpecialChars.HTML) {
             Html.escapeHtmlChars(value, info.out);
+        } else if (info.quoting == SpecialChars.JAVASCRIPT) {
+            Html.escapeStringChars(value, info.out);
         } else if (info.quoting == SpecialChars.URL) {
             Html.escapeUrlChars(value, info.out);
         } else {

@@ -5,6 +5,20 @@
 include ("Ajax.js");
 include ("XmlHttpFixture.js");
 
+window.XMLHttpRequest = true;
+test("Ajax_sendRequest_urlParameterOnly", function() {
+    new Fiz.Ajax("/a/b");
+    assertEqual("open(method: POST, url: /a/b, async: undefined)\n" +
+            "setRequestHeader(name: Content-type, value: text/plain; " +
+            "charset=utf-8)\n" +
+            "send(message: )\n",
+            jsunit.log, "jsunit.log");
+});
+test("Ajax_sendRequest_propertiesParameter", function() {
+    ajax = new Fiz.Ajax({url: "/a/b", errorHandler: "test44"});
+    assertEqual("/a/b", ajax.url, "url parameter");
+    assertEqual("test44", ajax.errorHandler, "errorHandler parameter");
+});
 test("Ajax_cantFindXmlHttp", function() {
     window.XMLHttpRequest = null;
     new Fiz.Ajax({url: "/a/b"}, {name: "Alice", age: 28});

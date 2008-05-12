@@ -5,6 +5,143 @@ package org.fiz;
  */
 
 public class TemplateTest extends junit.framework.TestCase {
+    // The following class definition provides a mechanism for accessing
+    // protected/private fields and methods.
+    protected static class TemplateFixture {
+        public static int templateEnd;
+        public static boolean missingData;
+        public static boolean conditional;
+        public static boolean skip;
+        public static int end;
+        public static int lastDeletedSpace;
+
+        public static void expandRange(String template, Dataset data,
+                StringBuilder out, int start, int end) {
+            Template.ParseInfo info = new Template.ParseInfo();
+            info.template = template;
+            info.templateEnd = -15;
+            info.data = data;
+            info.out = out;
+            info.ignoreErrors = false;
+            info.missingData = false;
+            info.skip = false;
+            info.end = -1;
+            Template.expandRange(info, start, end);
+            templateEnd = info.templateEnd;
+            TemplateFixture.end = info.end;
+        }
+
+        public static void expandAtSign(String template, Dataset data,
+                StringBuilder out, boolean conditional, int start) {
+            Template.ParseInfo info = new Template.ParseInfo();
+            info.template = template;
+            info.templateEnd = template.length();
+            info.data = data;
+            info.out = out;
+            info.ignoreErrors = conditional;
+            info.missingData = false;
+            info.skip = false;
+            info.end = -1;
+            Template.expandAtSign(info, start);
+            missingData = info.missingData;
+            end = info.end;
+        }
+
+        public static void expandChoice(String template, Dataset data,
+                StringBuilder out, String name, int start) {
+            Template.ParseInfo info = new Template.ParseInfo();
+            info.template = template;
+            info.templateEnd = template.length();
+            info.data = data;
+            info.out = out;
+            info.quoting = Template.SpecialChars.HTML;
+            info.ignoreErrors = false;
+            info.missingData = false;
+            info.skip = false;
+            info.end = -1;
+            Template.expandChoice(info, name, start);
+            end = info.end;
+        }
+
+        public static void expandParenName(String template, Dataset data,
+                StringBuilder out, boolean conditional, int start,
+                Template.SpecialChars encoding) {
+            Template.ParseInfo info = new Template.ParseInfo();
+            info.template = template;
+            info.templateEnd = template.length();
+            info.data = data;
+            info.out = out;
+            info.quoting = encoding;
+            info.ignoreErrors = conditional;
+            info.missingData = false;
+            info.skip = false;
+            info.end = -1;
+            Template.expandParenName(info, start);
+            missingData = info.missingData;
+            end = info.end;
+        }
+
+        public static void appendValue(String name, Dataset data,
+                StringBuilder out, boolean conditional,
+                Template.SpecialChars encoding) {
+            Template.ParseInfo info = new Template.ParseInfo();
+            info.data = data;
+            info.out = out;
+            info.quoting = encoding;
+            info.ignoreErrors = conditional;
+            info.missingData = false;
+            info.skip = false;
+            info.end = -1;
+            Template.appendValue(info, name);
+            missingData = info.missingData;
+            end = info.end;
+        }
+
+        public static void expandBraces(String template, Dataset data,
+                StringBuilder out, int start, int lastDeletedSpace) {
+            Template.ParseInfo info = new Template.ParseInfo();
+            info.template = template;
+            info.templateEnd = template.length();
+            info.data = data;
+            info.out = out;
+            info.ignoreErrors = false;
+            info.missingData = true;
+            info.skip = false;
+            info.end = -1;
+            info.lastDeletedSpace = lastDeletedSpace;
+            Template.expandBraces(info, start);
+            missingData = info.missingData;
+            conditional = info.ignoreErrors;
+            end = info.end;
+            TemplateFixture.lastDeletedSpace = info.lastDeletedSpace;
+        }
+
+        public static int skipTo(String template, StringBuilder out,
+                int start, char c1, char c2) {
+            Template.ParseInfo info = new Template.ParseInfo();
+            info.template = template;
+            info.templateEnd = template.length();
+            info.data = new Dataset();
+            info.out = out;
+            info.ignoreErrors = false;
+            info.missingData = false;
+            info.skip = false;
+            info.end = -1;
+            info.lastDeletedSpace = lastDeletedSpace;
+            int result = Template.skipTo(info, start, c1, c2);
+            missingData = info.missingData;
+            conditional = info.ignoreErrors;
+            skip = info.skip;
+            end = info.end;
+            TemplateFixture.lastDeletedSpace = info.lastDeletedSpace;
+            return result;
+        }
+        public static void expandBraces(String template, Dataset data,
+                StringBuilder out, int start) {
+            expandBraces(template, data, out, start, start-1);
+        }
+    }
+
     public void test_expand() {
         Dataset data = new Dataset("name", "Alice", "age", "28");
         StringBuilder out = new StringBuilder("123");
@@ -328,6 +465,13 @@ public class TemplateTest extends junit.framework.TestCase {
                 Template.SpecialChars.URL);
         assertEquals("output string", "123%3cWest%3e", out.toString());
     }
+    public void test_appendValue_JavascriptEncoding() {
+        Dataset data = new Dataset("value", "\\\n\"");
+        StringBuilder out = new StringBuilder("123");
+        TemplateFixture.appendValue("value", data, out, false,
+                Template.SpecialChars.JAVASCRIPT);
+        assertEquals("output string", "123\\\\\\n\\\"", out.toString());
+    }
     public void test_appendValue_NoEncoding() {
         Dataset data = new Dataset("last_name", "<West>");
         StringBuilder out = new StringBuilder("123");
@@ -485,142 +629,5 @@ public class TemplateTest extends junit.framework.TestCase {
         Template.expand("first {{name: @name, age: @age?{unknown}, " +
                 "weight: @weight}}", new Dataset("name", "Bob"), out);
         assertEquals("output string", "first", out.toString());
-    }
-}
-
-// The following class definition provides a mechanism for accessing
-// protected/private fields and methods.
-class TemplateFixture {
-    public static int templateEnd;
-    public static boolean missingData;
-    public static boolean conditional;
-    public static boolean skip;
-    public static int end;
-    public static int lastDeletedSpace;
-
-    public static void expandRange(String template, Dataset data,
-            StringBuilder out, int start, int end) {
-        Template.ParseInfo info = new Template.ParseInfo();
-        info.template = template;
-        info.templateEnd = -15;
-        info.data = data;
-        info.out = out;
-        info.ignoreErrors = false;
-        info.missingData = false;
-        info.skip = false;
-        info.end = -1;
-        Template.expandRange(info, start, end);
-        templateEnd = info.templateEnd;
-        TemplateFixture.end = info.end;
-    }
-
-    public static void expandAtSign(String template, Dataset data,
-            StringBuilder out, boolean conditional, int start) {
-        Template.ParseInfo info = new Template.ParseInfo();
-        info.template = template;
-        info.templateEnd = template.length();
-        info.data = data;
-        info.out = out;
-        info.ignoreErrors = conditional;
-        info.missingData = false;
-        info.skip = false;
-        info.end = -1;
-        Template.expandAtSign(info, start);
-        missingData = info.missingData;
-        end = info.end;
-    }
-
-    public static void expandChoice(String template, Dataset data,
-            StringBuilder out, String name, int start) {
-        Template.ParseInfo info = new Template.ParseInfo();
-        info.template = template;
-        info.templateEnd = template.length();
-        info.data = data;
-        info.out = out;
-        info.quoting = Template.SpecialChars.HTML;
-        info.ignoreErrors = false;
-        info.missingData = false;
-        info.skip = false;
-        info.end = -1;
-        Template.expandChoice(info, name, start);
-        end = info.end;
-    }
-
-    public static void expandParenName(String template, Dataset data,
-            StringBuilder out, boolean conditional, int start,
-            Template.SpecialChars encoding) {
-        Template.ParseInfo info = new Template.ParseInfo();
-        info.template = template;
-        info.templateEnd = template.length();
-        info.data = data;
-        info.out = out;
-        info.quoting = encoding;
-        info.ignoreErrors = conditional;
-        info.missingData = false;
-        info.skip = false;
-        info.end = -1;
-        Template.expandParenName(info, start);
-        missingData = info.missingData;
-        end = info.end;
-    }
-
-    public static void appendValue(String name, Dataset data,
-            StringBuilder out, boolean conditional,
-            Template.SpecialChars encoding) {
-        Template.ParseInfo info = new Template.ParseInfo();
-        info.data = data;
-        info.out = out;
-        info.quoting = encoding;
-        info.ignoreErrors = conditional;
-        info.missingData = false;
-        info.skip = false;
-        info.end = -1;
-        Template.appendValue(info, name);
-        missingData = info.missingData;
-        end = info.end;
-    }
-
-    public static void expandBraces(String template, Dataset data,
-            StringBuilder out, int start, int lastDeletedSpace) {
-        Template.ParseInfo info = new Template.ParseInfo();
-        info.template = template;
-        info.templateEnd = template.length();
-        info.data = data;
-        info.out = out;
-        info.ignoreErrors = false;
-        info.missingData = true;
-        info.skip = false;
-        info.end = -1;
-        info.lastDeletedSpace = lastDeletedSpace;
-        Template.expandBraces(info, start);
-        missingData = info.missingData;
-        conditional = info.ignoreErrors;
-        end = info.end;
-        TemplateFixture.lastDeletedSpace = info.lastDeletedSpace;
-    }
-
-    public static int skipTo(String template, StringBuilder out,
-            int start, char c1, char c2) {
-        Template.ParseInfo info = new Template.ParseInfo();
-        info.template = template;
-        info.templateEnd = template.length();
-        info.data = new Dataset();
-        info.out = out;
-        info.ignoreErrors = false;
-        info.missingData = false;
-        info.skip = false;
-        info.end = -1;
-        info.lastDeletedSpace = lastDeletedSpace;
-        int result = Template.skipTo(info, start, c1, c2);
-        missingData = info.missingData;
-        conditional = info.ignoreErrors;
-        skip = info.skip;
-        end = info.end;
-        TemplateFixture.lastDeletedSpace = info.lastDeletedSpace;
-        return result;
-    }
-    public static void expandBraces(String template, Dataset data,
-            StringBuilder out, int start) {
-        expandBraces(template, data, out, start, start-1);
     }
 }

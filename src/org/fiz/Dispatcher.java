@@ -235,6 +235,7 @@ public class Dispatcher extends HttpServlet {
             // The service method has completed successfully.  Output the
             // HTML that was generated.
             // TODO: figure out a way to set Content-Length for output.
+            response.setContentType("text/html");
             PrintWriter out = response.getWriter();
             cr.getHtml().print(out);
             if (out.checkError()) {

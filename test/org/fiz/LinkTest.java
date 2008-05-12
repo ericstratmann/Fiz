@@ -11,18 +11,7 @@ public class LinkTest extends junit.framework.TestCase {
         cr = new ClientRequestFixture();
     }
 
-    public void test_constructor_missingUrl() {
-        boolean gotException = false;
-        try {
-            Link link = new Link(new Dataset());
-        }
-        catch (Dataset.MissingValueError e) {
-            assertEquals("exception message",
-                    "couldn't find dataset element \"url\"", e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
+    // No tests for basic constructor: nothing interesting to test.
 
     public void test_constructor_withPropertiesAndDisplayForm () {
         StringBuilder out = new StringBuilder();
@@ -136,6 +125,40 @@ public class LinkTest extends junit.framework.TestCase {
         link.html(cr, data, out);
         assertEquals("HTML for link",
                 "<a href=\"/fiz/demo/test/test1\">Sample</a>", out.toString());
+        TestUtil.assertXHTML(out.toString());
+    }
+    public void test_html_ajaxExpandUrlTemplate() {
+        StringBuilder out = new StringBuilder();
+        Dataset data = new Dataset("name", "Alice", "weight", "\"110\"");
+        Link link = new Link(new Dataset("text", "@name",
+                "ajaxUrl", "/ajaxUrl?age=24&name=@name&weight=@weight"));
+        link.html(cr, data, out);
+        assertEquals("HTML for link", "<a href=\"javascript:void new " +
+                "Fiz.Ajax(&quot;/ajaxUrl?age=24&amp;name=Alice&amp;" +
+                "weight=%22110%22&quot;);\">Alice</a>", out.toString());
+        TestUtil.assertXHTML(out.toString());
+    }
+    public void test_html_ajaxAddUrlPrefix() {
+        StringBuilder out = new StringBuilder();
+        Dataset data = new Dataset();
+        cr.urlPrefix = "/fiz/demo";
+        Link link = new Link(new Dataset("text", "Sample",
+                "ajaxUrl", "test/test1"));
+        link.html(cr, data, out);
+        assertEquals("HTML for link", "<a href=\"javascript:void new " +
+                "Fiz.Ajax(&quot;/fiz/demo/test/test1&quot;);\">Sample</a>",
+                out.toString());
+        TestUtil.assertXHTML(out.toString());
+    }
+    public void test_html_javascriptHref() {
+        StringBuilder out = new StringBuilder();
+        Dataset data = new Dataset("name", "Alice", "weight", "\"110\"");
+        Link link = new Link(new Dataset("text", "@name",
+                "javascript", "alert(\"name: @name, weight: @weight\");"));
+        link.html(cr, data, out);
+        assertEquals("HTML for link", "<a href=\"javascript: alert" +
+                "(&quot;name: Alice, weight: \\&quot;110\\&quot;&quot;);\">" +
+                "Alice</a>", out.toString());
         TestUtil.assertXHTML(out.toString());
     }
     public void test_html_confirmation() {
