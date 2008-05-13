@@ -14,6 +14,11 @@ import org.mozilla.javascript.*;
 
 public class Test extends Interactor {
     protected Logger logger = Logger.getLogger("Test");
+
+    // The following fields are used for measuring Ajax latency.
+    int ajaxCount = 0;
+    long startTime;
+
     public void path(ClientRequest cr) {
         logger.info("getRealPath(\"/WEB-INF/a/b/c\"): "
                 + cr.getServletContext().getRealPath("///WEB-INF/a/b/c"));
@@ -55,10 +60,36 @@ public class Test extends Interactor {
                 "<span id=\"updateMe\">None</span></p>\n");
     }
 
+    // This entry point is used to initiate an Ajax performance
+    // measurement.
+    public void ajaxPerf(ClientRequest cr) {
+        ajaxCount = 0;
+        startTime = System.nanoTime();
+        cr.ajaxUpdateAction("perf", "<br>Measuring ...");
+        cr.ajaxEvalAction("new Fiz.Ajax(\"/fiz/fiz/test/ajaxPerf2\");");
+    }
+
+    // This entry point is visited repeatedly during Ajax performance
+    // testing.  Each visit responds with a request for another visit,
+    // until the desired number of round-trips has occurred.
+    public void ajaxPerf2(ClientRequest cr) {
+        ajaxCount++;
+        final int count = 100;
+        if (ajaxCount < count) {
+            cr.ajaxEvalAction("new Fiz.Ajax(\"/fiz/fiz/test/ajaxPerf2\");");
+            return;
+        }
+
+        // Compute statistics and display them on the page.
+        long endTime = System.nanoTime();
+        cr.ajaxUpdateAction("perf",
+                String.format("<br>Time per round-trip: %.2fms",
+                (endTime - startTime)/(count*1000000.0)));
+    }
+
+
     public void ajaxUpdateTime(ClientRequest cr) throws IOException {
-        cr.getServletResponse().getWriter().write(
-                "actions = [{type: \"update\", id: \"updateMe\", " +
-                "html: \"" + (new Date()).toString() + "\"}];");
+        cr.ajaxUpdateAction("updateMe", (new Date()).toString());
     }
 
     // The following entry point generates 2 different pages (based on
@@ -104,6 +135,11 @@ public class Test extends Interactor {
         body.append(" to update the time below.</p>\n" +
                 "<p>Latest date/time from Ajax: " +
                 "<span id=\"updateMe\">None</span></p>\n");
+        Link link4 = new Link(new Dataset("text", "Click here.",
+                "ajaxUrl", "test/ajaxPerf"));
+        body.append("Want to measure the round-trip latency for Ajax?  ");
+        link4.html(cr, globalData, body);
+        body.append("<span id=\"perf\"></span>\n");
     }
 
     static class TestFilter extends FilterOutputStream {

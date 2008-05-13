@@ -26,6 +26,7 @@ public class ServletResponseFixture implements HttpServletResponse{
     // The following variables determine the output from certain methods.
     String uri = "uriString";
     String queryString = "?a=b&c=d";
+    boolean getWriterException = false;
 
     // HttpServletResponse methods:
 
@@ -107,8 +108,11 @@ public class ServletResponseFixture implements HttpServletResponse{
         lastMethod = "getOutputStream";
         return null;
     }
-    public PrintWriter getWriter() {
+    public PrintWriter getWriter() throws IOException {
         lastMethod = "getWriter";
+        if (getWriterException) {
+            throw new IOException("getWriter failed");
+        }
         return writer;
     }
     public boolean isCommitted() {

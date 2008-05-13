@@ -233,14 +233,8 @@ public class Dispatcher extends HttpServlet {
             method.method.invoke(method.interactor, cr);
 
             // The service method has completed successfully.  Output the
-            // HTML that was generated.
-            // TODO: figure out a way to set Content-Length for output.
-            response.setContentType("text/html");
-            PrintWriter out = response.getWriter();
-            cr.getHtml().print(out);
-            if (out.checkError()) {
-                throw new IOException("I/O error while outputting HTML");
-            }
+            // response that was generated.
+            cr.finish();
         }
         catch (Throwable e) {
             // TODO: allow application-specific handling of errors.

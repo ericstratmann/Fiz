@@ -1,8 +1,10 @@
 package org.fiz;
+
 import java.io.*;
 import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
+import org.apache.log4j.*;
 
 /**
  * A ClientRequest object is the master data structure providing access
@@ -19,7 +21,7 @@ import javax.servlet.http.*;
  *     object for the servlet container and additional Fiz information such
  *     as configuration datasets, the CSS cache, and data managers.
  * Most of the major methods for servicing a request take a ClientRequest
- * object as their first argument; the ClientRequest is always referred to
+ * object as their first argument; the ClientRequest is normally referred to
  * with a variable named {@code cr}.
  * <p>
  * Individual applications may have additional global data that needs to
@@ -71,6 +73,13 @@ public class ClientRequest {
     // request (false means it is a normal HTML request).
     protected boolean ajaxRequest = false;
 
+    // The following variable indicates whether any Ajax actions have been
+    // generated in response to this request.
+    protected boolean anyAjaxActions = false;
+
+    // The following variable is used for log4j-based logging.
+    protected static Logger logger = Logger.getLogger("org.fiz.ClientRequest");
+
     /**
      * Constructs a ClientRequest object.  Typically invoked by the
      * getRequest method of an Interactor object.
@@ -91,6 +100,116 @@ public class ClientRequest {
         this.servletRequest = servletRequest;
         this.servletResponse = servletResponse;
         this.servlet = servlet;
+    }
+
+    /**
+     * Output an Ajax {@code error} action in response to the current Ajax
+     * request.  This action will cause the browser to report the error
+     * described by {@code properties}.
+     * @param properties           Dataset containing information about
+     *                             the error.  Must have at least a
+     *                             {@code message} element.
+     */
+    public void ajaxErrorAction(Dataset properties) {
+        PrintWriter writer = ajaxActionHeader("error");
+        writer.append(", properties: ");
+        properties.toJavascript(writer);
+        writer.append("}");
+    }
+
+    /**
+     * Output an Ajax {@code eval} action in response to the current Ajax
+     * request.  This action will cause the browser to execute the
+     * Javascript code specified by {@code javascript}.
+     * @param javascript           Javascript code for the browser to
+     *                             execute when the Ajax response is received.
+     */
+    public void ajaxEvalAction(CharSequence javascript) {
+        PrintWriter writer = ajaxActionHeader("eval");
+        writer.append(", javascript: \"");
+        Html.escapeStringChars(javascript, writer);
+        writer.append("\"}");
+    }
+
+    /**
+     * Output an Ajax {@code eval} action in response to the current Ajax
+     * request.  This action will cause the browser to execute the
+     * Javascript code specified by {@code template} and {@code data}.
+     * @param template             Template for the Javascript code, which will
+     *                             be expanded using {@code data}.
+     * @param data                 Dataset to use for expanding
+     *                             {@code template}.
+     */
+    public void ajaxEvalAction(String template, Dataset data) {
+        StringBuilder expanded = new StringBuilder();
+        Template.expand(template, data, expanded,
+                Template.SpecialChars.JAVASCRIPT);
+        ajaxEvalAction(expanded);
+    }
+
+    /**
+     * Output an Ajax {@code redirect} action in response to the current Ajax
+     * request.  This action will cause the browser to display the page
+     * specified by {@code url}.
+     * @param url                  New URL for the browser to display.
+     */
+    public void ajaxRedirectAction(String url) {
+        PrintWriter writer = ajaxActionHeader("redirect");
+        writer.append(", url: \"");
+
+        // No need to worry about quoting the characters in the URL: if
+        // it is a proper URL, there are no characters in it that have
+        // special meaning in Javascript strings.
+        writer.append(url);
+        writer.append("\"}");
+    }
+
+    /**
+     * Output an Ajax {@code update} action in the response to the current
+     * Ajax request.  This action will cause the browser to replace the
+     * innerHTML of the element given by {@code id} with new HTML.
+     * @param id                   DOM identifier for the element whose
+     *                             contents are to be replaced.
+     * @param html                 New HTML contents for element {@code id}.
+     */
+    public void ajaxUpdateAction(CharSequence id, CharSequence html) {
+        PrintWriter writer = ajaxActionHeader("update");
+        writer.append(", id: \"");
+        writer.append(id);
+        writer.append("\", html: \"");
+        Html.escapeStringChars(html, writer);
+        writer.append("\"}");
+    }
+
+    /**
+     * This method is invoked by the Dispatcher at the end of a request
+     * to complete the transmission of the response back to the client.
+     */
+    public void finish() {
+        PrintWriter out;
+        try {
+            out = servletResponse.getWriter();
+        }
+        catch (IOException e) {
+            logger.error("I/O error retrieving response writer in " +
+                    "ClientRequest.finish: " + e.getMessage());
+            return;
+        }
+        if (ajaxRequest) {
+            if (anyAjaxActions) {
+                // Close off the Javascript code for the actions.
+                out.append("];");
+            }
+        } else {
+            // This is an HTML request.  Transmit the accumulated
+            // HTML, if any.
+            servletResponse.setContentType("text/html");
+            getHtml().print(out);
+        }
+        if (out.checkError()) {
+            logger.error("I/O error sending response in " +
+                    "ClientRequest.finish");
+        }
     }
 
     /**
@@ -329,5 +448,35 @@ public class ClientRequest {
         } else {
             DataRequest.start(namedRequests.values());
         }
+    }
+
+    /**
+     * This is a utility method shared by Ajax action generators; it
+     * generates the initial part of the action's Javascript description,
+     * including separator from the previous action (if any) and the
+     * {@code type} property for this action (up to but not including
+     * a comma separator).
+     * @param type                 Value of the {@code type} property for
+     *                             this action.
+     * @return                     The PrintWriter for the response.
+     */
+    protected PrintWriter ajaxActionHeader(String type) {
+        PrintWriter writer;
+        try {
+            writer = servletResponse.getWriter();
+        }
+        catch (IOException e) {
+            throw new IOError(e.getMessage());
+        }
+        if (!anyAjaxActions) {
+            // This is the first Ajax action.
+            writer.append("var actions = [{type: \"");
+            anyAjaxActions = true;
+        } else {
+            writer.append(", {type: \"");
+        }
+        writer.append(type);
+        writer.append("\"");
+        return writer;
     }
 }

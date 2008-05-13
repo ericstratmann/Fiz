@@ -324,26 +324,31 @@ public class Html {
      *                                will evaluate to exactly the characters
      *                                in {@code s}.
      */
-    public static void escapeStringChars(CharSequence s, StringBuilder out) {
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c <= '\037') {
-                if (c == '\n') {
-                    out.append("\\n");
-                } else if (c == '\t') {
-                    out.append("\\t");
+    public static void escapeStringChars(CharSequence s, Appendable out) {
+        try {
+            for (int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+                if (c <= '\037') {
+                    if (c == '\n') {
+                        out.append("\\n");
+                    } else if (c == '\t') {
+                        out.append("\\t");
+                    } else {
+                        out.append(String.format("\\x%02x", (int) c));
+                    }
+                } else if (c == '\\') {
+                    out.append("\\\\");
+                } else if (c == '\"') {
+                    out.append("\\\"");
+                } else if (c == '\177') {
+                    out.append("\\x3f");
                 } else {
-                    out.append(String.format("\\x%02x", (int) c));
+                    out.append(c);
                 }
-            } else if (c == '\\') {
-                out.append("\\\\");
-            } else if (c == '\"') {
-                out.append("\\\"");
-            } else if (c == '\177') {
-                out.append("\\x3f");
-            } else {
-                out.append(c);
             }
+        }
+        catch (IOException e) {
+            throw new IOError(e.getMessage());
         }
     }
 }

@@ -126,6 +126,15 @@ test("stateChange_evalAction_syntaxError", function() {
             "SyntaxError: syntax error)\n",
             jsunit.log.replace(/\.js#\d*\(/, ".js("), "jsunit.log");
 });
+test("stateChange_redirectAction", function() {
+    document = new Document();
+    var ajax = new Fiz.Ajax({url: "/a/b"}, {name: "Alice", age: 28});
+    jsunit.log = "";
+    ajax.xmlhttp.responseText = "actions = [{type: \"redirect\", " +
+            "url: \"/x/y/z\"}]";
+    ajax.stateChange();
+    assertEqual("/x/y/z", document.location.href, "document.location.href");
+});
 test("stateChange_errorAction", function() {
     document = new Document();
     var ajax = new Fiz.Ajax({url: "/a/b"}, {name: "Alice", age: 28});

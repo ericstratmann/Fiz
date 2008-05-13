@@ -20,6 +20,8 @@
  *                     element.
  *       eval:         Execute Javascript code.  The {@code javascript}
  *                     property contains the code to evaluate.
+ *       redirect:     Change the page displayed in the window to the one
+ *                     given by {@code url}.
  *       error:        Register an error using whatever mechanism was
  *                     defined for the request.  The {@code properties}
  *                     property contains a dataset (nested Objects and Arrays)
@@ -158,6 +160,8 @@ Fiz.Ajax.prototype.stateChange = function() {
                 }
             } else if (type == "eval") {
                 eval(action.javascript);
+            } else if (type == "redirect") {
+                document.location.href = action.url;
             } else if (type == "error") {
                 this.error(action.properties);
             } else {
@@ -169,8 +173,8 @@ Fiz.Ajax.prototype.stateChange = function() {
         if (e.fileName && e.lineNumber) {
             where = " (" + e.fileName + ":" + e.lineNumber + ")";
         }
-        this.error({message: "error processing responseText" + where + ": "
-                + e});
+        this.error({message: "error processing responseText" +
+                where + ": " + e});
     }
 }
 

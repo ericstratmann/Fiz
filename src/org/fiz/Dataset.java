@@ -1,4 +1,5 @@
 package org.fiz;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -825,8 +826,13 @@ public class Dataset implements Cloneable {
      * @param out                  The Javascript is appended to this
      *                             StringBuilder.
      */
-    public void toJavascript(StringBuilder out) {
-        javascriptForSubtree(map, out);
+    public void toJavascript(Appendable out) {
+        try {
+            javascriptForSubtree(map, out);
+        }
+        catch (IOException e) {
+            throw new IOError(e.getMessage());
+        }
     }
 
     /**
@@ -996,7 +1002,8 @@ public class Dataset implements Cloneable {
      *                             literal (enclosed in braces).
      */
     @SuppressWarnings("unchecked")
-    public void javascriptForSubtree(HashMap map, StringBuilder out) {
+    public void javascriptForSubtree(HashMap map, Appendable out)
+            throws IOException {
         out.append('{');
         String prefix = "";
         for (Object nameObject: map.keySet()) {

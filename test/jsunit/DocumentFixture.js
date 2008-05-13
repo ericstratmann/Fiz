@@ -16,6 +16,9 @@ function Document() {
     // Create a few sample Elements.
     this.ids.element1 = new Element("text1");
     this.ids.element2 = new Element("text2");
+
+    // Create standard properties.
+    this.location = {href: "/a/b/c"};
 }
 
 // The following functions provide dummy implementations of standard

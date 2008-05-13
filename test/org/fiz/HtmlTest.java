@@ -6,6 +6,33 @@ import java.io.*;
  */
 
 public class HtmlTest extends junit.framework.TestCase {
+    // The following class definition provides additional/modified features
+    // for testing.
+    protected static class HtmlFixture extends Html {
+        public HtmlFixture() {
+            super("/fiz");
+        }
+        public String getPrologue() {
+            // This method overrides getPrologue: a simpler prologue generates
+            // less clutter in tests.
+            return "**Prologue**\n";
+        }
+    }
+
+    // The following class is used to test the handling of IOExceptions.
+    protected static class ErrorAppendable implements Appendable {
+        public Appendable append(char c) throws IOException {
+            throw new IOException("synthetic exception");
+        }
+        public Appendable append(CharSequence sequence) throws IOException {
+            throw new IOException("synthetic exception");
+        }
+        public Appendable append(CharSequence sequence, int start, int end)
+                throws IOException {
+            throw new IOException("synthetic exception");
+        }
+    }
+
     protected HtmlFixture html = new HtmlFixture();
 
     public void setUp() {
@@ -240,17 +267,17 @@ public class HtmlTest extends junit.framework.TestCase {
         assertEquals("abc\\x1f  | \\n\\t | \\x01 | \\\\\\\"",
                 out.toString());
     }
-}
-
-// The following class definition provides additional/modified features
-// for testing.
-class HtmlFixture extends Html {
-    public HtmlFixture() {
-        super("/fiz");
-    }
-    public String getPrologue() {
-        // This method overrides getPrologue: a simpler prologue generates
-        // less clutter in tests.
-        return "**Prologue**\n";
+    public void test_escapeStringChars_handleException() {
+        boolean gotException = false;
+        try {
+            Html.escapeStringChars("abcdef", new ErrorAppendable());
+        }
+        catch (IOError e) {
+            assertEquals("exception message",
+                    "synthetic exception",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
     }
 }

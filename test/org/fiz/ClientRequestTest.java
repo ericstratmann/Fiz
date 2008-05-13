@@ -37,6 +37,100 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 servletResponse);
     }
 
+    public void test_ajaxErrorAction() {
+        ClientRequest cr = TestUtil.setUp();
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        cr.setAjax(true);
+        Dataset properties = new Dataset("message", "catastrophe",
+                "value", "92");
+        cr.ajaxErrorAction(properties);
+        assertEquals("response",
+                "var actions = [{type: \"error\", properties: " +
+                "{message: \"catastrophe\", value: \"92\"}}",
+                out.toString());
+    }
+
+    public void test_ajaxEvalAction() {
+        ClientRequest cr = TestUtil.setUp();
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        cr.setAjax(true);
+        cr.ajaxEvalAction("var x = \"test\";");
+        cr.ajaxEvalAction("var y = 101;");
+        assertEquals("response",
+                "var actions = [{type: \"eval\", " +
+                "javascript: \"var x = \\\"test\\\";\"}, " +
+                "{type: \"eval\", javascript: \"var y = 101;\"}",
+                out.toString());
+    }
+
+    public void test_ajaxEvalAction_template() {
+        ClientRequest cr = TestUtil.setUp();
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        cr.setAjax(true);
+        Dataset d = new Dataset("value", "<&\n\t>");
+        cr.ajaxEvalAction("var x = \"@value\";", d);
+        assertEquals("response",
+                "var actions = [{type: \"eval\", javascript: " +
+                "\"var x = \\\"<&\\\\n\\\\t>\\\";\"}",
+                out.toString());
+    }
+
+    public void test_ajaxRedirectAction() {
+        ClientRequest cr = TestUtil.setUp();
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        cr.setAjax(true);
+        cr.ajaxRedirectAction("/x/y/z?x=45&name=Alice");
+        assertEquals("response",
+                "var actions = [{type: \"redirect\", url: " +
+                "\"/x/y/z?x=45&name=Alice\"}",
+                out.toString());
+    }
+
+    public void test_ajaxUpdateAction() {
+        ClientRequest cr = TestUtil.setUp();
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        cr.setAjax(true);
+        cr.ajaxUpdateAction("id44", "Alice");
+        cr.ajaxUpdateAction("id55", "Special: <\">");
+        assertEquals("response",
+                "var actions = [{type: \"update\", id: \"id44\", " +
+                "html: \"Alice\"}, {type: \"update\", id: \"id55\", " +
+                "html: \"Special: <\\\">\"}",
+                out.toString());
+    }
+
+    public void test_finish_ajax() throws IOException {
+        ClientRequest cr = TestUtil.setUp();
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        cr.setAjax(true);
+        cr.ajaxUpdateAction("id44", "Alice");
+        cr.finish();
+        assertEquals("response",
+                "var actions = [{type: \"update\", id: \"id44\", " +
+                "html: \"Alice\"}];",
+                out.toString());
+    }
+    public void test_finish_html() throws IOException {
+        ClientRequest cr = TestUtil.setUp();
+        PrintWriter writer = cr.getServletResponse().getWriter();
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        cr.getHtml().getBody().append("page body");
+        cr.finish();
+        TestUtil.assertSubstring("response",
+                "</head>\n" +
+                "<body>\n" +
+                "page body</body>\n" +
+                "</html>",
+                out.toString());
+    }
+
     public void test_getMainDataset_ajaxDataOnly() {
         request2.setAjax(true);
         servletRequest.setParameters();
@@ -93,16 +187,16 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_getRequestNames() {
-        ClientRequest request = TestUtil.setUp();
+        ClientRequest cr = TestUtil.setUp();
         assertEquals("no requests registered yet", "",
-                request.getRequestNames());
-        request.registerDataRequest("fixture1");
-        request.registerDataRequest("fixture2");
-        request.registerDataRequest("fixture1");
-        request.registerDataRequest("getPeople");
+                cr.getRequestNames());
+        cr.registerDataRequest("fixture1");
+        cr.registerDataRequest("fixture2");
+        cr.registerDataRequest("fixture1");
+        cr.registerDataRequest("getPeople");
         assertEquals("names of registered requests",
                 "fixture1, fixture2, getPeople",
-                request.getRequestNames());
+                cr.getRequestNames());
     }
 
     public void test_getServletRequest() {
@@ -126,12 +220,12 @@ public class ClientRequestTest extends junit.framework.TestCase {
     // isAjax is tested by the tests for setAjax.
 
     public void test_registerDataRequest_byName() {
-        ClientRequest request = TestUtil.setUp();
-        DataRequest data1 = request.registerDataRequest("fixture1");
-        DataRequest data2 = request.registerDataRequest("fixture2");
-        DataRequest data3 = request.registerDataRequest("fixture1");
+        ClientRequest cr = TestUtil.setUp();
+        DataRequest data1 = cr.registerDataRequest("fixture1");
+        DataRequest data2 = cr.registerDataRequest("fixture2");
+        DataRequest data3 = cr.registerDataRequest("fixture1");
         assertEquals("count of registered requests", 2,
-                request.namedRequests.size());
+                cr.namedRequests.size());
         assertEquals("share duplicate requests", data1, data3);
         assertEquals("contents of request", "id:      fixture2\n" +
                 "manager: fixture\n" +
@@ -140,15 +234,15 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_registerDataRequest_byDataset() {
-        ClientRequest request = TestUtil.setUp();
-        DataRequest data1 = request.registerDataRequest(
+        ClientRequest cr = TestUtil.setUp();
+        DataRequest data1 = cr.registerDataRequest(
                 new DataRequest(new Dataset("name", "Bill")));
-        DataRequest data2 = request.registerDataRequest(
+        DataRequest data2 = cr.registerDataRequest(
                 new DataRequest(new Dataset("name", "Carol")));
-        assertEquals("count of registered requests", 2,
-                request.unnamedRequests.size());
-        assertEquals("contents of request", "name: Carol\n",
-                request.unnamedRequests.get(1).getRequestData().toString());
+        assertEquals("count of registered crs", 2,
+                cr.unnamedRequests.size());
+        assertEquals("contents of cr", "name: Carol\n",
+                cr.unnamedRequests.get(1).getRequestData().toString());
     }
 
     public void test_setAjax() {
@@ -175,22 +269,54 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_startDataRequests_namedAndUnnamed() {
-        ClientRequest request = TestUtil.setUp();
-        DataRequest data1 = request.registerDataRequest("fixture1");
-        DataRequest data2 = request.registerDataRequest("fixture2");
-        DataRequest data3 = request.registerDataRequest("fixture1");
-        DataRequest data4 = request.registerDataRequest(
+        ClientRequest cr = TestUtil.setUp();
+        DataRequest data1 = cr.registerDataRequest("fixture1");
+        DataRequest data2 = cr.registerDataRequest("fixture2");
+        DataRequest data3 = cr.registerDataRequest("fixture1");
+        DataRequest data4 = cr.registerDataRequest(
                 new DataRequest(new Dataset("manager", "fixture",
                 "name", "Carol", "id", "xyzzy")));
-        request.startDataRequests();
+        cr.startDataRequests();
         assertEquals("data manager log",
                 "fixture started xyzzy, fixture2, fixture1",
                 DataManagerFixture.getLogs());
     }
     public void test_startDataRequests_noRequests() {
-        ClientRequest request = TestUtil.setUp();
-        request.startDataRequests();
+        ClientRequest cr = TestUtil.setUp();
+        cr.startDataRequests();
         assertEquals("data manager log", "", DataManagerFixture.getLogs());
+    }
+
+    public void test_ajaxActionHeader() throws IOException {
+        ClientRequest cr = TestUtil.setUp();
+        PrintWriter writer = cr.getServletResponse().getWriter();
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        cr.setAjax(true);
+        assertEquals("initial response", "", out.toString());
+        assertEquals("return value", writer, cr.ajaxActionHeader("first"));
+        assertEquals("response after first header",
+                "var actions = [{type: \"first\"", out.toString());
+        cr.ajaxActionHeader("second");
+        assertEquals("response after second header",
+                "var actions = [{type: \"first\", {type: \"second\"",
+                out.toString());
+    }
+    public void test_printWriter_exception() {
+        ClientRequest cr = TestUtil.setUp();
+        ((ServletResponseFixture)
+                cr.getServletResponse()).getWriterException = true;
+        cr.setAjax(true);
+        boolean gotException = false;
+        try {
+            cr.ajaxActionHeader("first");
+        }
+        catch (IOError e) {
+            assertEquals("exception message",
+                    "getWriter failed", e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
     }
 }
 
