@@ -49,7 +49,8 @@ public class Test extends Interactor {
     public void showTime(ClientRequest cr) {
         Html html = cr.getHtml();
         html.setTitle("Ajax Test Page");
-        String code = "new Fiz.Ajax({url: '/fiz/fiz/test/ajaxUpdateTime'}); " +
+        String code = "new Fiz.Ajax({url: '"  + cr.getUrlPrefix() +
+                "/test/ajaxUpdateTime'}); " +
                 "return false;";
         html.getBody().append("<h1>Ajax Demo</h1>\n" +
                 "<script type=\"text/javascript\" src=\"/fiz/Ajax.js\"></script>\n" +
@@ -66,7 +67,8 @@ public class Test extends Interactor {
         ajaxCount = 0;
         startTime = System.nanoTime();
         cr.ajaxUpdateAction("perf", "<br>Measuring ...");
-        cr.ajaxEvalAction("new Fiz.Ajax(\"/fiz/fiz/test/ajaxPerf2\");");
+        cr.ajaxEvalAction("new Fiz.Ajax(\"" + cr.getUrlPrefix() +
+                "/test/ajaxPerf2\");");
     }
 
     // This entry point is visited repeatedly during Ajax performance
@@ -76,7 +78,8 @@ public class Test extends Interactor {
         ajaxCount++;
         final int count = 100;
         if (ajaxCount < count) {
-            cr.ajaxEvalAction("new Fiz.Ajax(\"/fiz/fiz/test/ajaxPerf2\");");
+            cr.ajaxEvalAction("new Fiz.Ajax(\"" + cr.getUrlPrefix() +
+                    "/test/ajaxPerf2\");");
             return;
         }
 

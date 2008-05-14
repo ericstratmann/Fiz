@@ -19,7 +19,7 @@ public class Html {
 
     // The initial portion of all URL's referring to this Web application:
     // used, among other things to generate URL's for Javascript files.
-    protected String servletPath;
+    protected String contextPath;
 
     // The following field keeps track of all of the stylesheet files that
     // have already been included in the HTML document.
@@ -55,12 +55,12 @@ public class Html {
     public Html(ClientRequest cr) {
         if (cr != null) {
             // Production mode.
-            servletPath = cr.getServletRequest().getServletPath();
+            contextPath = cr.getServletContext().getContextPath();
             jsDirectory = cr.getServletContext().getRealPath("") + "/";
         } else {
             // We are running unit tests; set default values, which
             // tests may override.
-            servletPath = "/servlet";
+            contextPath = "/servlet";
             jsDirectory = "javascript/";
         }
     }
@@ -187,7 +187,7 @@ public class Html {
 
         // Generate an HTML <script> statement to include the current file.
         jsHtml.append("<script type=\"text/javascript\" src=\"");
-        jsHtml.append(servletPath);
+        jsHtml.append(contextPath);
         jsHtml.append("/");
         jsHtml.append(fileName);
         jsHtml.append("\" />\n");
