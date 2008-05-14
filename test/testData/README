@@ -1,2 +1,4 @@
-This directory contains datasets, configuration files, and other
-information used during testing.
+During testing this directory is a stand-in for the context root
+directory, so it has the same structure as the context root, such as
+a WEB-INF subdirectory.  All of the files under this directory should
+be read-only.

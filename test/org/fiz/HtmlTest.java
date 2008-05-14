@@ -37,8 +37,8 @@ public class HtmlTest extends junit.framework.TestCase {
 
     public void setUp() {
         html = new HtmlFixture();
-        Css.init("test/testData");
-        Config.init("test/testData");
+        Css.init("test/testData/WEB-INF/css");
+        Config.init("test/testData/WEB-INF/config");
     }
     // No tests for getBody; too trivial.
 
@@ -150,6 +150,7 @@ public class HtmlTest extends junit.framework.TestCase {
         html.print(out);
         assertEquals("**Prologue**\n" +
                 "<head>\n" +
+                "<title></title>\n" +
                 "<style type=\"text/css\">\n" +
                 "/* Dummy version of main.css for tests */\n" +
                 "body {color: #000000}\n" +

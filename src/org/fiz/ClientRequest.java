@@ -345,8 +345,8 @@ public class ClientRequest {
      */
     public String getUrlPrefix() {
         if (urlPrefix == null) {
-            urlPrefix = getServletRequest().getServletPath () +
-                    getServletContext().getContextPath();
+            urlPrefix = getServletContext().getContextPath () +
+                    getServletRequest().getServletPath();
         }
         return urlPrefix;
     }

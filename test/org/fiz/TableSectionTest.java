@@ -5,8 +5,13 @@ package org.fiz;
  */
 
 public class TableSectionTest extends junit.framework.TestCase {
+    protected ClientRequest cr;
+
+    public void setUp() {
+        cr = new ClientRequestFixture();
+    }
+
     public void test_html_basics() {
-        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getPeople"),
                 new Column("Name", "@name"),
@@ -47,7 +52,6 @@ public class TableSectionTest extends junit.framework.TestCase {
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_html_noHeader() {
-        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44",
                 "noHeader", "true"),
@@ -69,7 +73,6 @@ public class TableSectionTest extends junit.framework.TestCase {
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_html_includeCss() {
-        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44"));
         cr.showSections(table);
@@ -79,7 +82,6 @@ public class TableSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getCssFiles());
     }
     public void test_html_dontIncludeCss() {
-        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "class", "special"));
         cr.showSections(table);
@@ -88,7 +90,6 @@ public class TableSectionTest extends junit.framework.TestCase {
                 "", cr.getHtml().getCssFiles());
     }
     public void test_html_idAndClass() {
-        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44",
                 "class", "<class>"),
@@ -109,7 +110,6 @@ public class TableSectionTest extends junit.framework.TestCase {
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_html_errorInRequest() {
-        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "error",
                 "errorTemplate", "Error for @name: @message"),
@@ -129,7 +129,6 @@ public class TableSectionTest extends junit.framework.TestCase {
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_html_emptyWithTemplate() {
-        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getNothing",
                 "emptyTemplate", "No data for @name"),
@@ -147,7 +146,6 @@ public class TableSectionTest extends junit.framework.TestCase {
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_html_emptyUseDefaultTemplate() {
-        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getNothing"),
                 new Column("Name", "@name"),
@@ -164,7 +162,6 @@ public class TableSectionTest extends junit.framework.TestCase {
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_html_columnIsFormatter() {
-        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44"),
                 new Link(new Dataset("text", "@name",
@@ -191,7 +188,6 @@ public class TableSectionTest extends junit.framework.TestCase {
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_html_cancelHeaderRow() {
-        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44"),
                 new Column("", "@name"),
@@ -212,7 +208,6 @@ public class TableSectionTest extends junit.framework.TestCase {
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_html_lastRowClass() {
-        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44",
                 "noHeader", "true", "lastRowClass", "last"),
@@ -235,7 +230,6 @@ public class TableSectionTest extends junit.framework.TestCase {
     }
 
     public void test_registerRequests() {
-        ClientRequest cr = TestUtil.setUp();
         TableSection table = new TableSection(new Dataset(
                 "request", "getPeople"));
         table.registerRequests(cr);

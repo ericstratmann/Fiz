@@ -211,9 +211,8 @@ public class Html {
         try {
             writer.write(getPrologue());
             writer.write("<head>\n");
-            if (title != null) {
-                writer.write("<title>" + title + "</title>\n");
-            }
+            writer.write("<title>" + ((title != null) ? title : "") +
+                    "</title>\n");
 
             // Output CSS info.
             writer.write("<style type=\"text/css\">\n");

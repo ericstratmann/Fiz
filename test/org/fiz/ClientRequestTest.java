@@ -1,6 +1,5 @@
 package org.fiz;
 import java.io.*;
-import javax.servlet.http.*;
 
 /**
  * Junit tests for the ClientRequest class.
@@ -19,27 +18,15 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     protected ServletRequestFixture servletRequest;
-    protected ServletResponseFixture servletResponse;
-    protected ServletContextFixture servletContext;
-    protected ServletConfigFixture servletConfig;
-    protected HttpServlet servlet;
-    protected ClientRequest request1;
-    protected ClientRequest request2;
+    protected ClientRequest cr;
     protected StringWriter out;
 
     public void setUp() {
-        servletRequest = new ServletRequestFixture();
-        servletResponse = new ServletResponseFixture();
-        servletContext = new ServletContextFixture();
-        servletConfig = new ServletConfigFixture(servletContext);
-        servlet = new ServletFixture(servletConfig);
-        request1 = new ClientRequest(null, null, null);
-        request2 = new ClientRequest(servlet, servletRequest,
-                servletResponse);
+        cr = new ClientRequestFixture();
+        servletRequest = (ServletRequestFixture) cr.getServletRequest();
     }
 
     public void test_ajaxErrorAction() {
-        ClientRequest cr = TestUtil.setUp();
         StringWriter out = ((ServletResponseFixture)
                 cr.getServletResponse()).out;
         cr.setAjax(true);
@@ -53,7 +40,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_ajaxEvalAction() {
-        ClientRequest cr = TestUtil.setUp();
         StringWriter out = ((ServletResponseFixture)
                 cr.getServletResponse()).out;
         cr.setAjax(true);
@@ -67,7 +53,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_ajaxEvalAction_template() {
-        ClientRequest cr = TestUtil.setUp();
         StringWriter out = ((ServletResponseFixture)
                 cr.getServletResponse()).out;
         cr.setAjax(true);
@@ -80,7 +65,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_ajaxRedirectAction() {
-        ClientRequest cr = TestUtil.setUp();
         StringWriter out = ((ServletResponseFixture)
                 cr.getServletResponse()).out;
         cr.setAjax(true);
@@ -92,7 +76,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_ajaxUpdateAction() {
-        ClientRequest cr = TestUtil.setUp();
         StringWriter out = ((ServletResponseFixture)
                 cr.getServletResponse()).out;
         cr.setAjax(true);
@@ -106,7 +89,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_finish_ajax() throws IOException {
-        ClientRequest cr = TestUtil.setUp();
         StringWriter out = ((ServletResponseFixture)
                 cr.getServletResponse()).out;
         cr.setAjax(true);
@@ -118,7 +100,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 out.toString());
     }
     public void test_finish_html() throws IOException {
-        ClientRequest cr = TestUtil.setUp();
         PrintWriter writer = cr.getServletResponse().getWriter();
         StringWriter out = ((ServletResponseFixture)
                 cr.getServletResponse()).out;
@@ -133,7 +114,8 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_getMainDataset_ajaxDataOnly() {
-        request2.setAjax(true);
+        cr.setAjax(true);
+        cr.mainDataset = null;          // Discard default info from fixture.
         servletRequest.setParameters();
         servletRequest.contentType = "text/plain";
         servletRequest.inputReader = new BufferedReader(new StringReader(
@@ -141,25 +123,27 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("main dataset contents", "name: Alice\n" +
                 "p2:\n" +
                 "    a: 999\n" +
-                "    b: 88\n", request2.getMainDataset().toString());
+                "    b: 88\n", cr.getMainDataset().toString());
     }
     public void test_getMainDataset_ajaxButWrongContentType() {
-        request2.setAjax(true);
+        cr.setAjax(true);
+        cr.mainDataset = null;          // Discard default info from fixture.
         servletRequest.setParameters();
         servletRequest.contentType = "bogus";
         servletRequest.inputReader = new BufferedReader(new StringReader(
                 "2.p2(1.a3.999\n1.b2.88\n)\n4.name5.Alice\n"));
         assertEquals("main dataset contents", "",
-                request2.getMainDataset().toString());
+                cr.getMainDataset().toString());
     }
     public void test_getMainDataset_exceptionReadingAjaxData() {
-        request2.setAjax(true);
+        cr.setAjax(true);
+        cr.mainDataset = null;          // Discard default info from fixture.
         servletRequest.contentType = "text/plain";
         servletRequest.inputReader = new ExceptionReader(
                 new StringReader("2.p2.88\n"));
         boolean gotException = false;
         try {
-            request2.getMainDataset();
+            cr.getMainDataset();
         }
         catch (IOError e) {
             assertEquals("exception message",
@@ -169,26 +153,28 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
     }
     public void test_getMainDataset_queryDataOnly() {
+        cr.mainDataset = null;          // Discard default info from fixture.
         assertEquals("main dataset contents", "p1: param_value1\n" +
-                "p2: param_value2\n", request2.getMainDataset().toString());
+                "p2: param_value2\n", cr.getMainDataset().toString());
     }
     public void test_getMainDataset_queryDataAndAjax() {
-        request2.setAjax(true);
+        cr.setAjax(true);
+        cr.mainDataset = null;          // Discard default info from fixture.
         servletRequest.contentType = "text/plain";
         servletRequest.inputReader = new BufferedReader(new StringReader(
                 "2.p2(1.a3.999\n1.b2.88\n)\n4.name5.Alice\n"));
         assertEquals("main dataset contents", "name: Alice\n" +
                 "p1:   param_value1\n" +
-                "p2:   param_value2\n", request2.getMainDataset().toString());
+                "p2:   param_value2\n", cr.getMainDataset().toString());
     }
     public void test_getMainDataset_noDataAtAll() {
+        cr.mainDataset = null;          // Discard default info from fixture.
         servletRequest.setParameters();
         assertEquals("main dataset contents", "",
-                request2.getMainDataset().toString());
+                cr.getMainDataset().toString());
     }
 
     public void test_getRequestNames() {
-        ClientRequest cr = TestUtil.setUp();
         assertEquals("no requests registered yet", "",
                 cr.getRequestNames());
         cr.registerDataRequest("fixture1");
@@ -201,27 +187,30 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_getServletRequest() {
-        assertEquals(servletRequest, request2.getServletRequest());
+        ServletRequestFixture newRequest = new ServletRequestFixture();
+        cr.servletRequest = newRequest;
+        assertEquals(newRequest, cr.getServletRequest());
     }
 
     public void test_getServletResponse() {
-        assertEquals(servletResponse, request2.getServletResponse());
+        ServletResponseFixture newResponse = new ServletResponseFixture();
+        cr.servletResponse = newResponse;
+        assertEquals(newResponse, cr.getServletResponse());
     }
 
     public void test_getUrlPrefix_useSavedValue() {
-        request1.urlPrefix = "/foo/bar";
+        cr.urlPrefix = "/foo/bar";
         assertEquals("request already has a value", "/foo/bar",
-                request1.getUrlPrefix());
+                cr.getUrlPrefix());
     }
     public void test_getUrlPrefix_generateValue() {
-        assertEquals("computed value", "/servlet/path/context/path",
-                request2.getUrlPrefix());
+        assertEquals("computed value", "/context/cpath/servlet/spath",
+                cr.getUrlPrefix());
     }
 
     // isAjax is tested by the tests for setAjax.
 
     public void test_registerDataRequest_byName() {
-        ClientRequest cr = TestUtil.setUp();
         DataRequest data1 = cr.registerDataRequest("fixture1");
         DataRequest data2 = cr.registerDataRequest("fixture2");
         DataRequest data3 = cr.registerDataRequest("fixture1");
@@ -235,7 +224,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_registerDataRequest_byDataset() {
-        ClientRequest cr = TestUtil.setUp();
         DataRequest data1 = cr.registerDataRequest(
                 new DataRequest(new Dataset("name", "Bill")));
         DataRequest data2 = cr.registerDataRequest(
@@ -247,7 +235,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_setAjax() {
-        ClientRequest cr = TestUtil.setUp();
         assertEquals("initially false", false, cr.isAjax());
         cr.setAjax(true);
         assertEquals("set to true", true, cr.isAjax());
@@ -256,7 +243,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_showSections() {
-        ClientRequest cr = TestUtil.setUp();
         cr.showSections(
                 new TemplateSection("first\n"),
                 new TemplateSection("getState", "second: @name\n"),
@@ -270,7 +256,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_startDataRequests_namedAndUnnamed() {
-        ClientRequest cr = TestUtil.setUp();
         DataRequest data1 = cr.registerDataRequest("fixture1");
         DataRequest data2 = cr.registerDataRequest("fixture2");
         DataRequest data3 = cr.registerDataRequest("fixture1");
@@ -283,13 +268,11 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 DataManagerFixture.getLogs());
     }
     public void test_startDataRequests_noRequests() {
-        ClientRequest cr = TestUtil.setUp();
         cr.startDataRequests();
         assertEquals("data manager log", "", DataManagerFixture.getLogs());
     }
 
     public void test_ajaxActionHeader() throws IOException {
-        ClientRequest cr = TestUtil.setUp();
         PrintWriter writer = cr.getServletResponse().getWriter();
         StringWriter out = ((ServletResponseFixture)
                 cr.getServletResponse()).out;
@@ -304,7 +287,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 out.toString());
     }
     public void test_printWriter_exception() {
-        ClientRequest cr = TestUtil.setUp();
         ((ServletResponseFixture)
                 cr.getServletResponse()).getWriterException = true;
         cr.setAjax(true);
