@@ -136,7 +136,10 @@ public class TestUtil {
         DataManager.logger.setLevel(Level.ERROR);
 
         // Create a ClientRequest and supply some query data for it.
-        ClientRequest request = new ClientRequest(null, new ServletRequestFixture(),
+        ClientRequest request = new ClientRequest(
+                new ServletFixture(new ServletConfigFixture(
+                        new ServletContextFixture())),
+                new ServletRequestFixture(),
                 new ServletResponseFixture());
         request.getHtml().setTitle("Test");
         Dataset main = request.getMainDataset();

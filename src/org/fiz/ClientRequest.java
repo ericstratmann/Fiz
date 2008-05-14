@@ -219,7 +219,7 @@ public class ClientRequest {
      */
     public Html getHtml() {
         if (html == null) {
-            html = new Html(servletRequest.getContextPath());
+            html = new Html(this);
         }
         return html;
     }

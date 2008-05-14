@@ -51,17 +51,24 @@ public class DispatcherTest  extends junit.framework.TestCase {
         Config.setDataset("main", new Dataset("searchPackages", "org.fiz"));
     }
 
-    public void test_sanityCheck() {
+    public void test_sanityCheck() throws ServletException {
+        (new File("_test1_/WEB-INF/config")).mkdirs();
+        TestUtil.writeFile("_test1_/WEB-INF/config/main.yaml",
+                "searchPackages: org.fiz\n");
         Object o = new DispatcherTest1();
         Interactor i = (Interactor) o;
         i.destroy();
         Dispatcher dispatcher = new Dispatcher();
+        ServletContextFixture context = new ServletContextFixture();
+        context.contextRoot = "_test1_";
+        dispatcher.init(new ServletConfigFixture(context));
         dispatcher.logger.setLevel(Level.FATAL);
         DispatcherTest1.count = 43;
         dispatcher.service(new DispatcherRequestFixture(
                 "/dispatcherTest1/incCount/extra"), new ServletResponseFixture());
         assertEquals("error message", null, dispatcher.fullMessage);
         assertEquals("invocation count", 44, DispatcherTest1.count);
+        TestUtil.deleteTree("_test1_");
     }
 
     public void test_UnsupportedUriError() {

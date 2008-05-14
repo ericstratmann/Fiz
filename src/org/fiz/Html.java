@@ -18,8 +18,8 @@ public class Html {
     protected String title = null;
 
     // The initial portion of all URL's referring to this Web application:
-    // used to generate HTML for stylesheets and Javascript files.
-    protected String contextPath;
+    // used, among other things to generate URL's for Javascript files.
+    protected String servletPath;
 
     // The following field keeps track of all of the stylesheet files that
     // have already been included in the HTML document.
@@ -30,14 +30,39 @@ public class Html {
     // includeCss and includeCssFile).
     protected StringBuilder css = new StringBuilder(1000);
 
+    // Directory containing Javascript files, ending in "/".
+    // TODO: eventually this must be a path with both Fiz and app directories.
+    protected String jsDirectory;
+
+    // The following field keeps track of all the Javascript files that
+    // will be included in the HTML document.  The keys in this set are
+    // the names passed to the includeJsFile method.
+    protected HashSet<String> jsFiles = new HashSet<String>();
+
+    // The following field accumulates HTML that will actually read all of
+    // the files in javascriptFiles.
+    protected StringBuilder jsHtml = new StringBuilder();
+
     /**
      * Constructs an empty Html document.
-     * @param contextPath             The "root URL" corresponding to this
-     *                                Web application.  Used for generating
-     *                                links.
+     * @param cr                      The ClientRequest for which HTML
+     *                                is being generated; used to extract
+     *                                various configuration information.
+     *                                Null means we are running unit tests,
+     *                                which will set configuration information
+     *                                manually.
      */
-    public Html(String contextPath) {
-        this.contextPath = contextPath;
+    public Html(ClientRequest cr) {
+        if (cr != null) {
+            // Production mode.
+            servletPath = cr.getServletRequest().getServletPath();
+            jsDirectory = cr.getServletContext().getRealPath("") + "/";
+        } else {
+            // We are running unit tests; set default values, which
+            // tests may override.
+            servletPath = "/servlet";
+            jsDirectory = "javascript/";
+        }
     }
 
     /**
@@ -143,6 +168,32 @@ public class Html {
     }
 
     /**
+     * Arrange for a given Javascript file to be included in the
+     * document.  This method also checks for Fiz:include comment lines
+     * in the file and recursively includes all of the Javascript files
+     * so mentioned.
+     * @param fileName             Name of the Javascript file.
+     *                             TODO: info about paths needed here.
+     */
+    public void includeJsFile(String fileName) {
+        if (jsFiles.contains(fileName)) {
+            return;
+        }
+        jsFiles.add(fileName);
+
+        // Check for other files that this file depends on, and include
+        // them (and any files they depend on, and so on).
+        includeJsDependencies(fileName);
+
+        // Generate an HTML <script> statement to include the current file.
+        jsHtml.append("<script type=\"text/javascript\" src=\"");
+        jsHtml.append(servletPath);
+        jsHtml.append("/");
+        jsHtml.append(fileName);
+        jsHtml.append("\" />\n");
+    }
+
+    /**
      * Generates a complete HTML document from the information that has been
      * provided so far and writes it on a given Writer.  If no information
      * has been provided for the HTML since the last reset, then no output
@@ -182,6 +233,7 @@ public class Html {
 
             // Output body.
             writer.write("</head>\n<body>\n");
+            writer.write(jsHtml.toString());
             writer.write(body.toString());
             writer.write("</body>\n</html>\n");
         }
@@ -350,5 +402,68 @@ public class Html {
         catch (IOException e) {
             throw new IOError(e.getMessage());
         }
+    }
+
+    /**
+     * Given the name of a Javascript file, read in the first few lines
+     * of the file to see if it contains special "Fiz:include" lines
+     * indicating that this file depends on other Javascript files.  If so,
+     * arrange for all of those Javascript files to be included in this
+     * HTML document also.
+     * @param fileName             Name of a Javascript file that has been
+     *                             requested for this HTML document.
+     */
+    protected void includeJsDependencies(String fileName) {
+        String fullName = jsDirectory + fileName;
+        try {
+            BufferedReader reader = new BufferedReader(
+                    new FileReader(fullName));
+            String line;
+            // Search the first few lines of the file for comment lines
+            // containing "Fiz:include";  stop as soon as we see a line
+            // that isn't blank and isn't a comment.
+            while ((line = reader.readLine()) != null) {
+                int i = StringUtil.skipSpaces(line, 0);
+                if (i == line.length()) {
+                    continue;
+                }
+                if (line.startsWith("/*", i)  || line.startsWith("//", i)
+                        || line.startsWith("*/", i) ) {
+                    i += 2;
+                } else if (line.charAt(i) == '*') {
+                    i += 1;
+                } else {
+                    // Not a comment or a blank line; we're done with this
+                    // file.
+                    break;
+                }
+                i = StringUtil.skipSpaces(line, i);
+                if (!line.startsWith("Fiz:include ", i)) {
+                    continue;
+                }
+
+                // Extract the substring between "Fiz:include" and "#" or
+                // end of line, and break this up into Javascript file names
+                // separated by commas.
+                int end = line.indexOf('#');
+                if (end < 0) {
+                    end = line.length();
+                }
+                String[] files = StringUtil.split(
+                        line.substring(i+12, end).trim(), ',');
+                for (String file: files) {
+                    includeJsFile(file);
+                }
+            }
+            reader.close();
+        }
+        catch (FileNotFoundException e) {
+            throw new FileNotFoundError(fullName, "javascript",
+                    e.getMessage());
+        }
+        catch (IOException e) {
+            throw IOError.newFileInstance(fullName, e.getMessage());
+        }
+
     }
 }

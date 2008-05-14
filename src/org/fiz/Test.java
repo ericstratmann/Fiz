@@ -20,8 +20,8 @@ public class Test extends Interactor {
     long startTime;
 
     public void path(ClientRequest cr) {
-        logger.info("getRealPath(\"/WEB-INF/a/b/c\"): "
-                + cr.getServletContext().getRealPath("///WEB-INF/a/b/c"));
+        logger.info("getRealPath(\"a/b/c\"): "
+                + cr.getServletContext().getRealPath("a/b/c"));
         logger.info("getPathTranslated(): "
                 + cr.getServletRequest().getPathTranslated());
         logger.info("getServletPath(): "
@@ -109,6 +109,7 @@ public class Test extends Interactor {
             globalData.set("current", "1");
         }
         html.setTitle("Link Page");
+        html.includeJsFile("Ajax.js");
         StringBuilder body = html.getBody();
         Template.expand("<h1>Test Links</h1>\n" +
                 "<p>This page demonstrates several uses of links.</p>\n" +
@@ -126,11 +127,9 @@ public class Test extends Interactor {
                 "alert(\"Her name is @name, favorite saying @saying\");"));
         link2.html(cr, globalData, body);
         body.append("</p>\n");
-        Link link3 = new Link(new Dataset("text", "here",
+        Link link3 = new Link(new Dataset("text", "Click here",
                 "ajaxUrl", "test/ajaxUpdateTime"));
-        body.append("<script type=\"text/javascript\" src=\"/fiz/Ajax.js\">" +
-                "</script>\n" +
-                "<p>Click ");
+        body.append("<p>");
         link3.html(cr, globalData, body);
         body.append(" to update the time below.</p>\n" +
                 "<p>Latest date/time from Ajax: " +

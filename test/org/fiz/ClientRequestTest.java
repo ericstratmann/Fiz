@@ -25,6 +25,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
     protected HttpServlet servlet;
     protected ClientRequest request1;
     protected ClientRequest request2;
+    protected StringWriter out;
 
     public void setUp() {
         servletRequest = new ServletRequestFixture();
