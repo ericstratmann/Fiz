@@ -136,6 +136,9 @@ public class LinkTest extends junit.framework.TestCase {
         assertEquals("HTML for link", "<a href=\"javascript:void new " +
                 "Fiz.Ajax(&quot;/ajaxUrl?age=24&amp;name=Alice&amp;" +
                 "weight=%22110%22&quot;);\">Alice</a>", out.toString());
+        TestUtil.assertSubstring("include Javascript file",
+                "/context/cpath/Ajax.js",
+                cr.getHtml().jsHtml.toString());
         TestUtil.assertXHTML(out.toString());
     }
     public void test_html_ajaxAddUrlPrefix() {

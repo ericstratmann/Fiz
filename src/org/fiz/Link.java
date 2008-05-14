@@ -157,7 +157,7 @@ public class Link implements Formatter {
             //     that are special in strings.
             //   * Apply HTML quoting because the entire Javascript script
             //     is stored in the HTML.
-            // TODO: Indicate that Ajax.js needs to be included in the HTML.
+            cr.getHtml().includeJsFile("Ajax.js");
             StringBuilder expandedUrl = new StringBuilder(ajaxUrl.length());
             Template.expand(ajaxUrl, data, expandedUrl,
                     Template.SpecialChars.URL);
