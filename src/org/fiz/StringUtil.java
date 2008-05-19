@@ -240,6 +240,28 @@ public final class StringUtil {
     }
 
     /**
+     * Concatenates all of the values in an array of objects.
+     * @param values                   Objects whose string values should be
+     *                                 concatenated
+     * @param separator                Use this as a separator between the
+     *                                 values.
+     * @return                         Concatenation of all the values
+     *                                 in {@code values}, with
+     *                                 {@code separator} between adjacent
+     *                                 values.
+     */
+    public static String join(Object[] values, CharSequence separator) {
+        StringBuilder builder= new StringBuilder();
+        CharSequence prefix = "";
+        for (int i = 0; i < values.length; i++) {
+            builder.append(prefix);
+            builder.append(values[i].toString());
+            prefix = separator;
+        }
+        return builder.toString();
+    }
+
+    /**
      * Concatenates all of the strings in an iterable.
      * @param values                   Strings to concatenate
      * @param separator                Use this as a separator between the

@@ -378,7 +378,7 @@ public class DataRequest {
                     || name.equals("message")) {
                 continue;
             }
-            Object value = error.lookup(name, Dataset.DesiredType.ANYTHING);
+            Object value = error.lookup(name, Dataset.DesiredType.ALL);
             if (!(value instanceof String)) {
                 continue;
             }

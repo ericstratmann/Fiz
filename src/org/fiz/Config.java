@@ -30,9 +30,9 @@ public class Config {
      * @param path                 One or more directories in which to search
      *                             for datasets.  If a given dataset exists
      *                             in multiple directories in the path, all
-     *                             of the datasets will be chained together,
-     *                             with datasets from earlier directories
-     *                             taking precedence.
+     *                             of the datasets will be combined into a
+     *                             CompoundDataset, with datasets from earlier
+     *                             directories taking precedence.
      */
     public static synchronized void init(String... path) {
         cache.clear();
@@ -64,7 +64,7 @@ public class Config {
 
         // Not cached; find the mdataset and cache it.
         result = Dataset.newFileInstanceFromPath(name, path,
-                Dataset.PathHandling.CHAIN);
+                Dataset.PathHandling.COMPOUND);
         cache.put(name, result);
         return result;
     }

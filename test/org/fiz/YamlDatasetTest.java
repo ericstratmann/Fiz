@@ -18,9 +18,11 @@ public class YamlDatasetTest extends junit.framework.TestCase {
         Dataset d = YamlDataset.newStringInstance("first: 123\n"
                 + "second: Simple test\n"
                 + "third:\n  name: Bill\n  age: 27\n");
-        assertEquals("check value", "Simple test", d.get("second"));
-        assertEquals("check value", "123", d.getPath("first"));
-        assertEquals("number of values", 3, d.size());
+        assertEquals("dataset contents", "first:  123\n" +
+                "second: Simple test\n" +
+                "third:\n" +
+                "    age:  27\n" +
+                "    name: Bill\n", d.toString());
     }
     public void test_newStringInstance_unnamedValueError() {
         boolean gotException = false;
@@ -353,9 +355,9 @@ public class YamlDatasetTest extends junit.framework.TestCase {
     public void test_checkAndConvert_nullValue() {
         Dataset y = YamlDataset.newStringInstance("first: abc\nsecond: def\n"
                 + "child:\nthird: xyz\n");
-        assertEquals("size of top-level dataset", 4, y.size());
+        assertEquals("size of top-level dataset", 4, y.keySet().size());
         assertEquals("size of child dataset", 0,
-                y.getChild("child").size());
+                y.getChild("child").keySet().size());
     }
     public void test_checkAndConvert_convertValues() {
         Dataset y = YamlDataset.newStringInstance("first: 123\nsecond: 17.3\n"

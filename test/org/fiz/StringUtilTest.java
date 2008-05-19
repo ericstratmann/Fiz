@@ -103,6 +103,16 @@ public class StringUtilTest extends junit.framework.TestCase {
 
     }
 
+    public void test_join_objectArray() {
+        HashMap<String,String> map = new HashMap<String,String>();
+        map.put("name", "Alice");
+        assertEquals("basics", "first, 27, {name=Alice}, 44, last",
+                StringUtil.join(new Object[] {"first", 27, map, 44, "last"},
+                ", "));
+        assertEquals("no values to join", "",
+                StringUtil.join(new Object[] {}, ", "));
+    }
+
     public void test_join_iterable() {
         HashMap<Integer,String> hash = new HashMap<Integer, String>();
         hash.put(123, "string_123");

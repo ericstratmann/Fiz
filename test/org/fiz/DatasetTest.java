@@ -50,14 +50,12 @@ public class DatasetTest extends junit.framework.TestCase {
 
     public void test_Dataset_keysAndValues_basics() {
         Dataset d = new Dataset("a", "a_value", "b", "b_value");
-        assertEquals("first value", "a_value", d.get("a"));
-        assertEquals("second value", "b_value", d.get("b"));
-        assertEquals("number of values", 2, d.size());
+        assertEquals("dataset contents", "a: a_value\n" +
+                "b: b_value\n", d.toString());
     }
     public void test_Dataset_keysAndValues_ignoreExtraKey() {
         Dataset d = new Dataset("a", "a_value", "b");
-        assertEquals("first value", "a_value", d.get("a"));
-        assertEquals("number of values", 1, d.size());
+        assertEquals("dataset contents", "a: a_value\n", d.toString());
     }
 
     // Constructor Dataset(HashMap contents, String fileName)
@@ -127,7 +125,7 @@ public class DatasetTest extends junit.framework.TestCase {
         (new File("_test1_")).mkdir();
         TestUtil.writeFile("_test1_/test.yaml", "first: 24\nsecond: 35\n");
         Dataset d = Dataset.newFileInstanceFromPath("test",
-                new String[] {"_test1_"}, Dataset.PathHandling.CHAIN);
+                new String[] {"_test1_"}, Dataset.PathHandling.COMPOUND);
         assertEquals("check value", "24", d.get("first"));
         TestUtil.deleteTree("_test1_");
     }
@@ -139,11 +137,13 @@ public class DatasetTest extends junit.framework.TestCase {
         Dataset d = Dataset.newFileInstanceFromPath("test",
                 new String[] {"_test1_", "_test1_/child"},
                 Dataset.PathHandling.FIRST_ONLY);
+        assertEquals("class name for result", "YamlDataset",
+                d.getClass().getSimpleName());
         assertEquals("first value should exist", "24", d.get("first"));
         assertEquals("third value shouldn't exist", null, d.check("third"));
         TestUtil.deleteTree("_test1_");
     }
-    public void test_newFileInstanceFromPath_chain() {
+    public void test_newFileInstanceFromPath_compound() {
         (new File("_test1_")).mkdir();
         (new File("_test1_/child")).mkdir();
         (new File("_test1_/child2")).mkdir();
@@ -153,10 +153,12 @@ public class DatasetTest extends junit.framework.TestCase {
                 "first: 99\nfourth: 777\n");
         Dataset d = Dataset.newFileInstanceFromPath("test",
                 new String[] {"_test1_", "_test1_/child", "_test1_/child2"},
-                Dataset.PathHandling.CHAIN);
-        assertEquals("value from beginning of chain", "24", d.get("first"));
-        assertEquals("value from middle of chain", "value", d.check("third"));
-        assertEquals("value from end of chain", "777", d.check("fourth"));
+                Dataset.PathHandling.COMPOUND);
+        assertEquals("class name for result", "CompoundDataset",
+                d.getClass().getSimpleName());
+        assertEquals("value from first dataset", "24", d.get("first"));
+        assertEquals("value from second dataset", "value", d.check("third"));
+        assertEquals("value from last dataset", "777", d.check("fourth"));
         TestUtil.deleteTree("_test1_");
     }
     public void test_newFileInstanceFromPath_FileNotFoundError() {
@@ -165,7 +167,7 @@ public class DatasetTest extends junit.framework.TestCase {
         TestUtil.writeFile("_test1_/child/test.yaml", "third: value\n");
         Dataset d = Dataset.newFileInstanceFromPath("test",
                 new String[] {"_test1_", "_test1_/child"},
-                Dataset.PathHandling.CHAIN);
+                Dataset.PathHandling.COMPOUND);
         assertEquals("dataset value", "value", d.check("third"));
         TestUtil.deleteTree("_test1_");
     }
@@ -211,12 +213,7 @@ public class DatasetTest extends junit.framework.TestCase {
     public void test_check() {
         Dataset d = YamlDataset.newStringInstance(
                 "a: a_value\nb: b_value\nnested:\n  x: x_value\n");
-        Dataset d2 = new Dataset();
-        Dataset d3 = new Dataset("c", "c_value");
-        d.setChain(d2);
-        d2.setChain(d3);
         assertEquals("value from dataset", "a_value", d.check("a"));
-        assertEquals("value from chain", "c_value", d.check("c"));
         assertEquals("undefined key", null, d.check("undefined"));
         assertEquals("wrong type", null, d.check("nested"));
     }
@@ -225,7 +222,6 @@ public class DatasetTest extends junit.framework.TestCase {
         Dataset d = YamlDataset.newStringInstance(
                 "a: a_value\nb: b_value\nnested:\n  x: x_value\n");
         d.clear();
-        assertEquals("size after clearing", 0, d.size());
         assertEquals("contents of cleared dataset", "", d.toString());
     }
 
@@ -263,13 +259,6 @@ public class DatasetTest extends junit.framework.TestCase {
                 "  - age:  28\n" +
                 "    name: Carol\n", clone.toString());
     }
-    public void test_clone_copyChain() {
-        Dataset d = new Dataset("name", "Alice");
-        Dataset d2 = new Dataset("name", "Bill");
-        d.setChain(d2);
-        Dataset clone = d.clone();
-        assertEquals("chain in clone", "Bill", clone.getChain().get("name"));
-    }
     public void test_clone_copyFileName() {
         Dataset d = new Dataset("name", "Alice");
         d.fileName = "xyzzy";
@@ -280,14 +269,10 @@ public class DatasetTest extends junit.framework.TestCase {
     public void test_containsKey() {
         Dataset d = new Dataset(new String[] {"first", "abc",
                 "second", "def"});
-        Dataset d2 = new Dataset(new String[] {"chain", "chain_value"});
-        d.setChain(d2);
         assertEquals("first value exists", true, d.containsKey("first"));
         assertEquals("second value exists", true, d.containsKey("second"));
         assertEquals("third value doesn't exist", false,
                 d.containsKey("third"));
-        assertEquals("value exists in chain", true,
-                d.containsKey("chain"));
     }
 
     public void test_copyFrom() {
@@ -521,93 +506,6 @@ public class DatasetTest extends junit.framework.TestCase {
                 d.getFileName());
     }
 
-    public void test_lookup_foundStringValue() {
-        Dataset d = new Dataset("a", "a_value", "b", "b_value");
-        assertEquals("string value", "b_value",
-                d.lookup("b", Dataset.DesiredType.STRING));
-    }
-    public void test_lookup_wantNestedDataset() {
-        boolean gotException = false;
-        Dataset d = new Dataset("a", "a_value");
-        try {
-            d.lookup("a", Dataset.DesiredType.DATASET);
-        }
-        catch (Dataset.WrongTypeError e) {
-            assertEquals("exception message",
-                    "wrong type for dataset element \"a\": expected nested "
-                    + "dataset but found string value \"a_value\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-    public void test_lookup_searchChain() {
-        Dataset d = new Dataset("a", "a_value", "b", "b_value");
-        Dataset d2 = new Dataset();
-        Dataset d3 = new Dataset("c", "c_value");
-        d.setChain(d2);
-        d2.setChain(d3);
-        assertEquals("string value", "c_value",
-                d.lookup("c", Dataset.DesiredType.STRING));
-    }
-    public void test_lookup_nonexistentKey() {
-        Dataset d = new Dataset("a", "a_value", "b", "b_value");
-        assertEquals("null return value", null,
-                d.lookup("c", Dataset.DesiredType.STRING));
-    }
-
-    public void test_lookupPath_noDotsInPath() {
-        Dataset d = new Dataset("first", "12345");
-        assertEquals("value", "12345", d.lookupPath("first",
-                Dataset.DesiredType.STRING));
-    }
-    public void test_lookupPath_searchChain() {
-        Dataset d = YamlDataset.newStringInstance("child1:\n  name: Alice\n"
-                + "  age: 24\n");
-        Dataset d2 = YamlDataset.newStringInstance("child1:\n  weight: 118\n"
-                + "child2:\n  name: Bill\n  weight: 185\n");
-        d.setChain(d2);
-        assertEquals("value in chain", "Bill", d.lookupPath("child2.name",
-                Dataset.DesiredType.STRING));
-        assertEquals("chain is hidden", null, d.lookupPath("child1.weight",
-                Dataset.DesiredType.STRING));
-    }
-    public void test_lookupPath_missingKey() {
-        Dataset d = new Dataset("a", "a_value");
-        assertEquals("value", null, d.lookupPath("non-existent",
-                Dataset.DesiredType.STRING));
-    }
-    public void test_lookupPath_listInPath() {
-        Dataset d = YamlDataset.newStringInstance(
-                "level1:\n" +
-                "  level2:\n" +
-                "    - name: Alice\n" +
-                "    - name: Bill\n");
-        assertEquals("value in list", "Alice", d.lookupPath(
-                "level1.level2.name", Dataset.DesiredType.STRING));
-    }
-    public void test_lookupPath_wrongTypeInPath() {
-        Dataset d = new Dataset("a", "a_value");
-        assertEquals("value", null, d.lookupPath("a.b.c",
-                Dataset.DesiredType.STRING));
-    }
-    public void test_lookupPath_valueHasWrongType() {
-        boolean gotException = false;
-        Dataset d = YamlDataset.newStringInstance("child1:\n  name: Alice\n"
-                + "  age: 24\n");
-        try {
-            d.lookupPath("child1", Dataset.DesiredType.STRING);
-        }
-        catch (Dataset.WrongTypeError e) {
-            assertEquals("exception message",
-                    "wrong type for dataset element \"child1\": expected "
-                    + "string value but found nested dataset",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-
     public void test_getPath_success() {
         Dataset d = YamlDataset.newStringInstance("child:\n  name: Alice\n"
                 + "  age: 24\n");
@@ -628,24 +526,60 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
     }
 
+    public void test_lookup_foundStringValue() {
+        Dataset d = new Dataset("a", "a_value", "b", "b_value");
+        assertEquals("string value", "b_value",
+                d.lookup("b", Dataset.DesiredType.STRING));
+    }
+    public void test_lookup_wantNestedDataset() {
+        boolean gotException = false;
+        Dataset d = new Dataset("a", "a_value");
+        try {
+            d.lookup("a", Dataset.DesiredType.DATASET);
+        }
+        catch (Dataset.WrongTypeError e) {
+            assertEquals("exception message",
+                    "wrong type for dataset element \"a\": expected nested "
+                    + "dataset but found string value \"a_value\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_lookup_nonexistentKey() {
+        Dataset d = new Dataset("a", "a_value", "b", "b_value");
+        assertEquals("null return value", null,
+                d.lookup("c", Dataset.DesiredType.STRING));
+    }
+
+    public void test_lookupPath() {
+        Dataset d = YamlDataset.newStringInstance(
+                "children:\n" +
+                "  - name: Bob\n" +
+                "  - age: 24\n" +
+                "    name:\n" +
+                "      first: David\n" +
+                "  - age: 18\n" +
+                "    name:\n" +
+                "      - first: Michael\n" +
+                "      - first: Mikey\n" +
+                "  - name: Alice\n");
+        Object result = d.lookupPath("children.name",
+                Dataset.DesiredType.ALL);
+        assertEquals("result class", "Object[]",
+                result.getClass().getSimpleName());
+        assertEquals("result value", "Bob, first: David\n" +
+                ", first: Michael\n" +
+                ", first: Mikey\n" +
+                ", Alice", StringUtil.join((Object[]) result, ", "));
+    }
+
     public void test_set() {
         Dataset d = new Dataset("first", "12345");
         d.set("second", "66");
         assertEquals("dataset contents", "first:  12345\n" +
                 "second: 66\n", d.toString());
     }
-
-    public void test_getSetChain() {
-        Dataset d = new Dataset("first", "12345");
-        Dataset d2 = new Dataset("second", "55");
-        assertEquals("chain originally null", null, d.getChain());
-        d.setChain(d2);
-        assertEquals("chain refers to another dataset", d2, d.getChain());
-        d.setChain(null);
-        assertEquals("chain null again", null, d.getChain());
-    }
-
-    // No tests needed for size() method.
 
     public void test_toJavascript() {
         StringBuilder out = new StringBuilder("var obj = ");
@@ -672,6 +606,82 @@ public class DatasetTest extends junit.framework.TestCase {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
+    }
+
+    public void test_addToLookupResults_stringValue() {
+        ArrayList<Object> results = new ArrayList<Object>();
+        Dataset.addToLookupResults("string1",
+                Dataset.DesiredType.STRING, results);
+        assertEquals("string wanted", "string1",
+                StringUtil.join(results, ", "));
+        results.clear();
+        Dataset.addToLookupResults("string1",
+                Dataset.DesiredType.DATASET, results);
+        assertEquals("dataset wanted", "",
+                StringUtil.join(results, ", "));
+        results.clear();
+        Dataset.addToLookupResults("string1",
+                Dataset.DesiredType.DATASETS, results);
+        assertEquals("datasets wanted", "",
+                StringUtil.join(results, ", "));
+        results.clear();
+        Dataset.addToLookupResults("string1",
+                Dataset.DesiredType.ALL, results);
+        assertEquals("all wanted", "string1",
+                StringUtil.join(results, ", "));
+    }
+    public void test_addToLookupResults_arrayListValue() {
+        ArrayList<Object> results = new ArrayList<Object>();
+        HashMap<String,String> map1 = new HashMap<String,String>();
+        map1.put("name", "Alice");
+        HashMap<String,String> map2 = new HashMap<String,String>();
+        map2.put("name", "Bob");
+        ArrayList<Object> values = new ArrayList<Object>();
+        values.add(map1);
+        values.add(map2);
+        Dataset.addToLookupResults(values,
+                Dataset.DesiredType.STRING, results);
+        assertEquals("string wanted", "",
+                StringUtil.join(results, ", "));
+        results.clear();
+        Dataset.addToLookupResults(values,
+                Dataset.DesiredType.DATASET, results);
+        assertEquals("dataset wanted", "{name=Alice}",
+                StringUtil.join(results, ", "));
+        results.clear();
+        Dataset.addToLookupResults(values,
+                Dataset.DesiredType.DATASETS, results);
+        assertEquals("datasets wanted", "{name=Alice}, {name=Bob}",
+                StringUtil.join(results, ", "));
+        results.clear();
+        Dataset.addToLookupResults(values,
+                Dataset.DesiredType.ALL, results);
+        assertEquals("all wanted", "{name=Alice}, {name=Bob}",
+                StringUtil.join(results, ", "));
+    }
+    public void test_addToLookupResults_hashMapValue() {
+        ArrayList<Object> results = new ArrayList<Object>();
+        HashMap<String,String> map = new HashMap<String,String>();
+        map.put("name", "Alice");
+        Dataset.addToLookupResults(map,
+                Dataset.DesiredType.STRING, results);
+        assertEquals("string wanted", "",
+                StringUtil.join(results, ", "));
+        results.clear();
+        Dataset.addToLookupResults(map,
+                Dataset.DesiredType.DATASET, results);
+        assertEquals("dataset wanted", "{name=Alice}",
+                StringUtil.join(results, ", "));
+        results.clear();
+        Dataset.addToLookupResults(map,
+                Dataset.DesiredType.DATASETS, results);
+        assertEquals("datasets wanted", "{name=Alice}",
+                StringUtil.join(results, ", "));
+        results.clear();
+        Dataset.addToLookupResults(map,
+                Dataset.DesiredType.ALL, results);
+        assertEquals("all wanted", "{name=Alice}",
+                StringUtil.join(results, ", "));
     }
 
     public void test_checkValue_wantedStringGotString() {
@@ -796,13 +806,13 @@ public class DatasetTest extends junit.framework.TestCase {
     public void test_checkValue_wantedAnythingGotString() {
         Dataset d = new Dataset();
         assertEquals("value", "abc", d.checkValue("a",
-                Dataset.DesiredType.ANYTHING, new String("abc")));
+                Dataset.DesiredType.ALL, new String("abc")));
     }
     public void test_checkValue_wantedAnythingGotChild() {
         Dataset d = new Dataset();
         HashMap<String,String> map = new HashMap<String,String>();
         map.put("name", "Alice");
-        Object result = d.checkValue("a", Dataset.DesiredType.ANYTHING, map);
+        Object result = d.checkValue("a", Dataset.DesiredType.ALL, map);
         assertEquals("class of result", "Dataset",
                 result.getClass().getSimpleName());
         assertEquals("contents of returned dataset", "Alice",
@@ -816,7 +826,7 @@ public class DatasetTest extends junit.framework.TestCase {
         list.add(new HashMap());
         list.get(1).put("name", "Alice");
         Dataset d = new Dataset();
-        Object result = d.checkValue("a", Dataset.DesiredType.ANYTHING, list);
+        Object result = d.checkValue("a", Dataset.DesiredType.ALL, list);
         assertEquals("class of result", "Dataset[]",
                 result.getClass().getSimpleName());
         Dataset[] array = (Dataset[]) result;
@@ -1007,6 +1017,142 @@ public class DatasetTest extends junit.framework.TestCase {
                 "    level2:\n" +
                 "        level3:\n" +
                 "            value: 12345\n", d.toString());
+    }
+
+    public void test_lookupPathHelper_sanityCheck() {
+        Dataset d = YamlDataset.newStringInstance(
+                "level1:\n" +
+                "  - level2: Alice\n" +
+                "  - level2: Bill\n");
+        ArrayList<Object> results = new ArrayList<Object>();
+        d.lookupPathHelper("a.level1.level2", 2, d.map,
+                Dataset.DesiredType.ALL, results);
+        assertEquals("string value", "Alice, Bill",
+                StringUtil.join(results, ", "));
+    }
+    public void test_lookupPathHelper_lastElementInPath() {
+        Dataset d = YamlDataset.newStringInstance(
+                "city: San Francisco\n");
+        ArrayList<Object> results = new ArrayList<Object>();
+        d.lookupPathHelper("a.city", 2, d.map,
+                Dataset.DesiredType.STRING, results);
+        assertEquals("string value", "San Francisco",
+                StringUtil.join(results, ", "));
+    }
+    public void test_lookupPathHelper_noSuchPath() {
+        Dataset d = YamlDataset.newStringInstance(
+                "city: San Francisco\n");
+        ArrayList<Object> results = new ArrayList<Object>();
+        d.lookupPathHelper("a.state", 2, d.map,
+                Dataset.DesiredType.STRING, results);
+        assertEquals("number of results", 0, results.size());
+    }
+    public void test_lookupPathHelper_collectValues() {
+        Dataset d = YamlDataset.newStringInstance(
+                "children:\n" +
+                "  - name: Bob\n" +
+                "  - age: 24\n" +
+                "    name:\n" +
+                "      first: David\n" +
+                "  - age: 18\n" +
+                "    name:\n" +
+                "      - first: Michael\n" +
+                "      - first: Mikey\n" +
+                "  - name: Alice\n");
+        ArrayList<Object> results = new ArrayList<Object>();
+        d.lookupPathHelper("a.children.name", 2, d.map,
+                Dataset.DesiredType.ALL, results);
+        assertEquals("Bob, {first=David}, {first=Michael}, {first=Mikey}, " +
+                "Alice", StringUtil.join(results, ", "));
+    }
+    public void test_lookupPathHelper_stopAfterFirstString() {
+        // Make sure that datasets and lists get skipped appropriately.
+        Dataset d = YamlDataset.newStringInstance(
+                "children:\n" +
+                "  - name: Alice\n" +
+                "  - name: Bob\n" +
+                "  - name: Carol\n");
+        ArrayList<Object> results = new ArrayList<Object>();
+        d.lookupPathHelper("a.children.name", 2, d.map,
+                Dataset.DesiredType.STRING, results);
+        assertEquals("Alice", StringUtil.join(results, ", "));
+    }
+    public void test_lookupPathHelper_stopAfterFirstDataset() {
+        Dataset d = YamlDataset.newStringInstance(
+                "children:\n" +
+                "  - age: 18\n" +
+                "    name:\n" +
+                "      - first: Michael\n" +
+                "      - first: Mikey\n" +
+                "  - age: 24\n" +
+                "    name:\n" +
+                "      first: David\n");
+        ArrayList<Object> results = new ArrayList<Object>();
+        d.lookupPathHelper("a.children.name", 2, d.map,
+                Dataset.DesiredType.DATASET, results);
+        assertEquals("{first=Michael}", StringUtil.join(results, ", "));
+    }
+
+    public void test_lookupResult_noResults() {
+        Dataset d = new Dataset();
+        ArrayList<Object> results = new ArrayList<Object>();
+        assertEquals(null, d.lookupResult(
+                Dataset.DesiredType.STRING, results));
+    }
+    public void test_lookupResult_string() {
+        Dataset d = new Dataset();
+        ArrayList<Object> results = new ArrayList<Object>();
+        results.add("first");
+        results.add("second");
+        Object result = d.lookupResult(Dataset.DesiredType.STRING, results);
+        assertEquals("result class", "String",
+                result.getClass().getSimpleName());
+        assertEquals("result value", "first", result.toString());
+    }
+    public void test_lookupResult_dataset() {
+        Dataset d1 = new Dataset("name", "Alice");
+        Dataset d2 = new Dataset("name", "Bob");
+        ArrayList<Object> results = new ArrayList<Object>();
+        results.add(d1.map);
+        results.add(d2.map);
+        Object result = d1.lookupResult(Dataset.DesiredType.DATASET, results);
+        assertEquals("result class", "Dataset",
+                result.getClass().getSimpleName());
+        assertEquals("result value", "name: Alice\n", result.toString());
+    }
+    public void test_lookupResult_datasets() {
+        Dataset d1 = new Dataset("name", "Alice");
+        d1.fileName = "xyzzy";
+        Dataset d2 = new Dataset("name", "Bob");
+        ArrayList<Object> results = new ArrayList<Object>();
+        results.add(d1.map);
+        results.add(d2.map);
+        Object result = d1.lookupResult(Dataset.DesiredType.DATASETS, results);
+        assertEquals("result class", "Dataset[]",
+                result.getClass().getSimpleName());
+        assertEquals("result value", "name: Alice\n" +
+                ", name: Bob\n", StringUtil.join((Dataset[]) result, ", "));
+        assertEquals("preserve file name", "xyzzy",
+                ((Dataset[]) result)[0].fileName);
+    }
+    public void test_lookupResult_all() {
+        Dataset d1 = new Dataset("name", "Alice");
+        d1.fileName = "xyzzy";
+        Dataset d2 = new Dataset("name", "Bob");
+        ArrayList<Object> results = new ArrayList<Object>();
+        results.add("first");
+        results.add("second");
+        results.add(d1.map);
+        results.add(d2.map);
+        results.add("last");
+        Object result = d1.lookupResult(Dataset.DesiredType.ALL, results);
+        assertEquals("result class", "Object[]",
+                result.getClass().getSimpleName());
+        assertEquals("result value", "first, second, name: Alice\n" +
+                ", name: Bob\n" +
+                ", last", StringUtil.join((Object[]) result, ", "));
+        assertEquals("preserve file name", "xyzzy",
+                ((Dataset) ((Object[]) result)[2]).fileName);
     }
 
     public void test_wrongTypeMessage_nested() {

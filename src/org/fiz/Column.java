@@ -60,8 +60,9 @@ public class Column implements Formatter {
      * @param cr                   Overall information about the client
      *                             request being serviced.
      * @param rowData              Data available for this row (typically
- *                                 includes row-specific data with a chain to
- *                                 the main dataset for {@code cr}.
+ *                                 a compound dataset that includes
+     *                             row-specific data and the main dataset
+     *                             for {@code cr}).
      * @param out                  HTML gets appended here.
      */
     public void html(ClientRequest cr, Dataset rowData, StringBuilder out) {

@@ -161,6 +161,7 @@ public class Link implements Formatter {
             StringBuilder expandedUrl = new StringBuilder(ajaxUrl.length());
             Template.expand(ajaxUrl, data, expandedUrl,
                     Template.SpecialChars.URL);
+            // TODO: don't generate Javascript directly; let Ajax do it.
             Html.escapeHtmlChars("javascript:void new Fiz.Ajax(\"", out);
             if (!Util.urlComplete(expandedUrl)) {
                 out.append(cr.getUrlPrefix());

@@ -99,9 +99,18 @@ public class Dispatcher extends HttpServlet {
         logger.info("Fiz initializing with context root " + contextRoot);
         Config.init(contextRoot + "/WEB-INF/config");
         Dataset main = Config.getDataset("main");
-        main.set("home", contextRoot);
-        logger.info("main configuration dataset:\n    " +
-                main.toString().trim().replace("\n", "\n    "));
+        if  (main instanceof CompoundDataset) {
+            Dataset[] components = ((CompoundDataset) main).getComponents();
+            components[0].set("home", contextRoot);
+            for (int i = 0; i <components.length; i++) {
+                logger.info("main configuration dataset #" + i + ":\n    " +
+                    components[i].toString().trim().replace("\n", "\n    "));
+            }
+        } else {
+            main.set("home", contextRoot);
+            logger.info("main configuration dataset:\n    " +
+                    main.toString().trim().replace("\n", "\n    "));
+        }
         Css.init(contextRoot + "/WEB-INF/css");
     }
 

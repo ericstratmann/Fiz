@@ -25,5 +25,6 @@ public class ClientRequestFixture extends ClientRequest {
         main.set("name", "Alice");
         main.set("age", "36");
         main.set("height", "66");
+        main.set("state", "California");
     }
 }

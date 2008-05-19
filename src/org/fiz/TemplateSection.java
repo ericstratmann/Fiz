@@ -9,9 +9,8 @@ package org.fiz;
  * template:         (required) Template that will generate HTML for the
  *                   section.  If {@code request} is specified then the
  *                   template is expanded in the context of the response
- *                   to that request (chained to the main dataset);
- *                   Otherwise the template is expanded in the context of
- *                   the main dataset.
+ *                   to that request plus the main dataset; otherwise the
+ *                   template is expanded in the context of the main dataset.
  */
 public class TemplateSection implements Section {
     // The following variables hold values for the properties that define
@@ -68,8 +67,8 @@ public class TemplateSection implements Section {
         Dataset data;
         if (dataRequest != null) {
             // TODO: must handle errors.
-            data = dataRequest.getResponseData();
-            data.setChain(cr.getMainDataset());
+            data = new CompoundDataset(dataRequest.getResponseData(),
+                    cr.getMainDataset());
         } else {
             data = cr.getMainDataset();
         }

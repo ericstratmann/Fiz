@@ -51,27 +51,6 @@ public class TableSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_html_noHeader() {
-        TableSection table = new TableSection(
-                new Dataset("request", "getPerson", "id", "id.44",
-                "noHeader", "true"),
-                new Column("Name", "@name"),
-                new Column("Age", "@age"));
-        cr.showSections(table);
-        String html = cr.getHtml().getBody().toString();
-        assertEquals("generated HTML", "\n" +
-                "<!-- Start TableSection id.44 -->\n" +
-                "<table id=\"id.44\" class=\"TableSection\" " +
-                "cellspacing=\"0\">\n" +
-                "  <tr class=\"even\">\n" +
-                "    <td class=\"left\">David</td>\n" +
-                "    <td class=\"right\">66</td>\n" +
-                "  </tr>\n" +
-                "</table>\n" +
-                "<!-- End TableSection id.44 -->\n",
-                cr.getHtml().getBody().toString());
-        TestUtil.assertXHTML(cr.getHtml().toString());
-    }
     public void test_html_includeCss() {
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44"));
@@ -109,7 +88,76 @@ public class TableSectionTest extends junit.framework.TestCase {
                 html);
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
+    public void test_html_noHeader() {
+        TableSection table = new TableSection(
+                new Dataset("request", "getPerson", "id", "id.44",
+                "noHeader", "true"),
+                new Column("Name", "@name"),
+                new Column("Age", "@age"));
+        cr.showSections(table);
+        String html = cr.getHtml().getBody().toString();
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start TableSection id.44 -->\n" +
+                "<table id=\"id.44\" class=\"TableSection\" " +
+                "cellspacing=\"0\">\n" +
+                "  <tr class=\"even\">\n" +
+                "    <td class=\"left\">David</td>\n" +
+                "    <td class=\"right\">66</td>\n" +
+                "  </tr>\n" +
+                "</table>\n" +
+                "<!-- End TableSection id.44 -->\n",
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
+    }
+    public void test_html_header_columnIsFormatter() {
+        TableSection table = new TableSection(
+                new Dataset("request", "getPerson", "id", "id.44"),
+                new Link(new Dataset("text", "@name",
+                        "url", "/a/b?name=@name")),
+                new Column("Age", "@age"));
+        cr.showSections(table);
+        String html = cr.getHtml().getBody().toString();
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start TableSection id.44 -->\n" +
+                "<table id=\"id.44\" class=\"TableSection\" " +
+                "cellspacing=\"0\">\n" +
+                "  <tr class=\"header\">\n" +
+                "    <td class=\"left\"></td>\n" +
+                "    <td class=\"right\">Age</td>\n" +
+                "  </tr>\n" +
+                "  <tr class=\"even\">\n" +
+                "    <td class=\"left\"><a href=\"/a/b?name=" +
+                "David\">David</a></td>\n" +
+                "    <td class=\"right\">66</td>\n" +
+                "  </tr>\n" +
+                "</table>\n" +
+                "<!-- End TableSection id.44 -->\n",
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
+    }
+    public void test_html_header_cancelHeaderRow() {
+        TableSection table = new TableSection(
+                new Dataset("request", "getPerson", "id", "id.44"),
+                new Column("", "@name"),
+                new Column("", "@age"));
+        cr.showSections(table);
+        String html = cr.getHtml().getBody().toString();
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start TableSection id.44 -->\n" +
+                "<table id=\"id.44\" class=\"TableSection\" " +
+                "cellspacing=\"0\">\n" +
+                "  <tr class=\"even\">\n" +
+                "    <td class=\"left\">David</td>\n" +
+                "    <td class=\"right\">66</td>\n" +
+                "  </tr>\n" +
+                "</table>\n" +
+                "<!-- End TableSection id.44 -->\n",
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
+    }
     public void test_html_errorInRequest() {
+        // The error template requests data from both the error report and
+        // the main dataset, to make sure that both are available.
         TableSection table = new TableSection(
                 new Dataset("request", "error",
                 "errorTemplate", "Error for @name: @message"),
@@ -161,11 +209,13 @@ public class TableSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_html_columnIsFormatter() {
+    public void test_html_includeMainDataset() {
+        // This test makes sure that the data passed to each Column includes
+        // both the row data and the main dataset.
         TableSection table = new TableSection(
-                new Dataset("request", "getPerson", "id", "id.44"),
-                new Link(new Dataset("text", "@name",
-                        "url", "/a/b?name=@name")),
+                new Dataset("request", "getPerson", "id", "id.44",
+                "noHeader", "true"),
+                new Column("Name", "@name from @state"),
                 new Column("Age", "@age"));
         cr.showSections(table);
         String html = cr.getHtml().getBody().toString();
@@ -173,33 +223,8 @@ public class TableSectionTest extends junit.framework.TestCase {
                 "<!-- Start TableSection id.44 -->\n" +
                 "<table id=\"id.44\" class=\"TableSection\" " +
                 "cellspacing=\"0\">\n" +
-                "  <tr class=\"header\">\n" +
-                "    <td class=\"left\"></td>\n" +
-                "    <td class=\"right\">Age</td>\n" +
-                "  </tr>\n" +
                 "  <tr class=\"even\">\n" +
-                "    <td class=\"left\"><a href=\"/a/b?name=" +
-                "David\">David</a></td>\n" +
-                "    <td class=\"right\">66</td>\n" +
-                "  </tr>\n" +
-                "</table>\n" +
-                "<!-- End TableSection id.44 -->\n",
-                cr.getHtml().getBody().toString());
-        TestUtil.assertXHTML(cr.getHtml().toString());
-    }
-    public void test_html_cancelHeaderRow() {
-        TableSection table = new TableSection(
-                new Dataset("request", "getPerson", "id", "id.44"),
-                new Column("", "@name"),
-                new Column("", "@age"));
-        cr.showSections(table);
-        String html = cr.getHtml().getBody().toString();
-        assertEquals("generated HTML", "\n" +
-                "<!-- Start TableSection id.44 -->\n" +
-                "<table id=\"id.44\" class=\"TableSection\" " +
-                "cellspacing=\"0\">\n" +
-                "  <tr class=\"even\">\n" +
-                "    <td class=\"left\">David</td>\n" +
+                "    <td class=\"left\">David from California</td>\n" +
                 "    <td class=\"right\">66</td>\n" +
                 "  </tr>\n" +
                 "</table>\n" +

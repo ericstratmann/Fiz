@@ -80,6 +80,10 @@ public class TableSection implements Section {
         Dataset mainDataset = cr.getMainDataset();
         String lastRowClass = properties.check("lastRowClass");
 
+        // The following dataset will eventually include the data from
+        // the current row plus the main dataset.
+        CompoundDataset dataForRow = new CompoundDataset(null, mainDataset);
+
         // Start.
         if (!properties.containsKey("class")) {
             html.includeCssFile("TableSection.css");
@@ -129,9 +133,8 @@ public class TableSection implements Section {
             out.append(columns.length);
             out.append("\">");
             Dataset errorDataset = dataRequest.getErrorData();
-            errorDataset.setChain(mainDataset);
             Template.expand(Util.getErrorTemplate(properties),
-                    errorDataset, out);
+                    new CompoundDataset(errorDataset, mainDataset), out);
             out.append("</td>\n  </tr>\n");
         } else {
             Dataset[] rows = response.getChildren("record");
@@ -150,7 +153,7 @@ public class TableSection implements Section {
             } else {
                 // Normal case: there are records to display.
                 for (int i = 0; i < rows.length; i++) {
-                    Dataset rowData = rows[i];
+                    dataForRow.setComponent(0, rows[i]);
                     out.append("  <tr class=\"");
                     if ((i == (rows.length-1)) && (lastRowClass != null)) {
                         out.append(lastRowClass);
@@ -162,7 +165,7 @@ public class TableSection implements Section {
                     }
                     for (int col = 0; col < columns.length; col++) {
                         printTd(col, out);
-                        columns[col].html(cr, rowData, out);
+                        columns[col].html(cr, dataForRow, out);
                         out.append("</td>\n");
                     }
                     out.append("  </tr>\n");
