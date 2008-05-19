@@ -488,12 +488,25 @@ public class CompoundDataset extends Dataset {
     }
 
     /**
-     * Not implemented for CompoundDatasets; always throws InternalError.
-     * @return                     Doesn't return.
+     * Generates a nicely formatted string displaying the contents
+     * of the dataset.
+     * @return                     Pretty-printed string.
      */
     @Override
     public String toString() {
-        throw new InternalError("toString invoked on a CompoundDataset");
+        StringBuilder result = new StringBuilder();
+        String separator = "";
+        for (int i = 0; i < components.length; i++) {
+            result.append(separator);
+            result.append("Component #");
+            result.append(i);
+            result.append(":\n  ");
+            result.append(components[i].toString().trim().replace(
+                    "\n", "\n  "));
+            separator = "\n";
+        }
+        result.append("\n");
+        return result.toString();
     }
 
     /**

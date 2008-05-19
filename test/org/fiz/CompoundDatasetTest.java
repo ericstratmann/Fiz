@@ -433,17 +433,28 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
     }
 
     public void test_toString() {
-        boolean gotException = false;
-        try {
-            compound.toString();
-        }
-        catch (InternalError e) {
-            assertEquals("exception message",
-                    "toString invoked on a CompoundDataset",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
+        assertEquals("Component #0:\n" +
+                "  a: 111\n" +
+                "  nested:\n" +
+                "      x: x_value\n" +
+                "      y: y_value\n" +
+                "Component #1:\n" +
+                "  b:      222\n" +
+                "  nested: nnn\n" +
+                "Component #2:\n" +
+                "  a: 99\n" +
+                "  x: 77\n" +
+                "Component #3:\n" +
+                "  a: 333\n" +
+                "  b:\n" +
+                "      value: 88\n" +
+                "  c: 444\n" +
+                "  child:\n" +
+                "      name: Alice\n" +
+                "  nested:\n" +
+                "    - x: xxxx\n" +
+                "      z: yyyy\n" +
+                "    - x: zzzz\n", compound.toString());
     }
 
     public void test_writeFile() {
