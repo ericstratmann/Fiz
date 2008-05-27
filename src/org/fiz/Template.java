@@ -157,8 +157,7 @@ public class Template {
      * @param quoting              Determines whether (and how) special
      *                             characters in data values are quoted.
      * @throws Dataset.MissingValueError
-     *                             A data value requested outside {{}}
-     *                             couldn't be found.
+     *                             A required data value couldn't be found.
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
      */
@@ -174,6 +173,69 @@ public class Template {
         info.missingData = false;
         info.lastDeletedSpace = -1;
         expandRange(info, 0, template.length());
+    }
+
+    /**
+     * Substitute data into a template string, appending the result to a
+     * StringBuilder using HTML encoding.
+     * @param template             Contains text to be copied to
+     *                             {@code out} plus substitution
+     *                             specifiers such as {@code @foo}.
+     * @param data                 Provides data to be substituted into the
+     *                             template.
+     * @param out                  The expanded template is appended here.
+     * @throws Dataset.MissingValueError
+     *                             A required data value couldn't be found.
+     * @throws SyntaxError         The template contains an illegal construct
+     *                             such as {@code @+}.
+     */
+    public static void expand(CharSequence template, Dataset data,
+            StringBuilder out) throws Dataset.MissingValueError, SyntaxError {
+        expand(template, data, out, SpecialChars.HTML);
+    }
+
+    /**
+     * Substitute data into a template string return the expanded result.
+     * @param template             Contains text plus substitution
+     *                             specifiers such as {@code @foo}.
+     * @param data                 Provides data to be substituted into the
+     *                             template.
+     * @param quoting              Determines whether (and how) special
+     *                             characters in data values are quoted.
+     * @return                     The result produced by expanding the
+     *                             template.
+     * @throws Dataset.MissingValueError
+     *                             A required data value couldn't be found.
+     * @throws SyntaxError         The template contains an illegal construct
+     *                             such as {@code @+}.
+     */
+    public static String expand(CharSequence template, Dataset data,
+            SpecialChars quoting)
+            throws Dataset.MissingValueError, SyntaxError {
+        StringBuilder out = new StringBuilder(template.length() + 50);
+        expand(template, data, out, quoting);
+        return out.toString();
+    }
+
+    /**
+     * Substitute data into a template string return the expanded result;
+     * use HTML quoting.
+     * @param template             Contains text plus substitution
+     *                             specifiers such as {@code @foo}.
+     * @param data                 Provides data to be substituted into the
+     *                             template.
+     * @return                     The result produced by expanding the
+     *                             template.
+     * @throws Dataset.MissingValueError
+     *                             A required data value couldn't be found.
+     * @throws SyntaxError         The template contains an illegal construct
+     *                             such as {@code @+}.
+     */
+    public static String expand(CharSequence template, Dataset data)
+            throws Dataset.MissingValueError, SyntaxError {
+        StringBuilder out = new StringBuilder(template.length() + 50);
+        expand(template, data, out, SpecialChars.HTML);
+        return out.toString();
     }
 
     /**
@@ -210,26 +272,6 @@ public class Template {
             }
         }
         info.templateEnd = oldTemplateEnd;
-    }
-
-    /**
-     * Substitute data into a template string, appending the result to a
-     * StringBuilder using HTML encoding.
-     * @param template             Contains text to be copied to
-     *                             {@code out} plus substitution
-     *                             specifiers such as {@code @foo}.
-     * @param data                 Provides data to be substituted into the
-     *                             template.
-     * @param out                  The expanded template is appended here.
-     * @throws Dataset.MissingValueError
-     *                             A data value requested outside {{}}
-     *                             couldn't be found.
-     * @throws SyntaxError         The template contains an illegal construct
-     *                             such as {@code @+}.
-     */
-    public static void expand(CharSequence template, Dataset data,
-            StringBuilder out) throws Dataset.MissingValueError, SyntaxError {
-        expand(template, data, out, SpecialChars.HTML);
     }
 
     /**

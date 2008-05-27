@@ -294,7 +294,6 @@ public class Dataset implements Cloneable {
     public static Dataset newFileInstanceFromPath(String name,
             String[] path, PathHandling pathHandling) {
         ArrayList<Dataset> datasets = null;
-        Dataset first = null, last = null;
         for (String directory : path) {
             String fullName = directory + "/" + name;
             try {
@@ -317,6 +316,9 @@ public class Dataset implements Cloneable {
         }
         if (datasets == null) {
             throw FileNotFoundError.newPathInstance(name, "dataset", path);
+        }
+        if (datasets.size() == 1) {
+            return datasets.get(0);
         }
         return new CompoundDataset(datasets);
     }

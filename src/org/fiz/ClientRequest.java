@@ -199,12 +199,18 @@ public class ClientRequest {
             if (anyAjaxActions) {
                 // Close off the Javascript code for the actions.
                 out.append("];");
+            } else {
+                // Output Javascript code for an empty action array (the
+                // browser will be expecting the array, even if it is empty.
+                out.append("var actions = [];");
             }
         } else {
             // This is an HTML request.  Transmit the accumulated
             // HTML, if any.
             servletResponse.setContentType("text/html");
-            getHtml().print(out);
+            if (html != null) {
+                html.print(out);
+            }
         }
         if (out.checkError()) {
             logger.error("I/O error sending response in " +
@@ -249,7 +255,8 @@ public class ClientRequest {
         mainDataset = new Dataset();
         if (ajaxRequest) {
             String contentType = (servletRequest.getContentType());
-            if ((contentType != null) && (contentType.equals("text/plain"))) {
+            if ((contentType != null)
+                    && (contentType.startsWith("text/plain"))) {
                 // First, read the data into a string.
                 StringBuilder postData = new StringBuilder();
                 try {
@@ -410,6 +417,62 @@ public class ClientRequest {
      */
     public void setAjax(boolean isAjax) {
         ajaxRequest = isAjax;
+    }
+
+    /**
+     * Given a dataset containing information about an error, display
+     * information about the error in the bulletin, using the {@code bulletin}
+     * template from the {@code errors} configuration dataset to generate
+     * HTML from the dataset.  This method can be invoked for either
+     * Ajax requests or normal requests and does the right thing in either
+     * case.
+     * @param errorData            Contains information about an error;
+     *                             must include at least a {@code message}
+     *                             value.
+     */
+    public void setBulletinError(Dataset errorData) {
+        String template = Config.get("errors", "bulletin");
+        String html = Template.expand(template, errorData);
+        if (ajaxRequest) {
+            ajaxEvalAction("Fiz.setBulletin(\"@html\");",
+                    new Dataset("html", html));
+        } else {
+            getHtml().includeJavascript("Fiz.setBulletin(\"@html\");",
+                    new Dataset("html", html));
+        }
+    }
+
+    /**
+     * This method is invoked to display appropriate information after an
+     * error has occurred.  {@code style} and {@code defaultStyle} are used
+     * to select a template from the {@code errors} dataset, which is
+     * expanded in the context of {@code errorData} plus the main dataset.
+     * The result is appended to the HTML being generated for the page,
+     * unless the style starts with "bulletin", in which case the HTML is
+     * displayed in the bulletin for the page.
+     * @param style                Name of a value in the {@code errors}
+     *                             dataset, which is a template for generating
+     *                             HTML to describe the error.  May be null.
+     * @param defaultStyle         If {@code style} is null, then this is used
+     *                             as the name of the template.
+     * @param errorData            Data describing the error; must contain
+     *                             at least a {@code message} value.
+     */
+    public void showErrorInfo(String style, String defaultStyle,
+            Dataset errorData) {
+        CompoundDataset compound = new CompoundDataset(errorData,
+                getMainDataset());
+        if (style == null) {
+            style = defaultStyle;
+        }
+        if (style.startsWith("bulletin")) {
+            getHtml().includeJavascript("Fiz.setBulletin(\"@html\");",
+                    new Dataset("html", Template.expand(Config.get("errors",
+                    style), compound)));
+        } else {
+            Template.expand(Config.get("errors", style), compound,
+                    getHtml().getBody());
+        }
     }
 
     /**

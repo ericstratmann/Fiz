@@ -1,0 +1,9 @@
+/* EntryFormElement.css -
+ *
+ * This file defines styles for EntryFormElements that use the default class.
+ * Many of the styles are inherited from those defined in main.yaml.
+ */
+
+.EntryFormElement {
+    width: 150px;
+}

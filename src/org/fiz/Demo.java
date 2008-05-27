@@ -1,4 +1,5 @@
 package org.fiz;
+import org.apache.log4j.*;
 
 /**
  * This Interactor displays a collection of pages that illustrate the
@@ -6,8 +7,21 @@ package org.fiz;
  */
 
 public class Demo extends Interactor {
+    // The following variable is used for log4j-based logging.
+    protected Logger logger = Logger.getLogger("org.fiz.Demo");
+
+    FormSection demoForm =new FormSection(
+            new Dataset("id", "form1", "request", "demo.getPerson"),
+            new EntryFormElement(new Dataset("id", "name",
+                    "label", "Name:")),
+            new EntryFormElement(new Dataset("id", "age",
+                    "label", "Age:")),
+            new EntryFormElement(new Dataset("id", "state",
+                    "label", "Home state:")
+            ));
+
     /**
-     * Display a page with various demonstrations of the TableSection
+     * Displays a page with various demonstrations of the TableSection
      * class.
      * @param cr                   Overall information about the client
      *                             request being serviced.
@@ -53,5 +67,26 @@ public class Demo extends Interactor {
                     new Column("Item", "@item"),
                     new Column("Price", "@price"))
         );
+    }
+
+    /**
+     * Displays a page illustrating the FormSection class.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    public void formSection(ClientRequest cr) {
+        Html html = cr.getHtml();
+        html.setTitle("FormSection Demo");
+        cr.showSections(
+                new TemplateSection("<h1>FormSection Demo</h1>\n"),
+                demoForm);
+    }
+
+    public void ajaxPost(ClientRequest cr) {
+        Dataset main = cr.getMainDataset();
+        logger.info("Posted dataset:\n" + main.toString());
+        demoForm.post(cr, (main.get("state").length() == 0) ?
+                "demo.formError1" : "demo.formError2");
+
     }
 }

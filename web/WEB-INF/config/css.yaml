@@ -6,31 +6,50 @@
 # as colors and fonts, simply by making changes here.
 
 # Overall background color:
-background:        #FFFFFF
+background:        #ffffff
 
 # Overall foreground color:
 color:             #000000
 
+# Dimmed versions of foreground color (either item is disabled, or we
+# need headroom to brighten up the color when the mouse passes over).
+dimColor1:         #404040
+dimColor2:         #808080
+dimColor3:         #c0c0c0
+
 # Colors to use in "reverse video" situations, with light text on a
 # dark background:
 reverseBackground: #687291
-reverseColor:      #FFFFFF
+reverseColor:      #ffffff
 
 # A series of compatible background colors, in order from lightest to
 # darkest (used for odd-even table shadings, etc.):
-background1:       #EEEFF2
-background2:       #DFE1E7
-background3:       #C9D0DC
-background4:       #B0BCC8
+background1:       #eeeff2
+background2:       #dfe1e7
+background3:       #c9d0dc
+background4:       #b0bcc8
 
 # Color to use for displaying error messages that need to stand out:
-errorColor:        #DD0000
+errorColor:        #dd0000
+errorBackground:   #fff0f0
+
+# Color to use for borders:
+borderColor:       #b3b8c8
+standardBorder:    1px solid #b3b8c8
+
+# Border color when trying to highlight (e.g. change to this when mouse
+# passes over object):
+borderAccentColor: #7d818c
+accentBorder:      1px solid #7d818c
 
 # Overall font information.  Note: specifying font sizes as percentages
 # rather than absolute size enables features such as control-plus and
 # control-minus in Firefox.
 fontFamily:       "Tahoma, Arial, sans-serif"
 fontSize:         80%
+
+# Smaller font size, for use in error messages and other "fine print".
+smallFontSize:    85%
 
 # Padding around table entries and similar things where text is
 # enclosed in a region:
@@ -40,3 +59,6 @@ topBotPadding:    2px
 # IE and Firefox have different default margins around the entire page
 # body; this constant makes IE like Firefox.
 pageMargin:       8px
+
+# Default width for borders such as those around text entries:
+borderWidth:     1px

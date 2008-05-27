@@ -58,6 +58,19 @@ public class HtmlTest extends junit.framework.TestCase {
         Util.deleteTree("_test_");
     }
 
+    public void test_getJsFiles() {
+        (new File("_test_")).mkdir();
+        TestUtil.writeFile("_test_/file1.js", "");
+        TestUtil.writeFile("_test_/file2.js", "");
+        html.jsDirectory = "_test_/";
+        html.includeJsFile("file1.js");
+        html.includeJsFile("file2.js");
+        assertEquals("Javascript file names",
+                "Fiz.js, file1.js, file2.js",
+                html.getJsFiles());
+        Util.deleteTree("_test_");
+    }
+
     public void test_getPrologue() {
         assertEquals("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
                 + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
@@ -74,6 +87,18 @@ public class HtmlTest extends junit.framework.TestCase {
         assertEquals("modified value", "new title", html.getTitle());
         html.setTitle(null);
         assertEquals("new null value", null, html.getTitle());
+    }
+
+    public void test_includeCss() {
+        html.includeCss("/* Sample comment */");
+        html.includeCss("h1 {color: red}\n");
+        html.includeCss("/* Another comment */");
+        assertEquals("simple CSS", "/* Sample comment */\n" +
+                "\n" +
+                "h1 {color: red}\n" +
+                "\n" +
+                "/* Another comment */",
+                html.css.toString());
     }
 
     public void test_includeCssFile() {
@@ -99,16 +124,23 @@ public class HtmlTest extends junit.framework.TestCase {
         Util.deleteTree("_test_");
     }
 
-    public void test_includeCss() {
-        html.includeCss("/* Sample comment */");
-        html.includeCss("h1 {color: red}\n");
-        html.includeCss("/* Another comment */");
-        assertEquals("simple CSS", "/* Sample comment */\n" +
-                "\n" +
-                "h1 {color: red}\n" +
-                "\n" +
-                "/* Another comment */",
-                html.css.toString());
+    public void test_includeJavascript() {
+        html.includeJavascript(
+                "// Javascript comment with special chars <&>\n");
+        html.includeJavascript(
+                "var i = 444;\n");
+        assertEquals("accumulated Javascript",
+                "// Javascript comment with special chars <&>\n" +
+                "var i = 444;\n",
+                html.jsCode.toString());
+    }
+
+    public void test_includeJavascript_template() {
+        html.includeJavascript("foo(\"@value1\", value2);",
+                new Dataset("value1", "\"\n\000<&'>", "value2", "345"));
+        assertEquals("accumulated Javascript",
+                "foo(\"\\\"\\n\\x00<&'>\", value2);",
+                html.jsCode.toString());
     }
 
     public void test_includeJsFile() {
@@ -119,17 +151,36 @@ public class HtmlTest extends junit.framework.TestCase {
         html.includeJsFile("file1.js");
         assertEquals("jsHtml string",
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/file2.js\" />\n" +
+                "src=\"/servlet/Fiz.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/file1.js\" />\n",
+                "src=\"/servlet/file2.js\"></script>\n" +
+                "<script type=\"text/javascript\" " +
+                "src=\"/servlet/file1.js\"></script>\n",
                 html.jsHtml.toString());
         html.includeJsFile("file1.js");
         html.includeJsFile("file2.js");
         assertEquals("only include each file once",
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/file2.js\" />\n" +
+                "src=\"/servlet/Fiz.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/file1.js\" />\n",
+                "src=\"/servlet/file2.js\"></script>\n" +
+                "<script type=\"text/javascript\" " +
+                "src=\"/servlet/file1.js\"></script>\n",
+                html.jsHtml.toString());
+        TestUtil.deleteTree("_test_");
+    }
+    public void test_includeJsFile_mainFizFileAlwaysIncluded() {
+        (new File("_test_")).mkdir();
+        TestUtil.writeFile("_test_/Fiz.js", "");
+        html.jsDirectory = "_test_/";
+        assertEquals("jsHtml string",
+                "<script type=\"text/javascript\" " +
+                "src=\"/servlet/Fiz.js\"></script>\n",
+                html.jsHtml.toString());
+        html.includeJsFile("Fiz.js");
+        assertEquals("only include Fiz.js once",
+                "<script type=\"text/javascript\" " +
+                "src=\"/servlet/Fiz.js\"></script>\n",
                 html.jsHtml.toString());
         TestUtil.deleteTree("_test_");
     }
@@ -157,6 +208,8 @@ public class HtmlTest extends junit.framework.TestCase {
                 "</style>\n" +
                 "</head>\n" +
                 "<body>\n" +
+                "<script type=\"text/javascript\" " +
+                "src=\"/servlet/Fiz.js\"></script>\n" +
                 "first line\n" +
                 "second line\n" +
                 "</body>\n" +
@@ -176,6 +229,8 @@ public class HtmlTest extends junit.framework.TestCase {
                 "</style>\n" +
                 "</head>\n" +
                 "<body>\n" +
+                "<script type=\"text/javascript\" " +
+                "src=\"/servlet/Fiz.js\"></script>\n" +
                 "first line\n" +
                 "</body>\n" +
                 "</html>\n",
@@ -246,13 +301,34 @@ public class HtmlTest extends junit.framework.TestCase {
         TestUtil.assertSubstring("body section",
                 "<body>\n" +
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/file1.js\" />\n" +
+                "src=\"/servlet/Fiz.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/file2.js\" />\n" +
+                "src=\"/servlet/file1.js\"></script>\n" +
+                "<script type=\"text/javascript\" " +
+                "src=\"/servlet/file2.js\"></script>\n" +
                 "<p>Body text.</p>\n" +
                 "</body>\n",
                 html.toString());
         Util.deleteTree("_test_");
+    }
+    public void test_print_javascriptCode() {
+        html.getBody().append("<p> First paragraph.</p>\n");
+        html.includeJavascript(
+                "// Javascript comment with special chars <&>\n");
+        html.includeJavascript(
+                "var i = 444;\n");
+        TestUtil.assertSubstring("<body> element from document", "<body>\n" +
+                "<script type=\"text/javascript\" " +
+                "src=\"/servlet/Fiz.js\"></script>\n" +
+                "<p> First paragraph.</p>\n" +
+                "<script type=\"text/javascript\">\n" +
+                "//<![CDATA[\n" +
+                "// Javascript comment with special chars <&>\n" +
+                "var i = 444;\n" +
+                "//]]>\n" +
+                "</script>\n" +
+                "</body>",
+                html.toString());
     }
 
     public void test_toString() {
@@ -267,6 +343,8 @@ public class HtmlTest extends junit.framework.TestCase {
                 "</style>\n" +
                 "</head>\n" +
                 "<body>\n" +
+                "<script type=\"text/javascript\" " +
+                "src=\"/servlet/Fiz.js\"></script>\n" +
                 "first line\n" +
                 "</body>\n" +
                 "</html>\n",
@@ -281,6 +359,11 @@ public class HtmlTest extends junit.framework.TestCase {
     }
 
     public void test_escapeHtmlChars() {
+        assertEquals("&lt;&amp;&gt;\n'&quot; =",
+                Html.escapeHtmlChars("<&>\n'\" ="));
+    }
+
+    public void test_escapeHtmlChars_stringBuilder() {
         StringBuilder out = new StringBuilder();
         Html.escapeHtmlChars(new StringBuffer("abc123"), out);
         assertEquals("no special characters", "abc123", out.toString());
@@ -291,6 +374,11 @@ public class HtmlTest extends junit.framework.TestCase {
     }
 
     public void test_escapeUrlChars() {
+        assertEquals("%7f--%c2%80--%df%bf--%e0%a0%80--%e1%88%b4",
+                Html.escapeUrlChars("\u007f--\u0080--\u07ff--\u0800--\u1234"));
+    }
+
+    public void test_escapeUrlChars_stringBuilder() {
         StringBuilder out = new StringBuilder();
         Html.escapeUrlChars(new StringBuffer(" +,-./@ABYZ[`abyz{"), out);
         assertEquals("ASCII characters", "+%2b%2c-.%2f%40ABYZ%5b%60abyz%7b",
@@ -306,12 +394,17 @@ public class HtmlTest extends junit.framework.TestCase {
     }
 
     public void test_escapeStringChars() {
+        assertEquals("abc\\x1f  | \\n\\t | \\x01 | \\\\\\\"",
+                Html.escapeStringChars("abc\037\040 | \n\t | \001 | \\\""));
+    }
+
+    public void test_escapeStringChars_stringBuilder() {
         StringBuilder out = new StringBuilder();
         Html.escapeStringChars("abc\037\040 | \n\t | \001 | \\\"", out);
         assertEquals("abc\\x1f  | \\n\\t | \\x01 | \\\\\\\"",
                 out.toString());
     }
-    public void test_escapeStringChars_handleException() {
+    public void test_escapeStringChars_stringBuilder_handleException() {
         boolean gotException = false;
         try {
             Html.escapeStringChars("abcdef", new ErrorAppendable());
@@ -342,7 +435,9 @@ public class HtmlTest extends junit.framework.TestCase {
         html.includeJsDependencies("file1.js");
         assertEquals("jsHtml string",
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/file2.js\" />\n",
+                "src=\"/servlet/Fiz.js\"></script>\n" +
+                "<script type=\"text/javascript\" " +
+                "src=\"/servlet/file2.js\"></script>\n",
                 html.jsHtml.toString());
         TestUtil.deleteTree("_test_");
     }
@@ -361,13 +456,15 @@ public class HtmlTest extends junit.framework.TestCase {
         html.includeJsDependencies("file1.js");
         assertEquals("jsHtml string",
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/file2.js\" />\n" +
+                "src=\"/servlet/Fiz.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/file3.js\" />\n" +
+                "src=\"/servlet/file2.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/file4.js\" />\n" +
+                "src=\"/servlet/file3.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/file5.js\" />\n",
+                "src=\"/servlet/file4.js\"></script>\n" +
+                "<script type=\"text/javascript\" " +
+                "src=\"/servlet/file5.js\"></script>\n",
                 html.jsHtml.toString());
         TestUtil.deleteTree("_test_");
     }

@@ -39,9 +39,13 @@ public class Html {
     // the names passed to the includeJsFile method.
     protected HashSet<String> jsFiles = new HashSet<String>();
 
-    // The following field accumulates HTML that will actually read all of
-    // the files in javascriptFiles.
+    // The following field accumulates HTML that will read all of the files
+    // in javascriptFiles.
     protected StringBuilder jsHtml = new StringBuilder();
+
+    // The following field accumulates Javascript code that will be invoked
+    // at the end of loading the page.
+    protected StringBuilder jsCode = new StringBuilder();
 
     /**
      * Constructs an empty Html document.
@@ -63,6 +67,7 @@ public class Html {
             contextPath = "/servlet";
             jsDirectory = "javascript/";
         }
+        includeJsFile("Fiz.js");
     }
 
     /**
@@ -89,6 +94,20 @@ public class Html {
     public String getCssFiles() {
         ArrayList<String> names = new ArrayList<String>();
         names.addAll(cssFiles);
+        Collections.sort(names);
+        return StringUtil.join(names, ", ");
+    }
+
+    /**
+     * Generate a string containing the names of all of the Javascript files
+     * that have been requested using includeJsFile.  This method is used
+     * primarily for testing.
+     * @return                     A comma-separated list of filenames, sorted
+     *                             alphabetically.
+     */
+    public String getJsFiles() {
+        ArrayList<String> names = new ArrayList<String>();
+        names.addAll(jsFiles);
         Collections.sort(names);
         return StringUtil.join(names, ", ");
     }
@@ -133,28 +152,6 @@ public class Html {
     }
 
     /**
-     * Include a particular stylesheet file in the document, if it hasn't
-     * been included already.  The accumulated CSS will eventually be
-     * output as part of the document header.  If {@code fileName} has
-     * already been included via an earlier call this method, then the
-     * current invocation has no effect.
-     * @param fileName                Name of a CSS file.  The file must be
-     *                                in one of the directories in the path
-     *                                managed by the Css class.  The file's
-     *                                contents are actually the template, which
-     *                                will be expanded in the context of
-     *                                the css configuration dataset.
-     */
-    public void includeCssFile(String fileName) {
-        if (cssFiles.contains(fileName)) {
-            return;
-        }
-        cssFiles.add(fileName);
-        StringUtil.addBlankLine(css);
-        css.append(Css.getStylesheet(fileName));
-    }
-
-    /**
      * Add a chunk of style information to the CSS that will eventually
      * be output as part of the document header.
      * @param styleInfo            CSS information.  To help debug HTML
@@ -168,12 +165,51 @@ public class Html {
     }
 
     /**
+     * Include a particular stylesheet file in the document, if it hasn't
+     * been included already.  The accumulated CSS will eventually be
+     * output as part of the document header.  If {@code fileName} has
+     * already been included via an earlier call this method, then the
+     * current invocation has no effect.
+     * @param fileName                Name of a CSS file.  The file must be
+     *                                in one of the directories in the path
+     *                                managed by the Css class.
+     */
+    public void includeCssFile(String fileName) {
+        if (cssFiles.contains(fileName)) {
+            return;
+        }
+        cssFiles.add(fileName);
+        StringUtil.addBlankLine(css);
+        css.append(Css.getStylesheet(fileName));
+    }
+
+    /**
+     * Arrange for a particular piece of Javascript code to be executed
+     * by the browser after the page has been processed.
+     * @param code                 Javascript code.
+     */
+    public void includeJavascript(CharSequence code) {
+        jsCode.append(code);
+    }
+
+    /**
+     * Expand a Javascript code template and then arrange for the result
+     * to be executed by the browser after the page has been processed.
+     * @param template             Javascript code template.
+     * @param data                 Values to be substituted into the template.
+     */
+    public void includeJavascript(CharSequence template, Dataset data) {
+        Template.expand(template, data, jsCode,
+                Template.SpecialChars.JAVASCRIPT);
+    }
+
+    /**
      * Arrange for a given Javascript file to be included in the
      * document.  This method also checks for Fiz:include comment lines
      * in the file and recursively includes all of the Javascript files
      * so mentioned.
      * @param fileName             Name of the Javascript file.
-     *                             TODO: info about paths needed here.
+     *                             TODO: need support for paths here.
      */
     public void includeJsFile(String fileName) {
         if (jsFiles.contains(fileName)) {
@@ -190,7 +226,11 @@ public class Html {
         jsHtml.append(contextPath);
         jsHtml.append("/");
         jsHtml.append(fileName);
-        jsHtml.append("\" />\n");
+
+        // As of 5/2008 <script ... /> doesn't seem to work in browsers:
+        // the <script> element doesn't get closed.  Must use an explicit
+        // </script> tag.
+        jsHtml.append("\"></script>\n");
     }
 
     /**
@@ -234,6 +274,17 @@ public class Html {
             writer.write("</head>\n<body>\n");
             writer.write(jsHtml.toString());
             writer.write(body.toString());
+
+            // Output Javascript startup code.
+            if (jsCode.length() > 0) {
+                // The CDATA construct below is needed to avoid validation
+                // errors under XHTML (without it, HTML entity characters such
+                // ads & and < in the Javascript code will cause problems).
+                writer.write("<script type=\"text/javascript\">\n");
+                writer.write("//<![CDATA[\n");
+                writer.write(jsCode.toString());
+                writer.write("//]]>\n</script>\n");
+            }
             writer.write("</body>\n</html>\n");
         }
         catch (IOException e) {
@@ -264,11 +315,29 @@ public class Html {
     }
 
     /**
-     * This method is invoked to replace characters that are special in
-     * HTML ({@code <>&"}) with HTML entity references ({@code &lt;},
-     * {@code &gt;}, {@code &amp;}, and {@code &quot;}, respectively); this
-     * allows arbitrary data to be included in HTML without accidentally
-     * invoking special HTML behavior.
+     * Given a string, return an HTML string that will display that value
+     * (i.e., replace any characters that are special in HTML ({@code <>&"})
+     * with HTML entity references ({@code &lt;}, {@code &gt;}, {@code &amp;},
+     * and {@code &quot;}, respectively).  This allows arbitrary data to be
+     * included in HTML without accidentally invoking special HTML behavior.
+     * @param s                       Input string; may contain arbitrary
+     *                                characters.
+     * @return                        String identical to {@code s} except
+     *                                that HML special characters have been
+     *                                replaced with entity references.
+     */
+    public static String escapeHtmlChars(CharSequence s) {
+        StringBuilder out = new StringBuilder(s.length() + 10);
+        escapeHtmlChars(s, out);
+        return out.toString();
+    }
+
+    /**
+     * Given a string, generate an HTML string that will display that value
+     * (i.e., replace any characters that are special in HTML ({@code <>&"})
+     * with HTML entity references ({@code &lt;}, {@code &gt;}, {@code &amp;},
+     * and {@code &quot;}, respectively).  This allows arbitrary data to be
+     * included in HTML without accidentally invoking special HTML behavior.
      * @param s                       Input string; may contain arbitrary
      *                                characters
      * @param out                     The contents of <code>s</code> are
@@ -292,12 +361,29 @@ public class Html {
         }
     }
 
+
     /**
-     * This method transforms a string into a form that may be used in
-     * URLs (such as for query values).  It does this by replacing
-     * unusual characters with %xx sequences as defined by RFC1738.  It
-     * also converts non-ASCII characters to UTF-8 before encoding, as
-     * recommended in http://www.w3.org/International/O-URL-code.html.
+     * Transforms a string into a form that may be used in URLs (such as
+     * for query values).  It does this by replacing unusual characters
+     * with %xx sequences as defined by RFC1738.  It also converts non-ASCII
+     * characters to UTF-8 before encoding, as recommended in
+     * http://www.w3.org/International/O-URL-code.html.
+     * @param s                       Input string; may contain arbitrary
+     *                                characters
+     * @return                        The encoded value of {@code s}.
+     */
+    public static String escapeUrlChars(CharSequence s) {
+        StringBuilder out = new StringBuilder(s.length() + 10);
+        escapeUrlChars(s, out);
+        return out.toString();
+    }
+
+    /**
+     * Transforms a string into a form that may be used in URLs (such as
+     * for query values).  It does this by replacing unusual characters
+     * with %xx sequences as defined by RFC1738.  It also converts non-ASCII
+     * characters to UTF-8 before encoding, as recommended in
+     * http://www.w3.org/International/O-URL-code.html.
      * @param s                       Input string; may contain arbitrary
      *                                characters
      * @param out                     The contents of{@code s} are
@@ -360,6 +446,26 @@ public class Html {
         "%f0", "%f1", "%f2", "%f3", "%f4", "%f5", "%f6", "%f7",
         "%f8", "%f9", "%fa", "%fb", "%fc", "%fd", "%fe", "%ff"
     };
+
+    /**
+     * This method transforms a string into a form that may be used safely
+     * in a string literal for Javascript and many other languages.  For
+     * example, if {@code s} is {@code a\x"z} then it gets escaped to
+     * {@code a\\x\"z} so that the original value will be regenerated when
+     * Javascript evaluates the string literal.
+     * @param s                       Value that is to be encoded in a string
+     *                                literal.
+     * @return                        The encoded form of {@code s}.  If
+     *                                this value is used in a Javascript
+     *                                string, it will evaluate to exactly
+     *                                the characters in {@code s}.
+     */
+
+    public static String escapeStringChars(CharSequence s) {
+        StringBuilder out = new StringBuilder(s.length() + 10);
+        escapeStringChars(s, out);
+        return out.toString();
+    }
 
     /**
      * This method transforms a string into a form that may be used safely

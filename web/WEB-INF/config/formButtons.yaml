@@ -1,0 +1,17 @@
+# formButtons.yaml --
+#
+# This datasheet provides HTML for buttons that are displayed next to forms
+# and used to submit or cancel the forms.  Each value in this datasheet
+# specifies one style of buttons; the "buttons" property of a FormSection
+# gives the name of one of these values.  You can define new button styles
+# by defining new values here.  Each value is an HTML template that is
+# expanded in the context of the FormSection's properties and the main
+# datasheet.
+
+none: ""
+
+standard: |
+    <div class="buttons">
+      <input type="submit" name="action" value="Submit" accesskey="s"
+             title="Press Alt+Shift+s to submit." />
+    </div>

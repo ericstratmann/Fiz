@@ -5,9 +5,9 @@
 
 package org.fiz;
 import java.io.*;
-import java.lang.ProcessBuilder;
-import org.apache.log4j.*;
-import org.junit.Assert;
+import java.lang.*;
+import java.util.regex.*;
+import org.junit.*;
 
 public class TestUtil {
 
@@ -82,6 +82,30 @@ public class TestUtil {
             Assert.fail(message + "\nPattern :" + pattern
                     + "\nDidn't match test output :" + actual);
         }
+    }
+
+    /**
+     * Extract a substring from the test output using a regular expression
+     * pattern, then verify that the substring matches an expected value;
+     * generate a junit error message if it doesn't, or if the pattern
+     * doesn't match.
+     * @param message                    Message to incorporate in any
+     *                                   error message that is generated.
+     * @param expected                   Expected value for the substring of
+     *                                   {@code actual} that matches
+     *                                   {@code regexp}.
+     * @param actual                     Test output.
+     * @param regexp                     Regular expression pattern.
+     */
+    public static void assertMatchingSubstring(String message,
+            String expected, String actual, String regexp) {
+        Pattern pattern = Pattern.compile(regexp);
+        Matcher matcher = pattern.matcher(actual);
+        if (!matcher.find()) {
+            Assert.fail(message + "\nPattern :" + regexp
+                    + "\nDidn't match test output :" + actual);
+        }
+        Assert.assertEquals(message, expected, matcher.group());
     }
 
     /**

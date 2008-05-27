@@ -22,6 +22,46 @@ h2 {
     margin: 12px 0px 5px 0px;
 }
 
+input {
+    font-family: @fontFamily;
+    border: @standardBorder;
+    padding: 1px 3px 1px 3px;
+}
+
+/* The following style information is for the default bulletin. */
+.bulletin {
+    font-weight: bold;
+    border: 1px solid @errorColor;
+    background: @errorBackground;
+    padding: 10px 10px 10px 10px;
+    margin: 10px 20px 10px 20px;
+    text-align: center;
+}
+
+/* The following style information is for displaying errors controlled
+ * by the "section" style.
+ */
+.sectionError {
+    border: 1px solid @errorColor;
+    background: @errorBackground;
+    padding: 10px 10px 10px 10px;
+    margin: 10px 20px 10px 20px;
+}
+
+/* The following styles override defaults that vary from browser to
+ * browser.
+ */
+td {
+    padding: 0px;
+}
+form {
+    margin: 0px;
+}
+body {
+    margin: 0px;
+    padding: 0px 3px 0px 3px;
+}
+
 /* Default color for text displayed in elements related to errors. */
 .error {
     color: @errorColor;

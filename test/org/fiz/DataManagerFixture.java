@@ -18,6 +18,19 @@ public class DataManagerFixture extends DataManager {
     public static HashMap<String,StringBuilder> logs =
             new HashMap<String,StringBuilder>();
 
+    // The following variable holds the input dataset from the most
+    // recent request that was started.
+    public static Dataset requestData = null;
+
+    // If the following variable is non-null, it will be used as the response
+    // for the next request that is started.
+    public static Dataset responseData = null;
+
+    // If the following variable is non-null, then an error response will
+    // be generated for the next request that is started, with this
+    // variable providing the error data.
+    public static Dataset errorData = null;
+
     public Dataset constructorArgs = null;
     public boolean destroyed = false;
     public DataManagerFixture(Dataset constructorArgs) {
@@ -30,6 +43,14 @@ public class DataManagerFixture extends DataManager {
             log.append(prefix);
             log.append(getId(request));
             prefix = ", ";
+            requestData = request.getRequestData();
+            if (responseData != null) {
+                request.setComplete(responseData);
+                responseData = null;
+            } else if (errorData != null) {
+                request.setError(errorData);
+                errorData = null;
+            }
         }
     }
     public void cancelRequest(DataRequest request) {

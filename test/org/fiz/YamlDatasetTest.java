@@ -10,14 +10,14 @@ public class YamlDatasetTest extends junit.framework.TestCase {
     public void test_UnnamedValueError() {
         Error e = new YamlDataset.UnnamedValueError("my_file");
         assertEquals("exception message",
-                "YAML dataset contains sequence(s) with unnamed values "
-                + "(file \"my_file\")", e.getMessage());
+                "YAML dataset contains sequence(s) with unnamed values " +
+                "(file \"my_file\")", e.getMessage());
     }
 
     public void test_newStringInstance() {
-        Dataset d = YamlDataset.newStringInstance("first: 123\n"
-                + "second: Simple test\n"
-                + "third:\n  name: Bill\n  age: 27\n");
+        Dataset d = YamlDataset.newStringInstance("first: 123\n" +
+                "second: Simple test\n" +
+                "third:\n  name: Bill\n  age: 27\n");
         assertEquals("dataset contents", "first:  123\n" +
                 "second: Simple test\n" +
                 "third:\n" +
@@ -44,8 +44,8 @@ public class YamlDatasetTest extends junit.framework.TestCase {
         }
         catch (Dataset.SyntaxError e) {
             assertEquals("exception message",
-                    "syntax error in dataset: Error near line 2: "
-                    + "End of document expected.",
+                    "syntax error in dataset: Error near line 2: " +
+                    "End of document expected.",
                     e.getMessage());
             gotException = true;
         }
@@ -66,8 +66,8 @@ public class YamlDatasetTest extends junit.framework.TestCase {
         }
         catch (FileNotFoundError e) {
             assertEquals("exception message",
-                    "couldn't open dataset file \"bogus_44.yml\": The system "
-                    + "cannot find the file specified",
+                    "couldn't open dataset file \"bogus_44.yml\": The " +
+                    "system cannot find the file specified",
                     e.getMessage());
             gotException = true;
         }
@@ -81,8 +81,8 @@ public class YamlDatasetTest extends junit.framework.TestCase {
         }
         catch (Dataset.SyntaxError e) {
             assertEquals("exception message",
-                    "syntax error in dataset (file \"test.yml\"): "
-                    + "Error near line 2: End of document expected.",
+                    "syntax error in dataset (file \"test.yml\"): " +
+                    "Error near line 2: End of document expected.",
                     e.getMessage());
             gotException = true;
         }
@@ -97,8 +97,8 @@ public class YamlDatasetTest extends junit.framework.TestCase {
         }
         catch (YamlDataset.UnnamedValueError e) {
             assertEquals("exception message",
-                    "YAML dataset contains sequence(s) with unnamed values "
-                    + "(file \"test.yml\")",
+                    "YAML dataset contains sequence(s) with unnamed values " +
+                    "(file \"test.yml\")",
                     e.getMessage());
             gotException = true;
         }
@@ -129,9 +129,9 @@ public class YamlDatasetTest extends junit.framework.TestCase {
 
     public void test_toString() {
         Dataset d = YamlDataset.newStringInstance(
-                "a: 45\n"
-                + "b:\n"
-                + "  c: 78\n");
+                "a: 45\n" +
+                "b:\n" +
+                "  c: 78\n");
         assertEquals("generated YAML",
                 "a: 45\n" +
                 "b:\n" +
@@ -202,8 +202,8 @@ public class YamlDatasetTest extends junit.framework.TestCase {
 
     public void test_writeFile() throws FileNotFoundException {
         YamlDataset d = YamlDataset.newStringInstance(
-                "a: 45\n"
-                + "b: \" abc \"\n");
+                "a: 45\n" +
+                "b: \" abc \"\n");
         d.writeFile("test.yml", "Sample header2");
         assertEquals("generated YAML",
                 "# Sample header2\n" +
@@ -215,20 +215,20 @@ public class YamlDatasetTest extends junit.framework.TestCase {
 
     public void test_writeSubtree_basics() {
         Dataset d = YamlDataset.newStringInstance(
-                "a: 45\n"
-                + "b: Simple  name\n"
-                + "children:\n"
-                + "  - name: Bill\n"
-                + "    age: 18\n"
-                + "  - name: Alice\n"
-                + "    age: 36\n"
-                + "  - name: Susan\n"
-                + "    age: 25\n"
-                + "c:\n"
-                + "  d:\n"
-                + "    e: Arizona\n"
-                + "  f: California\n"
-                + "funny : \" abcd\\n\\n\"\n");
+                "a: 45\n" +
+                "b: Simple  name\n" +
+                "children:\n" +
+                "  - name: Bill\n" +
+                "    age: 18\n" +
+                "  - name: Alice\n" +
+                "    age: 36\n" +
+                "  - name: Susan\n" +
+                "    age: 25\n" +
+                "c:\n" +
+                "  d:\n" +
+                "    e: Arizona\n" +
+                "  f: California\n" +
+                "funny : \" abcd\\n\\n\"\n");
         assertEquals("generated YAML",
                 "a:     45\n" +
                         "b:     Simple  name\n" +
@@ -247,16 +247,16 @@ public class YamlDatasetTest extends junit.framework.TestCase {
     }
     public void test_writeSubtree_rereadOutput() {
         Dataset d = YamlDataset.newStringInstance(
-                "a: \"trailing space \"\n"
-                + "b: Simple  name\n"
-                + "children:\n"
-                + "  - name: Bill\n"
-                + "    age: 18\n"
-                + "  - name: Alice\n"
-                + "    age: 36\n"
-                + "c:\n"
-                + "  d: \"Vallejo, California\"\n"
-                + "special : \" abcd\\n\\n\"\n");
+                "a: \"trailing space \"\n" +
+                "b: Simple  name\n" +
+                "children:\n" +
+                "  - name: Bill\n" +
+                "    age: 18\n" +
+                "  - name: Alice\n" +
+                "    age: 36\n" +
+                "c:\n" +
+                "  d: \"Vallejo, California\"\n" +
+                "special : \" abcd\\n\\n\"\n");
 
         Dataset d2 = YamlDataset.newStringInstance(d.toString());
         assertEquals("element with trailing space", "trailing space ",
@@ -325,8 +325,8 @@ public class YamlDatasetTest extends junit.framework.TestCase {
         }
         catch (YamlDataset.UnnamedValueError e) {
             assertEquals("exception message",
-                    "YAML dataset contains sequence(s) with unnamed values "
-                    + "(file \"test.yml\")",
+                    "YAML dataset contains sequence(s) with unnamed values " +
+                    "(file \"test.yml\")",
                     e.getMessage());
             gotException = true;
         }
@@ -334,18 +334,18 @@ public class YamlDatasetTest extends junit.framework.TestCase {
         TestUtil.deleteTree("test.yml");
     }
     public void test_checkAndConvert_nestedDatasets() {
-        Dataset y = YamlDataset.newStringInstance("a:\n  value: 41\n"
-                + "  b:\n    value: 123.456\n    c:\n      value: 99\n");
+        Dataset y = YamlDataset.newStringInstance("a:\n  value: 41\n" +
+                "  b:\n    value: 123.456\n    c:\n      value: 99\n");
         assertEquals("first-level value", "41", y.getPath("a.value"));
         assertEquals("second-level value", "123.456", y.getPath("a.b.value"));
         assertEquals("third-level value", "99", y.getPath("a.b.c.value"));
     }
     public void test_checkAndConvert_nestedLists() {
-        Dataset y = YamlDataset.newStringInstance("a:\n  people:\n"
-                + "    - name: Alice\n      age: 32\n"
-                + "    - name: Bill\n      age: 44\n"
-                + "    - name: Carol\n      age: 50\n"
-                + "b: 999\nc: 1000\n");
+        Dataset y = YamlDataset.newStringInstance("a:\n  people:\n" +
+                "    - name: Alice\n      age: 32\n" +
+                "    - name: Bill\n      age: 44\n" +
+                "    - name: Carol\n      age: 50\n" +
+                "b: 999\nc: 1000\n");
         assertEquals("a.people[0].age", "32", y.getPath("a.people.age"));
         assertEquals("a.people[1].age", "44",
                 y.getChild("a").getChildren("people")[1].get("age"));
@@ -353,15 +353,15 @@ public class YamlDatasetTest extends junit.framework.TestCase {
                 y.getChild("a").getChildren("people")[2].get("age"));
     }
     public void test_checkAndConvert_nullValue() {
-        Dataset y = YamlDataset.newStringInstance("first: abc\nsecond: def\n"
-                + "child:\nthird: xyz\n");
+        Dataset y = YamlDataset.newStringInstance("first: abc\nsecond: def\n" +
+                "child:\nthird: xyz\n");
         assertEquals("size of top-level dataset", 4, y.keySet().size());
         assertEquals("size of child dataset", 0,
                 y.getChild("child").keySet().size());
     }
     public void test_checkAndConvert_convertValues() {
-        Dataset y = YamlDataset.newStringInstance("first: 123\nsecond: 17.3\n"
-                + "third: 18.1234567890123\nfourth: true\n");
+        Dataset y = YamlDataset.newStringInstance("first: 123\nsecond: 17.3\n" +
+                "third: 18.1234567890123\nfourth: true\n");
         assertEquals("first value", "123", y.get("first"));
         assertEquals("read first value again", "123", y.get("first"));
         assertEquals("second value", "17.3", y.get("second"));

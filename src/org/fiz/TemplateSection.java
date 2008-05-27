@@ -4,9 +4,17 @@ package org.fiz;
  * A TemplateSection is a simple form of Section that generates HTML from
  * a single template.  TemplateSections support the following constructor
  * properties:
- * request:          (optional) Name of a DataRequest that will supply
+ *   errorStyle:     (optional) If an error occurs in {@code request} then
+ *                   this property contains the name of a template in the
+ *                   {@code errors} dataset, which is expanded with the
+ *                   error data and the main dataset.  The resulting HTML
+ *                   is displayed in place of the TemplateSection unless
+ *                   {@code errorStyle} starts with "bulletin", in which
+ *                   case the resulting HTML is displayed in the bulletin.
+ *                   Defaults to "section".
+ *   request:        (optional) Name of a DataRequest that will supply
  *                   data for use by {@code template}.
- * template:         (required) Template that will generate HTML for the
+ *   template:       (required) Template that will generate HTML for the
  *                   section.  If {@code request} is specified then the
  *                   template is expanded in the context of the response
  *                   to that request plus the main dataset; otherwise the
@@ -17,6 +25,7 @@ public class TemplateSection implements Section {
     // the section; see above for definitions.
     protected String request = null;
     protected String template;
+    protected String errorStyle;
 
     // Source of data for the section:
     protected DataRequest dataRequest = null;
@@ -29,6 +38,7 @@ public class TemplateSection implements Section {
     public TemplateSection(Dataset properties) {
         request = properties.check("request");
         template = properties.get("template");
+        errorStyle = properties.check("errorStyle");
     }
 
     /**
@@ -66,9 +76,15 @@ public class TemplateSection implements Section {
     public void html(ClientRequest cr) {
         Dataset data;
         if (dataRequest != null) {
-            // TODO: must handle errors.
-            data = new CompoundDataset(dataRequest.getResponseData(),
-                    cr.getMainDataset());
+            Dataset response= dataRequest.getResponseData();
+            if (response == null) {
+                // There was an error fetching our data; display
+                // appropriate error information.
+                Dataset errorData = dataRequest.getErrorData();
+                cr.showErrorInfo(errorStyle, "templateSection", errorData);
+                return;
+            }
+            data = new CompoundDataset(response, cr.getMainDataset());
         } else {
             data = cr.getMainDataset();
         }

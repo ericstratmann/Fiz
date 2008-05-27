@@ -4,6 +4,20 @@
 empty:
     dummy: 42
 
+error1:
+  culprit: name
+  message: >
+      User doesn't exist; this is a very long message just
+      to see what happens.  Does the line wrap, or doesn't it?
+      In order to find out, there needs to be lots and lots of
+      text in the error message.  Also, here are some special
+      characters: <&>!""
+
+error2:
+  message: >
+      An error occurred that isn't associated with a particular
+      form element, so this message should appear in the bulletin.
+
 people:
     record:
         - name: Alice
@@ -23,6 +37,12 @@ people:
           age: 66
           weight: 220
           height: 71
+person:
+    record:
+        name: Bill
+        age: 41
+        height: 73
+        weight: 195
 
 shoppingCart:
     record:

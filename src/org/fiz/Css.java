@@ -69,7 +69,7 @@ class Css {
      * @return                     Array of directories searched for
      *                             stylesheets.
      */
-    public static synchronized String[] getPath() {
+    public static synchronized String[] getSearchPath() {
         return path.clone();
     }
 }

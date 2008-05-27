@@ -2,8 +2,9 @@
 
 error:
   manager:  file
-  request:  bogus
-  file:     _nonexistent_/bogus/foo.yaml
+  request:  error
+  file:     fileData.yaml
+  dataset:  error
 fixture1:
   manager:  fixture
   id:       fixture1

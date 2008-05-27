@@ -10,6 +10,16 @@ demo:
         request: read
         file:    demo
         dataset: bogus.nonexistent
+    formError1:
+        manager: demo
+        request: error
+        file:    demo
+        dataset: error1
+    formError2:
+        manager: demo
+        request: error
+        file:    demo
+        dataset: error2
     getCart:
         manager: demo
         request: read
@@ -20,6 +30,11 @@ demo:
         request: read
         file:    demo
         dataset: people
+    getPerson:
+        manager: demo
+        request: read
+        file:    demo
+        dataset: person
     noData:
         manager: demo
         request: read

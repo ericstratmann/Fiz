@@ -6,7 +6,7 @@
 
 table.TableSection td {
     padding: @topBotPadding @sidePadding @topBotPadding @sidePadding;
-    border-top: 1px solid #FFFFFF;
+    border-top: @borderWidth solid #FFFFFF;
     vertical-align: top;
     background: @background1;
 }

@@ -1,9 +1,10 @@
-// AjaxUnit.js --
+// AjaxTest.js --
 //
 // Jsunit tests for Ajax.js, organized in the standard fashion.
 
-include ("Ajax.js");
-include ("XmlHttpFixture.js");
+include("Fiz.js");
+include("Ajax.js");
+include("XmlHttpFixture.js");
 
 window.XMLHttpRequest = true;
 test("Ajax_sendRequest_urlParameterOnly", function() {

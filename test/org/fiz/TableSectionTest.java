@@ -158,9 +158,10 @@ public class TableSectionTest extends junit.framework.TestCase {
     public void test_html_errorInRequest() {
         // The error template requests data from both the error report and
         // the main dataset, to make sure that both are available.
+        Config.setDataset("errors", new Dataset("tableSection",
+                "Error in @sectionType for @name: @message"));
         TableSection table = new TableSection(
-                new Dataset("request", "error",
-                "errorTemplate", "Error for @name: @message"),
+                new Dataset("request", "error"),
                 new Column("Name", "@name"),
                 new Column("Age", "@age"),
                 new Column("Weight", "@weight"));
@@ -169,9 +170,8 @@ public class TableSectionTest extends junit.framework.TestCase {
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertSubstring("row with empty message",
                "  <tr class=\"error\">\n" +
-               "    <td colspan=\"3\">Error for Alice: unknown request " +
-               "&quot;bogus&quot; for FileDataManager; must be " +
-               "create, read, update, or delete</td>\n" +
+               "    <td colspan=\"3\">Error in table for Alice: " +
+               "sample &lt;error&gt;</td>\n" +
                "  </tr>\n",
                 cr.getHtml().getBody().toString());
         TestUtil.assertXHTML(cr.getHtml().toString());

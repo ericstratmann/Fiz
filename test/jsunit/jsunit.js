@@ -73,8 +73,9 @@ function main(options) {
         jsunit.currentFile = file;
         jsunit.numFiles++;
         if (!jsunit.quiet) {
-            print(file + ":");
+            print("");
         }
+        print(file + ":");
 
         // Run this test file.  There doesn't seem to be any way to find out
         // if the file could be found; Rhino just prints an error message
@@ -244,8 +245,32 @@ function assertEqual(expected, actual, description) {
     if (description != null) {
         message += ": " + description;
     }
-    message += "\nExpected value: " + expected.toString() +
-            "\nActual value:   " + actual.toString();
+    message += "\nExpected value: " + expected +
+            "\nActual value:   " + actual;
+    if ((expected != null) && (actual != null) &&
+            (expected.indexOf("\n") >= 0)) {
+        // The expected result has multiple lines.  To make it
+        // easier to track down problems, find the index of the first
+        // difference between the strings and output information about
+        // that.
+        expected = expected.toString();
+        actual = actual.toString();
+        var length = expected.length;
+        if (actual.length < length) {
+            length = actual.length;
+        }
+        for (var i = 0; i < length; i++) {
+            var c1 = expected.charAt(i);
+            var c2 = actual.charAt(i);
+            if (c1 == c2) {
+                continue;
+            }
+            message += "\nFirst difference at index " + i +
+                    " (expected \"" + c1 + ", actual \"" + c2 + "\"):\n" +
+                    expected.substr(0, i) + "^";
+            break;
+        }
+    }
     error(message);
 }
 
@@ -275,6 +300,107 @@ function include(fileName) {
  */
 function alert(message) {
     jsunit.log += "alert(message: " + message + ")\n";
+}
+
+/**
+ * Generate a string representation of a dataset-like Javascript object.
+ * @param data                     Object containing hierarchical collection
+ *                                 of the string values, Objects, and arrays
+ *                                 of objects.
+ * @param prefix                   String to prepend to each line of output;
+ *                                 typically used to add indentation.
+ *                                 Defaults to an empty string.
+ * @return                         String representation of {@code data},
+ *                                 using YAML-like syntax.
+ */
+function printDataset(data, prefix) {
+    if (prefix == null) {
+        prefix = "";
+    }
+    return printSubtree(data, prefix, prefix);
+}
+
+/**
+ * This recursive function does all of the work of printDataset.
+ * @param node                     Object to print: has same structure as
+ *                                 the {@code data} argument to
+ *                                 {@code printDataset}.
+ * @param firstPrefix              String to prepend to the first line of
+ *                                 output.
+ * @param otherPrefix              String to prepend to each line after
+ *                                 the first.
+ * @return                         String representation of {@code node},
+ *                                 in YAML-like syntax.
+ */
+function printSubtree(node, firstPrefix, otherPrefix) {
+    var result = "";
+    var prefix = firstPrefix;
+    var i, j, length, length2;
+
+    // Find the length of the longest name so that we can pretty-print
+    // the output in 2 neat columns.  Also, collect the names in an array
+    // so we can sort them.
+    var maxLength = 0;
+    var names = [];
+    for (var name in node) {
+        if (name.length > maxLength) {
+            maxLength = name.length;
+        }
+        names.push(name);
+    }
+
+    // Make a second pass to print each of the entries.
+    names.sort();
+    for (i = 0, length = names.length; i < length; i++) {
+        name = names[i];
+        var value = node[name];
+        if (value instanceof Function) {
+            continue;
+        }
+
+        // Print the name.
+        result += prefix + name + ":";
+
+        // Print the value, calling ourselves recursively if necessary.
+        if (value instanceof Array) {
+                result += "\n";
+            for (j = 0, length2 = value.length; j < length2; j++) {
+                result += printSubtree(value[j], otherPrefix + "  - ",
+                        otherPrefix + "    ");
+            }
+        } else if ((typeof value) == "object") {
+                result += "\n";
+                result += printSubtree(value, otherPrefix + "    ",
+                        otherPrefix + "    ");
+        } else {
+            // Simple scalar value.
+            for (j = name.length; j < maxLength; j++) {
+                result += " ";
+            }
+            if (value.length == 0) {
+                result += " \"\"\n";
+            } else {
+                result += " " + value + "\n";
+            }
+        }
+        prefix = otherPrefix;
+    }
+    return result;
+}
+
+/**
+ * Returns an array containing the names of all of the properties of an
+ * object, sorted alphabetically.
+ * @param value                    Object whose property names are desired.
+ * @return                         See above.
+ */
+function names(value) {
+    names = [];
+    for (var name in value) {
+        names.push(name);
+    }
+    names.sort();
+    return names;
 }
 
 main(arguments);

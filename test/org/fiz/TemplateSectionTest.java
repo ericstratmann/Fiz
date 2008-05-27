@@ -37,6 +37,25 @@ public class TemplateSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
     }
 
+    public void test_html_errorInRequest() {
+        Config.setDataset("errors", new Dataset("test111",
+                "error for @name: @message"));
+        cr.showSections(new TemplateSection(new Dataset(
+                "request", "error",
+                "template", "name: @name, height: @height",
+                "errorStyle", "test111")));
+        assertEquals("generated HTML",
+                "error for Alice: sample &lt;error&gt;",
+                cr.getHtml().getBody().toString());
+    }
+    public void test_html_errorInRequest_defaultHandler() {
+        Config.setDataset("errors", new Dataset("templateSection",
+                "error: @message"));
+        cr.showSections(new TemplateSection("error",
+                "name: @name, height: @height"));
+        assertEquals("generated HTML", "error: sample &lt;error&gt;",
+                cr.getHtml().getBody().toString());
+    }
     public void test_html_withRequest() {
         cr.showSections(new TemplateSection("getState",
                 "name: @name, height: @height"));

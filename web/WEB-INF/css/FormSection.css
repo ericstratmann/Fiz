@@ -1,0 +1,45 @@
+/* FormSection.css -
+ *
+ * This file defines styles for FormSections that use the default class.
+ */
+
+.FormSection .label {
+    vertical-align: top;
+    white-space: nowrap;
+    padding: 3px 10px 0px 0px;
+}
+
+/* This controls the vertical spacing between form elements. */
+.FormSection .control {
+    padding: 0px 0px 8px 0px;
+}
+
+.FormSection .diagnostic {
+    font-size: @smallFontSize;
+}
+
+.FormSection .buttons {
+    margin: 10px 0px 0px 0px;
+    padding: 10px 0px 10px 0px;
+    border-top: @standardBorder;
+    white-space: nowrap;
+}
+
+.FormSection .buttons input {
+    font-weight: bold;
+    background: @background1;
+    color: @dimColor1;
+    padding: 3px 15px 3px 15px;
+    margin: 0;
+    border: @standardBorder;
+}
+
+.FormSection .buttons input:hover {
+    font-weight: bold;
+    color: @color;
+    border: @accentBorder;
+}
+
+.FormSection .buttons input:focus {
+    outline: none;
+}

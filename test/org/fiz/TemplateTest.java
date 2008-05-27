@@ -142,14 +142,35 @@ public class TemplateTest extends junit.framework.TestCase {
         }
     }
 
-    public void test_expand() {
-        Dataset data = new Dataset("name", "Alice", "age", "28");
+    public void test_expand_outAndQuoting() {
+        Dataset data = new Dataset("name", "<Alice>", "age", "28");
         StringBuilder out = new StringBuilder("123");
         Template.expand("name: @name, age: @age, "
                 + "{{weight: @weight}} misc: @{@}",
-                data, out);
-        assertEquals("output string", "123name: Alice, age: 28, misc: {}",
+                data, out, Template.SpecialChars.NONE);
+        assertEquals("output string", "123name: <Alice>, age: 28, misc: {}",
                 out.toString());
+    }
+
+    public void test_expand_outNoQuoting() {
+        Dataset data = new Dataset("name", "<Alice>", "age", "28");
+        StringBuilder out = new StringBuilder("123");
+        Template.expand("name: @name, age: @age", data, out);
+        assertEquals("output string", "123name: &lt;Alice&gt;, age: 28",
+                out.toString());
+    }
+
+    public void test_expand_quotingNoOut() {
+        Dataset data = new Dataset("name", "<Alice>", "age", "28");
+        assertEquals("output string", "name: <Alice>, age: 28",
+                Template.expand("name: @name, age: @age", data,
+                Template.SpecialChars.NONE));
+    }
+
+    public void test_expand_noOutNoQuoting() {
+        Dataset data = new Dataset("name", "<Alice>", "age", "28");
+        assertEquals("output string", "name: &lt;Alice&gt;, age: 28",
+                Template.expand("name: @name, age: @age", data));
     }
 
     public void test_expandRange_atSign() {

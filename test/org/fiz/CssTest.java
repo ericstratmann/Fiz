@@ -27,7 +27,7 @@ public class CssTest extends junit.framework.TestCase {
         Css.init(path);
         path[0] = ".";
         assertEquals("make sure path was cloned by init",
-                "_csstest_/child", Css.getPath()[0]);
+                "_csstest_/child", Css.getSearchPath()[0]);
         css = Css.getStylesheet("Test.css");
         assertEquals("make sure init flushes cache and resets path",
                 "Child template: 99234", css);
@@ -41,13 +41,13 @@ public class CssTest extends junit.framework.TestCase {
         assertEquals("use caches for second call", "Sample: 99234", css);
     }
 
-    public void test_getPath() {
+    public void test_getSearchPath() {
         Css.init("a/b", "y/z");
-        String[] path = Css.getPath();
+        String[] path = Css.getSearchPath();
         assertEquals("directories in path", "a/b, y/z",
                 StringUtil.join(path, ", "));
         path[0] = "modified";
         assertEquals("make sure result is cloned", "a/b, y/z",
-                StringUtil.join(Css.getPath(), ", "));
+                StringUtil.join(Css.getSearchPath(), ", "));
     }
 }

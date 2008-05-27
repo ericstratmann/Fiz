@@ -22,6 +22,14 @@ public class ConfigTest extends junit.framework.TestCase {
         TestUtil.deleteTree("_test1_");
     }
 
+    public void test_get() {
+        Config.init(".");
+        TestUtil.writeFile("main.yaml",
+                "name1: value1\nname2: value2\n");
+        assertEquals("value1", Config.get("main", "name1"));
+        TestUtil.deleteTree("main.yaml");
+    }
+
     public void test_getDataset() {
         (new File("_test1_")).mkdir();
         (new File("_test1_/child")).mkdir();
@@ -35,7 +43,6 @@ public class ConfigTest extends junit.framework.TestCase {
         d = Config.getDataset("main");
         assertEquals("value from second call (cached)", "value1",
                 d.check("name1"));
-
     }
 
     public void test_setDataset() {
@@ -53,13 +60,13 @@ public class ConfigTest extends junit.framework.TestCase {
         TestUtil.deleteTree("_test1_");
 
     }
-    public void test_getPath() {
+    public void test_getSearchPath() {
         Config.init("a/b/c", "x/y");
-        String[] path = Config.getPath();
+        String[] path = Config.getSearchPath();
         assertEquals("length of path", 2, path.length);
         assertEquals("first directory in path", "a/b/c", path[0]);
         assertEquals("second directory in path", "x/y", path[1]);
         path[0] = "modified";
-        assertEquals("return value is cloned", "a/b/c", Config.getPath()[0]);
+        assertEquals("return value is cloned", "a/b/c", Config.getSearchPath()[0]);
     }
 }

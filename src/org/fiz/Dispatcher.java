@@ -99,7 +99,7 @@ public class Dispatcher extends HttpServlet {
         logger.info("Fiz initializing with context root " + contextRoot);
         Config.init(contextRoot + "/WEB-INF/config");
         Dataset main = Config.getDataset("main");
-        if  (main instanceof CompoundDataset) {
+        if (main instanceof CompoundDataset) {
             Dataset[] components = ((CompoundDataset) main).getComponents();
             components[0].set("home", contextRoot);
         } else {
@@ -145,6 +145,7 @@ public class Dispatcher extends HttpServlet {
     @Override
     public void service (HttpServletRequest request,
         HttpServletResponse response) {
+        ClientRequest cr = null;
         try {
             if (logger.isTraceEnabled()) {
                 logger.trace("incoming URL: " + Util.getUrlWithQuery(request));
@@ -230,7 +231,7 @@ public class Dispatcher extends HttpServlet {
             // At this point we have located the method to service this
             // request.  Package up relevant information into a ClientRequest
             // object and invoke the method.
-            ClientRequest cr = method.interactor.getRequest(this,
+            cr = method.interactor.getRequest(this,
                     request, response);
             if (pathInfo.startsWith("ajax", endOfClass+1)) {
                 cr.setAjax(true);
@@ -250,17 +251,24 @@ public class Dispatcher extends HttpServlet {
             //   to figure out what to invoke?  Or, just look for a
             //   well-defined class?
 
-            StringWriter sWriter= new StringWriter();
             Throwable cause =  e.getCause();
             if (cause == null) {
                 cause = e;
             }
-            basicMessage = cause.getMessage();
-            cause.printStackTrace(new PrintWriter(sWriter));
-            fullMessage = "unhandled exception for URL \""
-                    + Util.getUrlWithQuery(request) + "\"\n"
-                    + sWriter.toString();
-            logger.error(fullMessage);
+            if (cause instanceof HandledError) {
+                // There was an error, but it was already handled.  The
+                // error was thrown simply to terminate the processing of
+                // the request.
+                cr.finish();
+            } else {
+                StringWriter sWriter= new StringWriter();
+                basicMessage = cause.getMessage();
+                cause.printStackTrace(new PrintWriter(sWriter));
+                fullMessage = "unhandled exception for URL \""
+                        + Util.getUrlWithQuery(request) + "\"\n"
+                        + sWriter.toString();
+                logger.error(fullMessage);
+            }
         }
     }
 

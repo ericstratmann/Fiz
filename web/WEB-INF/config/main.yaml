@@ -2,10 +2,6 @@
 #
 # This dataset contains overall configuration options for Fiz.
 
-# When a DataRequest returns an error, the following option provides a
-# default template to generate an HTML message from the error dataset.
-errorTemplate: "Error: @message"
-
 # The following value is overwritten by Fiz during initialization to
 # hold the home directory where all of the files for this application
 # reside (the "context root" for the Servlet).

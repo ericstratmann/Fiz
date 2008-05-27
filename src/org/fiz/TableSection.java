@@ -12,10 +12,14 @@ package org.fiz;
  *                   value will be supplied; specify this property with an
  *                   empty value if you want an empty table to simply appear
  *                   empty.
- *   errorTemplate:  (optional) If {@code request} returns an error, this
- *                   template will be expanded using the main dataset and
- *                   displayed in a single row in the table.  If this
- *                   property is omitted, then a default is supplied.
+ *   errorStyle:     (optional) If {@code request} returns an error then
+ *                   this property contains the name of a template in the
+ *                   {@code errors} dataset, which is expanded with the
+ *                   error data and the main dataset.  The resulting HTML
+ *                   is displayed as the body of the table unless
+ *                   {@code errorHandling} starts with "bulletin", in which
+ *                   case the resulting HTML is displayed in the bulletin
+ *                   and the table is empty. Defaults to "tableSection".
  *   id:             (optional) Used as the {@code id} attribute for the
  *                   HTML table that displays the TableSection.
  *   lastRowClass:   (optional) If this property is defined, its value will
@@ -132,9 +136,10 @@ public class TableSection implements Section {
             out.append("  <tr class=\"error\">\n    <td colspan=\"");
             out.append(columns.length);
             out.append("\">");
-            Dataset errorDataset = dataRequest.getErrorData();
-            Template.expand(Util.getErrorTemplate(properties),
-                    new CompoundDataset(errorDataset, mainDataset), out);
+            Dataset errorData = dataRequest.getErrorData();
+            errorData.set("sectionType", "table");
+            cr.showErrorInfo(properties.check("errorStyle"),
+                    "tableSection", errorData);
             out.append("</td>\n  </tr>\n");
         } else {
             Dataset[] rows = response.getChildren("record");

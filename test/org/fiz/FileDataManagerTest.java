@@ -88,7 +88,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "    y: 58\n" +
                 "second: def\n" +
                 "third:  ghi\n", request1.getResponseData().toString());
-        assertEquals("response for first request",
+        assertEquals("response for second request",
                 "x: 47\n" +
                 "y: 58\n", request2.getResponseData().toString());
     }
@@ -132,6 +132,34 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "    name: Alice\n",
                 Util.readFile("_testData_/test.yml").toString());
     }
+    public void test_startRequests_error() {
+        TestUtil.writeFile("_testData_/test.yml",
+                "first: abc\n" +
+                "error1:\n" +
+                "  message: 7.9 earthquake\n" +
+                "  culprit: San Andreas\n" +
+                "second: def\n" +
+                "third: ghi\n");
+        DataRequest request1 = new DataRequest(new Dataset("manager", "test",
+                "request", "error", "file", "test"));
+        DataRequest request2 = new DataRequest(new Dataset("manager", "test",
+                "request", "error", "file", "test", "dataset", "error1"));
+        ArrayList<DataRequest> requests = new ArrayList<DataRequest>();
+        requests.add(request1);
+        requests.add(request2);
+        manager.startRequests(requests);
+        assertEquals("response for first request",
+                "error1:\n" +
+                "    culprit: San Andreas\n" +
+                "    message: 7.9 earthquake\n" +
+                "first:  abc\n" +
+                "second: def\n" +
+                "third:  ghi\n", request1.getErrorData().toString());
+        assertEquals("response for second request",
+                "culprit: San Andreas\n" +
+                "message: 7.9 earthquake\n",
+                request2.getErrorData().toString());
+    }
     public void test_startRequests_unknownOperation() {
         DataRequest request = new DataRequest(new Dataset("manager", "test",
                 "request", "bogus"));
@@ -141,8 +169,8 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         assertEquals("response", null, request.getResponseData());
         assertEquals("error information",
                 "message: \"unknown request \\\"bogus\\\" for " +
-                "FileDataManager; must be create, read, update, or " +
-                "delete\"\n",
+                "FileDataManager; must be create, read, update, " +
+                "delete, or error\"\n",
                 request.getErrorData().toString());
     }
     public void test_startRequests_missingParameter_operationNonNull() {
@@ -220,6 +248,22 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "second: def\n" +
                 "third:  ghi\n",
                 Util.readFile("_testData_/test.yml").toString());
+    }
+
+    public void test_errorOperation() {
+        TestUtil.writeFile("_testData_/test.yml",
+                "first: abc\n" +
+                "error1:\n" +
+                "  message: Name not in database\n" +
+                "  culprit: name\n" +
+                "second: def\n" +
+                "third: ghi\n");
+        DataRequest request = new DataRequest(new Dataset("manager", "test"));
+        manager.errorOperation(request, new Dataset("file", "test",
+                "dataset", "error1"));
+        assertEquals("response", "culprit: name\n" +
+                "message: Name not in database\n",
+                request.getErrorData().toString());
     }
 
     public void test_readOperation() {

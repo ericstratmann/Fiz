@@ -35,6 +35,8 @@ import java.util.*;
  *                       {@code data} is omitted this request removes all
  *                       elements in the top-level dataset but retains the
  *                       dataset and file.
+ *             error:    Generates an error, using the target dataset
+ *                       as the error information to return.
  *   file:     (required) Name of the file containing the desired dataset.
  *             If the file already exists then it must contain a
  *             dataset in a supported format.  The file name is looked up
@@ -107,17 +109,17 @@ public class FileDataManager extends DataManager {
                     createOperation(request, parameters);
                 } else if (operation.equals("read")) {
                     readOperation(request, parameters);
-                } else
-                if (operation.equals("update")) {
+                } else if (operation.equals("update")) {
                     updateOperation(request, parameters);
-                } else
-                if (operation.equals("delete")) {
+                } else if (operation.equals("delete")) {
                     deleteOperation(request, parameters);
+                } else if (operation.equals("error")) {
+                    errorOperation(request, parameters);
                 } else {
                     request.setError(new Dataset("message",
                             "unknown request \"" + operation +
                             "\" for FileDataManager; must be create, " +
-                            "read, update, or delete"));
+                            "read, update, delete, or error"));
                 }
             }
             catch (Dataset.MissingValueError e) {
@@ -157,6 +159,19 @@ public class FileDataManager extends DataManager {
         target.copyFrom(parameters.getChild("values"));
         root.writeFile(root.getFileName(), null);
         request.setComplete(new Dataset());
+    }
+
+    /**
+     * This method implements the "error" request.  Upon return the request
+     * has been completed with either a response or an error.
+     * @param request              The request being serviced.
+     * @param parameters           The input dataset for the request.
+     */
+    protected void errorOperation(DataRequest request, Dataset parameters) {
+        Dataset d = loadDataset(parameters.get("file"));
+        Dataset target = findNestedDataset(d, parameters.check("dataset"),
+                request);
+        request.setError(target);
     }
 
     /**

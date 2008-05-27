@@ -436,6 +436,7 @@ public class CompoundDataset extends Dataset {
     public Object lookupPath(String path, DesiredType wanted) {
         ArrayList<Object> results = new ArrayList<Object>();
         for (Dataset component : components) {
+            // TODO: this approach makes it impossible to have a component that is another CompoundDataset.
             lookupPathHelper(path, 0, component.map, wanted, results);
             if ((results.size() > 0) && ((wanted == DesiredType.STRING)
                     || (wanted == DesiredType.DATASET))) {

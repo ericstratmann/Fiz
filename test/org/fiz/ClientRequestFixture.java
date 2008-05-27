@@ -17,8 +17,8 @@ public class ClientRequestFixture extends ClientRequest {
         DataManagerFixture.clearLogs();
         DataManager.logger.setLevel(Level.ERROR);
 
-        // Modify the Html object so it will find Javascript files.
-        getHtml().jsDirectory = "javascript/";
+        // Create the Html object specially so it will find Javascript files.
+        html = new Html(null);
 
         // Provide some initial query values in the main dataset.
         Dataset main = getMainDataset();

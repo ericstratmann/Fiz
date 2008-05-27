@@ -190,6 +190,17 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
         TestUtil.deleteTree("_test1_");
     }
+    public void test_newFileInstanceFromPath_dontReturnCompoundForOneDataset() {
+        (new File("_test1_")).mkdir();
+        (new File("_test1_/child")).mkdir();
+        TestUtil.writeFile("_test1_/child/test.yaml", "third: value\n");
+        Dataset d = Dataset.newFileInstanceFromPath("test",
+                new String[] {"_test1_", "_test1_/child"},
+                Dataset.PathHandling.COMPOUND);
+        assertEquals("class name for result", "YamlDataset",
+                d.getClass().getSimpleName());
+        TestUtil.deleteTree("_test1_");
+    }
 
     public void test_addChild() {
         Dataset d = new Dataset("first", "12345", "child", "Fred");

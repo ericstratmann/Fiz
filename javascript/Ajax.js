@@ -40,9 +40,6 @@
  *       response.  The initiating code has control only over error handling.
  */
 
-// Create the overall Fiz container if it doesn't already exist.
-try {Fiz} catch (e) {Fiz = Object();}
-
 /**
  * Create an Ajax object and initiate a server request.  This function
  * returns when the request has been initiated, but before it has been

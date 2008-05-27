@@ -32,6 +32,10 @@ public class DispatcherTest1 extends Interactor {
     public void error(ClientRequest cr) {
         throw new Error("error in method");
     }
+    public void handledError(ClientRequest cr) {
+        throw new HandledError(new Dataset("message", "error handled OK",
+                "name", "Alice"));
+    }
     private void privateMethod(ClientRequest cr) {
     }
     public void twoArgs(ClientRequest cr, int count) {

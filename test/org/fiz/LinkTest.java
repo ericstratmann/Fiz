@@ -137,7 +137,7 @@ public class LinkTest extends junit.framework.TestCase {
                 "Fiz.Ajax(&quot;/ajaxUrl?age=24&amp;name=Alice&amp;" +
                 "weight=%22110%22&quot;);\">Alice</a>", out.toString());
         TestUtil.assertSubstring("include Javascript file",
-                "/context/cpath/Ajax.js",
+                "/servlet/Ajax.js",
                 cr.getHtml().jsHtml.toString());
         TestUtil.assertXHTML(out.toString());
     }

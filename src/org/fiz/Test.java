@@ -46,6 +46,34 @@ public class Test extends Interactor {
                 "fonts and colors match the stylesheets.</p>\n");
     }
 
+    // Display form with a multiple-select element in it, so we can see
+    // how these values are handled.
+    public void select(ClientRequest cr) {
+        Html html = cr.getHtml();
+        StringBuilder body = html.getBody();
+        html.setTitle("Test Form Selct Element");
+        body.append("<form id=\"form1\" name=\"form1\">\n" +
+                "<select id=\"select1\" name=\"s1\" size=\"10\" " +
+                "multiple=\"multiple\">\n" +
+                "<option id=\"option1\" value=\"alice\">Alice</option>\n" +
+                "<option id=\"option2\" value=\"bob\">Bob</option>\n" +
+                "<option id=\"option3\" value=\"carol\">Carol</option>\n" +
+                "<option id=\"option4\" value=\"david\">David</option>\n" +
+                "</select>\n" +
+                "<br> <input type=\"checkbox\" id=\"check1\" name=\"married\" " +
+                "       value=\"yes\" />Married?\n" +
+                "</form>\n");
+        Link link = new Link(new Dataset("text", "See select value",
+                "javascript", "alert(\"Select value: \" + " +
+                "document.getElementById(\"select1\").value);"));
+        link.html(cr, cr.getMainDataset(), body);
+        body.append("<br />\n");
+        Link link2 = new Link(new Dataset("text", "See checkbox value",
+                "javascript", "alert(\"Checkbox value: \" + " +
+                "document.getElementById(\"check1\").value);"));
+        link2.html(cr, cr.getMainDataset(), body);
+    }
+
     public void showTime(ClientRequest cr) {
         Html html = cr.getHtml();
         html.setTitle("Ajax Test Page");

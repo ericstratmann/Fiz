@@ -1,0 +1,30 @@
+# errors.yaml --
+#
+# This datasheet contains templates used to generate HTML for error
+# messages in various situations.  Each template is expanded in the
+# context of an error dataset and the main dataset to produce HTML
+# to display in a particular location, such as the bulletin or an
+# error message for a form element.
+
+# Used when displaying errors in the bulletin area at the top a page.
+bulletin: @message
+
+# Used when a post request fails and identifies a particular form element
+# as the culprit.  The HML is displayed next to the form element, typically
+# in a row underneath it.
+formElement: <span class="error">@message</span>
+
+# Used when a FormSection can't be displayed because of an error
+# in its data request.
+formSection: >
+    <div class="sectionError">Can't display this form: @message</div>
+
+# Used when a FormSection can't be displayed because of an error
+# in its data request: the expanded result will be displayed as a
+# single row in the table.
+tableSection: Can't display this table: @message
+
+# Used when a TemplateSection can't be displayed because of an error
+# in its a request.
+templateSection: >
+    <div class="sectionError">Can't display this section: @message</div>

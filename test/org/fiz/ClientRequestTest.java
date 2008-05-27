@@ -99,6 +99,15 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "html: \"Alice\"}];",
                 out.toString());
     }
+    public void test_finish_ajax_noActions() throws IOException {
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        cr.setAjax(true);
+        cr.finish();
+        assertEquals("response",
+                "var actions = [];",
+                out.toString());
+    }
     public void test_finish_html() throws IOException {
         PrintWriter writer = cr.getServletResponse().getWriter();
         StringWriter out = ((ServletResponseFixture)
@@ -108,6 +117,8 @@ public class ClientRequestTest extends junit.framework.TestCase {
         TestUtil.assertSubstring("response",
                 "</head>\n" +
                 "<body>\n" +
+                "<script type=\"text/javascript\" src=\"/servlet/Fiz.js\">" +
+                "</script>\n" +
                 "page body</body>\n" +
                 "</html>",
                 out.toString());
@@ -240,6 +251,60 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("set to true", true, cr.isAjax());
         cr.setAjax(false);
         assertEquals("set to false", false, cr.isAjax());
+    }
+
+    public void test_setBulletinError_ajax() {
+        Config.setDataset("errors", new Dataset("bulletin", "XXX @message"));
+        cr.setAjax(true);
+        cr.setBulletinError(new Dataset("message", "sample <error>"));
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        assertEquals("ajax response",
+                "var actions = [{type: \"eval\", javascript: " +
+                "\"Fiz.setBulletin(\\\"XXX sample &lt;error&gt;\\\");\"}",
+                out.toString());
+    }
+    public void test_setBulletinError_html() {
+        Config.setDataset("errors", new Dataset("bulletin", "XXX @message"));
+        cr.setBulletinError(new Dataset("message", "sample error"));
+        assertEquals("Javascript code",
+                "Fiz.setBulletin(\"XXX sample error\");",
+                cr.getHtml().jsCode.toString());
+    }
+
+    public void test_showErrorInfo_bulletin() {
+        Config.setDataset("errors", new Dataset("bulletin123",
+                "Bulletin: @message (from @name)"));
+        cr.showErrorInfo("bulletin123", "sample",
+                new Dataset("message", "sample <error>"));
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        assertEquals("Javascript code",
+                "Fiz.setBulletin(\"Bulletin: sample &lt;error&gt; " +
+                "(from Alice)\");",
+                cr.getHtml().jsCode.toString());
+    }
+    public void test_showErrorInfo_defaultStyle() {
+        Config.setDataset("errors", new Dataset("bulletin123",
+                "Bulletin: @message"));
+        cr.showErrorInfo(null, "bulletin123",
+                new Dataset("message", "sample <error>"));
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        assertEquals("Javascript code",
+                "Fiz.setBulletin(\"Bulletin: sample &lt;error&gt;\");",
+                cr.getHtml().jsCode.toString());
+    }
+    public void test_showErrorInfo_notBulletin() {
+        Config.setDataset("errors", new Dataset("style",
+                "<div class=\"error\">@message (from @name)</div>"));
+        cr.showErrorInfo("style", null,
+                new Dataset("message", "sample <error>"));
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        assertEquals("generated HTML",
+                "<div class=\"error\">sample &lt;error&gt; (from Alice)</div>",
+                cr.getHtml().getBody().toString());
     }
 
     public void test_showSections() {

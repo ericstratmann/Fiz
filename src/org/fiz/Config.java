@@ -40,6 +40,18 @@ public class Config {
     }
 
     /**
+     * Retrieve a value from a configuration dataset; generate an error
+     * if either the dataset or the value doesn't exist.
+     * @param datasetName          Name of the desired dataset.
+     * @param name                 Name of the desired value (a top-level
+     *                             value in the dataset).
+     * @return
+     */
+    public static String get(String datasetName, String name) {
+        return getDataset(datasetName).get(name);
+    }
+
+    /**
      * Given the name for a configuration dataset, this method finds the
      * file containing that dataset, loads it, and returns the corresponding
      * Dataset object.  Once loaded, datasets are cached to allow faster
@@ -62,7 +74,7 @@ public class Config {
             return result;
         }
 
-        // Not cached; find the mdataset and cache it.
+        // Not cached; find the dataset and cache it.
         result = Dataset.newFileInstanceFromPath(name, path,
                 Dataset.PathHandling.COMPOUND);
         cache.put(name, result);
@@ -85,7 +97,7 @@ public class Config {
      * @return                     Array of directories searched for
      *                             configuration datasets.
      */
-    public static synchronized String[] getPath() {
+    public static synchronized String[] getSearchPath() {
         return path.clone();
     }
 }

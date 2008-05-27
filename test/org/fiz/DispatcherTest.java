@@ -1,6 +1,4 @@
 package org.fiz;
-import java.io.File;
-import javax.servlet.http.*;
 import javax.servlet.*;
 
 import org.apache.log4j.Level;
@@ -31,11 +29,11 @@ public class DispatcherTest  extends junit.framework.TestCase {
         ServletConfigFixture config = new ServletConfigFixture(context);
         dispatcher.init(config);
         assertEquals("Config path", "test/testData/WEB-INF/config",
-                Config.getPath()[0]);
+                Config.getSearchPath()[0]);
         assertEquals("home entry in main config dataset", "test/testData",
                 Config.getDataset("main").check("home"));
         assertEquals("Css path", "test/testData/WEB-INF/css",
-                Css.getPath()[0]);
+                Css.getSearchPath()[0]);
     }
 
     public void test_destroy() {
@@ -129,8 +127,9 @@ public class DispatcherTest  extends junit.framework.TestCase {
                 "/dispatcherTest1/incCount/extra"),
                 new ServletResponseFixture());
         assertEquals("dispatcherTest1/incCount, " +
-                "dispatcherTest1/ajaxIncCount, dispatcherTest1/resetCount" +
-                ", dispatcherTest1/error",
+                "dispatcherTest1/ajaxIncCount, " +
+                "dispatcherTest1/handledError, " +
+                "dispatcherTest1/resetCount, dispatcherTest1/error",
                 StringUtil.join(dispatcher.methodMap.keySet(), ", "));
     }
     public void test_service_methodNotFound() {
@@ -157,6 +156,12 @@ public class DispatcherTest  extends junit.framework.TestCase {
                 new ServletResponseFixture());
         TestUtil.assertSubstring("error message", "error in method",
                 dispatcher.basicMessage);
+    }
+    public void test_service_HandledError() {
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest1/handledError"),
+                new ServletResponseFixture());
+        assertEquals("error message", null, dispatcher.basicMessage);
     }
     public void test_service_handlingException() {
         dispatcher.service(new ServletRequestFixture("/dispatcherTest1/error"),
