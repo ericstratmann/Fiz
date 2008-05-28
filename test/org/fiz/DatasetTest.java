@@ -36,11 +36,6 @@ public class DatasetTest extends junit.framework.TestCase {
                 e.getMessage());
     }
 
-    public void test_WrongTypeError() {
-        Error e = new Dataset.WrongTypeError("simple message");
-        assertEquals("simple message", e.getMessage());
-    }
-
     public void test_UnknownFileFormatError() {
         Error e = new Dataset.UnknownFileFormatError("simple message");
         assertEquals("simple message", e.getMessage());
@@ -465,24 +460,14 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("number of children", 2, children.length);
         assertEquals("name of second child", "Bob", children[1].get("name"));
     }
-    public void test_getChildren_keyExists() {
-        boolean gotException = false;
-        Dataset d = new Dataset(new String[] {"a", "a_value"});
-        try {
-            d.getChildren("a");
-        }
-        catch (Dataset.WrongTypeError e) {
-            assertEquals("exception message",
-                    "wrong type for dataset element \"a\": expected nested "
-                    + "dataset but found string value \"a_value\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
     public void test_getChildren_noSuchKey() {
         Dataset d = new Dataset("a", "a_value");
         Dataset[] children = d.getChildren("nonexistent");
+        assertEquals("number of children", 0, children.length);
+    }
+    public void test_getChildren_valueIsString() {
+        Dataset d = new Dataset("a", "a_value");
+        Dataset[] children = d.getChildren("a");
         assertEquals("number of children", 0, children.length);
     }
 
@@ -537,30 +522,113 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
     }
 
-    public void test_lookup_foundStringValue() {
-        Dataset d = new Dataset("a", "a_value", "b", "b_value");
-        assertEquals("string value", "b_value",
-                d.lookup("b", Dataset.DesiredType.STRING));
-    }
-    public void test_lookup_wantNestedDataset() {
-        boolean gotException = false;
-        Dataset d = new Dataset("a", "a_value");
-        try {
-            d.lookup("a", Dataset.DesiredType.DATASET);
-        }
-        catch (Dataset.WrongTypeError e) {
-            assertEquals("exception message",
-                    "wrong type for dataset element \"a\": expected nested "
-                    + "dataset but found string value \"a_value\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
     public void test_lookup_nonexistentKey() {
         Dataset d = new Dataset("a", "a_value", "b", "b_value");
         assertEquals("null return value", null,
                 d.lookup("c", Dataset.DesiredType.STRING));
+    }
+    public void test_lookup_foundStringWantedString() {
+        Dataset d = new Dataset("a", "a_value", "b", "b_value");
+        assertEquals("string value", "b_value",
+                d.lookup("b", Dataset.DesiredType.STRING));
+    }
+    public void test_lookup_foundStringWantedAll() {
+        Dataset d = new Dataset("a", "a_value", "b", "b_value");
+        Object value = d.lookup("b", Dataset.DesiredType.ALL);
+        assertEquals("type of result", "Object[]",
+                value.getClass().getSimpleName());
+        assertEquals("result value", "b_value",
+                StringUtil.join((Object[]) value, ", "));
+    }
+    public void test_lookup_foundStringWantedDataset() {
+        Dataset d = new Dataset("a", "a_value", "b", "b_value");
+        Object value = d.lookup("b", Dataset.DesiredType.DATASET);
+        assertEquals("result", null, value);
+    }
+    public void test_lookup_foundHashMapWantedString() {
+        Dataset d = YamlDataset.newStringInstance("child:\n  name: Alice\n" +
+                "  age: 24\n");
+        Object value = d.lookup("child", Dataset.DesiredType.STRING);
+        assertEquals("result", null, value);
+    }
+    public void test_lookup_foundHashMapWantedDataset() {
+        Dataset d = YamlDataset.newStringInstance("child:\n  name: Alice\n" +
+                "  age: 24\n");
+        Object value = d.lookup("child", Dataset.DesiredType.DATASET);
+        assertEquals("type of result", "Dataset",
+                value.getClass().getSimpleName());
+        assertEquals("result value", "age:  24\n" +
+                "name: Alice\n", value.toString());
+    }
+    public void test_lookup_foundHashMapWantedDatasets() {
+        Dataset d = YamlDataset.newStringInstance("child:\n  name: Alice\n" +
+                "  age: 24\n");
+        Object value = d.lookup("child", Dataset.DesiredType.DATASETS);
+        assertEquals("type of result", "Dataset[]",
+                value.getClass().getSimpleName());
+        assertEquals("result value", "age:  24\n" +
+                "name: Alice\n", StringUtil.join((Dataset[]) value, "----\n"));
+    }
+    public void test_lookup_foundHashMapWantedAll() {
+        Dataset d = YamlDataset.newStringInstance("child:\n  name: Alice\n" +
+                "  age: 24\n");
+        Object value = d.lookup("child", Dataset.DesiredType.ALL);
+        assertEquals("type of result", "Object[]",
+                value.getClass().getSimpleName());
+        assertEquals("result value", "age:  24\n" +
+                "name: Alice\n", StringUtil.join((Object[]) value, "----\n"));
+    }
+    public void test_lookup_foundArrayListWantedString() {
+        Dataset d = YamlDataset.newStringInstance(
+                "child:\n  - name: Alice\n" +
+                "    age: 24\n" +
+                "  - name: Bob\n" +
+                "    age: 32\n");
+        Object value = d.lookup("child", Dataset.DesiredType.STRING);
+        assertEquals("result", null, value);
+    }
+    public void test_lookup_foundArrayListWantedDataset() {
+        Dataset d = YamlDataset.newStringInstance(
+                "child:\n  - name: Alice\n" +
+                "    age: 24\n" +
+                "  - name: Bob\n" +
+                "    age: 32\n");
+        Object value = d.lookup("child", Dataset.DesiredType.DATASET);
+        assertEquals("type of result", "Dataset",
+                value.getClass().getSimpleName());
+        assertEquals("result value", "age:  24\n" +
+                "name: Alice\n", value.toString());
+    }
+    public void test_lookup_foundArrayListWantedDatasets() {
+        Dataset d = YamlDataset.newStringInstance(
+                "child:\n  - name: Alice\n" +
+                "    age: 24\n" +
+                "  - name: Bob\n" +
+                "    age: 32\n");
+        Object value = d.lookup("child", Dataset.DesiredType.DATASETS);
+        assertEquals("type of result", "Dataset[]",
+                value.getClass().getSimpleName());
+        assertEquals("result value", "age:  24\n" +
+                "name: Alice\n" +
+                "----\n" +
+                "age:  32\n" +
+                "name: Bob\n",
+                StringUtil.join((Dataset[]) value, "----\n"));
+    }
+    public void test_lookup_foundArrayListWantedAll() {
+        Dataset d = YamlDataset.newStringInstance(
+                "child:\n  - name: Alice\n" +
+                "    age: 24\n" +
+                "  - name: Bob\n" +
+                "    age: 32\n");
+        Object value = d.lookup("child", Dataset.DesiredType.ALL);
+        assertEquals("type of result", "Object[]",
+                value.getClass().getSimpleName());
+        assertEquals("result value", "age:  24\n" +
+                "name: Alice\n" +
+                "----\n" +
+                "age:  32\n" +
+                "name: Bob\n", StringUtil.join((Object[]) value, "----\n"));
     }
 
     public void test_lookupPath() {
@@ -693,159 +761,6 @@ public class DatasetTest extends junit.framework.TestCase {
                 Dataset.DesiredType.ALL, results);
         assertEquals("all wanted", "{name=Alice}",
                 StringUtil.join(results, ", "));
-    }
-
-    public void test_checkValue_wantedStringGotString() {
-        Dataset d = new Dataset();
-        assertEquals("value", "abc", d.checkValue("a",
-                Dataset.DesiredType.STRING, new String("abc")));
-    }
-    public void test_checkValue_wantedStringGotChild() {
-        boolean gotException = false;
-        Dataset d = new Dataset();
-        try {
-            d.checkValue("a", Dataset.DesiredType.STRING, new HashMap());
-        }
-        catch (Dataset.WrongTypeError e) {
-            assertEquals("exception message",
-                    "wrong type for dataset element \"a\": expected string "
-                    + "value but found nested dataset",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-    public void test_checkValue_wantedStringGotList() {
-        boolean gotException = false;
-        Dataset d = new Dataset();
-        try {
-            d.checkValue("a", Dataset.DesiredType.STRING, new ArrayList());
-        }
-        catch (Dataset.WrongTypeError e) {
-            assertEquals("exception message",
-                    "wrong type for dataset element \"a\": expected string "
-                    + "value but found list",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-    public void test_checkValue_wantedChildGotString() {
-        boolean gotException = false;
-        Dataset d = new Dataset();
-        try {
-            d.checkValue("a", Dataset.DesiredType.DATASET, new String("abc"));
-        }
-        catch (Dataset.WrongTypeError e) {
-            assertEquals("exception message",
-                    "wrong type for dataset element \"a\": expected nested "
-                    + "dataset but found string value \"abc\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-    public void test_checkValue_wantedChildGotChild() {
-        Dataset d = new Dataset();
-        HashMap<String,String> map = new HashMap<String,String>();
-        map.put("name", "Alice");
-        Object result = d.checkValue("a", Dataset.DesiredType.DATASET, map);
-        assertEquals("class of result", "Dataset",
-                result.getClass().getSimpleName());
-        assertEquals("contents of returned dataset", "Alice",
-                ((Dataset) result).get("name"));
-    }
-    @SuppressWarnings("unchecked")
-    public void test_checkValue_wantedDatasetGotList() {
-        ArrayList<HashMap> list = new ArrayList<HashMap>();
-        list.add(new HashMap());
-        list.get(0).put("name", "Bob");
-        list.add(new HashMap());
-        list.get(1).put("name", "Alice");
-        Dataset d = new Dataset();
-        Object result = d.checkValue("a", Dataset.DesiredType.DATASET, list);
-        assertEquals("class of result", "Dataset",
-                result.getClass().getSimpleName());
-        assertEquals("contents of returned dataset", "Bob",
-                ((Dataset) result).get("name"));
-    }
-    public void test_checkValue_wantedListGotString() {
-        boolean gotException = false;
-        Dataset d = new Dataset();
-        try {
-            d.checkValue("a", Dataset.DesiredType.DATASETS, new String("abc"));
-        }
-        catch (Dataset.WrongTypeError e) {
-            assertEquals("exception message",
-                    "wrong type for dataset element \"a\": expected nested "
-                    + "dataset but found string value \"abc\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-    public void test_checkValue_wantedListGotChild() {
-        Dataset d = new Dataset();
-        HashMap<String,String> map = new HashMap<String,String>();
-        map.put("name", "Alice");
-        Object result = d.checkValue("a", Dataset.DesiredType.DATASETS, map);
-        assertEquals("class of result", "Dataset[]",
-                result.getClass().getSimpleName());
-        Dataset[] array = (Dataset[]) result;
-        assertEquals("size of array", 1, array.length);
-        assertEquals("contents of returned dataset", "Alice",
-                array[0].get("name"));
-    }
-    @SuppressWarnings("unchecked")
-    public void test_checkValue_WantedListGotList() {
-        ArrayList<HashMap> list = new ArrayList<HashMap>();
-        list.add(new HashMap());
-        list.get(0).put("name", "Bob");
-        list.add(new HashMap());
-        list.get(1).put("name", "Alice");
-        Dataset d = new Dataset();
-        Object result = d.checkValue("a", Dataset.DesiredType.DATASETS, list);
-        assertEquals("class of result", "Dataset[]",
-                result.getClass().getSimpleName());
-        Dataset[] array = (Dataset[]) result;
-        assertEquals("size of array", 2, array.length);
-        assertEquals("contents of first dataset", "Bob",
-                array[0].get("name"));
-        assertEquals("contents of second dataset", "Alice",
-                array[1].get("name"));
-    }
-    public void test_checkValue_wantedAnythingGotString() {
-        Dataset d = new Dataset();
-        assertEquals("value", "abc", d.checkValue("a",
-                Dataset.DesiredType.ALL, new String("abc")));
-    }
-    public void test_checkValue_wantedAnythingGotChild() {
-        Dataset d = new Dataset();
-        HashMap<String,String> map = new HashMap<String,String>();
-        map.put("name", "Alice");
-        Object result = d.checkValue("a", Dataset.DesiredType.ALL, map);
-        assertEquals("class of result", "Dataset",
-                result.getClass().getSimpleName());
-        assertEquals("contents of returned dataset", "Alice",
-                ((Dataset) result).get("name"));
-    }
-    @SuppressWarnings("unchecked")
-    public void test_checkValue_wantedAnythingGotList() {
-        ArrayList<HashMap> list = new ArrayList<HashMap>();
-        list.add(new HashMap());
-        list.get(0).put("name", "Bob");
-        list.add(new HashMap());
-        list.get(1).put("name", "Alice");
-        Dataset d = new Dataset();
-        Object result = d.checkValue("a", Dataset.DesiredType.ALL, list);
-        assertEquals("class of result", "Dataset[]",
-                result.getClass().getSimpleName());
-        Dataset[] array = (Dataset[]) result;
-        assertEquals("size of array", 2, array.length);
-        assertEquals("contents of first dataset", "Bob",
-                array[0].get("name"));
-        assertEquals("contents of second dataset", "Alice",
-                array[1].get("name"));
     }
 
     public void test_cloneHelper() {
@@ -1164,31 +1079,5 @@ public class DatasetTest extends junit.framework.TestCase {
                 ", last", StringUtil.join((Object[]) result, ", "));
         assertEquals("preserve file name", "xyzzy",
                 ((Dataset) ((Object[]) result)[2]).fileName);
-    }
-
-    public void test_wrongTypeMessage_nested() {
-        assertEquals("wrong type for dataset element \"key_name\": expected "
-                + "string value but found nested dataset",
-                Dataset.wrongTypeMessage("key_name",
-                Dataset.DesiredType.STRING, new HashMap()));
-    }
-    public void test_wrongTypeMessage_list() {
-        assertEquals("wrong type for dataset element \"key_name\": expected "
-                + "nested dataset but found list",
-                Dataset.wrongTypeMessage("key_name",
-                Dataset.DesiredType.DATASET, new ArrayList()));
-    }
-    public void test_wrongTypeMessage_string() {
-        assertEquals("wrong type for dataset element \"key_name\": expected "
-                + "string value but found string value \"472\"",
-                Dataset.wrongTypeMessage("key_name",
-                Dataset.DesiredType.STRING, new Integer(472)));
-    }
-    public void test_wrongTypeMessage_stringButLong() {
-        assertEquals("wrong type for dataset element \"key_name\": expected "
-                + "string value but found string value \"test 01234567890 ...\"",
-                Dataset.wrongTypeMessage("key_name",
-                Dataset.DesiredType.STRING,
-                "test 01234567890 test2 01234567890"));
     }
 }

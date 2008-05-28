@@ -379,12 +379,16 @@ public class DataRequest {
                 continue;
             }
             Object value = error.lookup(name, Dataset.DesiredType.ALL);
-            if (!(value instanceof String)) {
+            if (value == null) {
+                continue;
+            }
+            Object first = ((Object[]) value)[0];
+            if (!(first instanceof String)) {
                 continue;
             }
             result.append(prefix);
             result.append(String.format("%-12s %s", (name + ":"),
-                    ((String) value).replace("\n", indent)));
+                    ((String) first).replace("\n", indent)));
             prefix = prefix2;
         }
         return result.toString();

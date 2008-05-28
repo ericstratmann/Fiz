@@ -200,136 +200,6 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
     }
 
-    public void test_get() {
-        assertEquals("value in first dataset", "111", compound.get("a"));
-        assertEquals("value in last dataset", "444", compound.get("c"));
-        assertEquals("first value found is nested dataset", "nnn",
-                compound.get("nested"));
-    }
-    public void test_get_noSuchValue() {
-        boolean gotException = false;
-        try {
-            compound.get("abcde");
-        }
-        catch (Dataset.MissingValueError e) {
-            assertEquals("exception message",
-                    "couldn't find dataset element \"abcde\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-
-    public void test_getChild() {
-        assertEquals("child in first dataset",
-                "x: x_value\n" +
-                "y: y_value\n",
-                compound.getChild("nested").toString());
-        assertEquals("child in last dataset", "name: Alice\n",
-                compound.getChild("child").toString());
-        assertEquals("string value with same name as child", "value: 88\n",
-                compound.getChild("b").toString());
-    }
-    public void test_getChild_noSuchValue() {
-        boolean gotException = false;
-        try {
-            compound.getChild("abcde");
-        }
-        catch (Dataset.MissingValueError e) {
-            assertEquals("exception message",
-                    "couldn't find dataset element \"abcde\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-
-    public void test_getChildPath() {
-        Dataset d1 = YamlDataset.newStringInstance(
-                "x: 99\n");
-        Dataset d2 = YamlDataset.newStringInstance(
-                "a:\n" +
-                "  b:\n" +
-                "    name: Alice\n" +
-                "    age: 28\n");
-        Dataset compound2 = new CompoundDataset(d1, d2);
-        assertEquals("child in last dataset", "age:  28\n" +
-                "name: Alice\n",
-                compound2.getChildPath("a.b").toString());
-    }
-    public void test_getChildPath_noSuchValue() {
-        boolean gotException = false;
-        try {
-            compound.getChildPath("nested.x.y.bogus");
-        }
-        catch (Dataset.MissingValueError e) {
-            assertEquals("exception message",
-                    "couldn't find dataset element \"nested.x.y.bogus\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-
-    public void test_getChildren() {
-        Dataset[] children = compound.getChildren("nested");
-        assertEquals("number of children", 3, children.length);
-        assertEquals("first child",
-                "x: x_value\n" +
-                "y: y_value\n",
-                children[0].toString());
-        assertEquals("second child",
-                "x: xxxx\n" +
-                "z: yyyy\n",
-                children[1].toString());
-        assertEquals("third child",
-                "x: zzzz\n",
-                children[2].toString());
-    }
-    public void test_getChildren_noMatches() {
-        Dataset[] children = compound.getChildren("bogus");
-        assertEquals("number of children", 0, children.length);
-    }
-
-    public void test_getChildrenPath() {
-        Dataset d1 = YamlDataset.newStringInstance(
-                "a:\n" +
-                "  b:\n" +
-                "    name: Alice\n" +
-                "    age: 28\n");
-        Dataset d2 = YamlDataset.newStringInstance(
-                "a:\n" +
-                "  b: 45\n");
-        Dataset d3 = YamlDataset.newStringInstance(
-                "x: 99\n");
-        Dataset d4 = YamlDataset.newStringInstance(
-                "a:\n" +
-                "  b:\n" +
-                "    - name: Bill\n" +
-                "      age: 92\n" +
-                "    - name: Carol\n" +
-                "      age: 6\n");
-        Dataset compound2 = new CompoundDataset(d1, d2, d3, d4);
-        Dataset[] children = compound2.getChildrenPath("a.b");
-        assertEquals("number of children", 3, children.length);
-        assertEquals("first child",
-                "age:  28\n" +
-                "name: Alice\n",
-                children[0].toString());
-        assertEquals("second child",
-                "age:  92\n" +
-                "name: Bill\n",
-                children[1].toString());
-        assertEquals("third child",
-                "age:  6\n" +
-                "name: Carol\n",
-                children[2].toString());
-    }
-    public void test_getChildrenPath_noMatches() {
-        Dataset[] children = compound.getChildren("bogus.bogus.bogus");
-        assertEquals("number of children", 0, children.length);
-    }
-
     public void test_getComponent() {
         assertEquals("component index 2", compound.components[2],
                 compound.getComponent(2));
@@ -377,16 +247,6 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
         String s = (String) compound.lookup("a",
                 Dataset.DesiredType.STRING);
         assertEquals("wanted == STRING", "111", s);
-    }
-
-    public void test_lookupPath() {
-        Object values[] = (Object[]) compound.lookupPath("nested.x",
-                Dataset.DesiredType.ALL);
-        assertEquals("wanted == ALL", "x_value, xxxx, zzzz",
-                StringUtil.join(values, ", "));
-        String s = (String) compound.lookupPath("nested.x",
-                Dataset.DesiredType.STRING);
-        assertEquals("wanted == STRING", "x_value", s);
     }
 
     public void test_set() {
@@ -469,5 +329,51 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
+    }
+
+    public void test_lookupPathHelper() {
+        ArrayList<Object> results = new ArrayList<Object>();
+        compound.lookupPathHelper("nested.x", 0, null,
+                Dataset.DesiredType.ALL, results);
+        assertEquals("wanted == ALL", "x_value, xxxx, zzzz",
+                StringUtil.join(results, ", "));
+        compound.lookupPathHelper("nested.x", 0, null,
+                Dataset.DesiredType.STRING, results);
+        assertEquals("wanted == STRING", "x_value", results.get(0));
+    }
+
+    public void test_compoundCompound() {
+        // This test makes sure that CompoundDatasets can contain
+        // other CompoundDatasets.
+        Dataset d1 = YamlDataset.newStringInstance(
+                "a: 111\n" +
+                "child:\n" +
+                "  - name: Alice\n" +
+                "    age:  40\n" +
+                "  - name: Bob\n");
+        Dataset d2 = YamlDataset.newStringInstance(
+                "b: 222\n" +
+                "child:\n" +
+                "    name: Carol\n" +
+                "    age:  24\n");
+        Dataset d3 = YamlDataset.newStringInstance(
+                "a: 333\n" +
+                "b: 444\n" +
+                "c: 555\n");
+        Dataset d4 = YamlDataset.newStringInstance(
+                "a: 666\n" +
+                "child:\n" +
+                "  - name: David\n" +
+                "    age:  12\n" +
+                "  - name: Elise\n" +
+                "    age:  18\n" +
+                "  - name: Fred\n");
+        CompoundDataset c1 = new CompoundDataset(d1, d2);
+        CompoundDataset c2 = new CompoundDataset(d3, d4);
+        CompoundDataset compound = new CompoundDataset(c1, c2);
+        assertEquals("nested strings",
+                "Alice, Bob, Carol, David, Elise, Fred",
+                StringUtil.join((Object[]) compound.lookupPath("child.name",
+                Dataset.DesiredType.ALL), ", "));
     }
 }

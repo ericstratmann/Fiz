@@ -142,21 +142,6 @@ public class Dataset implements Cloneable {
     }
 
     /**
-     * WrongTypeError is thrown when the value found by a method such as
-     * {@code get} has the wrong type (e.g., a string value was
-     * needed but a nested dataset was found).
-     */
-    public static class WrongTypeError extends Error {
-        /**
-         * Construct a WrongTypeError with a given message.
-         * @param message          Message to use for the exception
-         */
-        public WrongTypeError(String message) {
-            super(message);
-        }
-    }
-
-    /**
      * UnknownFileFormatError is thrown when {@code writeFile} on a
      * Dataset for which there is no on-disk representation defined
      * (such as this class).
@@ -367,12 +352,7 @@ public class Dataset implements Cloneable {
      *                             it corresponds to a nested dataset.
      */
     public String check(String key) {
-        try {
-            return (String) lookup(key, DesiredType.STRING);
-        }
-        catch (WrongTypeError e) {
-            return null;
-        }
+        return (String) lookup(key, DesiredType.STRING);
     }
 
     /**
@@ -511,33 +491,28 @@ public class Dataset implements Cloneable {
      * the dataset.
      * @param key                  Name of the desired value.
      * @return                     Value associated with {@code key}.
-     * @throws MissingValueError   Thrown if {@code key} can't be found.
-     * @throws WrongTypeError      Thrown if {@code key} corresponds
-     *                             to a nested dataset rather than a string
-     *                             value.
+     * @throws MissingValueError   Thrown if {@code key} can't be found
+     *                             or doesn't refer to a string value.
      */
-    public String get(String key) throws MissingValueError, WrongTypeError {
-        Object child = lookup(key, DesiredType.STRING);
-        if (child == null) {
+    public String get(String key) throws MissingValueError {
+        Object value = lookup(key, DesiredType.STRING);
+        if (value == null) {
             throw new MissingValueError(key);
         }
-        return (String) child;
+        return (String) value;
     }
 
     /**
-     * Create a new Dataset corresponding to the first nested dataset
-     * within the current dataset that has a given name.
+     * Return the first nested dataset within the current dataset that
+     * has a given name.
      * @param key                  Name of the desired child; must be a
      *                             top-level child within the current dataset.
      * @return                     A Dataset providing access to the child.
      * @throws MissingValueError   Thrown if {@code key} is not defined
-     *                             at the top level of the current dataset.
-     * @throws WrongTypeError      Thrown if {@code key} is defined but
-     *                             corresponds to a string value rather than
-     *                             a nested dataset.
+     *                             at the top level of the current dataset
+     *                             or that refers to a string value.
      */
-    public Dataset getChild(String key)
-            throws MissingValueError, WrongTypeError {
+    public Dataset getChild(String key) throws MissingValueError {
         Object child = lookup(key, DesiredType.DATASET);
         if (child == null) {
             throw new MissingValueError(key);
@@ -550,13 +525,10 @@ public class Dataset implements Cloneable {
      * @param path                 A sequence of keys separated by dots.
      * @return                     A Dataset providing access to the child
      * @throws MissingValueError   Thrown if {@code path} is not defined
-     *                             in the current dataset
-     * @throws WrongTypeError      Thrown if {@code path} is defined but
-     *                             corresponds to a string value rather than
-     *                             a nested dataset
+     *                             as a nested dataset within the current
+     *                             dataset.
      */
-    public Dataset getChildPath(String path)
-            throws MissingValueError, WrongTypeError {
+    public Dataset getChildPath(String path) throws MissingValueError {
         Object child = lookupPath(path, DesiredType.DATASET);
         if (child == null) {
             throw new MissingValueError(path);
@@ -571,11 +543,9 @@ public class Dataset implements Cloneable {
      * @return                     An array of Datasets, one for each child
      *                             dataset corresponding to {@code key};
      *                             the array will be empty if there are no
-     *                             children corresponding to {@code key}
-     * @throws WrongTypeError      Thrown if {@code key} refers to a
-     *                             string value rather than nested datasets
+     *                             children corresponding to {@code key}.
      */
-    public Dataset[] getChildren(String key) throws WrongTypeError {
+    public Dataset[] getChildren(String key) {
         Object children = lookup(key, DesiredType.DATASETS);
         if (children == null) {
             return new Dataset[0];
@@ -591,11 +561,9 @@ public class Dataset implements Cloneable {
      *                             descendant dataset corresponding to
      *                             {@code path}; the array will be empty
      *                             if there are no children corresponding to
-     *                             {@code path}
-     * @throws WrongTypeError      Thrown if {@code have} refers to a
-     *                             string value rather than nested datasets
+     *                             {@code path}.
      */
-    public Dataset[] getChildrenPath(String path) throws WrongTypeError {
+    public Dataset[] getChildrenPath(String path) {
         Object children = lookupPath(path, DesiredType.DATASETS);
         if (children == null) {
             return new Dataset[0];
@@ -624,12 +592,9 @@ public class Dataset implements Cloneable {
      * @return                     Value associated with {@code path}
      * @throws MissingValueError   Thrown if there is no value at
      *                             {@code path}.
-     * @throws WrongTypeError      Thrown if a value is found but it is
-     *                             a nested dataset, not a string value.
      */
 
-    public String getPath(String path)
-            throws MissingValueError, WrongTypeError {
+    public String getPath(String path) throws MissingValueError {
         Object child = lookupPath(path, DesiredType.STRING);
         if (child == null) {
             throw new MissingValueError(path);
@@ -651,27 +616,68 @@ public class Dataset implements Cloneable {
      * This is a general-purpose method to find the value associated with a
      * given key, intended primarily for use by other methods such as
      * {@code get} and {@code getChildren}.  The value must be
-     * present in the top level of the dataset (i.e., key is not a path;
-     * use lookupPath if it is).
+     * present in the top level of the dataset (i.e., {@code key} is not
+     * a path; use lookupPath if it is).  The behavior of this method
+     * depends on {@code wanted}:
+     *   STRING:     If {@code key} exists and has a string value then it is
+     *               returned; otherwise null is returned.
+     *   DATASET:    If {@code key} exists and its value is one or more
+     *               nested datasets than the first dataset is returned;
+     *               otherwise null is returned.
+     *   DATASETS:   If {@code key} exists and its value is one or more
+     *               nested datasets then all of those datasets are returned
+     *               in a Dataset[] object; otherwise null is returned.
+     *   ALL:        If {@code key} exists then the return value is an
+     *               Object[] containing either a single String element or
+     *               one or more Dataset elements.  If {@code key doesn't
+     *               exist then null is returned.
      * @param key                  Name of the desired value.
      * @param wanted               Indicates what kind of value is expected
      *                             (string value, nested dataset, etc.).
-     * @return                     If {@code key} exists and its value
-     *                             matches {@code wanted} then
-     *                             it is returned as a String, Dataset,
-     *                             or Dataset[] for {@code wanted}
-     *                             values of STRING, DATASET, and DATASETS,
-     *                             respectively.  If {@code key} doesn't
-     *                             exist then null is returned.
-     * @throws WrongTypeError      Thrown if {@code key} is defined but
-     *                             its value doesn't correspond to
-     *                             {@code wanted}.
+     * @return                     The value(s) corresponding to {@code key}
+     *                             and {@code wanted}, or null if none.  See
+     *                             above for details.
      */
-    public Object lookup(String key, DesiredType wanted)
-            throws WrongTypeError {
-        Object child = map.get(key);
-        if (child != null) {
-            return checkValue(key, wanted, child);
+    public Object lookup(String key, DesiredType wanted) {
+        Object value = map.get(key);
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String) {
+            if (wanted == DesiredType.STRING) {
+                return value;
+            } else if (wanted == DesiredType.ALL) {
+                return new Object[] {value};
+            }
+        } else if (value instanceof HashMap) {
+            Dataset d = new Dataset((HashMap) value, fileName);
+            if (wanted == DesiredType.DATASET) {
+                return d;
+            } else if (wanted == DesiredType.DATASETS) {
+                return new Dataset[] {d};
+            } else if (wanted == DesiredType.ALL) {
+                return new Object[] {d};
+            }
+        } else {
+            // Value is an ArrayList.
+            ArrayList list = (ArrayList) value;
+            if (wanted == DesiredType.DATASET) {
+                return new Dataset((HashMap) list.get(0), fileName);
+            } else if (wanted == DesiredType.DATASETS) {
+                int length = list.size();
+                Dataset[] result = new Dataset[length];
+                for (int i = 0; i < length; i++) {
+                    result[i] = new Dataset((HashMap) list.get(i), fileName);
+                }
+                return result;
+            } else if (wanted == DesiredType.ALL) {
+                int length = list.size();
+                Object[] result = new Object[length];
+                for (int i = 0; i < length; i++) {
+                    result[i] = new Dataset((HashMap) list.get(i), fileName);
+                }
+                return result;
+            }
         }
         return null;
     }
@@ -812,74 +818,6 @@ public class Dataset implements Cloneable {
     }
 
     /**
-     * This method is invoked by the lookup functions to make sure
-     * that the value has the type desired by the caller; it also performs
-     * conversions, such as creating a new Dataset for the value.
-     * @param name                 Name for the value (either a single
-     *                             key or a hierarchical path); used for
-     *                             error messages
-     * @param wanted               The type of value requested by the
-     *                             code that called the lookup function
-     * @param value                Dataset value corresponding to
-     *                             {@code name}.
-     * @return                     If {@code value} matches {@code wanted}
-     *                             then it is returned as a String, Dataset,
-     *                             or Dataset[] for {@code wanted} values
-     *                             of STRING, DATASET, and DATASETS,
-     *                             respectively.
-     * @throws WrongTypeError      Thrown if {@code value} doesn't
-     *                             correspond to {@code wanted}.
-     */
-
-    protected final Object checkValue(String name, DesiredType wanted,
-            Object value) throws WrongTypeError {
-        if (value instanceof String) {
-            if ((wanted == DesiredType.STRING)
-                    || (wanted == DesiredType.ALL)) {
-                return value;
-            }
-            throw new WrongTypeError(wrongTypeMessage(name, wanted, value));
-        }
-        if (wanted != DesiredType.STRING) {
-            if (value instanceof HashMap) {
-                if (wanted == DesiredType.DATASETS) {
-                    Dataset[] result = new Dataset[1];
-                    result[0] = new Dataset((HashMap) value, fileName);
-                    return result;
-                }
-                return new Dataset((HashMap) value, fileName);
-            } else if (value instanceof ArrayList) {
-                if (wanted == DesiredType.DATASET) {
-                    // The value consists of a list of values; take the first
-                    // one (only if it is a HashMap)
-
-                    Object child2 = ((ArrayList) value).get(0);
-                    if (child2 instanceof HashMap) {
-                        return new Dataset((HashMap) child2, fileName);
-                    }
-                } else {
-                    ArrayList a = (ArrayList) value;
-                    Dataset[] result = new Dataset[a.size()];
-                    for (int i = 0; i < result.length; i++) {
-                        Object listElement = a.get(i);
-                        if (!(listElement instanceof HashMap)) {
-                            throw new WrongTypeError(wrongTypeMessage(name,
-                                    wanted, listElement));
-                        }
-                        result[i] = new Dataset((HashMap) a.get(i), fileName);
-                    }
-                    return result;
-                }
-            }
-        }
-
-        // We get here if value has an unrecognized type or if
-        // desiredType is DATASET and child refers to a list of things that
-        // aren't HashMaps.
-        throw new WrongTypeError(wrongTypeMessage(name, wanted, value));
-    }
-
-    /**
      * This internal method does most of the work of the {@code clone}
      * method.  It returns a deep copy of {@code source}, calling itself
      * recursively to copy nested datasets.
@@ -1004,8 +942,7 @@ public class Dataset implements Cloneable {
      *                             if the parent doesn't exist.
      */
     @SuppressWarnings("unchecked")
-    protected ParentInfo lookupParent(String path, boolean create)
-            throws WrongTypeError {
+    protected ParentInfo lookupParent(String path, boolean create) {
         int startIndex = 0;
         int length = path.length();
         HashMap parent = map;
@@ -1064,7 +1001,7 @@ public class Dataset implements Cloneable {
      * @param results              Used to collect results; callers may
      *                             already have placed some values here.
      */
-    public void lookupPathHelper(String path, int start, HashMap dataset,
+    protected void lookupPathHelper(String path, int start, HashMap dataset,
             DesiredType wanted, ArrayList<Object> results) {
         int length = path.length();
         int dot = path.indexOf('.', start);
@@ -1110,6 +1047,8 @@ public class Dataset implements Cloneable {
      * lookupPath.
      * @param wanted               {@code wanted} argument from lookupPath.
      * @param results              Results produced by lookupPathHelper.
+     *                             Each element is a String, HashMap, or
+     *                             ArrayList.
      * @return                     An appropriate return value for lookupPath.
      */
     public Object lookupResult(DesiredType wanted,
@@ -1124,53 +1063,55 @@ public class Dataset implements Cloneable {
         if (wanted == DesiredType.DATASET) {
             return new Dataset((HashMap) results.get(0), fileName);
         }
+        int totalLength = 0;
+        for (int i = 0; i < size; i++) {
+            if (results.get(i) instanceof ArrayList) {
+                totalLength += ((ArrayList) results.get(i)).size();
+            } else {
+                totalLength++;
+            }
+        }
+        int current = 0;
         if (wanted == DesiredType.DATASETS) {
-            Dataset[] list = new Dataset[size];
+            Dataset[] list = new Dataset[totalLength];
             for (int i = 0; i < size; i++) {
-                list[i] = new Dataset((HashMap) results.get(i), fileName);
+                Object value = results.get(i);
+                if (value instanceof HashMap) {
+                    list[current] = new Dataset((HashMap) value, fileName);
+                    current++;
+                } else {
+                    ArrayList children = (ArrayList) value;
+                    for (int j = 0, length2 = children.size(); j < length2;
+                            j++) {
+                        list[current] = new Dataset((HashMap) children.get(j),
+                                fileName);
+                        current++;
+                    }
+                }
             }
             return list;
         } else {
             // wanted == ALL
-            Object[] list = new Object[size];
+            Object[] list = new Object[totalLength];
             for (int i = 0; i < size; i++) {
                 Object value = results.get(i);
                 if (value instanceof String) {
-                    list[i] = value;
+                    list[current] = value;
+                    current++;
+                } else if (value instanceof HashMap) {
+                    list[current] = new Dataset((HashMap) value, fileName);
+                    current++;
                 } else {
-                    list[i] = new Dataset((HashMap) value, fileName);
+                    ArrayList children = (ArrayList) value;
+                    for (int j = 0, length2 = children.size(); j < length2;
+                            j++) {
+                        list[current] = new Dataset((HashMap) children.get(j),
+                                fileName);
+                        current++;
+                    }
                 }
             }
             return list;
         }
-    }
-
-    /**
-     * Invoked when other methods encounter values that have the wrong
-     * type (e.g., expected a string value but found a nested dataset);
-     * generates an appropriate message to use in a WrongTypeError exception.
-     * @param name                 Name for the entity that had the wrong
-     *                             type (a top-level key or a hierarchical
-     *                             path)
-     * @param wanted               The type of entity that was desired
-     * @param got                  The object that was encountered, which
-     *                             didn't match {@code wanted}
-     * @return                     An appropriate message to use in a
-     *                             WrongTypeError exception.
-     */
-    protected static String wrongTypeMessage(String name, DesiredType wanted,
-            Object got) {
-        String gotType;
-        if (got instanceof HashMap) {
-            gotType = "nested dataset";
-        } else if (got instanceof ArrayList) {
-            gotType = "list";
-        } else {
-            gotType = "string value \"" + StringUtil.excerpt(got.toString(), 20)
-                    + "\"";
-        }
-        return "wrong type for dataset element \"" + name + "\": expected "
-                + ((wanted == DesiredType.STRING) ? "string value"
-                : "nested dataset") + " but found " + gotType;
     }
 }
