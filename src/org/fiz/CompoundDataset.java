@@ -69,28 +69,6 @@ public class CompoundDataset extends Dataset {
         throw new InternalError("addChild invoked on a CompoundDataset");
     }
 
-
-    /**
-     * Searches all of the component datasets to see if any of them has
-     * a top-level value named {@code key}.  If so, the first such
-     * value is returned.
-     * @param key                  Name of the desired value
-     * @return                     Value associated with {@code key}, or
-     *                             null if {@code key} doesn't exist in any
-     *                             of the component datasets.
-     */
-    @Override
-    public String check(String key) {
-        for (Dataset component : components) {
-            Object result = component.lookup(key,
-                    DesiredType.STRING);
-            if (result instanceof String) {
-                return (String) result;
-            }
-        }
-        return null;
-    }
-
     /**
      * Not implemented for CompoundDatasets; always throws InternalError.
      */
@@ -236,25 +214,6 @@ public class CompoundDataset extends Dataset {
     }
 
     /**
-     * Searches the component datasets for a string value located at a
-     * given path.  Returns the first value found.
-     * @param path                 A sequence of keys separated by dots.
-     * @return                     If the desired value exists in one of
-     *                             the component datasets then the first
-     *                             one is returned.
-     * @throws MissingValueError   Thrown if none of the component
-     *                             datasets has a value at {@code path}.
-     */
-    @Override
-    public String getPath(String path) throws MissingValueError {
-        String result = (String) lookupPath(path, DesiredType.STRING);
-        if (result != null) {
-            return result;
-        }
-        throw new MissingValueError(path);
-    }
-
-    /**
      * Returns a Set containing all of the top-level keys in all of the
      * component datasets.
      * @return                     All of the keys at the top level of
@@ -270,86 +229,109 @@ public class CompoundDataset extends Dataset {
     }
 
     /**
-     * Searches the component datasets in order, looking for top-level
-     * values whose name is {@code key}.  If {@code wanted} is STRING
-     * or DATASET, the first value of the appropriate type is returned.
-     * If {@code wanted} is DATASETS, all of the child datasets named
-     * {@code key} are returned.  If {@code wanted} is ALL, then
-     * all of the values are returned, including both string values and
-     * child datasets.
+     * Searches the component data sets in order, looking for one or more
+     * top-level values matching {@code key} and {@code wanted}.
      * @param key                  Name of the desired value.
-     * @param wanted               Indicates what kind of value is expected
-     *                             (string value, nested dataset, etc.)
-     * @return                     The matching value(s), returned as a
-     *                             String, Dataset, Dataset[], or Object[] for
-     *                             {@code wanted} values of STRING, DATASET,
-     *                             DATASETS, and ALL, respectively.  If
-     *                             there are no values named {@code key}
-     *                             in any of the datasets then null is
-     *                             returned.
+     * @param wanted               Indicates what kind of value is desired
+     *                             (string, nested dataset, or either).
+     * @param quantity             Indicates whether all matching values
+     *                             should be returned, or only the first
+     *                             one found.
+     * @return                     The return value is null if no matching
+     *                             value is found.  Otherwise, if
+     *                             {@code quantity} is {@code FIRST_ONLY}
+     *                             then the return value is a String or
+     *                             Dataset; otherwise the return value is
+     *                             an ArrayList, each of whose members is
+     *                             a String or Dataset.
      */
-    @Override
-    public Object lookup(String key, DesiredType wanted) {
-        Object value;
-        ArrayList<Object> values = new ArrayList<Object>(5);
+    public Object lookup(String key, DesiredType wanted, Quantity quantity) {
+        return lookup(key, wanted, quantity, null);
+    }
+
+    /**
+     * Searches the component data sets in order, looking for one or more
+     * top-level values matching {@code key} and {@code wanted}.
+     * @param key                  Name of the desired value.
+     * @param wanted               Indicates what kind of value is desired
+     *                             (string, nested dataset, or either).
+     * @param quantity             Indicates whether all matching values
+     *                             should be returned, or only the first
+     *                             one found.
+     * @param out                  If {@code quantity} is {@code ALL} and
+     *                             this argument is non-null then the
+     *                             matching values are appended to this
+     *                             rather than creating a new ArrayList,
+     *                             and the return value will be {@code out}.
+     * @return                     The return value is null if no matching
+     *                             value is found.  Otherwise, if
+     *                             {@code quantity} is {@code FIRST_ONLY}
+     *                             then the return value is a String or
+     *                             Dataset; otherwise the return value is
+     *                             an ArrayList, each of whose members is
+     *                             a String or Dataset.
+     */
+    @SuppressWarnings("unchecked")
+    public Object lookup(String key, DesiredType wanted, Quantity quantity,
+            ArrayList<Object> out) {
+        Object result = null;
         for (Dataset component : components) {
-            value = component.lookup(key, wanted);
-            if (value == null) {
-                continue;
-            }
-            if ((wanted == DesiredType.STRING)
-                    || (wanted == DesiredType.DATASET)) {
-                // We only need to return one value and we have found
-                // it; no need to search the remaining nested datasets.
-                return value;
-            }
-
-            // We may potentially return multiple values; save everything
-            // and we will sort it out later (below).
-            values.add(value);
-        }
-        int length = values.size();
-        if (length == 0) {
-            // Nothing matching was found.
-            return null;
-        }
-        if (length == 1) {
-            // Exactly one nested call returned something; just pass that on
-            // to our caller.
-            return values.get(0);
-        }
-
-        // Must combine multiple results from nested lookup calls; do this
-        // differently depending on whether {@code wanted} is DATASETS or
-        // ALL (the only possibilities at this point).
-        int totalLength = 0;
-        int current = 0;
-        if (wanted == DesiredType.DATASETS) {
-            // Each value is a Dataset[]; combine them into one big
-            // Dataset[].
-            for (int i = 0; i < length; i++) {
-                totalLength += ((Dataset[]) values.get(i)).length;
-            }
-            Dataset[] result = new Dataset[totalLength];
-            for (int i = 0; i < length; i++) {
-                Dataset[] d = (Dataset[]) values.get(i);
-                for (int j = 0, length2 = d.length; j < length2; j++) {
-                    result[current] = d[j];
-                    current++;
+            result = component.lookup(key, wanted, quantity, out);
+            if (result != null) {
+                if (quantity == Quantity.FIRST_ONLY) {
+                    return result;
                 }
+
+                // The following statement is necessary in the case where
+                // {@code out} is initially null: once a list has been
+                // created, use it for future nested lookups.
+                out = (ArrayList<Object>) result;
             }
-            return result;
         }
-        // Each value is an Object[]; combine them into one big Object[].
-        for (int i = 0; i < length; i++) {
-            totalLength += ((Object[]) values.get(i)).length;
-        }
-        Object[] result = new Object[totalLength];
-        for (int i = 0; i < length; i++) {
-            Object[] objects = (Object[]) values.get(i);
-            for (int j = 0, length2 = objects.length; j < length2; j++) {
-                result[current] = objects[j];
-                current++;
+        return result;
+    }
+
+    /**
+     * Searches the component data sets in order, looking for one or more
+     * values matching {@code path} and {@code wanted}.
+     * @param path                 A sequence of keys separated by dots.
+     *                             For example, {@code a.b.c} refers to a value
+     *                             {@code c} contained in a nested dataset
+     *                             {@code b} contained in a dataset {@code a}
+     *                             contained in the current dataset.
+     * @param wanted               Indicates what kind of value is desired
+     *                             (string, nested dataset, or either).
+     * @param quantity             Indicates whether all matching values
+     *                             should be returned, or only the first
+     *                             one found.
+     * @param out                  If {@code quantity} is {@code ALL} and
+     *                             this argument is non-null then the
+     *                             matching values are appended to this
+     *                             rather than creating a new ArrayList,
+     *                             and the return value will be {@code out}.
+     * @return                     The return value is null if no matching
+     *                             value is found.  Otherwise, if
+     *                             {@code quantity} is {@code FIRST_ONLY}
+     *                             then the return value is a String or
+     *                             Dataset; otherwise the return value is
+     *                             an ArrayList, each of whose members is
+     *                             a String or Dataset.
+     */
+    @SuppressWarnings("unchecked")
+    public Object lookupPath(String path, DesiredType wanted,
+            Quantity quantity, ArrayList<Object> out) {
+        Object result = null;
+        for (Dataset component : components) {
+            result = component.lookupPath(path, wanted, quantity, out);
+            if (result != null) {
+                if (quantity == Quantity.FIRST_ONLY) {
+                    return result;
+                }
+
+                // The following statement is necessary in the case where
+                // {@code out} is initially null: once a list has been
+                // created, use it for future nested lookups.
+                out = (ArrayList<Object>) result;
             }
         }
         return result;
@@ -427,34 +409,34 @@ public class CompoundDataset extends Dataset {
         throw new InternalError("writeFile invoked on a CompoundDataset");
     }
 
-    /**
-     * This recursive method does all of the work of the {@code lookupPath}
-     * method.  Having this method, with the same signature as the
-     * method in Dataset, allows CompoundDatasets to contain other
-     * CompoundDatasets.  This method is invoked once for each component of
-     * the CompoundDataset
-     * @param path                 Dot-separated collection of element names,
-     *                             indicating the desired values.
-     * @param start                Index at which to begin processing in
-     *                             {@code path}; always zero.
-     * @param dataset              Nested dataset in which to start searching:
-     *                             always {@code map}, and not used here.
-     * @param wanted               The kind of values that are desired.
-     * @param results              Used to collect results; callers may
-     *                             already have placed some values here.
-     */
-    @Override
-    public void lookupPathHelper(String path, int start, HashMap dataset,
-            DesiredType wanted, ArrayList<Object> results) {
-        for (Dataset component : components) {
-            component.lookupPathHelper(path, 0, component.map, wanted,
-                    results);
-            if ((results.size() > 0) && ((wanted == DesiredType.STRING)
-                    || (wanted == DesiredType.DATASET))) {
-                // We only need to return one value and we have found
-                // it; no need to search the remaining components.
-                break;
-            }
-        }
-    }
+//    /**
+//     * This recursive method does all of the work of the {@code lookupPath}
+//     * method.  Having this method, with the same signature as the
+//     * method in Dataset, allows CompoundDatasets to contain other
+//     * CompoundDatasets.  This method is invoked once for each component of
+//     * the CompoundDataset
+//     * @param path                 Dot-separated collection of element names,
+//     *                             indicating the desired values.
+//     * @param start                Index at which to begin processing in
+//     *                             {@code path}; always zero.
+//     * @param dataset              Nested dataset in which to start searching:
+//     *                             always {@code map}, and not used here.
+//     * @param wanted               The kind of values that are desired.
+//     * @param results              Used to collect results; callers may
+//     *                             already have placed some values here.
+//     */
+//    @Override
+//    public void lookupPathHelper(String path, int start, HashMap dataset,
+//            DesiredType wanted, ArrayList<Object> results) {
+//        for (Dataset component : components) {
+//            component.lookupPathHelper(path, 0, component.map, wanted,
+//                    results);
+//            if ((results.size() > 0) && ((wanted == DesiredType.STRING)
+//                    || (wanted == DesiredType.DATASET))) {
+//                // We only need to return one value and we have found
+//                // it; no need to search the remaining components.
+//                break;
+//            }
+//        }
+//    }
 }

@@ -378,17 +378,13 @@ public class DataRequest {
                     || name.equals("message")) {
                 continue;
             }
-            Object value = error.lookup(name, Dataset.DesiredType.ALL);
+            String value = error.check(name);
             if (value == null) {
-                continue;
-            }
-            Object first = ((Object[]) value)[0];
-            if (!(first instanceof String)) {
                 continue;
             }
             result.append(prefix);
             result.append(String.format("%-12s %s", (name + ":"),
-                    ((String) first).replace("\n", indent)));
+                    value.replace("\n", indent)));
             prefix = prefix2;
         }
         return result.toString();

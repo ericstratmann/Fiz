@@ -11,11 +11,10 @@ import java.util.*;
  *   - A dataset consists of key-value pairs
  *   - Keys are arbitrary strings (but it's usually convenient to limit
  *     them to standard identifier characters)
- *   - Values can have three forms:
+ *   - Values can have two forms:
  *     - A string
- *     - A nested dataset (containing additional key-value pairs)
- *     - A list of nested datasets, each containing additional
- *       key-value pairs
+ *     - A list of one or more nested datasets, each of which contains
+ *       additional key-value pairs).
  *   - Datasets can be created from a variety of sources, such as
  *     XML and YAML files (see classes such as XmlDataset and
  *     YamlDataset for details).
@@ -28,47 +27,37 @@ public class Dataset implements Cloneable {
      */
     public enum DesiredType {
         /**
-         * The caller expects the name to refer to a string value.
+         * The caller is only interested in string values.
          */
         STRING,
 
         /**
-         * The caller expects the name to refer to a single nested
-         * dataset;  if it actually refers to a list of datasets,
-         * the first dataset in the list will be returned.
+         * The caller is only interested in nested datasets.
          */
         DATASET,
 
         /**
-         * The caller expects the name to refer to zero or more
-         * nested datasets, all of which will be returned.
+         * The caller is interested in both string values and nested
+         * datasets.
          */
-        DATASETS,
-
-        /**
-         * The caller is happy to accept any type of result; the
-         * method should return all appropriate values, regardless
-         * of type.
-         */
-        ALL
+        ANY
     }
 
     /**
-     * Instances of this enum are passed to Dataset.newFileInstanceFromPath
-     * to indicate how to handle the case where the dataset exists
-     * in multiple directories of the path.
+     * For methods such as lookup and newFileInstanceFromPath where
+     * there may be more than one matching result, this enum indicates
+     * how many of them should be returned.
      */
-    public enum PathHandling {
+    public enum Quantity {
         /**
-         * Create a CompoundDataset with one component for each of the
-         * datasets found in the path, in path order.
+         * Return only the first matching result.
          */
-        COMPOUND,
+        FIRST_ONLY,
 
         /**
-         * Use only the first dataset found and ignore any others.
+         * Return all matching results.
          */
-        FIRST_ONLY
+        ALL
     }
 
     /**
@@ -270,20 +259,21 @@ public class Dataset implements Cloneable {
      *                             {@code path} (a different extension
      *                             may be chosen for each directory).
      * @param path                 Directories to search for the dataset.
-     * @param pathHandling         If {@code name} exists in more than
+     * @param quantity             If {@code name} exists in more than
      *                             one directory in {@code path}, this
-     *                             parameter indicates whether to use just the
-     *                             first dataset found all of them.
+     *                             parameter indicates whether to return the
+     *                             first dataset found or a CompoundDataset
+     *                             containing all of them.
      * @return                     A new Dataset object.
      */
     public static Dataset newFileInstanceFromPath(String name,
-            String[] path, PathHandling pathHandling) {
+            String[] path, Quantity quantity) {
         ArrayList<Dataset> datasets = null;
         for (String directory : path) {
             String fullName = directory + "/" + name;
             try {
                 Dataset current = Dataset.newFileInstance(fullName);
-                if (pathHandling == PathHandling.FIRST_ONLY) {
+                if (quantity == Quantity.FIRST_ONLY) {
                     return current;
                 }
 
@@ -352,7 +342,8 @@ public class Dataset implements Cloneable {
      *                             it corresponds to a nested dataset.
      */
     public String check(String key) {
-        return (String) lookup(key, DesiredType.STRING);
+        return (String) lookup(key, DesiredType.STRING, Quantity.FIRST_ONLY,
+                null);
     }
 
     /**
@@ -495,7 +486,8 @@ public class Dataset implements Cloneable {
      *                             or doesn't refer to a string value.
      */
     public String get(String key) throws MissingValueError {
-        Object value = lookup(key, DesiredType.STRING);
+        Object value = lookup(key, DesiredType.STRING, Quantity.FIRST_ONLY,
+                null);
         if (value == null) {
             throw new MissingValueError(key);
         }
@@ -513,7 +505,8 @@ public class Dataset implements Cloneable {
      *                             or that refers to a string value.
      */
     public Dataset getChild(String key) throws MissingValueError {
-        Object child = lookup(key, DesiredType.DATASET);
+        Object child = lookup(key, DesiredType.DATASET, Quantity.FIRST_ONLY,
+                null);
         if (child == null) {
             throw new MissingValueError(key);
         }
@@ -523,13 +516,15 @@ public class Dataset implements Cloneable {
     /**
      * Traverse a hierarchical sequence of keys to find a nested dataset.
      * @param path                 A sequence of keys separated by dots.
-     * @return                     A Dataset providing access to the child
+     * @return                     The (first) nested dataset matching
+     *                             {@code path}
      * @throws MissingValueError   Thrown if {@code path} is not defined
      *                             as a nested dataset within the current
      *                             dataset.
      */
     public Dataset getChildPath(String path) throws MissingValueError {
-        Object child = lookupPath(path, DesiredType.DATASET);
+        Object child = lookupPath(path, DesiredType.DATASET,
+                Quantity.FIRST_ONLY, null);
         if (child == null) {
             throw new MissingValueError(path);
         }
@@ -540,17 +535,20 @@ public class Dataset implements Cloneable {
      * Find all of the nested datasets with a given name.
      * @param key                  Name of the desired child; must be a
      *                             top-level child within the current dataset
-     * @return                     An array of Datasets, one for each child
-     *                             dataset corresponding to {@code key};
-     *                             the array will be empty if there are no
-     *                             children corresponding to {@code key}.
+     * @return                     An ArrayList of Datasets, one for each
+     *                             child dataset corresponding to
+     *                             {@code key}; the ArrayList will be empty
+     *                             if there are no children corresponding
+     *                             to {@code key}.
      */
-    public Dataset[] getChildren(String key) {
-        Object children = lookup(key, DesiredType.DATASETS);
+    @SuppressWarnings("unchecked")
+    public ArrayList<Dataset> getChildren(String key) {
+        Object children = lookup(key, DesiredType.DATASET,
+                Quantity.ALL, null);
         if (children == null) {
-            return new Dataset[0];
+            return new ArrayList<Dataset>();
         }
-        return (Dataset[]) children;
+        return (ArrayList<Dataset>) children;
     }
 
     /**
@@ -563,12 +561,14 @@ public class Dataset implements Cloneable {
      *                             if there are no children corresponding to
      *                             {@code path}.
      */
-    public Dataset[] getChildrenPath(String path) {
-        Object children = lookupPath(path, DesiredType.DATASETS);
+    @SuppressWarnings("unchecked")
+    public ArrayList<Dataset> getChildrenPath(String path) {
+        Object children = lookupPath(path, DesiredType.DATASET,
+                Quantity.ALL, null);
         if (children == null) {
-            return new Dataset[0];
+            return new ArrayList<Dataset>();
         }
-        return (Dataset[]) children;
+        return (ArrayList<Dataset>) children;
     }
 
     /**
@@ -595,7 +595,8 @@ public class Dataset implements Cloneable {
      */
 
     public String getPath(String path) throws MissingValueError {
-        Object child = lookupPath(path, DesiredType.STRING);
+        Object child = lookupPath(path, DesiredType.STRING,
+                Quantity.FIRST_ONLY, null);
         if (child == null) {
             throw new MissingValueError(path);
         }
@@ -613,73 +614,63 @@ public class Dataset implements Cloneable {
     }
 
     /**
-     * This is a general-purpose method to find the value associated with a
-     * given key, intended primarily for use by other methods such as
-     * {@code get} and {@code getChildren}.  The value must be
+     * This is a general-purpose method to find the value(s) associated
+     * with a given key, intended primarily for use by other methods such
+     * as {@code get} and {@code getChildren}.  The value(s) must be
      * present in the top level of the dataset (i.e., {@code key} is not
-     * a path; use lookupPath if it is).  The behavior of this method
-     * depends on {@code wanted}:
-     *   STRING:     If {@code key} exists and has a string value then it is
-     *               returned; otherwise null is returned.
-     *   DATASET:    If {@code key} exists and its value is one or more
-     *               nested datasets than the first dataset is returned;
-     *               otherwise null is returned.
-     *   DATASETS:   If {@code key} exists and its value is one or more
-     *               nested datasets then all of those datasets are returned
-     *               in a Dataset[] object; otherwise null is returned.
-     *   ALL:        If {@code key} exists then the return value is an
-     *               Object[] containing either a single String element or
-     *               one or more Dataset elements.  If {@code key doesn't
-     *               exist then null is returned.
+     * a path; use lookupPath if it is).
      * @param key                  Name of the desired value.
-     * @param wanted               Indicates what kind of value is expected
-     *                             (string value, nested dataset, etc.).
-     * @return                     The value(s) corresponding to {@code key}
-     *                             and {@code wanted}, or null if none.  See
-     *                             above for details.
+     * @param wanted               Indicates what kind of value is desired
+     *                             (string, nested dataset, or either).
+     * @param quantity             Indicates whether all matching values
+     *                             should be returned, or only the first
+     *                             one found.
+     * @return                     The return value is null if no matching
+     *                             value is found.  If {@code quantity} is
+     *                             {@code FIRST_ONLY} then the return
+     *                             value is a String or Dataset; otherwise
+     *                             the return value is an ArrayList, each of
+     *                             whose members is a String or Dataset.
      */
-    public Object lookup(String key, DesiredType wanted) {
+    public Object lookup(String key, DesiredType wanted, Quantity quantity) {
         Object value = map.get(key);
         if (value == null) {
             return null;
         }
-        if (value instanceof String) {
-            if (wanted == DesiredType.STRING) {
-                return value;
-            } else if (wanted == DesiredType.ALL) {
-                return new Object[] {value};
-            }
-        } else if (value instanceof HashMap) {
-            Dataset d = new Dataset((HashMap) value, fileName);
-            if (wanted == DesiredType.DATASET) {
-                return d;
-            } else if (wanted == DesiredType.DATASETS) {
-                return new Dataset[] {d};
-            } else if (wanted == DesiredType.ALL) {
-                return new Object[] {d};
-            }
-        } else {
-            // Value is an ArrayList.
-            ArrayList list = (ArrayList) value;
-            if (wanted == DesiredType.DATASET) {
-                return new Dataset((HashMap) list.get(0), fileName);
-            } else if (wanted == DesiredType.DATASETS) {
-                int length = list.size();
-                Dataset[] result = new Dataset[length];
-                for (int i = 0; i < length; i++) {
-                    result[i] = new Dataset((HashMap) list.get(i), fileName);
-                }
-                return result;
-            } else if (wanted == DesiredType.ALL) {
-                int length = list.size();
-                Object[] result = new Object[length];
-                for (int i = 0; i < length; i++) {
-                    result[i] = new Dataset((HashMap) list.get(i), fileName);
-                }
-                return result;
-            }
+        return collectResults(value, wanted, quantity, null);
+    }
+
+    /**
+     * This is a general-purpose method to find the value(s) associated
+     * with a given key, intended primarily for use by other methods such
+     * as {@code get} and {@code getChildren}.  The value(s) must be
+     * present in the top level of the dataset (i.e., {@code key} is not
+     * a path; use lookupPath if it is).
+     * @param key                  Name of the desired value.
+     * @param wanted               Indicates what kind of value is desired
+     *                             (string, nested dataset, or either).
+     * @param quantity             Indicates whether all matching values
+     *                             should be returned, or only the first
+     *                             one found.
+     * @param out                  If {@code quantity} is {@code ALL} and
+     *                             this argument is non-null then the
+     *                             matching values are appended to this
+     *                             rather than creating a new ArrayList,
+     *                             and the return value will be {@code out}.
+     * @return                     The return value is null if no matching
+     *                             value is found.  If {@code quantity} is
+     *                             {@code FIRST_ONLY} then the return
+     *                             value is a String or Dataset; otherwise
+     *                             the return value is an ArrayList, each of
+     *                             whose members is a String or Dataset.
+     */
+    public Object lookup(String key, DesiredType wanted, Quantity quantity,
+            ArrayList<Object> out) {
+        Object value = map.get(key);
+        if (value == null) {
+            return null;
         }
-        return null;
+        return collectResults(value, wanted, quantity, out);
     }
 
     /**
@@ -691,40 +682,66 @@ public class Dataset implements Cloneable {
      * {@code b} in the path {@code a.b.c} refers to 3 nested datasets
      * then there could be 3 values corresponding to {@code a.b.c}.  These
      * values need not necessarily be the same type: some could be string
-     * values and others could be nested datasets.  The behavior of this
-     * method depends on the {@code wanted}:
-     *   STRING:     The first string value for {@code path} is returned,
-     *               where "first" means first in a depth-first search.
-     *   DATASET:    The first nested dataset matching {@code path} is
-     *               returned, where "first" means first in a depth-first
-     *               search.
-     *   DATASETS:   All nested datasets matching {@code path} are returned
-     *               in an array.  The order of the datasets in the result
-     *               corresponds to their order of discovery in a depth-first
-     *               search.
-     *   ALL:        All values for {@code path} are returned in an array
-     *               containing one String for each string value found and
-     *               one Dataset for each nested dataset found.  The
-     *               order of the values in the result corresponds to their
-     *               order of discovery in a depth-first search.
+     * values and others could be nested datasets.
      * @param path                 A sequence of keys separated by dots.
      *                             For example, {@code a.b.c} refers to a value
      *                             {@code c} contained in a nested dataset
      *                             {@code b} contained in a dataset {@code a}
      *                             contained in the current dataset.
-     * @param wanted               Indicates the kind of value expected; see
-     *                             above for details.
-     * @return                     The return value is a String, Dataset,
-     *                             Dataset[], or Object[] for @code wanted}
-     *                             values of STRING, DATASET, DATASETS, and
-     *                             ALL, respectively.  If the dataset doesn't
-     *                             contain any values corresponding to
-     *                             {@code path} then null is returned.
+     * @param wanted               Indicates what kind of value is desired
+     *                             (string, nested dataset, or either).
+     * @param quantity             Indicates whether all matching values
+     *                             should be returned, or only the first
+     *                             one found.
+     * @return                     The return value is null if no matching
+     *                             values are found.  Otherwise, if
+     *                             {@code quantity} is {@code FIRST_ONLY}
+     *                             then the return value is a String or
+     *                             Dataset; otherwise the return value is
+     *                             an ArrayList, each of whose members is
+     *                             a String or Dataset.
      */
-    public Object lookupPath(String path, DesiredType wanted) {
-        ArrayList<Object> results = new ArrayList<Object>();
-        lookupPathHelper(path, 0, map, wanted, results);
-        return lookupResult(wanted, results);
+    public Object lookupPath(String path, DesiredType wanted,
+            Quantity quantity) {
+        return lookupPathHelper(path, 0, map, wanted, quantity, null);
+    }
+
+    /**
+     * This is a general-purpose method to find one or more values associated
+     * with a hierarchical path, intended primarily for use by other methods
+     * such as {@code getPath} and {@code getPathChildren}.  There can be
+     * multiple values assisted with a single path if some of the elements
+     * of the path refer to nested datasets.  For example, if the element
+     * {@code b} in the path {@code a.b.c} refers to 3 nested datasets
+     * then there could be 3 values corresponding to {@code a.b.c}.  These
+     * values need not necessarily be the same type: some could be string
+     * values and others could be nested datasets.
+     * @param path                 A sequence of keys separated by dots.
+     *                             For example, {@code a.b.c} refers to a value
+     *                             {@code c} contained in a nested dataset
+     *                             {@code b} contained in a dataset {@code a}
+     *                             contained in the current dataset.
+     * @param wanted               Indicates what kind of value is desired
+     *                             (string, nested dataset, or either).
+     * @param quantity             Indicates whether all matching values
+     *                             should be returned, or only the first
+     *                             one found.
+     * @param out                  If {@code quantity} is {@code ALL} and
+     *                             this argument is non-null then the
+     *                             matching values are appended to this
+     *                             rather than creating a new ArrayList,
+     *                             and the return value will be {@code out}.
+     * @return                     The return value is null if no matching
+     *                             values are found.  Otherwise, if
+     *                             {@code quantity} is {@code FIRST_ONLY}
+     *                             then the return value is a String or
+     *                             Dataset; otherwise the return value is
+     *                             an ArrayList, each of whose members is
+     *                             a String or Dataset.
+     */
+    public Object lookupPath(String path, DesiredType wanted,
+            Quantity quantity, ArrayList<Object> out) {
+        return lookupPathHelper(path, 0, map, wanted, quantity, out);
     }
 
     /**
@@ -780,44 +797,6 @@ public class Dataset implements Cloneable {
     }
 
     /**
-     * This is a helper method used to collect results during lookup
-     * operations.  Given a value that matches the key or path being
-     * searched for, this method adds it to an array of accumulating
-     * results, assuming that the type of the value matches the type
-     * of desired results.
-     * @param value                Value found in a dataset: either a String,
-     *                             HashMap, or ArrayList of HashMaps.
-     * @param wanted               The {@code wanted} parameter passed to
-     *                             lookup or lookupPath.
-     * @param results              Used to accumulate all of the matching
-     *                             values.
-     */
-    public static void addToLookupResults(Object value, DesiredType wanted,
-            ArrayList<Object> results) {
-        if (value instanceof String) {
-            if ((wanted == DesiredType.STRING) ||
-                    (wanted == DesiredType.ALL)) {
-                results.add(value);
-            }
-        } else if (value instanceof HashMap) {
-            if (wanted != DesiredType.STRING) {
-                results.add(value);
-            }
-        } else {
-            // List of nested datasets.
-            ArrayList list = (ArrayList) value;
-            if (wanted == DesiredType.DATASET) {
-                results.add(list.get(0));
-            } else if ((wanted == DesiredType.DATASETS) ||
-                    (wanted == DesiredType.ALL)) {
-                for (int i = 0, end = list.size(); i < end; i++) {
-                    results.add(list.get(i));
-                }
-            }
-        }
-    }
-
-    /**
      * This internal method does most of the work of the {@code clone}
      * method.  It returns a deep copy of {@code source}, calling itself
      * recursively to copy nested datasets.
@@ -854,6 +833,69 @@ public class Dataset implements Cloneable {
             }
         }
         return dest;
+    }
+
+    /**
+     * This method is used by both lookup and lookupPath to process values
+     * that match the key or path.  This method determines whether they match
+     * the caller's desire type(s), handles the creation of new Datasets from
+     * HashMaps, and collects multiple return values into an ArrayList, if
+     * desired.
+     * @param value                Value from a HashMap that has the right
+     *                             name.  Can be either a String, HashMap,
+     *                             or ArrayedList.
+     * @param wanted               The kinds of objects that are of interest.
+     * @param quantity             How many objects are of interest.
+     * @param out                  If {@code quantity} is {@code ALL} and
+     *                             this argument is non-null, then matching
+     *                             results are appended here; otherwise a
+     *                             new ArrayList is created to hold matching
+     *                             results.
+     * @return                     If {@code value} doesn't match
+     *                             {@code wanted} then null is returned.
+     *                             Otherwise, if {@code quantity} is
+     *                             {@code ALL} than a single String or
+     *                             Dataset is returned.  Otherwise an
+     *                             ArrayList is returned with all of the
+     *                             matching values.
+     */
+    protected Object collectResults(Object value, DesiredType wanted,
+            Quantity quantity, ArrayList<Object> out) {
+        if (value instanceof String) {
+            if (wanted == DesiredType.DATASET) {
+                return null;
+            }
+            if (quantity == Quantity.FIRST_ONLY) {
+                return value;
+            }
+            if (out == null) {
+                out = new ArrayList<Object>(5);
+            }
+            out.add(value);
+            return out;
+        }
+
+        // The value is either a HashMap or an ArrayList.
+        if (wanted == DesiredType.STRING) {
+            return null;
+        }
+        if (quantity == Quantity.FIRST_ONLY) {
+            if (value instanceof ArrayList) {
+                value = ((ArrayList) value).get(0);
+            }
+            return new Dataset((HashMap) value, fileName);
+        }
+        if (out == null) {
+            out = new ArrayList<Object>(5);
+        }
+        if (value instanceof ArrayList) {
+            for (Object element : (ArrayList) value) {
+                out.add(new Dataset((HashMap) element, fileName));
+            }
+        } else {
+            out.add(new Dataset((HashMap) value, fileName));
+        }
+        return out;
     }
 
     /**
@@ -998,11 +1040,25 @@ public class Dataset implements Cloneable {
      *                             index {@code start} will be looked up in
      *                             this dataset.
      * @param wanted               The kind of values that are desired.
-     * @param results              Used to collect results; callers may
-     *                             already have placed some values here.
+     * @param quantity             Indicates whether all matching values
+     *                             should be returned, or only the first
+     *                             one found.
+     * @param results              If {@code quantity} is {@code ALL} and
+     *                             this argument is non-null then the
+     *                             matching values are appended to this
+     *                             rather than creating a new ArrayList,
+     *                             and the return value will be
+     *                             {@code results}.
+     * @return                     The return value is null if no matching
+     *                             values are found.  Otherwise, if
+     *                             {@code quantity} is {@code FIRST_ONLY} then
+     *                             the return value is a String or Dataset.
+     *                             Otherwise the return value is an ArrayList,
+     *                             each of whose members is a String or Dataset.
      */
-    protected void lookupPathHelper(String path, int start, HashMap dataset,
-            DesiredType wanted, ArrayList<Object> results) {
+    @SuppressWarnings("unchecked")
+    protected Object lookupPathHelper(String path, int start, HashMap dataset,
+            DesiredType wanted, Quantity quantity, ArrayList<Object> results) {
         int length = path.length();
         int dot = path.indexOf('.', start);
         if (dot == -1) {
@@ -1011,107 +1067,43 @@ public class Dataset implements Cloneable {
         String key = path.substring(start, dot);
         Object nextObject = dataset.get(key);
         if (nextObject == null) {
-            return;
+            return null;
         }
         if (dot >= length) {
             // We've reached the end of the path; add the value(s) to
             // the result (if they match {@code wanted}) and return.
-            addToLookupResults(nextObject, wanted, results);
-            return;
+            return collectResults(nextObject, wanted, quantity, results);
         }
 
         // If we get here it means there are more path elements to look up.
         // Make a recursive call for each nested dataset in the current value.
         dot++;
         if (nextObject instanceof HashMap) {
-            lookupPathHelper(path, dot, (HashMap) nextObject, wanted,
-                    results);
+            return lookupPathHelper(path, dot, (HashMap) nextObject, wanted,
+                    quantity, results);
         } else if (nextObject instanceof ArrayList) {
+            Object returnValue = null;
             ArrayList list = (ArrayList) nextObject;
             for (int i = 0, end = list.size(); i < end; i++) {
-                lookupPathHelper(path, dot, (HashMap) list.get(i), wanted,
-                    results);
-                if ((results.size() > 0) && ((wanted == DesiredType.STRING)
-                        || (wanted == DesiredType.DATASET))) {
-                    // We only need to return one value and we have found
-                    // it; no need to search the remaining nested datasets.
-                    break;
-                }
-            }
-        }
-    }
-
-    /**
-     * This method translates from an array of Objects generated by
-     * lookupPathHelper to the right kind of object to return from
-     * lookupPath.
-     * @param wanted               {@code wanted} argument from lookupPath.
-     * @param results              Results produced by lookupPathHelper.
-     *                             Each element is a String, HashMap, or
-     *                             ArrayList.
-     * @return                     An appropriate return value for lookupPath.
-     */
-    public Object lookupResult(DesiredType wanted,
-            ArrayList<Object> results) {
-        int size = results.size();
-        if (size == 0) {
-            return null;
-        }
-        if (wanted == DesiredType.STRING) {
-            return results.get(0);
-        }
-        if (wanted == DesiredType.DATASET) {
-            return new Dataset((HashMap) results.get(0), fileName);
-        }
-        int totalLength = 0;
-        for (int i = 0; i < size; i++) {
-            if (results.get(i) instanceof ArrayList) {
-                totalLength += ((ArrayList) results.get(i)).size();
-            } else {
-                totalLength++;
-            }
-        }
-        int current = 0;
-        if (wanted == DesiredType.DATASETS) {
-            Dataset[] list = new Dataset[totalLength];
-            for (int i = 0; i < size; i++) {
-                Object value = results.get(i);
-                if (value instanceof HashMap) {
-                    list[current] = new Dataset((HashMap) value, fileName);
-                    current++;
-                } else {
-                    ArrayList children = (ArrayList) value;
-                    for (int j = 0, length2 = children.size(); j < length2;
-                            j++) {
-                        list[current] = new Dataset((HashMap) children.get(j),
-                                fileName);
-                        current++;
+                Object nestedResult = lookupPathHelper(path, dot,
+                        (HashMap) list.get(i), wanted, quantity, results);
+                if (nestedResult != null) {
+                    if (quantity == Quantity.FIRST_ONLY) {
+                        // We only need one result, and we have it.  No
+                        // need to search additional nested datasets.
+                        return nestedResult;
+                    } else {
+                        // The result is an ArrayList; save it to use for
+                        // future results (it's possible that the next call
+                        // allocated it).
+                        results = (ArrayList<Object>) nestedResult;
+                        returnValue = nestedResult;
                     }
                 }
             }
-            return list;
+            return returnValue;
         } else {
-            // wanted == ALL
-            Object[] list = new Object[totalLength];
-            for (int i = 0; i < size; i++) {
-                Object value = results.get(i);
-                if (value instanceof String) {
-                    list[current] = value;
-                    current++;
-                } else if (value instanceof HashMap) {
-                    list[current] = new Dataset((HashMap) value, fileName);
-                    current++;
-                } else {
-                    ArrayList children = (ArrayList) value;
-                    for (int j = 0, length2 = children.size(); j < length2;
-                            j++) {
-                        list[current] = new Dataset((HashMap) children.get(j),
-                                fileName);
-                        current++;
-                    }
-                }
-            }
-            return list;
+            return null;
         }
     }
 }

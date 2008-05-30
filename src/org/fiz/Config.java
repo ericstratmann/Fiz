@@ -76,7 +76,7 @@ public class Config {
 
         // Not cached; find the dataset and cache it.
         result = Dataset.newFileInstanceFromPath(name, path,
-                Dataset.PathHandling.COMPOUND);
+                Dataset.Quantity.ALL);
         cache.put(name, result);
         return result;
     }

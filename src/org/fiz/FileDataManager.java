@@ -232,7 +232,7 @@ public class FileDataManager extends DataManager {
         Dataset result = datasetCache.get(fileName);
         if (result == null) {
             result = Dataset.newFileInstanceFromPath(fileName, path,
-                    Dataset.PathHandling.FIRST_ONLY);
+                    Dataset.Quantity.FIRST_ONLY);
             datasetCache.put(fileName, result);
         }
         return result;

@@ -1,5 +1,7 @@
 package org.fiz;
 
+import java.util.*;
+
 /**
  * A TableSection displays information in tabular form consisting of rows and
  * columns.  TableSections support the following constructor properties:
@@ -142,8 +144,8 @@ public class TableSection implements Section {
                     "tableSection", errorData);
             out.append("</td>\n  </tr>\n");
         } else {
-            Dataset[] rows = response.getChildren("record");
-            if (rows.length == 0) {
+            ArrayList<Dataset> rows = response.getChildren("record");
+            if (rows.size() == 0) {
                 // The table is empty.  Display a single row containing
                 // information about that fact.
                 out.append("  <tr class=\"empty\">\n    <td colspan=\"");
@@ -157,10 +159,10 @@ public class TableSection implements Section {
                 out.append("</td>\n  </tr>\n");
             } else {
                 // Normal case: there are records to display.
-                for (int i = 0; i < rows.length; i++) {
-                    dataForRow.setComponent(0, rows[i]);
+                for (int i = 0; i < rows.size(); i++) {
+                    dataForRow.setComponent(0, rows.get(i));
                     out.append("  <tr class=\"");
-                    if ((i == (rows.length-1)) && (lastRowClass != null)) {
+                    if ((i == (rows.size()-1)) && (lastRowClass != null)) {
                         out.append(lastRowClass);
                         out.append("\">\n");
                     } else if ((i & 1) != 0) {

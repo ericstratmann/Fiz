@@ -348,9 +348,9 @@ public class YamlDatasetTest extends junit.framework.TestCase {
                 "b: 999\nc: 1000\n");
         assertEquals("a.people[0].age", "32", y.getPath("a.people.age"));
         assertEquals("a.people[1].age", "44",
-                y.getChild("a").getChildren("people")[1].get("age"));
+                y.getChild("a").getChildren("people").get(1).get("age"));
         assertEquals("a.people[2].age", "50",
-                y.getChild("a").getChildren("people")[2].get("age"));
+                y.getChild("a").getChildren("people").get(2).get("age"));
     }
     public void test_checkAndConvert_nullValue() {
         Dataset y = YamlDataset.newStringInstance("first: abc\nsecond: def\n" +
