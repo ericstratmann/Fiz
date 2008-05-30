@@ -19,7 +19,7 @@ error2:
       form element, so this message should appear in the bulletin.
 
 people:
-    record:
+    data:
         - name: Alice
           age: 24
           height: 65
@@ -38,14 +38,14 @@ people:
           weight: 220
           height: 71
 person:
-    record:
+    data:
         name: Bill
         age: 41
         height: 73
         weight: 195
 
 shoppingCart:
-    record:
+    data:
         - item:  Thin spaghetti
           price: $0.89
         - item:  Large Grade AA eggs

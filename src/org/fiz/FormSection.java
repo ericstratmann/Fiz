@@ -37,9 +37,14 @@ package org.fiz;
  *                   caller must ensure that this URL is implemented by an
  *                   Interactor.
  *   request:        (optional) Name of the DataRequest that will supply
- *                   initial values to display in the FormSection.  If
- *                   this property is omitted the form will initially
- *                   be empty.
+ *                   initial values to display in the FormSection.  If the
+ *                   responds to the request contains a {@code data}
+ *                   nested dataset, then the contents of that nested dataset
+ *                   will be used to provide the form's initial data.  If
+ *                   there is no {@code data} nested dataset then the
+ *                   top-level contents of the results are used for the
+ *                   form's initial data.  If this property is omitted the
+ *                   form will initially be empty.
  */
 public class FormSection implements Section {
     /**
@@ -116,9 +121,8 @@ public class FormSection implements Section {
                         properties, out);
                 return;
             }
-            // TODO: seems weird to indirect through "record" to get data.
-            if (response.containsKey("record")) {
-                response = response.getChild("record");
+            if (response.containsKey("data")) {
+                response = response.getChild("data");
             }
             data = new CompoundDataset(response, mainDataset);
         } else {

@@ -8,7 +8,7 @@ import java.util.*;
  *   class:          (optional) Used as the {@code class} attribute for
  *                   the HTML table that displays the TableSection.
  *   emptyTemplate:  (optional) If the table is empty ({@code request} returns
- *                   no records), this template will be expanded (using
+ *                   no data), this template will be expanded (using
  *                   the main dataset) and displayed in a single row in the
  *                   table.  If this property is not specified then a default
  *                   value will be supplied; specify this property with an
@@ -35,7 +35,7 @@ import java.util.*;
  *                   omitted if none of the columns generate header info.
  *   request:        (required) Name of the DataRequest that will supply
  *                   data to display in the TableSection; the response to
- *                   this request must contain one {@code record} child for
+ *                   this request must contain one {@code data} child for
  *                   each row of the table.
  */
 public class TableSection implements Section {
@@ -53,9 +53,9 @@ public class TableSection implements Section {
      *                             for the table; see description above.
      * @param columns              The remaining arguments describe the
      *                             columns of the table, in order from
-     *                             left to right.  For each record returned
-     *                             by {@code request} one row will be
-     *                             generated in the table; each column's
+     *                             left to right.  For each data record
+     *                             returned by {@code request} one row will
+     *                             be generated in the table; each column's
      *                             {@code html} method will be invoked to
      *                             generate the HTML between the {@code <td>}
      *                             and the {@code </td>}) for that column.
@@ -144,7 +144,7 @@ public class TableSection implements Section {
                     "tableSection", errorData);
             out.append("</td>\n  </tr>\n");
         } else {
-            ArrayList<Dataset> rows = response.getChildren("record");
+            ArrayList<Dataset> rows = response.getChildren("data");
             if (rows.size() == 0) {
                 // The table is empty.  Display a single row containing
                 // information about that fact.
