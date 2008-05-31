@@ -95,7 +95,8 @@ Fiz.Ajax = function(properties, data) {
             try {
                 this.xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
             } catch(e) {
-                this.error({message: "couldn't create XMLHttpRequest object"});
+                this.error({message: "couldn't create XMLHttpRequest object"},
+                        true);
                 return;
             }
         }
@@ -134,7 +135,7 @@ Fiz.Ajax.prototype.stateChange = function() {
 
     if (this.xmlhttp.status != 200) {
         this.error({message: "HTTP error " + this.xmlhttp.status + ": "
-                + this.xmlhttp.statusText});
+                + this.xmlhttp.statusText}, true);
         return;
     }
 
@@ -160,7 +161,7 @@ Fiz.Ajax.prototype.stateChange = function() {
             } else if (type == "redirect") {
                 document.location.href = action.url;
             } else if (type == "error") {
-                this.error(action.properties);
+                this.error(action.properties, false);
             } else {
                 throw "unknown response action \"" + op + "\"";
             }
@@ -171,7 +172,7 @@ Fiz.Ajax.prototype.stateChange = function() {
             where = " (" + e.fileName + ":" + e.lineNumber + ")";
         }
         this.error({message: "error processing responseText" +
-                where + ": " + e});
+                where + ": " + e}, true);
     }
 }
 
@@ -182,12 +183,20 @@ Fiz.Ajax.prototype.stateChange = function() {
  *                                 error.  Must have at least a
  *                                 {@code message} property with a
  *                                 human-readable description of the problem.
+ * @param addInfoPrefix            True means that additional information
+ *                                 about the AJAX requests should be prepended
+ *                                 to the message before displaying it in an
+ *                                 alert box; false means the message is
+ *                                 already complete by itself.  False is
+ *                                 only used if the error message came from
+ *                                 the server.
  */
-Fiz.Ajax.prototype.error = function(properties) {
+Fiz.Ajax.prototype.error = function(properties, addInfoPrefix) {
     if (this.errorHandler) {
         this.errorHandler.ajaxError(properties);
     } else {
-        alert("Error in Ajax request for " + this.url + ": " +
+        alert(((addInfoPrefix) ?
+               ("Error in Ajax request for " + this.url + ": ") : "") +
                 properties.message);
     }
 }

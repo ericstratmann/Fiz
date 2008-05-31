@@ -40,6 +40,31 @@ public class HtmlTest extends junit.framework.TestCase {
         Css.init("test/testData/WEB-INF/css");
         Config.init("test/testData/WEB-INF/config");
     }
+
+    public void test_clear() {
+        html.setTitle("sample");
+        html.getBody().append("body info\n");
+        html.includeCssFile("test.css");
+        html.includeJsFile("Ajax.js");
+        html.includeJavascript("window.dummy = 1;");
+        html.clear();
+        html.getBody().append("<p>Text</p>\n");
+        assertEquals("**Prologue**\n" +
+                "<head>\n" +
+                "<title></title>\n" +
+                "<style type=\"text/css\">\n" +
+                "/* Dummy version of main.css for tests */\n" +
+                "body {color: #000000}\n" +
+                "</style>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "<script type=\"text/javascript\" src=\"/servlet/Fiz.js\">" +
+                "</script>\n" +
+                "<p>Text</p>\n" +
+                "</body>\n" +
+                "</html>\n", html.toString());
+    }
+
     // No tests for getBody; too trivial.
 
     public void test_getCssFiles() {
@@ -149,14 +174,14 @@ public class HtmlTest extends junit.framework.TestCase {
         TestUtil.writeFile("_test_/file2.js", "// Fiz:include file1.js\n");
         html.jsDirectory = "_test_/";
         html.includeJsFile("file1.js");
-        assertEquals("jsHtml string",
+        assertEquals("jsFileHtml string",
                 "<script type=\"text/javascript\" " +
                 "src=\"/servlet/Fiz.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
                 "src=\"/servlet/file2.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
                 "src=\"/servlet/file1.js\"></script>\n",
-                html.jsHtml.toString());
+                html.jsFileHtml.toString());
         html.includeJsFile("file1.js");
         html.includeJsFile("file2.js");
         assertEquals("only include each file once",
@@ -166,22 +191,22 @@ public class HtmlTest extends junit.framework.TestCase {
                 "src=\"/servlet/file2.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
                 "src=\"/servlet/file1.js\"></script>\n",
-                html.jsHtml.toString());
+                html.jsFileHtml.toString());
         TestUtil.deleteTree("_test_");
     }
     public void test_includeJsFile_mainFizFileAlwaysIncluded() {
         (new File("_test_")).mkdir();
         TestUtil.writeFile("_test_/Fiz.js", "");
         html.jsDirectory = "_test_/";
-        assertEquals("jsHtml string",
+        assertEquals("jsFileHtml string",
                 "<script type=\"text/javascript\" " +
                 "src=\"/servlet/Fiz.js\"></script>\n",
-                html.jsHtml.toString());
+                html.jsFileHtml.toString());
         html.includeJsFile("Fiz.js");
         assertEquals("only include Fiz.js once",
                 "<script type=\"text/javascript\" " +
                 "src=\"/servlet/Fiz.js\"></script>\n",
-                html.jsHtml.toString());
+                html.jsFileHtml.toString());
         TestUtil.deleteTree("_test_");
     }
 
@@ -190,7 +215,7 @@ public class HtmlTest extends junit.framework.TestCase {
         html.setTitle("sample");
         TestUtil.assertSubstring("title only", "<title>sample</title>",
                 html.toString());
-        html.reset();
+        html.clear();
         html.getBody().append("body info\n");
         TestUtil.assertSubstring("body only", "body info",
                 html.toString());
@@ -351,13 +376,6 @@ public class HtmlTest extends junit.framework.TestCase {
                 html.toString());
     }
 
-    public void test_reset() {
-        html.setTitle("sample");
-        html.getBody().append("body info\n");
-        html.reset();
-        assertEquals("", html.toString());
-    }
-
     public void test_escapeHtmlChars() {
         assertEquals("&lt;&amp;&gt;\n'&quot; =",
                 Html.escapeHtmlChars("<&>\n'\" ="));
@@ -433,12 +451,12 @@ public class HtmlTest extends junit.framework.TestCase {
         TestUtil.writeFile("_test_/file2.js", "");
         html.jsDirectory = "_test_/";
         html.includeJsDependencies("file1.js");
-        assertEquals("jsHtml string",
+        assertEquals("jsFileHtml string",
                 "<script type=\"text/javascript\" " +
                 "src=\"/servlet/Fiz.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
                 "src=\"/servlet/file2.js\"></script>\n",
-                html.jsHtml.toString());
+                html.jsFileHtml.toString());
         TestUtil.deleteTree("_test_");
     }
     public void test_includeJsDependencies_parsingFizIncludeLine() {
@@ -454,7 +472,7 @@ public class HtmlTest extends junit.framework.TestCase {
         TestUtil.writeFile("_test_/file5.js", "");
         html.jsDirectory = "_test_/";
         html.includeJsDependencies("file1.js");
-        assertEquals("jsHtml string",
+        assertEquals("jsFileHtml string",
                 "<script type=\"text/javascript\" " +
                 "src=\"/servlet/Fiz.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
@@ -465,7 +483,7 @@ public class HtmlTest extends junit.framework.TestCase {
                 "src=\"/servlet/file4.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
                 "src=\"/servlet/file5.js\"></script>\n",
-                html.jsHtml.toString());
+                html.jsFileHtml.toString());
         TestUtil.deleteTree("_test_");
     }
     public void test_includeJsDependencies_missingFile() {

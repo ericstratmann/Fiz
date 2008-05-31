@@ -143,8 +143,8 @@ test("stateChange_errorAction", function() {
     ajax.xmlhttp.responseText = "actions = [{type: \"error\", " +
             "properties: {age: 24,  message: \"something broke\"}}]";
     ajax.stateChange();
-    assertEqual("alert(message: Error in Ajax request for /a/b: " +
-            "something broke)\n", jsunit.log, "jsunit.log");
+    assertEqual("alert(message: something broke)\n", jsunit.log,
+            "jsunit.log");
 });
 test("stateChange_exceptionWithLineNumber", function() {
     document = new Document();
@@ -187,8 +187,8 @@ test("error_defaultHandler", function() {
     document = new Document();
     var ajax = new Fiz.Ajax({url: "/a/b"}, {});
     jsunit.log = "";
-    ajax.error({message: "earthquake"});
-    assertEqual("alert(message: Error in Ajax request for /a/b: earthquake)\n",
+    ajax.error({message: "earthquake"}, false);
+    assertEqual("alert(message: earthquake)\n",
             jsunit.log, "jsunit.log");
 });
 

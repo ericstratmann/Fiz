@@ -93,7 +93,7 @@ public class Dispatcher extends HttpServlet {
         super.init(config);
         if (testMode) {
             // Reduce the level of logging while running tests.
-            logger.setLevel(Level.ERROR);
+            logger.setLevel(Level.FATAL);
         }
         String contextRoot = config.getServletContext().getRealPath("");
         logger.info("Fiz initializing with context root " + contextRoot);
@@ -146,6 +146,7 @@ public class Dispatcher extends HttpServlet {
     public void service (HttpServletRequest request,
         HttpServletResponse response) {
         ClientRequest cr = null;
+        boolean isAjax = false;
         try {
             if (logger.isTraceEnabled()) {
                 logger.trace("incoming URL: " + Util.getUrlWithQuery(request));
@@ -172,6 +173,7 @@ public class Dispatcher extends HttpServlet {
                 methodKey = pathInfo.substring(1, endOfMethod);
                 method = methodMap.get(methodKey);
             }
+            isAjax = pathInfo.startsWith("ajax", endOfClass+1);
 
             if (method == null) {
                 // We don't currently have any information about this method.
@@ -233,7 +235,7 @@ public class Dispatcher extends HttpServlet {
             // object and invoke the method.
             cr = method.interactor.getRequest(this,
                     request, response);
-            if (pathInfo.startsWith("ajax", endOfClass+1)) {
+            if (isAjax) {
                 cr.setAjax(true);
             }
             method.method.invoke(method.interactor, cr);
@@ -243,32 +245,72 @@ public class Dispatcher extends HttpServlet {
             cr.finish();
         }
         catch (Throwable e) {
-            // TODO: allow application-specific handling of errors.
-            // * Generate a standard result page (handle AJAX especially)
-            // * Generate a log message.
-            // * Invoke application-specific code to handle (but catch
-            //   any errors in that code).  Use configuration information
-            //   to figure out what to invoke?  Or, just look for a
-            //   well-defined class?
-
+            // If the exception happened in the Interactor method, the
+            // real information we want is encapsulated inside e.
             Throwable cause =  e.getCause();
             if (cause == null) {
                 cause = e;
+            }
+
+            // If the error occurred before we created a ClientRequest,
+            // create one here so we can use it for reporting the error.
+            if (cr == null) {
+                cr = new ClientRequest(this, request, response);
+                cr.setAjax(isAjax);
             }
             if (cause instanceof HandledError) {
                 // There was an error, but it was already handled.  The
                 // error was thrown simply to terminate the processing of
                 // the request.
                 cr.finish();
-            } else {
-                StringWriter sWriter= new StringWriter();
-                basicMessage = cause.getMessage();
-                cause.printStackTrace(new PrintWriter(sWriter));
-                fullMessage = "unhandled exception for URL \""
-                        + Util.getUrlWithQuery(request) + "\"\n"
-                        + sWriter.toString();
-                logger.error(fullMessage);
+                return;
             }
+
+            // Print details about the error to the log.
+            StringWriter sWriter= new StringWriter();
+            basicMessage = cause.getMessage();
+            cause.printStackTrace(new PrintWriter(sWriter));
+            fullMessage = "unhandled exception for URL \""
+                    + Util.getUrlWithQuery(request) + "\":\n"
+                    + sWriter.toString();
+            logger.error(fullMessage);
+
+            // If this is an AJAX request then return the error message
+            // via the AJAX protocol.
+            if (cr.isAjax()) {
+                cr.ajaxErrorAction(new Dataset("message",
+                        Template.expand(Config.get("errors", "uncaughtAjax"),
+                        new Dataset("message", basicMessage),
+                        Template.SpecialChars.NONE)));
+                cr.finish();
+                return;
+            }
+
+            // This is a normal HTML request; use a template from the
+            // "errors" configuration dataset to generate HTML describing
+            // the error.
+            Html html = cr.getHtml();
+            try {
+                if (Config.get("errors", "clearOnUncaught").equals("true")) {
+                    html.clear();
+                }
+                Template.expand(Config.get("errors", "uncaughtHtml"),
+                        new Dataset("message", basicMessage), html.getBody());
+            }
+            catch (Throwable t) {
+                // Things are really messed up: an exception happened while
+                // trying to report an exception.  Generate an HTML report.
+                sWriter.getBuffer().setLength(0);
+                t.printStackTrace(new PrintWriter(sWriter));
+                logger.error("unhandled exception while reporting " +
+                        "an unhandled exception in Dispatcher:\n" +
+                        sWriter.toString());
+                html.clear();
+                html.getBody().append("<div class=\"uncaughtException\">" +
+                        "Multiple internal errors in the server!  Details " +
+                        "are in the server's log</div>.\n");
+            }
+            cr.finish();
         }
     }
 

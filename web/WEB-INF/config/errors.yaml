@@ -28,3 +28,24 @@ tableSection: Can't display this table: @message
 # in its a request.
 templateSection: >
     <div class="sectionError">Can't display this section: @message</div>
+
+# Used when there is an uncaught exception or error in the page generation
+# code for an HTML request.
+uncaughtHtml: |
+    <div class="uncaughtException">An internal error (uncaught exception)
+    occurred while generating this page: @message.</div>
+
+# The following value is used in conjunction with uncaughtHtml:  if
+# this value is "true", then when an uncaught exception occurs Fiz will
+# clear any partially-generated HTML before displaying the error message;
+# otherwise the partial page will be retained, with the error message
+# displayed at the end.
+clearOnUncaught: false
+
+# Used when there is an uncaught exception or error in the page generation
+# code for an AJAX request.  This template is a text template, not an HTML
+# template: it creates a text message that is returned to the browser.
+uncaughtAjax: >
+    An internal error (uncaught exception) occurred on the server
+    while handling an AJAX request: @message.  This page may not
+    function correctly without a refresh.

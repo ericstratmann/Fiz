@@ -138,7 +138,7 @@ public class LinkTest extends junit.framework.TestCase {
                 "weight=%22110%22&quot;);\">Alice</a>", out.toString());
         TestUtil.assertSubstring("include Javascript file",
                 "/servlet/Ajax.js",
-                cr.getHtml().jsHtml.toString());
+                cr.getHtml().jsFileHtml.toString());
         TestUtil.assertXHTML(out.toString());
     }
     public void test_html_ajaxAddUrlPrefix() {

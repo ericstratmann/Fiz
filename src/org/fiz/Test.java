@@ -76,17 +76,17 @@ public class Test extends Interactor {
 
     public void showTime(ClientRequest cr) {
         Html html = cr.getHtml();
+        StringBuilder body = html.getBody();
         html.setTitle("Ajax Test Page");
-        String code = "new Fiz.Ajax({url: '"  + cr.getUrlPrefix() +
-                "/test/ajaxUpdateTime'}); " +
-                "return false;";
-        html.getBody().append("<h1>Ajax Demo</h1>\n" +
-                "<script type=\"text/javascript\" src=\"/fiz/Ajax.js\"></script>\n" +
-                "<p>This page demonstrates a simple Ajax updater.  " +
-                "Click <a href=\"#\" onclick=\"" + code + "\">here</a> " +
-                "to update the time below.</p>\n" +
+        Link link = new Link(new Dataset("text", "Click here",
+                "ajaxUrl", "test/ajaxUpdateTime"));
+        body.append("<h1>Ajax Demo</h1>\n" +
+                "<p>This page demonstrates a simple Ajax updater.  ");
+        link.html(cr, cr.getMainDataset(), body);
+        body.append(" to update the time below.</p>\n" +
                 "<p>Latest date/time from Ajax: " +
                 "<span id=\"updateMe\">None</span></p>\n");
+        throw new Error("Error for testing");
     }
 
     // This entry point is used to initiate an Ajax performance

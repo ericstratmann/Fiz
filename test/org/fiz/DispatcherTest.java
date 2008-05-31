@@ -1,7 +1,6 @@
 package org.fiz;
+import java.io.*;
 import javax.servlet.*;
-
-import org.apache.log4j.Level;
 
 /**
  * Junit tests for the Dispatcher class.
@@ -11,10 +10,11 @@ public class DispatcherTest  extends junit.framework.TestCase {
 
     protected Dispatcher dispatcher;
 
-    public void setUp() {
+    public void setUp() throws ServletException {
         dispatcher = new Dispatcher();
-        dispatcher.logger.setLevel(Level.FATAL);
         Dispatcher.testMode = true;
+        dispatcher.init(new ServletConfigFixture(
+                new ServletContextFixture()));
         Config.setDataset("main", new Dataset("searchPackages", "org.fiz"));
     }
 
@@ -157,23 +157,85 @@ public class DispatcherTest  extends junit.framework.TestCase {
         TestUtil.assertSubstring("error message", "error in method",
                 dispatcher.basicMessage);
     }
-    public void test_service_HandledError() {
+    public void test_service_exception_createClientRequest() {
+        ServletResponseFixture response = new ServletResponseFixture();
+        dispatcher.service(new ServletRequestFixture("/dispatcherTest2/ajaxBogus"),
+                response);
+        assertEquals("AJAX response", "var actions = [{type: \"error\", " +
+                "properties: {message: \"uncaughtAjax: unsupported URL " +
+                "\\\"/x/y/z\\\": couldn't find method \\\"ajaxBogus\\\" with " +
+                "proper signature in class DispatcherTest2\"}}];",
+                response.out.toString());
+    }
+    public void test_service_exception_HandledError() {
         dispatcher.service(new ServletRequestFixture(
                 "/dispatcherTest1/handledError"),
                 new ServletResponseFixture());
         assertEquals("error message", null, dispatcher.basicMessage);
     }
-    public void test_service_handlingException() {
+    public void test_service_exception_logMessage() {
         dispatcher.service(new ServletRequestFixture("/dispatcherTest1/error"),
                 new ServletResponseFixture());
         assertEquals("error message", "error in method",
                 dispatcher.basicMessage);
         String message = dispatcher.fullMessage.replaceAll("\\r\\n", "\n");
         TestUtil.assertSubstring("error message",
-                "unhandled exception for URL \"/x/y/z?a=b&c=d\"\n" +
+                "unhandled exception for URL \"/x/y/z?a=b&c=d\":\n" +
                 "java.lang.Error: error in method\n" +
                 "\tat org.fiz.DispatcherTest1.error",
                 message);
+    }
+    public void test_service_exception_ajaxResponse() {
+        ServletResponseFixture response = new ServletResponseFixture();
+        dispatcher.service(new ServletRequestFixture("/dispatcherTest2/ajaxBogus"),
+                response);
+        assertEquals("AJAX response", "var actions = [{type: \"error\", " +
+                "properties: {message: \"uncaughtAjax: unsupported URL " +
+                "\\\"/x/y/z\\\": couldn't find method \\\"ajaxBogus\\\" with " +
+                "proper signature in class DispatcherTest2\"}}];",
+                response.out.toString());
+    }
+    public void test_service_exception_htmlResponseClearFirst() {
+        Config.setDataset("errors", new Dataset(
+                "uncaughtHtml", "test: @message",
+                "clearOnUncaught", "true"));
+        ServletResponseFixture response = new ServletResponseFixture();
+        dispatcher.service(new ServletRequestFixture("/dispatcherTest2/x"),
+                response);
+        TestUtil.assertSubstring("HTML body", "<body>\n" +
+                "<script type=\"text/javascript\" src=\"/context" +
+                "/cpath/Fiz.js\"></script>\n" +
+                "test: error in DispatcherTest2.x</body>\n",
+                response.out.toString());
+    }
+    public void test_service_exception_htmlResponseDontClear() {
+        Config.setDataset("errors", new Dataset(
+                "uncaughtHtml", "test: @message",
+                "clearOnUncaught", "false"));
+        ServletResponseFixture response = new ServletResponseFixture();
+        dispatcher.service(new ServletRequestFixture("/dispatcherTest2/x"),
+                response);
+        TestUtil.assertSubstring("HTML body", "<body>\n" +
+                "<script type=\"text/javascript\" src=\"/context/" +
+                "cpath/Fiz.js\"></script>\n" +
+                "<p>Sample text.</p>\n" +
+                "test: error in DispatcherTest2.x</body>\n",
+                response.out.toString());
+    }
+    public void test_service_exception_multipleErrors() {
+        Config.setDataset("errors", new Dataset(
+                "uncaughtHtml", "test: @message @bogus",
+                "clearOnUncaught", "true"));
+        ServletResponseFixture response = new ServletResponseFixture();
+        dispatcher.service(new ServletRequestFixture("/dispatcherTest2/x"),
+                response);
+        TestUtil.assertSubstring("HTML body", "<body>\n" +
+                "<script type=\"text/javascript\" src=\"/context/cpath" +
+                "/Fiz.js\"></script>\n" +
+                "<div class=\"uncaughtException\">Multiple internal errors in " +
+                "the server!  Details are in the server's log</div>.\n" +
+                "</body>\n",
+                response.out.toString());
     }
 
     public void test_findClass() {

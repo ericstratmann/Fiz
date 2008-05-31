@@ -12,7 +12,8 @@ public class DispatcherTest2 extends Interactor {
     public void destroy() {
         destroyCount += 3;
     }
-    public void x(ClientRequest request) {
-        throw new Error("error in DispatcherTest4.x");
+    public void x(ClientRequest cr) {
+        cr.getHtml().getBody().append("<p>Sample text.</p>\n");
+        throw new Error("error in DispatcherTest2.x");
     }
 }

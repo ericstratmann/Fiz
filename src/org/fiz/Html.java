@@ -41,7 +41,7 @@ public class Html {
 
     // The following field accumulates HTML that will read all of the files
     // in javascriptFiles.
-    protected StringBuilder jsHtml = new StringBuilder();
+    protected StringBuilder jsFileHtml = new StringBuilder();
 
     // The following field accumulates Javascript code that will be invoked
     // at the end of loading the page.
@@ -67,6 +67,21 @@ public class Html {
             contextPath = "/servlet";
             jsDirectory = "javascript/";
         }
+        includeJsFile("Fiz.js");
+    }
+
+    /**
+     * Clears all information that has been specified for the HTML, restoring
+     * the HTML document to its initial empty state.
+     */
+    public void clear() {
+        title = null;
+        body.setLength(0);
+        cssFiles.clear();
+        css.setLength(0);
+        jsFiles.clear();
+        jsFileHtml.setLength(0);
+        jsCode.setLength(0);
         includeJsFile("Fiz.js");
     }
 
@@ -222,15 +237,15 @@ public class Html {
         includeJsDependencies(fileName);
 
         // Generate an HTML <script> statement to include the current file.
-        jsHtml.append("<script type=\"text/javascript\" src=\"");
-        jsHtml.append(contextPath);
-        jsHtml.append("/");
-        jsHtml.append(fileName);
+        jsFileHtml.append("<script type=\"text/javascript\" src=\"");
+        jsFileHtml.append(contextPath);
+        jsFileHtml.append("/");
+        jsFileHtml.append(fileName);
 
         // As of 5/2008 <script ... /> doesn't seem to work in browsers:
         // the <script> element doesn't get closed.  Must use an explicit
         // </script> tag.
-        jsHtml.append("\"></script>\n");
+        jsFileHtml.append("\"></script>\n");
     }
 
     /**
@@ -272,7 +287,7 @@ public class Html {
 
             // Output body.
             writer.write("</head>\n<body>\n");
-            writer.write(jsHtml.toString());
+            writer.write(jsFileHtml.toString());
             writer.write(body.toString());
 
             // Output Javascript startup code.
@@ -303,15 +318,6 @@ public class Html {
         StringWriter result = new StringWriter();
         print(result);
         return result.toString();
-    }
-
-    /**
-     * Clears all information that has been specified for the HTML, restoring
-     * the HTML document to its initial empty state.
-     */
-    public void reset() {
-        title = null;
-        body.setLength(0);
     }
 
     /**
