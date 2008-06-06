@@ -496,6 +496,8 @@ public class Html {
                         out.append("\\n");
                     } else if (c == '\t') {
                         out.append("\\t");
+                    } else if (c == '\r') {
+                        out.append("\\r");
                     } else {
                         out.append(String.format("\\x%02x", (int) c));
                     }

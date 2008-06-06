@@ -1,0 +1,17 @@
+/* EntryFormElement.css -
+ *
+ * This file defines styles for TextAreaFormElements that use the default class.
+ * Many of the styles are inherited from those defined in main.yaml.
+ */
+
+/* Browser compatibility note: margin and font-size have different defaults
+ * on different browsers, hence the explicit values here.
+ */
+.TextAreaFormElement {
+    width: 500px;
+    font-family: @fontFamily;
+    font-size: 100%;
+    border: @standardBorder;
+    padding: 1px 3px 1px 3px;
+    margin: 0px;
+}

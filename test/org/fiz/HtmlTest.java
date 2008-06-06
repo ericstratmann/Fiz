@@ -412,14 +412,14 @@ public class HtmlTest extends junit.framework.TestCase {
     }
 
     public void test_escapeStringChars() {
-        assertEquals("abc\\x1f  | \\n\\t | \\x01 | \\\\\\\"",
-                Html.escapeStringChars("abc\037\040 | \n\t | \001 | \\\""));
+        assertEquals("abc\\x1f  | \\n\\t\\r | \\x01 | \\\\\\\"",
+                Html.escapeStringChars("abc\037\040 | \n\t\r | \001 | \\\""));
     }
 
     public void test_escapeStringChars_stringBuilder() {
         StringBuilder out = new StringBuilder();
-        Html.escapeStringChars("abc\037\040 | \n\t | \001 | \\\"", out);
-        assertEquals("abc\\x1f  | \\n\\t | \\x01 | \\\\\\\"",
+        Html.escapeStringChars("abc\037\040 | \n\t\r | \001 | \\\"", out);
+        assertEquals("abc\\x1f  | \\n\\t\\r | \\x01 | \\\\\\\"",
                 out.toString());
     }
     public void test_escapeStringChars_stringBuilder_handleException() {

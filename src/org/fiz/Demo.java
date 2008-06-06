@@ -19,7 +19,9 @@ public class Demo extends Interactor {
             new EntryFormElement(new Dataset("id", "state",
                     "label", "Home state:")),
             new CheckboxFormElement(new Dataset("id", "citizen",
-                    "label", "U.S. citizen:"))
+                    "label", "U.S. citizen:")),
+            new TextAreaFormElement(new Dataset("id", "saying",
+                    "label", "Favorite saying:"))
             );
 
     /**

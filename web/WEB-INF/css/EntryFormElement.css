@@ -9,4 +9,9 @@
  */
 .EntryFormElement {
     width: 150px;
+    font-family: @fontFamily;
+    font-size: 100%;
+    border: @standardBorder;
+    padding: 1px 3px 1px 3px;
+    margin: 0px;
 }
