@@ -1,0 +1,18 @@
+/* CheckboxFormElement.css -
+ *
+ * This file defines styles for CheckboxFormElements that use the default
+ * class.  Many of the styles are inherited from those defined in main.yaml.
+ */
+
+/* Browser compatibility issues: by default IE adds several pixels of extra
+ * space around the checkbox, which makes it hard to align (and different
+ * from Firefox and Safari).  Setting explicit width and height values trims
+ * off the extra space.
+ */
+.CheckboxFormElement {
+    vertical-align: top;
+    width: 13px;
+    height: 13px;
+    margin: 4px 0px 0px 0px;
+    border: none;
+}

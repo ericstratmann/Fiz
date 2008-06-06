@@ -17,8 +17,10 @@ public class Demo extends Interactor {
             new EntryFormElement(new Dataset("id", "age",
                     "label", "Age:")),
             new EntryFormElement(new Dataset("id", "state",
-                    "label", "Home state:")
-            ));
+                    "label", "Home state:")),
+            new CheckboxFormElement(new Dataset("id", "citizen",
+                    "label", "U.S. citizen:"))
+            );
 
     /**
      * Displays a page with various demonstrations of the TableSection

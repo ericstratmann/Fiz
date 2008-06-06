@@ -86,7 +86,6 @@ public class Test extends Interactor {
         body.append(" to update the time below.</p>\n" +
                 "<p>Latest date/time from Ajax: " +
                 "<span id=\"updateMe\">None</span></p>\n");
-        throw new Error("Error for testing");
     }
 
     // This entry point is used to initiate an Ajax performance

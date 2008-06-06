@@ -4,6 +4,9 @@
  * Many of the styles are inherited from those defined in main.yaml.
  */
 
+/* Browser compatibility note: IE adds 1 pixel of margin on the top and
+ * bottom of text inputs, and there seems to be no way to eliminate this.
+ */
 .EntryFormElement {
     width: 150px;
 }
