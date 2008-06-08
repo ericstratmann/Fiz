@@ -45,10 +45,10 @@ public class TextAreaFormElementTest extends junit.framework.TestCase {
                 new Dataset("id", "id11", "class", "xyzzy",
                 "rows", "6"));
         StringBuilder out = new StringBuilder();
-        element.html(cr, new Dataset("id11", "Line 1\nLine 2\n"), out);
+        element.html(cr, new Dataset("id11", "Line 1\n<Line 2>\n"), out);
         assertEquals("HTML", "<textarea name=\"id11\" class=\"xyzzy\" " +
                 "rows=\"6\">Line 1\n" +
-                "Line 2\n" +
+                "&lt;Line 2&gt;\n" +
                 "</textarea>",
                 out.toString());
     }

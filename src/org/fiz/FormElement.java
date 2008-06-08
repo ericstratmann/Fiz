@@ -50,7 +50,9 @@ public abstract class FormElement implements Formatter {
      * (e.g., perhaps a time value was split across several different controls
      * for editing but has to be returned to the data manager in a single
      * string); in this case the FormElement can override this method to
-     * perform whatever translations are needed.
+     * perform whatever translations are needed.  FormElements can also
+     * use this method to perform data validation (though that usually happens
+     * in the data managers).
      * @param cr                   Overall information about the client
      *                             request being serviced.
      * @param in                   The main dataset for the request;
@@ -60,8 +62,12 @@ public abstract class FormElement implements Formatter {
      *                             manager; this method will add one or
      *                             more values to that dataset, representing
      *                             the information managed by this element.
+     * @throws FormSection.FormDataException
+     *                             Thrown if the form element finds the
+     *                             submitted form data to be invalid.
      */
-    public void collect(ClientRequest cr, Dataset in, Dataset out) {
+    public void collect(ClientRequest cr, Dataset in, Dataset out)
+            throws FormSection.FormDataException {
         out.set(id, in.get(id));
     }
 

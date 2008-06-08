@@ -43,7 +43,7 @@ person:
         age: 41
         height: 73
         weight: 195
-        saying: "Line 1\nLine 2\nLine 3\n"
+        saying: "Line 1\nLine 2\n<Line 3>\n"
 
 shoppingCart:
     data:

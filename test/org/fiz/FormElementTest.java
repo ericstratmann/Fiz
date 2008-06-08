@@ -23,7 +23,7 @@ public class FormElementTest extends junit.framework.TestCase {
         assertEquals("element id", "4815162342", element.id);
     }
 
-    public void test_collect() {
+    public void test_collect() throws FormSection.FormDataException {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "name", "name", "Alice"));
         Dataset out = new Dataset("name", "Bob", "age", "30");
