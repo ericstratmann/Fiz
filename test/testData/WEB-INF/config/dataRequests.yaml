@@ -12,6 +12,11 @@ fixture2:
   manager:  fixture
   id:       fixture2
   name:     @name
+getFruits:
+  manager:  file
+  request:  read
+  file:     fileData.yaml
+  dataset:  fruits
 getNothing:
   manager:  file
   request:  read

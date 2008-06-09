@@ -25,6 +25,16 @@ demo:
         request: read
         file:    demo
         dataset: shoppingCart
+    getFormData:
+        manager: demo
+        request: read
+        file:    demo
+        dataset: formData
+    getFruits:
+        manager: demo
+        request: read
+        file:    demo
+        dataset: fruits
     getPeople:
         manager: demo
         request: read

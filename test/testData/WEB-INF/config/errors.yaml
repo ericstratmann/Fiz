@@ -2,3 +2,4 @@
 # tests.
 
 uncaughtAjax: uncaughtAjax: @message
+bulletin: bulletin: @message

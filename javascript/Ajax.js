@@ -215,19 +215,26 @@ Fiz.Ajax.serialize = function(object) {
     // scalar value.
     var result = "";
     for (var name in object) {
-        result += name.length + "." + name;
         var value = object[name];
         if (value instanceof Array) {
-            for (var i = 0, length = value.length; i < length; i++) {
-                result += "(" + Fiz.Ajax.serialize(value[i]) + ")";
+            var length = value.length;
+
+            // Don't emit anything for empty arrays of nested datasets.
+            if (length > 0) {
+                result += name.length + "." + name;
+                for (var i = 0; i < length; i++) {
+                    result += "(" + Fiz.Ajax.serialize(value[i]) + ")";
+                }
+                result += "\n";
             }
-            result += "\n";
         } else if ((typeof value) == "object") {
-            result += "(" + Fiz.Ajax.serialize(value) + ")\n";
+            result += name.length + "." + name +
+                    "(" + Fiz.Ajax.serialize(value) + ")\n";
         } else {
             // Simple scalar value.
             value = value.toString();
-            result += value.length + "." + value + "\n";
+            result += name.length + "." + name +
+                    value.length + "." + value + "\n";
         }
     }
     return result;

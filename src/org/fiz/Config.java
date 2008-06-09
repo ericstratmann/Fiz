@@ -45,7 +45,9 @@ public class Config {
      * @param datasetName          Name of the desired dataset.
      * @param name                 Name of the desired value (a top-level
      *                             value in the dataset).
-     * @return
+     * @return                     Value of the option named {@code name}
+     *                             in the configuration data set named
+     *                             {@code datasetName}.
      */
     public static String get(String datasetName, String name) {
         return getDataset(datasetName).get(name);

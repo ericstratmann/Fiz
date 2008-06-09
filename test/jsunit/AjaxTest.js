@@ -196,6 +196,7 @@ test("serialize", function() {
     var result = Fiz.Ajax.serialize({a: 14, b: "test string",
             object: {name: "Alice", age: 44},
             array: [{name: "Bill"}, {name: "Carol"}, {name: "David"}],
+            empty: [],
             last: 1234.56});
     assertEqual("5.array(4.name4.Bill\n" +
             ")(4.name5.Carol\n" +

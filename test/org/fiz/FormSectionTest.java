@@ -93,12 +93,13 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "var actions = [{type: \"eval\", javascript: \"form_form1." +
                 "elementError(\\\"name\\\", \\\"<span class=\\\\\\\"error" +
                 "\\\\\\\">name error</span>\\\");\"}, {type: \"eval\", " +
-                "javascript: \"Fiz.setBulletin(\\\"Some of the input fields " +
-                "are invalid; see details below.\\\");\"}, {type: \"eval\", " +
-                "javascript: \"form_form1.elementError(\\\"age\\\", \\\"<span " +
-                "class=\\\\\\\"error\\\\\\\">age error</span>\\\");\"}, " +
-                "{type: \"eval\", javascript: \"Fiz.setBulletin(\\\"Some " +
-                "of the input fields are invalid; see details below.\\\");\"}",
+                "javascript: \"Fiz.setBulletin(\\\"bulletin: Some of the " +
+                "input fields are invalid; see details below.\\\");\"}, " +
+                "{type: \"eval\", javascript: \"form_form1.elementError" +
+                "(\\\"age\\\", \\\"<span class=\\\\\\\"error\\\\\\\">age " +
+                "error</span>\\\");\"}, {type: \"eval\", javascript: " +
+                "\"Fiz.setBulletin(\\\"bulletin: Some of the input fields " +
+                "are invalid; see details below.\\\");\"}",
                 out.toString());
     }
 
@@ -373,7 +374,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getServletResponse()).out;
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
-                "\"Fiz.setBulletin(\\\"&lt;failure&gt;\\\");\"}, " +
+                "\"Fiz.setBulletin(\\\"bulletin: &lt;failure&gt;\\\");\"}, " +
                 "{type: \"eval\", " +
                 "javascript: \"form_form1.clearElementError();\"}",
                 out.toString());
@@ -400,7 +401,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getServletResponse()).out;
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
-                "\"Fiz.setBulletin(\\\"&lt;failure&gt;\\\");\"}, " +
+                "\"Fiz.setBulletin(\\\"bulletin: &lt;failure&gt;\\\");\"}, " +
                 "{type: \"eval\", javascript: " +
                 "\"form_form1.clearElementError();\"}",
                 out.toString());

@@ -18,6 +18,36 @@ error2:
       An error occurred that isn't associated with a particular
       form element, so this message should appear in the bulletin.
 
+formData:
+    data:
+        name: Bill
+        age: 41
+        height: 73
+        weight: 195
+        saying: "Line 1\nLine 2\n<Line 3>\n"
+        fruit: grape
+
+fruits:
+    fruit:
+      - name: Apple
+        value: apple
+      - name: Banana
+        value: banana
+      - name: Grape
+        value: grape
+      - name: Kiwi
+        value: kiwi
+      - name: Peach
+        value: peach
+      - name: Pear
+        value: pear
+      - name: Raspberry
+        value: raspberry
+      - name: Strawberry
+        value: strawberry
+      - name: Watermelon
+        value: watermelon
+
 people:
     data:
         - name: Alice
@@ -37,13 +67,13 @@ people:
           age: 66
           weight: 220
           height: 71
+
 person:
     data:
         name: Bill
         age: 41
         height: 73
         weight: 195
-        saying: "Line 1\nLine 2\n<Line 3>\n"
 
 shoppingCart:
     data:

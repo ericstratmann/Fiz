@@ -63,8 +63,8 @@ public class FormSection implements Section {
     }
 
     /**
-     * FormDataException is thrown when the {@code collect} method of a
-     * FormElement detects a problem with its data.
+     * Form elements throw FormDataException in their {@code collect} methods
+     * when they detect a problem with incoming form data.
      */
     public static class FormDataException extends Exception {
         /**

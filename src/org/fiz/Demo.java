@@ -11,13 +11,19 @@ public class Demo extends Interactor {
     protected Logger logger = Logger.getLogger("org.fiz.Demo");
 
     FormSection demoForm =new FormSection(
-            new Dataset("id", "form1", "request", "demo.getPerson"),
+            new Dataset("id", "form1", "request", "demo.getFormData"),
             new EntryFormElement(new Dataset("id", "name",
                     "label", "Name:")),
             new EntryFormElement(new Dataset("id", "age",
                     "label", "Age:")),
             new EntryFormElement(new Dataset("id", "state",
                     "label", "Home state:")),
+            new SelectFormElement(new Dataset("id", "fruit",
+                    "label", "Favorite fruit:",
+                    "choiceRequest", "demo.getFruits",
+                    "multiple", "multiple",
+                    "height", "5",
+                    "choiceName", "fruit")),
             new PasswordFormElement(new Dataset("id", "password",
                     "label", "Password:")),
             new PasswordFormElement(new Dataset("id", "password2",

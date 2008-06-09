@@ -1,0 +1,14 @@
+/* SelectFormElement.css -
+ *
+ * This file defines styles for SelectFormElements that use the default class.
+ * Many of the styles are inherited from those defined in main.yaml.
+ */
+
+.SelectFormElement {
+    width: @formElementWidth;
+    font-family: @fontFamily;
+    font-size: 100%;
+    border: @standardBorder;
+    padding: 0px;
+    margin: 0px;
+}

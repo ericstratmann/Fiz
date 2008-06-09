@@ -411,7 +411,7 @@ public class Dataset implements Cloneable {
      * {@code dataset} before calling this method.
      * @param key                  Name of a nested dataset within the
      *                             top-level dataset (not a path).
-     * @param dataset              Dataset to associate with {@key}.
+     * @param dataset              Dataset to associate with {@code key}.
      * @return                     Same as the {@code dataset} argument.
      */
     @SuppressWarnings("unchecked")

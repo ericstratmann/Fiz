@@ -20,9 +20,8 @@ package org.fiz;
  *                   password entry will provide that data).
  *   id:             (required) Name for this FormElement; must be unique
  *                   among all ids for the page.  This is used as the name
- *                   for the data value in query and update requests and
- *                   also as the {@code name} attribute for the HTML input
- *                   element.
+ *                   for the data value in update requests and also as the
+ *                   {@code name} attribute for the HTML input element.
  *   label:          (optional) Template for label to display next to the
  *                   FormElement to identify the element for the user.
  *                   If omitted {@code id} is used as the label.

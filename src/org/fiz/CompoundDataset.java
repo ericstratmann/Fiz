@@ -274,13 +274,14 @@ public class CompoundDataset extends Dataset {
     @SuppressWarnings("unchecked")
     public Object lookup(String key, DesiredType wanted, Quantity quantity,
             ArrayList<Object> out) {
-        Object result = null;
+        boolean foundAny = false;
         for (Dataset component : components) {
-            result = component.lookup(key, wanted, quantity, out);
+            Object result = component.lookup(key, wanted, quantity, out);
             if (result != null) {
                 if (quantity == Quantity.FIRST_ONLY) {
                     return result;
                 }
+                foundAny = true;
 
                 // The following statement is necessary in the case where
                 // {@code out} is initially null: once a list has been
@@ -288,7 +289,7 @@ public class CompoundDataset extends Dataset {
                 out = (ArrayList<Object>) result;
             }
         }
-        return result;
+        return (foundAny) ? out : null;
     }
 
     /**
@@ -320,13 +321,14 @@ public class CompoundDataset extends Dataset {
     @SuppressWarnings("unchecked")
     public Object lookupPath(String path, DesiredType wanted,
             Quantity quantity, ArrayList<Object> out) {
-        Object result = null;
+        boolean foundAny = false;
         for (Dataset component : components) {
-            result = component.lookupPath(path, wanted, quantity, out);
+            Object result = component.lookupPath(path, wanted, quantity, out);
             if (result != null) {
                 if (quantity == Quantity.FIRST_ONLY) {
                     return result;
                 }
+                foundAny = true;
 
                 // The following statement is necessary in the case where
                 // {@code out} is initially null: once a list has been
@@ -334,7 +336,7 @@ public class CompoundDataset extends Dataset {
                 out = (ArrayList<Object>) result;
             }
         }
-        return result;
+        return (foundAny) ? out : null;
     }
 
     /**

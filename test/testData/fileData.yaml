@@ -42,3 +42,10 @@ state:
 error:
   message: sample <error>
   value:   47
+
+fruits:
+  fruit:
+    - name: Peach
+      value: peach
+    - name: Pear
+      value: pear

@@ -26,6 +26,7 @@ in this directory.
                 <pathelement location="C:/code/commander/lib/servlet.jar" />
                 <pathelement location="C:/code/commander/lib/log4j.jar" />
                 <pathelement location="C:/code/commander/lib/jyaml.jar" />
+                <pathelement location="C:/code/commander/lib/js.jar" />
                 <pathelement location="C:/cygwin/usr/local/tools/i686_win32/jdk1.6.0_01/lib/tools.jar" />
             </classpath>
         </javadoc>
