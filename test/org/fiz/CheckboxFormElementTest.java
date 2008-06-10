@@ -44,9 +44,9 @@ public class CheckboxFormElementTest extends junit.framework.TestCase {
                 new Dataset("id", "id11", "trueValue", "111"));
         StringBuilder out = new StringBuilder();
         element.html(cr, new Dataset("id11", "111"), out);
-        assertEquals("HTML", "<input type=\"checkbox\" " +
-                "class=\"CheckboxFormElement\" name=\"id11\" " +
-                "value=\"true\" checked=\"checked\" />",
+        assertEquals("HTML", "<div class=\"CheckboxFormElement\">" +
+                "<input type=\"checkbox\" name=\"id11\" id=\"id11\" " +
+                "value=\"true\" checked=\"checked\" /></div>",
                 out.toString());
         assertEquals("CSS includes", "CheckboxFormElement.css",
                 cr.getHtml().getCssFiles());
@@ -57,9 +57,9 @@ public class CheckboxFormElementTest extends junit.framework.TestCase {
                 new Dataset("id", "id11", "defaultValue", "true"));
         StringBuilder out = new StringBuilder();
         element.html(cr, new Dataset(), out);
-        assertEquals("HTML", "<input type=\"checkbox\" " +
-                "class=\"CheckboxFormElement\" name=\"id11\" " +
-                "value=\"true\" checked=\"checked\" />",
+        assertEquals("HTML", "<div class=\"CheckboxFormElement\">" +
+                "<input type=\"checkbox\" name=\"id11\" id=\"id11\" " +
+                "value=\"true\" checked=\"checked\" /></div>",
                 out.toString());
     }
     public void test_html_explicitClassNoInitialValue() {
@@ -67,8 +67,21 @@ public class CheckboxFormElementTest extends junit.framework.TestCase {
                 new Dataset("id", "id11", "class", "xyzzy"));
         StringBuilder out = new StringBuilder();
         element.html(new ClientRequestFixture(), new Dataset(), out);
-        assertEquals("HTML", "<input type=\"checkbox\" " +
-                "class=\"xyzzy\" name=\"id11\" value=\"true\" />",
+        assertEquals("HTML", "<div class=\"xyzzy\"><input type=\"checkbox\" " +
+                "name=\"id11\" id=\"id11\" value=\"true\" /></div>",
+                out.toString());
+    }
+    public void test_html_extraTemplate() {
+        CheckboxFormElement element = new CheckboxFormElement(
+                new Dataset("id", "id11", "extra", "extra: @name"));
+        StringBuilder out = new StringBuilder();
+        element.html(new ClientRequestFixture(),
+                new Dataset("name", "Alice"), out);
+        assertEquals("HTML", "<div class=\"CheckboxFormElement\">" +
+                "<input type=\"checkbox\" name=\"id11\" id=\"id11\" " +
+                "value=\"true\" /><span class=\"extra\" onclick=\"" +
+                "el=getElementById(&quot;id11&quot;); el.checked=" +
+                "!el.checked;\">extra: Alice</span></div>",
                 out.toString());
     }
 }

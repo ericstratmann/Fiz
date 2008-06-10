@@ -9,10 +9,17 @@
  * from Firefox and Safari).  Setting explicit width and height values trims
  * off the extra space.
  */
-.CheckboxFormElement {
+.CheckboxFormElement input {
     vertical-align: top;
     width: 13px;
     height: 13px;
     margin: 4px 0px 0px 0px;
     border: none;
+}
+
+.CheckboxFormElement .extra {
+    padding: 0px 0px 0px 5px;
+    position: relative;
+    top: 2px;
+    cursor: default;
 }

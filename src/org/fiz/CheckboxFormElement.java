@@ -10,7 +10,9 @@ package org.fiz;
  *                   element in the form's query request then this property
  *                   determines the initial state of the check box.
  *                   Must match either {@code trueValue} or
- *                  {@code falseValue}.  Defaults to {@code falseValue}.
+ *                   {@code falseValue}.  Defaults to {@code falseValue}.
+ *   extra:          (optional) HTML template for additional information
+ *                   to display to the right of the checkbox.
  *   falseValue:     (optional) String that appears in query and update
  *                   requests if the form element is not checked.  Defaults
  *                   to {@code false}.
@@ -107,13 +109,24 @@ public class CheckboxFormElement extends FormElement {
         if (value == null){
             value = properties.check("defaultValue");
         }
-        Template.expand("<input type=\"checkbox\" " +
-                "class=\"@class?{CheckboxFormElement}\" name=\"@id\" " +
-                "value=\"true\"",
-                properties, out);
+        Template.expand("<div class=\"@class?{CheckboxFormElement}\">" +
+                "<input type=\"checkbox\" name=\"@id\" id=\"@id\" " +
+                "value=\"true\"", properties, out);
         if ((value != null) && (value.equals(trueValue))) {
             out.append(" checked=\"checked\"");
         }
         out.append(" />");
+
+        // Display extra information, if any was requested.
+        String extra = properties.check("extra");
+        if (extra != null) {
+            out.append("<span class=\"extra\" onclick=\"");
+            Html.escapeHtmlChars("el=getElementById(\"" + id + "\"); " +
+                    "el.checked=!el.checked;", out);
+            out.append("\">");
+            Template.expand(extra, data, out);
+            out.append("</span>");
+        }
+        out.append("</div>");
     }
 }

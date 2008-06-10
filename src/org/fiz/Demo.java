@@ -29,7 +29,8 @@ public class Demo extends Interactor {
             new PasswordFormElement(new Dataset("id", "password2",
                     "label", "Retype password:", "duplicate", "password")),
             new CheckboxFormElement(new Dataset("id", "citizen",
-                    "label", "U.S. citizen:")),
+                    "label", "U.S. citizen:", "extra",
+                    "(you can click here too)")),
             new TextAreaFormElement(new Dataset("id", "saying",
                     "label", "Favorite saying:"))
             );
