@@ -31,6 +31,15 @@ public class Demo extends Interactor {
             new CheckboxFormElement(new Dataset("id", "citizen",
                     "label", "U.S. citizen:", "extra",
                     "(you can click here too)")),
+            new RadioFormElement(new Dataset("id", "notify",
+                    "label", "Email opt-out:", "value", "all", "extra",
+                    "Wants to receive all communications")),
+            new RadioFormElement(new Dataset("id", "notify",
+                    "value", "orders", "extra",
+                    "Send only order status messages")),
+            new RadioFormElement(new Dataset("id", "notify",
+                    "value", "none", "extra",
+                    "Send no messages of any form")),
             new TextAreaFormElement(new Dataset("id", "saying",
                     "label", "Favorite saying:"))
             );

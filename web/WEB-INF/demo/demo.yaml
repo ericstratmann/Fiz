@@ -26,6 +26,7 @@ formData:
         weight: 195
         saying: "Line 1\nLine 2\n<Line 3>\n"
         fruit: grape
+        notify: all
 
 fruits:
     fruit:

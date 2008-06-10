@@ -4,13 +4,8 @@ package org.fiz;
  * The CheckboxFormElement class allows boolean values to be entered in
  * forms using an {@code <input class="checkbox">} HTML element.  It
  * supports the following properties:
- *   class:          (optional) Class attribute to use for the HTML
- *                   element; defaults to no class.
- *   defaultValue:   (optional) If there is no value for this form
- *                   element in the form's query request then this property
- *                   determines the initial state of the check box.
- *                   Must match either {@code trueValue} or
- *                   {@code falseValue}.  Defaults to {@code falseValue}.
+ *   class:          (optional) Class attribute to use for the <div>
+ *                   containing this element; defaults to CheckboxFormElement.
  *   extra:          (optional) HTML template for additional information
  *                   to display to the right of the checkbox.
  *   falseValue:     (optional) String that appears in query and update
@@ -23,7 +18,6 @@ package org.fiz;
  *                   element.
  *   label:          (optional) Template for label to display next to the
  *                   checkbox to identify the element for the user.
- *                   If omitted, {@code id} is used as the label.
  *   trueValue:      (optional) String that appears in query and update
  *                   requests if the form element is checked.  Defaults
  *                   to {@code true}.
@@ -106,9 +100,6 @@ public class CheckboxFormElement extends FormElement {
             StringBuilder out) {
         cr.getHtml().includeCssFile("CheckboxFormElement.css");
         String value = data.check(id);
-        if (value == null){
-            value = properties.check("defaultValue");
-        }
         Template.expand("<div class=\"@class?{CheckboxFormElement}\">" +
                 "<input type=\"checkbox\" name=\"@id\" id=\"@id\" " +
                 "value=\"true\"", properties, out);

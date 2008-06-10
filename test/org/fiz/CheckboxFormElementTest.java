@@ -51,17 +51,6 @@ public class CheckboxFormElementTest extends junit.framework.TestCase {
         assertEquals("CSS includes", "CheckboxFormElement.css",
                 cr.getHtml().getCssFiles());
     }
-    public void test_html_defaultInitialValue() {
-        ClientRequest cr = new ClientRequestFixture();
-        CheckboxFormElement element = new CheckboxFormElement(
-                new Dataset("id", "id11", "defaultValue", "true"));
-        StringBuilder out = new StringBuilder();
-        element.html(cr, new Dataset(), out);
-        assertEquals("HTML", "<div class=\"CheckboxFormElement\">" +
-                "<input type=\"checkbox\" name=\"id11\" id=\"id11\" " +
-                "value=\"true\" checked=\"checked\" /></div>",
-                out.toString());
-    }
     public void test_html_explicitClassNoInitialValue() {
         CheckboxFormElement element = new CheckboxFormElement(
                 new Dataset("id", "id11", "class", "xyzzy"));

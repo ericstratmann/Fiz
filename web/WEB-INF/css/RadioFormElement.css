@@ -1,0 +1,20 @@
+/* RadioFormElement.css -
+ *
+ * This file defines styles for RadioFormElements that use the default
+ * class.  Many of the styles are inherited from those defined in main.yaml.
+ */
+
+.RadioFormElement input {
+    vertical-align: top;
+    width: 13px;
+    height: 13px;
+    margin: 4px 0px 0px 0px;
+    border: none;
+}
+
+.RadioFormElement .extra {
+    padding: 0px 0px 0px 5px;
+    position: relative;
+    top: 2px;
+    cursor: default;
+}

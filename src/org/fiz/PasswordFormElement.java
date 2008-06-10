@@ -24,7 +24,6 @@ package org.fiz;
  *                   {@code name} attribute for the HTML input element.
  *   label:          (optional) Template for label to display next to the
  *                   FormElement to identify the element for the user.
- *                   If omitted {@code id} is used as the label.
  * Password form elements always start off empty: unlike other form elements,
  * they cannot be initialized with data from a data request.
  */

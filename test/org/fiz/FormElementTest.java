@@ -32,6 +32,15 @@ public class FormElementTest extends junit.framework.TestCase {
         assertEquals("output dataset", "age:  30\n" +
                 "name: Carol\n", out.toString());
     }
+    public void test_collect_valueMissing()
+            throws FormSection.FormDataException {
+        FormElementFixture element = new FormElementFixture(new Dataset(
+                "id", "name", "name", "Alice"));
+        Dataset out = new Dataset("name", "Bob", "age", "30");
+        element.collect(null, new Dataset(), out);
+        assertEquals("output dataset", "age:  30\n" +
+                "name: Bob\n", out.toString());
+    }
 
     public void test_getId() {
         FormElementFixture element = new FormElementFixture(new Dataset(
@@ -54,7 +63,7 @@ public class FormElementTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder();
         element.labelHtml(null, new Dataset("name", "<Bob>", "age", "30"),
                 out);
-        assertEquals("generated HTML", "&lt;age&gt;", out.toString());
+        assertEquals("generated HTML", "", out.toString());
     }
 
     public void test_registerRequests() {

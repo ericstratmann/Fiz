@@ -13,7 +13,6 @@ package org.fiz;
  *                   element.
  *   label:          (optional) Template for label to display next to the
  *                   FormElement to identify the element for the user.
- *                   If omitted {@code id} is used as the label.
  */
 
 public class EntryFormElement extends FormElement {

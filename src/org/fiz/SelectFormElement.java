@@ -53,7 +53,6 @@ import java.util.*;
  *                   {@code value}, which holds that value.
  *   label:          (optional) Template for label to display next to the
  *                   FormElement to identify the element for the user.
- *                   If omitted {@code id} is used as the label.
  */
 
 public class SelectFormElement extends FormElement {

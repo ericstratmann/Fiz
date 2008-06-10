@@ -43,14 +43,14 @@ public abstract class FormElement implements Formatter {
     /**
      * Invoked by FormSection when a form has been posted: prepares data
      * for inclusion in the update request for the form.  Normally this
-     * consists of reading from {@code in} the value whose name is the same
-     * as this element's id and copying it to {@code out}.  This method
-     * provides that behavior as a default.  However, in some situations
-     * the posted data has to be translated for use in the update request
-     * (e.g., perhaps a time value was split across several different controls
-     * for editing but has to be returned to the data manager in a single
-     * string); in this case the FormElement can override this method to
-     * perform whatever translations are needed.  FormElements can also
+     * consists of checking for a value in {@code in} whose name is the same
+     * as this element's id and copying it to {@code out} if it exists.
+     * This method provides that behavior as a default.  However, in some
+     * situations the posted data has to be translated for use in the update
+     * request (e.g., perhaps a time value was split across several different
+     * controls for editing but has to be returned to the data manager in a
+     * single string); in this case the FormElement can override this method
+     * to perform whatever translations are needed.  FormElements can also
      * use this method to perform data validation (though that usually happens
      * in the data managers).
      * @param cr                   Overall information about the client
@@ -68,7 +68,10 @@ public abstract class FormElement implements Formatter {
      */
     public void collect(ClientRequest cr, Dataset in, Dataset out)
             throws FormSection.FormDataException {
-        out.set(id, in.get(id));
+        String value = in.check(id);
+        if (value != null) {
+            out.set(id, value);
+        }
     }
 
     /**
@@ -96,9 +99,9 @@ public abstract class FormElement implements Formatter {
 
     /**
      * This method is invoked by FormSection to generate HTML to display
-     * adds the label for this FormElement.  This default implementation
+     * the label for this FormElement.  This default implementation
      * generates the label using a template provided in the {@code label}
-     * property, or just outputs the id if no template was specified.
+     * property.
      * @param cr                   Overall information about the client
      *                             request being serviced.
      * @param data                 Data for the form (a CompoundDataset
@@ -111,8 +114,6 @@ public abstract class FormElement implements Formatter {
         String template = properties.check("label");
         if (template != null) {
             Template.expand(template, data, out);
-        } else {
-            Html.escapeHtmlChars(id, out);
         }
     }
 

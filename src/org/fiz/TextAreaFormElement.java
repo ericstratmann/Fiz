@@ -14,7 +14,6 @@ package org.fiz;
  *                   also as the {@code name} attribute for the HTML element.
  *   label:          (optional) Template for label to display next to the
  *                   FormElement to identify the element for the user.
- *                   If omitted {@code id} is used as the label.
  * Some browsers (e.g., IE) use CRLF sequences between lines in the
  * submitted form data while other browsers use only LF (newline).  This
  * class automatically translates incoming CRLF sequences to newline so that
