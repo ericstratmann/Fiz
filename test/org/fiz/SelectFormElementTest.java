@@ -217,6 +217,28 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         out.append("</p></form>\n");
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
+    public void test_html_choiceHasValueButNoName() {
+        SelectFormElement element = new SelectFormElement(
+                YamlDataset.newStringInstance(
+                "id: id11\n" +
+                "choice:\n" +
+                "  - value: 2008\n" +
+                "  - value: 2009\n"));
+        ClientRequest cr = new ClientRequestFixture();
+        StringBuilder out = cr.getHtml().getBody();
+        element.html(cr, new Dataset("id 11", "2008"), out);
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start SelectFormElement id11 -->\n" +
+                "<select name=\"id11\" class=\"SelectFormElement\">\n" +
+                "  <option value=\"2008\">2008</option>\n" +
+                "  <option value=\"2009\">2009</option>\n" +
+                "</select>\n" +
+                "<!-- End SelectFormElement @id -->\n",
+                out.toString());
+        out.insert(0, "<form action=\"a/b/c\"><p>\n");
+        out.append("</p></form>\n");
+        TestUtil.assertXHTML(cr.getHtml().toString());
+    }
     public void test_registerRequests() {
         SelectFormElement element = new SelectFormElement(
                 YamlDataset.newStringInstance(

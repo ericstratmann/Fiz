@@ -14,6 +14,7 @@ public class TemplateTest extends junit.framework.TestCase {
         public static boolean skip;
         public static int end;
         public static int lastDeletedSpace;
+        public static Template.SpecialChars currentQuoting;
 
         public static void expandRange(String template, Dataset data,
                 StringBuilder out, int start, int end) {
@@ -85,6 +86,7 @@ public class TemplateTest extends junit.framework.TestCase {
                 StringBuilder out, boolean conditional,
                 Template.SpecialChars encoding) {
             Template.ParseInfo info = new Template.ParseInfo();
+            info.template = "dummy template";
             info.data = data;
             info.out = out;
             info.quoting = encoding;
@@ -116,6 +118,11 @@ public class TemplateTest extends junit.framework.TestCase {
             TemplateFixture.lastDeletedSpace = info.lastDeletedSpace;
         }
 
+        public static void expandBraces(String template, Dataset data,
+                StringBuilder out, int start) {
+            expandBraces(template, data, out, start, start-1);
+        }
+
         public static int skipTo(String template, StringBuilder out,
                 int start, char c1, char c2) {
             Template.ParseInfo info = new Template.ParseInfo();
@@ -136,13 +143,35 @@ public class TemplateTest extends junit.framework.TestCase {
             TemplateFixture.lastDeletedSpace = info.lastDeletedSpace;
             return result;
         }
-        public static void expandBraces(String template, Dataset data,
-                StringBuilder out, int start) {
-            expandBraces(template, data, out, start, start-1);
+
+        public static String findValue(String name, boolean required,
+                Dataset data, Template.SpecialChars quoting,
+                Object[] indexedData, Template.SpecialChars indexedQuoting) {
+            Template.ParseInfo info = new Template.ParseInfo();
+            info.template = "dummy template";
+            info.data = data;
+            info.quoting = quoting;
+            info.indexedData = indexedData;
+            info.indexedQuoting = indexedQuoting;
+            String result = Template.findValue(info, name, required);
+            currentQuoting = info.currentQuoting;
+            return result;
         }
     }
 
-    public void test_expand_outAndQuoting() {
+    public void test_missingValueError() {
+        Template.MissingValueError e = new Template.MissingValueError(
+                "sample message");
+        assertEquals("error message", "sample message", e.getMessage());
+    }
+
+    public void test_syntaxError() {
+        Template.SyntaxError e = new Template. SyntaxError(
+                "sample message");
+        assertEquals("error message", "sample message", e.getMessage());
+    }
+
+    public void test_expand_withQuoting() {
         Dataset data = new Dataset("name", "<Alice>", "age", "28");
         StringBuilder out = new StringBuilder("123");
         Template.expand("name: @name, age: @age, "
@@ -152,7 +181,14 @@ public class TemplateTest extends junit.framework.TestCase {
                 out.toString());
     }
 
-    public void test_expand_outNoQuoting() {
+    public void test_expand_withQuotingNoOut() {
+        Dataset data = new Dataset("name", "<Alice>", "age", "28");
+        assertEquals("output string", "name: <Alice>, age: 28",
+                Template.expand("name: @name, age: @age", data,
+                Template.SpecialChars.NONE));
+    }
+
+    public void test_expand_noQuoting() {
         Dataset data = new Dataset("name", "<Alice>", "age", "28");
         StringBuilder out = new StringBuilder("123");
         Template.expand("name: @name, age: @age", data, out);
@@ -160,17 +196,85 @@ public class TemplateTest extends junit.framework.TestCase {
                 out.toString());
     }
 
-    public void test_expand_quotingNoOut() {
-        Dataset data = new Dataset("name", "<Alice>", "age", "28");
-        assertEquals("output string", "name: <Alice>, age: 28",
-                Template.expand("name: @name, age: @age", data,
-                Template.SpecialChars.NONE));
-    }
-
-    public void test_expand_noOutNoQuoting() {
+    public void test_expand_noQuotingNoOut() {
         Dataset data = new Dataset("name", "<Alice>", "age", "28");
         assertEquals("output string", "name: &lt;Alice&gt;, age: 28",
                 Template.expand("name: @name, age: @age", data));
+    }
+
+    public void test_expand_dataAndIndexedData() {
+        Dataset data = new Dataset("name", "<Alice>", "1", "<dataset>");
+        StringBuilder out = new StringBuilder();
+        Template.expand("name: @name, age: @1", data, out,
+                Template.SpecialChars.HTML, Template.SpecialChars.NONE,
+                "<index data #1>", "<index data #2>");
+        assertEquals("output string",
+                "name: &lt;Alice&gt;, age: <index data #1>",
+                out.toString());
+    }
+
+    public void test_expand_dataAndIndexedDataNoOut() {
+        Dataset data = new Dataset("name", "<Alice>", "1", "<dataset>");
+        String result = Template.expand("name: @name, age: @1", data,
+                Template.SpecialChars.NONE, Template.SpecialChars.HTML,
+                "<index data #1>", "<index data #2>");
+        assertEquals("output string",
+                "name: <Alice>, age: &lt;index data #1&gt;",
+                result);
+    }
+
+    public void test_expand_dataAndIndexedDataHtmlEncoding() {
+        Dataset data = new Dataset("name", "<Alice>", "1", "<dataset>");
+        StringBuilder out = new StringBuilder();
+        Template.expand("name: @name, age: @1", data, out,
+                "<index data #1>", "<index data #2>");
+        assertEquals("output string",
+                "name: &lt;Alice&gt;, age: &lt;index data #1&gt;",
+                out.toString());
+    }
+
+    public void test_expand_dataAndIndexedDataHtmlEncodingNoOut() {
+        Dataset data = new Dataset("name", "<Alice>", "1", "<dataset>");
+        String result = Template.expand("name: @name, age: @1", data,
+                "<index data #1>", "<index data #2>");
+        assertEquals("output string",
+                "name: &lt;Alice&gt;, age: &lt;index data #1&gt;",
+                result);
+    }
+
+    public void test_expand_indexedDataOnly() {
+        StringBuilder out = new StringBuilder();
+        Template.expand("name: @1, age: @2", out, Template.SpecialChars.HTML,
+                "<index data #1>", "<index data #2>");
+        assertEquals("output string",
+                "name: &lt;index data #1&gt;, age: &lt;index data #2&gt;",
+                out.toString());
+    }
+
+    public void test_expand_indexedDataOnlyNoOut() {
+        String result = Template.expand("name: @1, age: @2",
+                Template.SpecialChars.NONE, "<index data #1>",
+                "<index data #2>");
+        assertEquals("output string",
+                "name: <index data #1>, age: <index data #2>",
+                result);
+    }
+
+    public void test_expand_indexedDataOnlyHTMLEncoding() {
+        StringBuilder out = new StringBuilder();
+        Template.expand("name: @1, age: @2", out,
+                "<index data #1>", "<index data #2>");
+        assertEquals("output string",
+                "name: &lt;index data #1&gt;, age: &lt;index data #2&gt;",
+                out.toString());
+    }
+
+    public void test_expand_indexedDataOnlyHTMLEncodingNoOut() {
+        String result = Template.expand("name: @1, age: @2",
+                "<index data #1>", "<index data #2>");
+        assertEquals("output string",
+                "name: &lt;index data #1&gt;, age: &lt;index data #2&gt;",
+                result);
     }
 
     public void test_expandRange_atSign() {
@@ -236,6 +340,13 @@ public class TemplateTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.expandAtSign("xx@name + foo", data, out, false, 3);
         assertEquals("end of specifier", 7, TemplateFixture.end);
+        assertEquals("output string", "123Alice", out.toString());
+    }
+    public void test_expandAtSign_simpleNameStartsWithDigit() {
+        Dataset data = new Dataset("444", "Alice");
+        StringBuilder out = new StringBuilder("123");
+        TemplateFixture.expandAtSign("xx@444 + foo", data, out, false, 3);
+        assertEquals("end of specifier", 6, TemplateFixture.end);
         assertEquals("output string", "123Alice", out.toString());
     }
     public void test_expandAtSign_nameInParens() {
@@ -464,9 +575,10 @@ public class TemplateTest extends junit.framework.TestCase {
             TemplateFixture.appendValue("last_name", data, out, false,
                     Template.SpecialChars.HTML);
         }
-        catch (Dataset.MissingValueError e) {
+        catch (Template.MissingValueError e) {
             assertEquals("exception message",
-                    "couldn't find dataset element \"last_name\"",
+                    "missing value \"last_name\" in template " +
+                    "\"dummy template\"",
                     e.getMessage());
             gotException = true;
         }
@@ -637,6 +749,51 @@ public class TemplateTest extends junit.framework.TestCase {
         int result = TemplateFixture.skipTo("12345", out, 0, '|', ',');
         assertEquals("truncate output", "abc", out.toString());
         assertEquals("truncate output", false, TemplateFixture.skip);
+    }
+
+    public void test_findValue_indexedData() {
+        Object[] indexedData = new Object[] {"first", null, "third"};
+        String result = TemplateFixture.findValue("0", false, null, null,
+                indexedData, null);
+        assertEquals("index too small", null, result);
+        result = TemplateFixture.findValue("4", false, null, null,
+                indexedData, null);
+        assertEquals("index too large", null, result);
+        result = TemplateFixture.findValue("1", false, null, null,
+                indexedData, Template.SpecialChars.HTML);
+        assertEquals("index valid", "first", result);
+        assertEquals("currentQuoting", "HTML",
+                TemplateFixture.currentQuoting.toString());
+        result = TemplateFixture.findValue("2", false, null, null,
+                indexedData, null);
+        assertEquals("null object supplied", null, result);
+    }
+    public void test_findValue_datasetValue() {
+        Dataset data = new Dataset("name", "Alice", "age", "21");
+        String result = TemplateFixture.findValue("bogus", false, data, null,
+                null, null);
+        assertEquals("name not in dataset", null, result);
+        result = TemplateFixture.findValue("bogus", false, data,
+                Template.SpecialChars.NONE, null, null);
+        assertEquals("name in dataset", null, result);
+        assertEquals("currentQuoting", "NONE",
+                TemplateFixture.currentQuoting.toString());
+    }
+    public void test_findValue_throwError() {
+        Dataset data = new Dataset("name", "Alice", "age", "21");
+        boolean gotException = false;
+        try {
+            String result = TemplateFixture.findValue("6", true,
+                    new Dataset("name", "Alice"), null,
+                    new Object[] {"first"}, null);
+        }
+        catch (Template.MissingValueError e) {
+            assertEquals("exception message",
+                    "missing value \"6\" in template \"dummy template\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
     }
 
     public void test_variousComplexTemplates() {

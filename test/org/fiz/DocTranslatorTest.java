@@ -114,6 +114,22 @@ public class DocTranslatorTest extends junit.framework.TestCase {
                 "</td></tr></table>\n",
                 translator.output.toString());
     }
+    public void test_translateLines_blankLine() {
+        DocTranslator translator = new DocTranslator(
+                "first line\n" +
+                "   \n" +
+                "second line\n");
+        translator.translateLines(0);
+        assertEquals("info about current line",
+                "lineStart: 27, type: EOF, term: \"\", " +
+                "bulletIndent: -1, text: \"\", endLength: 0",
+                lineInfo(translator));
+        assertEquals("output buffer",
+                "first line\n" +
+                "<p>\n" +
+                "second line\n",
+                translator.output.toString());
+    }
 
     public void test_classify_sanityCheck() {
         DocTranslator translator = new DocTranslator(
@@ -183,7 +199,7 @@ public class DocTranslatorTest extends junit.framework.TestCase {
                 "xxx    \n");
         translator.classify(4);
         assertEquals("info about current line",
-                "lineStart: 4, type: NORMAL, term: \"\", bulletIndent: 0, " +
+                "lineStart: 4, type: BLANK, term: \"\", bulletIndent: 0, " +
                 "text: \"\", endLength: 1",
                 lineInfo(translator));
     }

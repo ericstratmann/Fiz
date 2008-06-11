@@ -13,7 +13,8 @@ import java.util.*;
  *     datasets, each containing {@code name} and {@code value} values.
  *     The {@code name} value specifies what to display in the menu, and
  *     the {@code value} value is the internal form used in incoming and
- *     outgoing data requests.
+ *     outgoing data requests.  If {@code name} is omitted then
+ *     {@code value} is displayed in the menu.
  *   * The choices can be displayed either with a drop-down menu or with
  *     a scrolling list; the {@code height} option controls this aspect.
  *   * The form element can permit either a single selection or multiple
@@ -156,14 +157,13 @@ public class SelectFormElement extends FormElement {
                 "{{size=\"@height\"}} {{multiple=\"@multiple\"}}>\n",
                 properties, out);
         for (Dataset choice: choices) {
-            Dataset selected = new Dataset();
+            String selected = null;
             if (initialSelections.contains(choice.get("value"))) {
-                selected.set("selected", "selected");
+                selected = "selected";
             }
-            Template.expand("  <option {{selected=\"@selected\"}}",
-                    selected, out);
-            Template.expand(" value=\"@value\">@name</option>\n",
-                    choice, out);
+            Template.expand("  <option {{selected=\"@1\"}} " +
+                    "value=\"@value\">@name?{@value}</option>\n",
+                    choice, out, selected);
         }
         out.append("</select>\n<!-- End SelectFormElement @id -->\n");
     }

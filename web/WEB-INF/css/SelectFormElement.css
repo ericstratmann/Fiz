@@ -5,7 +5,6 @@
  */
 
 .SelectFormElement {
-    width: @formElementWidth;
     font-family: @fontFamily;
     font-size: 100%;
     border: @standardBorder;

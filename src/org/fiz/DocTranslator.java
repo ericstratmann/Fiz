@@ -27,6 +27,7 @@ import java.util.*;
  *   {@code </pre>} are on lines by themselves, then the lines in between,
  *   as well as the {@code </pre>} and {@code </pre>} lines, are passed
  *   along verbatim without modification by this doclet.
+ * - Blank lines get turned into paragraph breaks with {@code <p>}.
  */
 
 public class DocTranslator {
@@ -54,6 +55,11 @@ public class DocTranslator {
          * The line consists only of {@literal </pre>}.
          */
         END_PRE,
+
+        /**
+         * The line is blank.
+         */
+        BLANK,
 
         /**
          * None of the above (just text).
@@ -158,6 +164,9 @@ public class DocTranslator {
                 translateBullets();
             } else if (type == LineType.DEFINITION) {
                 translateDefinitions();
+            } else if (type == LineType.BLANK) {
+                output.append("<p>\n");
+                classify(nextLine);
             } else {
                 output.append(input, lineStart, nextLine);
                 classify(nextLine);
@@ -212,7 +221,7 @@ public class DocTranslator {
         left = StringUtil.skipSpaces(input, start, lineEnd);
         textIndent = left - start;
         if (left >= lineEnd) {
-            type = LineType.NORMAL;
+            type = LineType.BLANK;
             return;
         }
 
