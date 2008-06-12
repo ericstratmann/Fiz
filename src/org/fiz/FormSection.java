@@ -236,9 +236,19 @@ public class FormSection implements Section {
         // table, displaying one FormElement.
         Dataset diagnosticInfo = new Dataset();
         for (FormElement element : elements) {
+            int startingLength = out.length();
             out.append("    <tr>\n      <td class=\"label\">");
-            element.labelHtml(cr, data, out);
-            out.append("</td>\n      <td class=\"control\">");
+            if (!element.labelHtml(cr, data, out)) {
+                // This element requests that we not display any label and
+                // instead let the control span both columns.  Erase the
+                // information for this row and regenerate the row with
+                // a single column.
+                out.setLength(startingLength);
+                out.append("    <tr>\n      <td class=\"control\" " +
+                        "colspan=\"2\">");
+            } else {
+                out.append("</td>\n      <td class=\"control\">");
+            }
             element.html(cr, data, out);
 
             // Create an extra <div> underneath the control.  Initially
@@ -251,17 +261,17 @@ public class FormSection implements Section {
                     "    </tr>\n", diagnosticInfo, out);
         }
 
-        // Close off the table, add the submit button if desired, and
-        // finish up the form.
-        out.append("  </table>\n");
+        // Add the submit button if desired, and finish up the form.
         String buttonTemplate = Config.getDataset("formButtons").get(
                 buttonStyle);
         if (buttonTemplate.length() > 0) {
+            out.append("    <tr>\n      <td class=\"submit\" " +
+                    "colspan=\"2\">");
             Template.expand(buttonTemplate, new CompoundDataset(
                     properties, mainDataset), out);
-            out.append("\n");
+            out.append("</td>\n    </tr>\n");
         }
-        Template.expand("</form>\n" +
+        Template.expand("  </table>\n</form>\n" +
                 "<!-- End FormSection @id -->\n",
                 properties, out);
 

@@ -9,11 +9,12 @@ public class FormSectionTest extends junit.framework.TestCase {
     // The following class is a simple FormElement that makes its own
     // data request, named after its id.
     private static class FormElementFixture extends FormElement {
+        String html = "";
         public FormElementFixture(String id) {
             super(new Dataset("id", id));
         }
         public void html(ClientRequest cr, Dataset data, StringBuilder out) {
-            // Do nothing.
+            out.append(html);
         }
         public void registerRequests(ClientRequest cr, String query) {
             cr.registerDataRequest(query + "_" + id);
@@ -225,6 +226,38 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("CSS files", "EntryFormElement.css",
                 cr.getHtml().getCssFiles());
     }
+    public void test_html_labelHtmlReturnsFalse() {
+        TemplateFormElement element1 = new TemplateFormElement(
+                new Dataset("id", "id1", "template", "element 1 html",
+                "span", "true"));
+        TemplateFormElement element2 = new TemplateFormElement(
+                new Dataset("id", "id2", "template", "element 2 html"));
+        FormSection form = new FormSection(
+                new Dataset("id", "form1", "request", "getPerson",
+                "buttonStyle", "none"), element1, element2);
+        cr.showSections(form);
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start FormSection form1 -->\n" +
+                "<form id=\"form1\" class=\"FormSection\" action=" +
+                "\"javascript: form_form1.post();\" method=\"post\">\n" +
+                "  <table cellspacing=\"0\">\n" +
+                "    <tr>\n" +
+                "      <td class=\"control\" colspan=\"2\">element 1 html" +
+                "<div id=\"id1.diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div></td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "      <td class=\"label\"></td>\n" +
+                "      <td class=\"control\">element 2 html" +
+                "<div id=\"id2.diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div></td>\n" +
+                "    </tr>\n" +
+                "  </table>\n" +
+                "</form>\n" +
+                "<!-- End FormSection form1 -->\n",
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
+    }
     public void test_html_elementsAndButtons() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson"),
@@ -252,12 +285,13 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "value=\"66\" /><div id=\"age.diagnostic\" " +
                 "class=\"diagnostic\" style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
+                "    <tr>\n" +
+                "      <td class=\"submit\" colspan=\"2\"><div class=" +
+                "\"buttons\"><input type=\"submit\" name=\"action\" " +
+                "value=\"Submit\" accesskey=\"s\" title=\"Press " +
+                "Alt+Shift+s to submit.\" /></div> </td>\n" +
+                "    </tr>\n" +
                 "  </table>\n" +
-                "<div class=\"buttons\">\n" +
-                "  <input type=\"submit\" name=\"action\" " +
-                "value=\"Submit\" accesskey=\"s\"\n" +
-                "         title=\"Press Alt+Shift+s to submit.\" />\n" +
-                "</div>\n" +
                 "</form>\n" +
                 "<!-- End FormSection form1 -->\n",
                 cr.getHtml().getBody().toString());

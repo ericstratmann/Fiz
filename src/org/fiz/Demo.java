@@ -18,12 +18,6 @@ public class Demo extends Interactor {
                     "label", "Age:")),
             new EntryFormElement(new Dataset("id", "state",
                     "label", "Home state:")),
-            new SelectFormElement(new Dataset("id", "fruit",
-                    "label", "Favorite fruits:",
-                    "choiceRequest", "demo.getFruits",
-                    "multiple", "multiple",
-                    "height", "5",
-                    "choiceName", "fruit")),
             new CompoundFormElement(new Dataset("id", "expiration",
                     "label", "Expiration date:", "template",
                     "<table cellspacing=\"0\"><tr><td>Month:&nbsp</td>" +
@@ -70,6 +64,15 @@ public class Demo extends Interactor {
             new RadioFormElement(new Dataset("id", "notify",
                     "value", "none", "extra",
                     "Send no messages of any form")),
+            new TemplateFormElement(new Dataset("id", "heading",
+                    "span", "true", "template",
+                    "<div class=\"heading\">Optional Information</div>")),
+            new SelectFormElement(new Dataset("id", "fruit",
+                    "label", "Favorite fruits:",
+                    "choiceRequest", "demo.getFruits",
+                    "multiple", "multiple",
+                    "height", "5",
+                    "choiceName", "fruit")),
             new TextAreaFormElement(new Dataset("id", "saying",
                     "label", "Favorite saying:"))
             );
@@ -131,6 +134,7 @@ public class Demo extends Interactor {
     public void formSection(ClientRequest cr) {
         Html html = cr.getHtml();
         html.setTitle("FormSection Demo");
+        html.includeCssFile("demo/form.css");
         cr.showSections(
                 new TemplateSection("<h1>FormSection Demo</h1>\n"),
                 demoForm);

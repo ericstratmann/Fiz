@@ -1,0 +1,14 @@
+/* form.css -
+ *
+ * This file provides style information used in demos of the Fiz form
+ * facilities.
+ */
+
+.heading {
+    font-weight: bold;
+    font-size: 130%;
+    margin: 10px 0px 10px 0px;
+    border-top: 1px solid @borderColor;
+    padding: 5px 0px 0px 0px;
+    color: #687291;
+}

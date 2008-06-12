@@ -108,13 +108,19 @@ public abstract class FormElement implements Formatter {
      *                             including both form data, if any, and the
      *                             main dataset).
      * @param out                  Generated HTML is appended here.
+     * @return                     True is always returned (false means
+     *                             no label should be displayed and the
+     *                             result of the {@code html} method should
+     *                             span both the label and control areas
+     *                             for this element).
      */
-    public void labelHtml(ClientRequest cr, Dataset data,
+    public boolean labelHtml(ClientRequest cr, Dataset data,
             StringBuilder out) {
         String template = properties.check("label");
         if (template != null) {
             Template.expand(template, data, out);
         }
+        return true;
     }
 
     /**
