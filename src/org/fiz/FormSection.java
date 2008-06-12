@@ -90,6 +90,14 @@ public class FormSection implements Section {
     // property.
     protected String buttonStyle;
 
+    // The {@code help} configuration dataset:
+    protected Dataset helpConfig;
+
+    // Nested dataset within {@code helpConfig} whose name matches our
+    // id (contains help text specific to this form).  Null means no
+    // such dataset.
+    protected Dataset nestedHelp;
+
     /**
      * Construct a FormSection.
      * @param properties           Contains configuration information
@@ -104,6 +112,9 @@ public class FormSection implements Section {
         if (buttonStyle == null) {
             buttonStyle = "standard";
         }
+        helpConfig = Config.getDataset("help");
+        nestedHelp = (Dataset) helpConfig.lookup(properties.get("id"),
+                Dataset.DesiredType.DATASET, Dataset.Quantity.FIRST_ONLY);
     }
 
     /**
@@ -236,15 +247,17 @@ public class FormSection implements Section {
         // table, displaying one FormElement.
         Dataset diagnosticInfo = new Dataset();
         for (FormElement element : elements) {
+            Template.expand("    <tr {{title=\"@1\"}}>\n", out,
+                    getHelpText(element));
             int startingLength = out.length();
-            out.append("    <tr>\n      <td class=\"label\">");
+            out.append("      <td class=\"label\">");
             if (!element.labelHtml(cr, data, out)) {
                 // This element requests that we not display any label and
                 // instead let the control span both columns.  Erase the
                 // information for this row and regenerate the row with
                 // a single column.
                 out.setLength(startingLength);
-                out.append("    <tr>\n      <td class=\"control\" " +
+                out.append("      <td class=\"control\" " +
                         "colspan=\"2\">");
             } else {
                 out.append("</td>\n      <td class=\"control\">");
@@ -361,5 +374,32 @@ public class FormSection implements Section {
         for (FormElement element : elements) {
             element.registerRequests(cr, query);
         }
+    }
+
+    /**
+     * Try to find help text to display for a form element, checking in
+     * three places: first, a {@code help} property on the form element;
+     * second, a property {@code x.y} in the help configuration dataset,
+     * where {@code x} is the {@code id} property of the FormSection and
+     * {@code y} is the {@code id} property of the FormElement; and third,
+     * a property in the help configuration dataset was named is the
+     * value of the form element's {@code id} property.
+     * @param element              A FormElement in this form.
+     * @return                     The help text for the form element,
+     *                             or null if none could be found.
+     */
+    protected String getHelpText(FormElement element) {
+        String result = element.checkProperty("help");
+        if (result != null) {
+            return result;
+        }
+        String id = element.getId();
+        if (nestedHelp != null) {
+            result = nestedHelp.check(id);
+            if (result != null) {
+                return result;
+            }
+        }
+        return helpConfig.check(id);
     }
 }

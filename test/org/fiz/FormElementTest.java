@@ -48,6 +48,14 @@ public class FormElementTest extends junit.framework.TestCase {
         assertEquals("return value", "name", element.getId());
     }
 
+    public void test_checkProperty() {
+        FormElementFixture element = new FormElementFixture(new Dataset(
+                "id", "name", "age", "8"));
+        assertEquals("existing property", "8", element.checkProperty("age"));
+        assertEquals("nonexistent property", null,
+                element.checkProperty("bogus"));
+    }
+
     public void test_labelHtml_withTemplate() {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "age", "label", "Age of @name:"));

@@ -1,0 +1,15 @@
+# help.yaml --
+#
+# This dataset provides snippets of help text to use in situations such
+# as tool tips in forms.
+#
+# The help text in this file is indexed by the id of the component to
+# which it applies.  For example, the value "password" below will apply
+# to form elements whose id is "password".  Help text can be made more
+# specific by putting it in nested datasets.  For example, help text
+# under the path "login.password" will apply only to form elements
+# with id "password" contained within a form whose id is "login".  More
+# specific (nested) values are chosen in preference to less specific
+# values.
+
+password: Enter the password for this account

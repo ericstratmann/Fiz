@@ -4,6 +4,9 @@ package org.fiz;
  * The TemplateFormElement class creates a form element from an HTML
  * template.  This is used most often to create decorations in a form
  * such as headings.  This class supports the following properties:
+ *   help:           (optional) Help text for this form element.  If this
+ *                   property is omitted the form will look for help text
+ *                   in the {@code help} configuration dataset.
  *   id:             (required) Name for this FormElement; must be unique
  *                   among all ids for the page.  This is used as the name
  *                   for the data value in query and update requests.

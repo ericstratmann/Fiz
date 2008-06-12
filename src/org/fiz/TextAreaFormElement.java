@@ -6,14 +6,17 @@ package org.fiz;
  * properties:
  *   class:          (optional) Class attribute to use for the {@code textarea}
  *                   element; defaults to "TextareaFormElement".
- *   rows:           (optional) Number of rows to display in the
- *                   {@code textarea} element.
+ *   help:           (optional) Help text for this form element.  If this
+ *                   property is omitted the form will look for help text
+ *                   in the {@code help} configuration dataset.
  *   id:             (required) Name for this FormElement; must be unique
  *                   among all ids for the page.  This is used as the name
  *                   for the data value in query and update requests and
  *                   also as the {@code name} attribute for the HTML element.
  *   label:          (optional) Template for label to display next to the
  *                   FormElement to identify the element for the user.
+ *   rows:           (optional) Number of rows to display in the
+ *                   {@code textarea} element.
  * Some browsers (e.g., IE) use CRLF sequences between lines in the
  * submitted form data while other browsers use only LF (newline).  This
  * class automatically translates incoming CRLF sequences to newline so that

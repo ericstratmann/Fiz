@@ -11,6 +11,9 @@ package org.fiz;
  *   falseValue:     (optional) String that appears in query and update
  *                   requests if the form element is not checked.  Defaults
  *                   to {@code false}.
+ *   help:           (optional) Help text for this form element.  If this
+ *                   property is omitted the form will look for help text
+ *                   in the {@code help} configuration dataset.
  *   id:             (required) Name for this FormElement; must be unique
  *                   among all ids for the page.  This is used as the name
  *                   for the data value in query and update requests and

@@ -6,6 +6,9 @@ package org.fiz;
  * building blocks for FormSections.  The following properties are
  * supported for all FormElements (individual FormElements support
  * additional properties specific to that FormElement class):
+ *   help:           (optional) Help text for this form element.  If this
+ *                   property is omitted the form will look for help text
+ *                   in the {@code help} configuration dataset.
  *   id:             (required) Name for this FormElement; must be unique
  *                   among all ids for the page.  For most FormElements
  *                   this is also the name for the data value in query
@@ -81,6 +84,17 @@ public abstract class FormElement implements Formatter {
      */
     public String getId() {
         return id;
+    }
+
+    /**
+     * Return the form element property given by {@code name} if it
+     * exists; otherwise return null.
+     * @param name                 Name of the desired property.
+     * @return                     The property given by {@code name},
+     *                             or null if it doesn't exist.
+     */
+    public String checkProperty(String name) {
+        return properties.check(name);
     }
 
     /**

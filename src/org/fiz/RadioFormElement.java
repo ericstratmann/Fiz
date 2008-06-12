@@ -11,6 +11,9 @@ package org.fiz;
  *                   containing this element; defaults to RadioFormElement.
  *   extra:          (optional) HTML template for additional information
  *                   to display to the right of the form element.
+ *   help:           (optional) Help text for this form element.  If this
+ *                   property is omitted the form will look for help text
+ *                   in the {@code help} configuration dataset.
  *   id:             (required) Name that identifies a group of related
  *                   RadioFormElements; must be unique among all ids for
  *                   the page.  This is used as the name for the data value

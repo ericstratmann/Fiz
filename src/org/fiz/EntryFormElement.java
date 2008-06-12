@@ -6,6 +6,9 @@ package org.fiz;
  * properties:
  *   class:          (optional) Class attribute to use for the {@code input}
  *                   element; defaults to "EntryFormElement".
+ *   help:           (optional) Help text for this form element.  If this
+ *                   property is omitted the form will look for help text
+ *                   in the {@code help} configuration dataset.
  *   id:             (required) Name for this FormElement; must be unique
  *                   among all ids for the page.  This is used as the name
  *                   for the data value in query and update requests and

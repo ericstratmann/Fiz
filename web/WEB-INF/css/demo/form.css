@@ -6,7 +6,7 @@
 
 .heading {
     font-weight: bold;
-    font-size: 130%;
+    font-size: 110%;
     margin: 10px 0px 10px 0px;
     border-top: 1px solid @borderColor;
     padding: 5px 0px 0px 0px;

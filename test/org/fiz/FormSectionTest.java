@@ -258,6 +258,39 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
+    public void test_html_helpText() {
+        TemplateFormElement element1 = new TemplateFormElement(
+                new Dataset("id", "id1", "template", "element 1 html",
+                "help", "Sample help text"));
+        TemplateFormElement element2 = new TemplateFormElement(
+                new Dataset("id", "id2", "template", "element 2 html"));
+        FormSection form = new FormSection(
+                new Dataset("id", "form1", "request", "getPerson",
+                "buttonStyle", "none"), element1, element2);
+        cr.showSections(form);
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start FormSection form1 -->\n" +
+                "<form id=\"form1\" class=\"FormSection\" action=" +
+                "\"javascript: form_form1.post();\" method=\"post\">\n" +
+                "  <table cellspacing=\"0\">\n" +
+                "    <tr title=\"Sample help text\">\n" +
+                "      <td class=\"label\"></td>\n" +
+                "      <td class=\"control\">element 1 html" +
+                "<div id=\"id1.diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div></td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "      <td class=\"label\"></td>\n" +
+                "      <td class=\"control\">element 2 html" +
+                "<div id=\"id2.diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div></td>\n" +
+                "    </tr>\n" +
+                "  </table>\n" +
+                "</form>\n" +
+                "<!-- End FormSection form1 -->\n",
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
+    }
     public void test_html_elementsAndButtons() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson"),
@@ -463,5 +496,34 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "form1"));
         form.registerRequests(cr);
         assertEquals("registered requests", "", cr.getRequestNames());
+    }
+
+    public void test_getHelpText() {
+        FormElement element1 = new TemplateFormElement(new Dataset(
+                "id", "element1", "template", "text1", "help", "Help #1"));
+        FormElement element2 = new TemplateFormElement(new Dataset(
+                "id", "element2", "template", "text2"));
+        FormElement element3 = new TemplateFormElement(new Dataset(
+                "id", "element3", "template", "text3"));
+        FormElement element4 = new TemplateFormElement(new Dataset(
+                "id", "element4", "template", "text4"));
+        Config.setDataset("help", YamlDataset.newStringInstance(
+                "element1: help.element1\n" +
+                "element2: help.element2\n" +
+                "element3: help.element3\n" +
+                "form1:\n" +
+                "  element1: help.form1.element1\n" +
+                "  element2: help.form1.element2\n"));
+        FormSection form = new FormSection(
+                new Dataset("id", "form1"), element1, element2, element3,
+                element4);
+        assertEquals("help from form element", "Help #1",
+                form.getHelpText(element1));
+        assertEquals("help from nested help dataset", "help.form1.element2",
+                form.getHelpText(element2));
+        assertEquals("help from main help dataset", "help.element3",
+                form.getHelpText(element3));
+        assertEquals("no help text available", null,
+                form.getHelpText(element4));
     }
 }

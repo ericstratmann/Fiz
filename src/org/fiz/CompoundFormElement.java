@@ -9,6 +9,9 @@ import java.util.ArrayList;
  * HTML to arrange and decorate the form elements.
  *   class:          (optional) Class attribute to use for the <div>
  *                   containing this element; defaults to CompoundFormElement.
+ *   help:           (optional) Help text for this form element.  If this
+ *                   property is omitted the form will look for help text
+ *                   in the {@code help} configuration dataset.
  *   id:             (required) Name for this FormElement; must be unique
  *                   among all ids for the page.  Used for managing errors
  *                   related to this form element.
