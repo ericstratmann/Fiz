@@ -224,6 +224,16 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("wrong type", null, d.check("nested"));
     }
 
+    public void test_checkChild() {
+        Dataset d = YamlDataset.newStringInstance(
+                "a: a_value\nb: b_value\nnested:\n  - x: x_value\n" +
+                "  - y: y_value\n");
+        assertEquals("value is string", null, d.checkChild("a"));
+        assertEquals("undefined key", null, d.checkChild("undefined"));
+        assertEquals("contents of nested dataset",
+                "x: x_value\n", d.checkChild("nested").toString());
+    }
+
     public void test_clear() {
         Dataset d = YamlDataset.newStringInstance(
                 "a: a_value\nb: b_value\nnested:\n  x: x_value\n");

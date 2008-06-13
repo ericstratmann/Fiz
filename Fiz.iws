@@ -20,13 +20,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/javascript/Fiz.js" afterPath="$PROJECT_DIR$/javascript/Fiz.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/web/WEB-INF/config/dataRequests.yaml" afterPath="$PROJECT_DIR$/web/WEB-INF/config/dataRequests.yaml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/FormElement.java" afterPath="$PROJECT_DIR$/src/org/fiz/FormElement.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/org/fiz/FormSectionTest.java" afterPath="$PROJECT_DIR$/test/org/fiz/FormSectionTest.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/web/WEB-INF/demo/demo.yaml" afterPath="$PROJECT_DIR$/web/WEB-INF/demo/demo.yaml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/Demo.java" afterPath="$PROJECT_DIR$/src/org/fiz/Demo.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/Dataset.java" afterPath="$PROJECT_DIR$/src/org/fiz/Dataset.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/FormSection.java" afterPath="$PROJECT_DIR$/src/org/fiz/FormSection.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/jsunit/FizTest.js" afterPath="$PROJECT_DIR$/test/jsunit/FizTest.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/org/fiz/DatasetTest.java" afterPath="$PROJECT_DIR$/test/org/fiz/DatasetTest.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Fiz.iws" afterPath="$PROJECT_DIR$/Fiz.iws" />
     </list>
     <ignored path="TomcatTest.iws" />
@@ -115,7 +113,7 @@
           <file leaf-file-name="Dataset.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/Dataset.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="22" column="13" selection-start="880" selection-end="880" vertical-scroll-proportion="0.020432692">
+                <state line="356" column="35" selection-start="14588" selection-end="14588" vertical-scroll-proportion="0.74">
                   <folding />
                 </state>
               </provider>
@@ -124,43 +122,25 @@
           <file leaf-file-name="DataManager.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/DataManager.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="78" column="72" selection-start="4245" selection-end="4245" vertical-scroll-proportion="0.020070838">
+                <state line="78" column="72" selection-start="4245" selection-end="4245" vertical-scroll-proportion="0.019653179">
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="FormSection.java" pinned="false" current="false" current-in-tab="true">
+          <file leaf-file-name="FormSection.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/FormSection.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="291" column="31" selection-start="14111" selection-end="14111" vertical-scroll-proportion="0.103896104">
+                <state line="485" column="0" selection-start="22860" selection-end="22860" vertical-scroll-proportion="0.6462428">
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="TemplateFormElement.java" pinned="false" current="false" current-in-tab="false">
+          <file leaf-file-name="TemplateFormElement.java" pinned="false" current="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/TemplateFormElement.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="20" column="78" selection-start="25" selection-end="1335" vertical-scroll-proportion="0.020070838">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="EntryFormElement.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/org/fiz/EntryFormElement.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="4" column="27" selection-start="108" selection-end="123" vertical-scroll-proportion="0.020070838">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="RadioFormElement.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/org/fiz/RadioFormElement.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="15" column="63" selection-start="909" selection-end="909" vertical-scroll-proportion="0.020070838">
+                <state line="68" column="0" selection-start="3451" selection-end="3451" vertical-scroll-proportion="0.7445087">
                   <folding />
                 </state>
               </provider>
@@ -169,7 +149,7 @@
           <file leaf-file-name="FormElementTest.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/test/org/fiz/FormElementTest.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="54" column="49" selection-start="2330" selection-end="2330" vertical-scroll-proportion="0.10271547">
+                <state line="54" column="49" selection-start="2330" selection-end="2330" vertical-scroll-proportion="0.10057803">
                   <folding />
                 </state>
               </provider>
@@ -178,7 +158,7 @@
           <file leaf-file-name="Dispatcher.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/Dispatcher.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="221" column="3" selection-start="9843" selection-end="9843" vertical-scroll-proportion="0.020432692">
+                <state line="221" column="3" selection-start="9843" selection-end="9843" vertical-scroll-proportion="0.02">
                   <folding />
                 </state>
               </provider>
@@ -187,7 +167,7 @@
           <file leaf-file-name="Html.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/Html.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="489" column="40" selection-start="21443" selection-end="21460" vertical-scroll-proportion="0.020432692">
+                <state line="489" column="40" selection-start="21443" selection-end="21460" vertical-scroll-proportion="0.02">
                   <folding />
                 </state>
               </provider>
@@ -209,7 +189,7 @@
           <file leaf-file-name="DataRequest.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/DataRequest.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="77" column="13" selection-start="4370" selection-end="4370" vertical-scroll-proportion="0.02">
+                <state line="96" column="23" selection-start="5211" selection-end="5211" vertical-scroll-proportion="0.4">
                   <folding />
                 </state>
               </provider>
@@ -218,7 +198,7 @@
           <file leaf-file-name="FormElement.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/FormElement.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="123" column="67" selection-start="5913" selection-end="6161" vertical-scroll-proportion="0.019653179">
+                <state line="135" column="0" selection-start="6691" selection-end="6691" vertical-scroll-proportion="0.33294117">
                   <folding />
                 </state>
               </provider>
@@ -236,7 +216,16 @@
           <file leaf-file-name="FormSectionTest.java" pinned="false" current="true" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/test/org/fiz/FormSectionTest.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="598" column="28" selection-start="28597" selection-end="28597" vertical-scroll-proportion="0.12352941">
+                <state line="609" column="61" selection-start="29125" selection-end="29125" vertical-scroll-proportion="0.69058824">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="DatasetTest.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/test/org/fiz/DatasetTest.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="229" column="36" selection-start="9826" selection-end="9963" vertical-scroll-proportion="0.31294116">
                   <folding />
                 </state>
               </provider>
@@ -1224,7 +1213,7 @@
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2491951" order="2" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" order="5" />
       <window_info id="Duplicates" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="13" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="true" weight="0.32932165" order="2" x="66" y="51" width="918" height="622" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="true" weight="0.32932165" order="2" x="113" y="32" width="918" height="622" />
       <window_info id="SVN Repositories" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32964602" order="9" />
       <window_info id="Thumbnails" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32964602" order="10" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="4" />
@@ -1241,7 +1230,7 @@
     <option name="PERFORM_EDIT_IN_BACKGROUND" value="true" />
     <option name="PERFORM_ADD_REMOVE_IN_BACKGROUND" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="* FormElement: added checkProperty method.&#10;&#10;* FormSection: added support for tooltip help text.&#10;&#10;* Documented new &quot;help&quot; property in existing form elements." />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented &quot;layout&quot; property in FormSection, so that forms can now have a vertical layout as well as side-by-side." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_FILE_COMMIT" value="false" />
@@ -1252,7 +1241,6 @@
     <option name="UPDATE_GROUP_BY_CHANGELIST" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="Beginnings of Ajax support:&#10;&#10;* Ajax.js&#10;&#10;* Javascript unit testing infrastructure: jsunit.js, JsunitHelper.java,&#10;  Document.js, Element.js, etc.&#10;&#10;* Ajax.java (parse special-purpose Ajax data format)&#10;&#10;* ClientRequest.java: added setAjax and isAjax methods, modified&#10;  getMainDataset to include incoming Ajax data.&#10;  &#10;* Dataset: added toJavascript method.&#10;&#10;* Dispatcher: now detects Ajax requests." />
     <MESSAGE value="This file shouldn't have been created in the first place: temporary for testing." />
     <MESSAGE value="More work on Ajax:&#10;&#10;* Link: added new properties &quot;ajaxUrl&quot; and &quot;javascript&quot; to generate&#10;  different link types.&#10;&#10;* Template: added new JAVASCRIPT quoting style.&#10;&#10;* Ajax.js: added simpler form of constructor, improved documentation.&#10;&#10;* Dispatcher: set content type for output (needed to work with Safari)." />
     <MESSAGE value="More work on Ajax:&#10;&#10;* ClientRequest: added new methods ajaxErrorAction, ajaxEvalAction,&#10;  ajaxRedirectAction, ajaxUpdateAction, and finish.&#10;&#10;* Ajax.js: added new &quot;redirect&quot; action.&#10;&#10;* Modified several output functions, such as Dataset.toJavascript and&#10;  Html.escapeStringChars, to take an Appendable argument instead of&#10;  StringBuilder, so they can be used with Writers.&#10;&#10;* Dispatcher: use new method ClientRequest.finish." />
@@ -1277,6 +1265,7 @@
     <MESSAGE value="* Modified Template to support indexedData in addition to Datasets.&#10;  Modified a few existing classes to take advantage of this.&#10;&#10;* New class CompoundFormElement.&#10;&#10;* Modified SelectFormElement to make the &quot;name&quot; value in choices optional." />
     <MESSAGE value="* Added return value to FormElement.labelHtml, with support in&#10;  FormSection for form elements that span both the label and control&#10;  columns.&#10;&#10;* New class TemplateFormElement." />
     <MESSAGE value="* FormElement: added checkProperty method.&#10;&#10;* FormSection: added support for tooltip help text.&#10;&#10;* Documented new &quot;help&quot; property in existing form elements." />
+    <MESSAGE value="Implemented &quot;layout&quot; property in FormSection, so that forms can now have a vertical layout as well as side-by-side." />
   </component>
   <component name="VssConfiguration">
     <option name="CLIENT_PATH" value="" />
@@ -1317,97 +1306,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/ClientRequest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="490" column="0" selection-start="21184" selection-end="21184" vertical-scroll-proportion="0.02">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/DataRequest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="77" column="13" selection-start="4370" selection-end="4370" vertical-scroll-proportion="0.02">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/FormElement.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="123" column="67" selection-start="5913" selection-end="6161" vertical-scroll-proportion="0.019653179">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/Config.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="44" column="11" selection-start="1839" selection-end="1839" vertical-scroll-proportion="0.019653179">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/Template.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="884" column="36" selection-start="45045" selection-end="45045" vertical-scroll-proportion="0.5035294">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/TextAreaFormElement.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="22" column="42" selection-start="1361" selection-end="1361" vertical-scroll-proportion="0.45945945">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/web/WEB-INF/config/errors.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/web/WEB-INF/config/dataRequests.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="22" column="14" selection-start="558" selection-end="558" vertical-scroll-proportion="0.2231405">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/web/WEB-INF/demo/demo.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="9" selection-start="602" selection-end="602" vertical-scroll-proportion="0.020070838">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/Demo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="96" column="59" selection-start="4836" selection-end="4836" vertical-scroll-proportion="0.019653179">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/web/WEB-INF/config/help.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="0" selection-start="617" selection-end="617" vertical-scroll-proportion="0.27514452">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/jsunit/FizTest.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="2" column="9" selection-start="29" selection-end="29" vertical-scroll-proportion="0.040141676">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/FormSection.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="291" column="31" selection-start="14111" selection-end="14111" vertical-scroll-proportion="0.103896104">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/javascript/Fiz.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="6" column="31" selection-start="192" selection-end="192" vertical-scroll-proportion="0.11791907">
@@ -1422,9 +1320,100 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/fiz/Dataset.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="356" column="35" selection-start="14588" selection-end="14588" vertical-scroll-proportion="0.74">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/org/fiz/DatasetTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="229" column="36" selection-start="9826" selection-end="9963" vertical-scroll-proportion="0.31294116">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/fiz/EntryFormElement.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="5" selection-start="863" selection-end="863" vertical-scroll-proportion="0.33333334">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/fiz/CompoundFormElement.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="25" column="56" selection-start="1506" selection-end="1506" vertical-scroll-proportion="0.58518517">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/fiz/CheckboxFormElement.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="21" column="5" selection-start="1215" selection-end="1215" vertical-scroll-proportion="0.33333334">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/fiz/RadioFormElement.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="32" column="27" selection-start="1996" selection-end="1996" vertical-scroll-proportion="0.66845876">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/fiz/PasswordFormElement.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="34" column="7" selection-start="2091" selection-end="2091" vertical-scroll-proportion="0.5524862">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/fiz/SelectFormElement.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="71" column="13" selection-start="4100" selection-end="4100" vertical-scroll-proportion="0.75985664">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/fiz/TextAreaFormElement.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="29" column="43" selection-start="1606" selection-end="1606" vertical-scroll-proportion="0.77163905">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/fiz/DataRequest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="96" column="23" selection-start="5211" selection-end="5211" vertical-scroll-proportion="0.4">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/fiz/FormSection.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="485" column="0" selection-start="22860" selection-end="22860" vertical-scroll-proportion="0.6462428">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/fiz/FormElement.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="135" column="0" selection-start="6691" selection-end="6691" vertical-scroll-proportion="0.33294117">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/fiz/TemplateFormElement.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="68" column="0" selection-start="3451" selection-end="3451" vertical-scroll-proportion="0.7445087">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/test/org/fiz/FormSectionTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="598" column="28" selection-start="28597" selection-end="28597" vertical-scroll-proportion="0.12352941">
+        <state line="609" column="61" selection-start="29125" selection-end="29125" vertical-scroll-proportion="0.69058824">
           <folding />
         </state>
       </provider>

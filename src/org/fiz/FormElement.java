@@ -16,7 +16,6 @@ package org.fiz;
  *                   for the HTML form element.
  *   label:          (optional) Template for label to display next to the
  *                   FormElement to identify the element for the user.
- *                   If omitted {@code id} is used as the label.
  */
 public abstract class FormElement implements Formatter {
     // The following variable holds the dataset describing the FormElement,

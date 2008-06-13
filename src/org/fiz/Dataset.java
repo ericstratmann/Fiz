@@ -336,13 +336,28 @@ public class Dataset implements Cloneable {
      * if the key is not defined.  This method is identical to
      * {@code get} except that it does not generate an exception
      * if the key is undefined or has the wrong type.
-     * @param key                  Name of the desired value
+     * @param key                  Name of the desired value.
      * @return                     Value associated with {@code key}, or
      *                             null if {@code key} doesn't exist or if
      *                             it corresponds to a nested dataset.
      */
     public String check(String key) {
         return (String) lookup(key, DesiredType.STRING, Quantity.FIRST_ONLY,
+                null);
+    }
+
+    /**
+     * Given a key, returns the first nested dataset with that name,
+     * or null if there is no such child.  This method is identical to
+     * {@code getChild} except that it does not generate an exception
+     * if there is no child by the given name.
+     * @param key                  Name of the desired child dataset.
+     * @return                     First child dataset with {@code key}
+     *                             as name, or null if there is no such
+     *                             child.
+     */
+    public Dataset checkChild(String key) {
+        return (Dataset) lookup(key, DesiredType.DATASET, Quantity.FIRST_ONLY,
                 null);
     }
 

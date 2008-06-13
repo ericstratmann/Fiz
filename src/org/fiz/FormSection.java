@@ -32,6 +32,11 @@ package org.fiz;
  *                   HTML form element that displays the FormSection and
  *                   for various other purposes.  Must be unique among all
  *                   id's for the page.
+ *   initialValues:  (optional) A nested dataset providing initial values
+ *                   to display in the form.  This property is used only
+ *                   if the {@code request} property is omitted; the values
+ *                   in the nested dataset are handled in the same way as the
+ *                   values in a response to {@code request}.
  *   layout:         (optional) If specified with the value {@code vertical}
  *                   than the form is laid out in a single column with
  *                   labels above controls.  Otherwise (default) a
@@ -43,7 +48,7 @@ package org.fiz;
  *                   Interactor.
  *   request:        (optional) Name of the DataRequest that will supply
  *                   initial values to display in the FormSection.  If the
- *                   responds to the request contains a {@code data}
+ *                   response to the request contains a {@code data}
  *                   nested dataset, then the contents of that nested dataset
  *                   will be used to provide the form's initial data.  If
  *                   there is no {@code data} nested dataset then the
@@ -242,7 +247,12 @@ public class FormSection implements Section {
             }
             data = new CompoundDataset(response, mainDataset);
         } else {
-            data = cr.getMainDataset();
+            Dataset initialValues = properties.checkChild("initialValues");
+            if (initialValues != null) {
+                data = new CompoundDataset(initialValues, mainDataset);
+            } else {
+                data = cr.mainDataset;
+            }
         }
 
         if (!properties.containsKey("class")) {

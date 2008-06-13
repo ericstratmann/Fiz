@@ -199,7 +199,21 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "class=\"EntryFormElement\" value=\"California\" />",
                 cr.getHtml().getBody().toString(), "<input[^>]*>");
     }
-    public void test_html_noRequest() {
+    public void test_html_noRequestButInitialValue() {
+        // In this case, the "name" value is supplied from a property.
+        FormSection form = new FormSection(
+                YamlDataset.newStringInstance(
+                    "id: form1\n" +
+                    "initialValues:\n" +
+                    "    name: Fred\n"),
+                new EntryFormElement("name", "Name:"));
+        cr.showSections(form);
+        TestUtil.assertMatchingSubstring("form element displaying name",
+                "<input type=\"text\" name=\"name\" " +
+                "class=\"EntryFormElement\" value=\"Fred\" />",
+                cr.getHtml().getBody().toString(), "<input[^>]*>");
+    }
+    public void test_html_noRequestOrInitialValue() {
         // In this case, the "name" value is supplied from the main dataset.
         FormSection form = new FormSection(
                 new Dataset("id", "form1"),
@@ -549,7 +563,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "id1", "template", "element 1 html",
                 "span", "true"));
         TemplateFormElement element2 = new TemplateFormElement(
-                new Dataset("id", "id2", "template", "element 2 html"));
+                new Dataset("id", "id2", "template", "element 2 html",
+                "label", "sample"));
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
                 "buttonStyle", "none", "layout", "vertical"),
@@ -563,7 +578,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "    <tr><td class=\"control\">element 1 html" +
                 "<div id=\"id1.diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td></tr>\n" +
-                "    <tr><td class=\"label\"></td></tr>\n" +
+                "    <tr><td class=\"label\">sample</td></tr>\n" +
                 "    <tr><td class=\"control\">element 2 html" +
                 "<div id=\"id2.diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td></tr>\n" +
@@ -589,12 +604,10 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "<form id=\"form1\" class=\"FormSection\" action=" +
                 "\"javascript: form_form1.post();\" method=\"post\">\n" +
                 "  <table cellspacing=\"0\" class=\"vertical\">\n" +
-                "    <tr><td class=\"label\"></td></tr>\n" +
                 "    <tr title=\"Sample help text\">" +
                 "<td class=\"control\">element 1 html" +
                 "<div id=\"id1.diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td></tr>\n" +
-                "    <tr><td class=\"label\"></td></tr>\n" +
                 "    <tr><td class=\"control\">element 2 html" +
                 "<div id=\"id2.diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td></tr>\n" +
