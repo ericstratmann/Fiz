@@ -226,135 +226,6 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("CSS files", "EntryFormElement.css",
                 cr.getHtml().getCssFiles());
     }
-    public void test_html_labelHtmlReturnsFalse() {
-        TemplateFormElement element1 = new TemplateFormElement(
-                new Dataset("id", "id1", "template", "element 1 html",
-                "span", "true"));
-        TemplateFormElement element2 = new TemplateFormElement(
-                new Dataset("id", "id2", "template", "element 2 html"));
-        FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", "none"), element1, element2);
-        cr.showSections(form);
-        assertEquals("generated HTML", "\n" +
-                "<!-- Start FormSection form1 -->\n" +
-                "<form id=\"form1\" class=\"FormSection\" action=" +
-                "\"javascript: form_form1.post();\" method=\"post\">\n" +
-                "  <table cellspacing=\"0\">\n" +
-                "    <tr>\n" +
-                "      <td class=\"control\" colspan=\"2\">element 1 html" +
-                "<div id=\"id1.diagnostic\" class=\"diagnostic\" " +
-                "style=\"display:none\"></div></td>\n" +
-                "    </tr>\n" +
-                "    <tr>\n" +
-                "      <td class=\"label\"></td>\n" +
-                "      <td class=\"control\">element 2 html" +
-                "<div id=\"id2.diagnostic\" class=\"diagnostic\" " +
-                "style=\"display:none\"></div></td>\n" +
-                "    </tr>\n" +
-                "  </table>\n" +
-                "</form>\n" +
-                "<!-- End FormSection form1 -->\n",
-                cr.getHtml().getBody().toString());
-        TestUtil.assertXHTML(cr.getHtml().toString());
-    }
-    public void test_html_helpText() {
-        TemplateFormElement element1 = new TemplateFormElement(
-                new Dataset("id", "id1", "template", "element 1 html",
-                "help", "Sample help text"));
-        TemplateFormElement element2 = new TemplateFormElement(
-                new Dataset("id", "id2", "template", "element 2 html"));
-        FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", "none"), element1, element2);
-        cr.showSections(form);
-        assertEquals("generated HTML", "\n" +
-                "<!-- Start FormSection form1 -->\n" +
-                "<form id=\"form1\" class=\"FormSection\" action=" +
-                "\"javascript: form_form1.post();\" method=\"post\">\n" +
-                "  <table cellspacing=\"0\">\n" +
-                "    <tr title=\"Sample help text\">\n" +
-                "      <td class=\"label\"></td>\n" +
-                "      <td class=\"control\">element 1 html" +
-                "<div id=\"id1.diagnostic\" class=\"diagnostic\" " +
-                "style=\"display:none\"></div></td>\n" +
-                "    </tr>\n" +
-                "    <tr>\n" +
-                "      <td class=\"label\"></td>\n" +
-                "      <td class=\"control\">element 2 html" +
-                "<div id=\"id2.diagnostic\" class=\"diagnostic\" " +
-                "style=\"display:none\"></div></td>\n" +
-                "    </tr>\n" +
-                "  </table>\n" +
-                "</form>\n" +
-                "<!-- End FormSection form1 -->\n",
-                cr.getHtml().getBody().toString());
-        TestUtil.assertXHTML(cr.getHtml().toString());
-    }
-    public void test_html_elementsAndButtons() {
-        FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson"),
-                new EntryFormElement("name", "Name:"),
-                new EntryFormElement("age", "Age:"));
-        cr.showSections(form);
-        assertEquals("generated HTML", "\n" +
-                "<!-- Start FormSection form1 -->\n" +
-                "<form id=\"form1\" class=\"FormSection\" " +
-                "action=\"javascript: form_form1.post();\" " +
-                "method=\"post\">\n" +
-                "  <table cellspacing=\"0\">\n" +
-                "    <tr>\n" +
-                "      <td class=\"label\">Name:</td>\n" +
-                "      <td class=\"control\"><input type=\"text\" " +
-                "name=\"name\" class=\"EntryFormElement\" " +
-                "value=\"David\" />" +
-                "<div id=\"name.diagnostic\" class=\"diagnostic\" " +
-                "style=\"display:none\"></div></td>\n" +
-                "    </tr>\n" +
-                "    <tr>\n" +
-                "      <td class=\"label\">Age:</td>\n" +
-                "      <td class=\"control\"><input type=\"text\" " +
-                "name=\"age\" class=\"EntryFormElement\" " +
-                "value=\"66\" /><div id=\"age.diagnostic\" " +
-                "class=\"diagnostic\" style=\"display:none\"></div></td>\n" +
-                "    </tr>\n" +
-                "    <tr>\n" +
-                "      <td class=\"submit\" colspan=\"2\"><div class=" +
-                "\"buttons\"><input type=\"submit\" name=\"action\" " +
-                "value=\"Submit\" accesskey=\"s\" title=\"Press " +
-                "Alt+Shift+s to submit.\" /></div> </td>\n" +
-                "    </tr>\n" +
-                "  </table>\n" +
-                "</form>\n" +
-                "<!-- End FormSection form1 -->\n",
-                cr.getHtml().getBody().toString());
-        TestUtil.assertXHTML(cr.getHtml().toString());
-    }
-    public void test_html_noButtons() {
-        FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", "none"),
-                new EntryFormElement("name", "Name:"));
-        cr.showSections(form);
-        assertEquals("generated HTML", "\n" +
-                "<!-- Start FormSection form1 -->\n" +
-                "<form id=\"form1\" class=\"FormSection\" " +
-                "action=\"javascript: form_form1.post();\" " +
-                "method=\"post\">\n" +
-                "  <table cellspacing=\"0\">\n" +
-                "    <tr>\n" +
-                "      <td class=\"label\">Name:</td>\n" +
-                "      <td class=\"control\"><input type=\"text\" " +
-                "name=\"name\" class=\"EntryFormElement\" value=\"David\" " +
-                "/><div id=\"name.diagnostic\" " +
-                "class=\"diagnostic\" style=\"display:none\"></div></td>\n" +
-                "    </tr>\n" +
-                "  </table>\n" +
-                "</form>\n" +
-                "<!-- End FormSection form1 -->\n",
-                cr.getHtml().getBody().toString());
-        TestUtil.assertXHTML(cr.getHtml().toString());
-    }
     public void test_html_javascript() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
@@ -525,5 +396,243 @@ public class FormSectionTest extends junit.framework.TestCase {
                 form.getHelpText(element3));
         assertEquals("no help text available", null,
                 form.getHelpText(element4));
+    }
+
+    public void test_innerHtml_noSubmitButton() {
+        FormSection form = new FormSection(
+                new Dataset("id", "form1", "request", "getPerson",
+                "buttonStyle", "none"), new TemplateFormElement(
+                new Dataset("id", "id11", "template", "xyz")));
+        cr.showSections(form);
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start FormSection form1 -->\n" +
+                "<form id=\"form1\" class=\"FormSection\" " +
+                "action=\"javascript: form_form1.post();\" " +
+                "method=\"post\">\n" +
+                "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
+                "    <tr>\n" +
+                "      <td class=\"label\"></td>\n" +
+                "      <td class=\"control\">xyz<div id=\"id11.diagnostic\" " +
+                "class=\"diagnostic\" style=\"display:none\"></div></td>\n" +
+                "    </tr>\n" +
+                "  </table>\n" +
+                "</form>\n" +
+                "<!-- End FormSection form1 -->\n",
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
+    }
+    public void test_innerHtml_submitButton() {
+        FormSection form = new FormSection(
+                new Dataset("id", "form1", "request", "getPerson"));
+        cr.showSections(form);
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start FormSection form1 -->\n" +
+                "<form id=\"form1\" class=\"FormSection\" " +
+                "action=\"javascript: form_form1.post();\" " +
+                "method=\"post\">\n" +
+                "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
+                "    <tr>\n" +
+                "      <td class=\"submit\" colspan=\"2\"><div class=" +
+                "\"buttons\"><input type=\"submit\" name=\"action\" " +
+                "value=\"Submit\" accesskey=\"s\" title=\"Press Alt+Shift+s " +
+                "to submit.\" /></div> </td>\n" +
+                "    </tr>\n" +
+                "  </table>\n" +
+                "</form>\n" +
+                "<!-- End FormSection form1 -->\n",
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
+    }
+
+    public void test_sideBySideElement_labelHtmlReturnsFalse() {
+        TemplateFormElement element1 = new TemplateFormElement(
+                new Dataset("id", "id1", "template", "element 1 html",
+                "span", "true"));
+        TemplateFormElement element2 = new TemplateFormElement(
+                new Dataset("id", "id2", "template", "element 2 html"));
+        FormSection form = new FormSection(
+                new Dataset("id", "form1", "request", "getPerson",
+                "buttonStyle", "none"), element1, element2);
+        cr.showSections(form);
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start FormSection form1 -->\n" +
+                "<form id=\"form1\" class=\"FormSection\" action=" +
+                "\"javascript: form_form1.post();\" method=\"post\">\n" +
+                "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
+                "    <tr>\n" +
+                "      <td class=\"control\" colspan=\"2\">element 1 html" +
+                "<div id=\"id1.diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div></td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "      <td class=\"label\"></td>\n" +
+                "      <td class=\"control\">element 2 html" +
+                "<div id=\"id2.diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div></td>\n" +
+                "    </tr>\n" +
+                "  </table>\n" +
+                "</form>\n" +
+                "<!-- End FormSection form1 -->\n",
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
+    }
+    public void test_sideBySideElement_helpText() {
+        TemplateFormElement element1 = new TemplateFormElement(
+                new Dataset("id", "id1", "template", "element 1 html",
+                "help", "Sample help text"));
+        TemplateFormElement element2 = new TemplateFormElement(
+                new Dataset("id", "id2", "template", "element 2 html"));
+        FormSection form = new FormSection(
+                new Dataset("id", "form1", "request", "getPerson",
+                "buttonStyle", "none"), element1, element2);
+        cr.showSections(form);
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start FormSection form1 -->\n" +
+                "<form id=\"form1\" class=\"FormSection\" action=" +
+                "\"javascript: form_form1.post();\" method=\"post\">\n" +
+                "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
+                "    <tr title=\"Sample help text\">\n" +
+                "      <td class=\"label\"></td>\n" +
+                "      <td class=\"control\">element 1 html" +
+                "<div id=\"id1.diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div></td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "      <td class=\"label\"></td>\n" +
+                "      <td class=\"control\">element 2 html" +
+                "<div id=\"id2.diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div></td>\n" +
+                "    </tr>\n" +
+                "  </table>\n" +
+                "</form>\n" +
+                "<!-- End FormSection form1 -->\n",
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
+    }
+    public void test_sideBySideElement_elements() {
+        FormSection form = new FormSection(
+                new Dataset("id", "form1", "request", "getPerson",
+                        "buttonStyle", "none"),
+                new EntryFormElement("name", "Name:"),
+                new EntryFormElement("age", "Age:"));
+        cr.showSections(form);
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start FormSection form1 -->\n" +
+                "<form id=\"form1\" class=\"FormSection\" " +
+                "action=\"javascript: form_form1.post();\" " +
+                "method=\"post\">\n" +
+                "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
+                "    <tr>\n" +
+                "      <td class=\"label\">Name:</td>\n" +
+                "      <td class=\"control\"><input type=\"text\" " +
+                "name=\"name\" class=\"EntryFormElement\" " +
+                "value=\"David\" />" +
+                "<div id=\"name.diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div></td>\n" +
+                "    </tr>\n" +
+                "    <tr>\n" +
+                "      <td class=\"label\">Age:</td>\n" +
+                "      <td class=\"control\"><input type=\"text\" " +
+                "name=\"age\" class=\"EntryFormElement\" " +
+                "value=\"66\" /><div id=\"age.diagnostic\" " +
+                "class=\"diagnostic\" style=\"display:none\"></div></td>\n" +
+                "    </tr>\n" +
+                "  </table>\n" +
+                "</form>\n" +
+                "<!-- End FormSection form1 -->\n",
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
+    }
+
+    public void test_verticalElement_labelHtmlReturnsFalse() {
+        TemplateFormElement element1 = new TemplateFormElement(
+                new Dataset("id", "id1", "template", "element 1 html",
+                "span", "true"));
+        TemplateFormElement element2 = new TemplateFormElement(
+                new Dataset("id", "id2", "template", "element 2 html"));
+        FormSection form = new FormSection(
+                new Dataset("id", "form1", "request", "getPerson",
+                "buttonStyle", "none", "layout", "vertical"),
+                element1, element2);
+        cr.showSections(form);
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start FormSection form1 -->\n" +
+                "<form id=\"form1\" class=\"FormSection\" action=" +
+                "\"javascript: form_form1.post();\" method=\"post\">\n" +
+                "  <table cellspacing=\"0\" class=\"vertical\">\n" +
+                "    <tr><td class=\"control\">element 1 html" +
+                "<div id=\"id1.diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div></td></tr>\n" +
+                "    <tr><td class=\"label\"></td></tr>\n" +
+                "    <tr><td class=\"control\">element 2 html" +
+                "<div id=\"id2.diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div></td></tr>\n" +
+                "  </table>\n" +
+                "</form>\n" +
+                "<!-- End FormSection form1 -->\n",
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
+    }
+    public void test_verticalElement_helpText() {
+        TemplateFormElement element1 = new TemplateFormElement(
+                new Dataset("id", "id1", "template", "element 1 html",
+                "help", "Sample help text"));
+        TemplateFormElement element2 = new TemplateFormElement(
+                new Dataset("id", "id2", "template", "element 2 html"));
+        FormSection form = new FormSection(
+                new Dataset("id", "form1", "request", "getPerson",
+                "buttonStyle", "none", "layout", "vertical"),
+                element1, element2);
+        cr.showSections(form);
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start FormSection form1 -->\n" +
+                "<form id=\"form1\" class=\"FormSection\" action=" +
+                "\"javascript: form_form1.post();\" method=\"post\">\n" +
+                "  <table cellspacing=\"0\" class=\"vertical\">\n" +
+                "    <tr><td class=\"label\"></td></tr>\n" +
+                "    <tr title=\"Sample help text\">" +
+                "<td class=\"control\">element 1 html" +
+                "<div id=\"id1.diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div></td></tr>\n" +
+                "    <tr><td class=\"label\"></td></tr>\n" +
+                "    <tr><td class=\"control\">element 2 html" +
+                "<div id=\"id2.diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div></td></tr>\n" +
+                "  </table>\n" +
+                "</form>\n" +
+                "<!-- End FormSection form1 -->\n",
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
+    }
+    public void test_verticalElement_elements() {
+        FormSection form = new FormSection(
+                new Dataset("id", "form1", "request", "getPerson",
+                "buttonStyle", "none", "layout", "vertical"),
+                new EntryFormElement("name", "Name:"),
+                new EntryFormElement("age", "Age:"));
+        cr.showSections(form);
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start FormSection form1 -->\n" +
+                "<form id=\"form1\" class=\"FormSection\" " +
+                "action=\"javascript: form_form1.post();\" " +
+                "method=\"post\">\n" +
+                "  <table cellspacing=\"0\" class=\"vertical\">\n" +
+                "    <tr><td class=\"label\">Name:</td></tr>\n" +
+                "    <tr><td class=\"control\"><input type=\"text\" " +
+                "name=\"name\" class=\"EntryFormElement\" " +
+                "value=\"David\" />" +
+                "<div id=\"name.diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div></td></tr>\n" +
+                "    <tr><td class=\"label\">Age:</td></tr>\n" +
+                "    <tr><td class=\"control\"><input type=\"text\" " +
+                "name=\"age\" class=\"EntryFormElement\" " +
+                "value=\"66\" /><div id=\"age.diagnostic\" " +
+                "class=\"diagnostic\" style=\"display:none\">" +
+                "</div></td></tr>\n" +
+                "  </table>\n" +
+                "</form>\n" +
+                "<!-- End FormSection form1 -->\n",
+                cr.getHtml().getBody().toString());
+        TestUtil.assertXHTML(cr.getHtml().toString());
     }
 }

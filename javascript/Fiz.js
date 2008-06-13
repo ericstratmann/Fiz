@@ -29,5 +29,4 @@ Fiz.setBulletin = function(html) {
         document.body.insertBefore(bulletin, document.body.firstChild);
     }
     bulletin.innerHTML = html;
-    bulletin.scrollIntoView();
 }

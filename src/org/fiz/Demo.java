@@ -10,8 +10,9 @@ public class Demo extends Interactor {
     // The following variable is used for log4j-based logging.
     protected Logger logger = Logger.getLogger("org.fiz.Demo");
 
-    FormSection demoForm =new FormSection(
-            new Dataset("id", "form1", "request", "demo.getFormData"),
+    FormSection sideBySideForm =new FormSection(
+            new Dataset("id", "form1", "request", "demo.getFormData",
+                    "postUrl", "ajaxSideBySidePost"),
             new EntryFormElement(new Dataset("id", "name",
                     "label", "Name:")),
             new EntryFormElement(new Dataset("id", "age",
@@ -77,6 +78,25 @@ public class Demo extends Interactor {
                     "label", "Favorite saying:"))
             );
 
+    FormSection verticalForm =new FormSection(
+            new Dataset("id", "form2", "request", "demo.getFormData",
+                    "layout", "vertical", "postUrl", "ajaxVerticalPost"),
+            new EntryFormElement(new Dataset("id", "name2",
+                    "label", "Name:")),
+            new EntryFormElement(new Dataset("id", "age2",
+                    "label", "Age:")),
+            new EntryFormElement(new Dataset("id", "state2",
+                    "label", "Home state:")),
+            new CheckboxFormElement(new Dataset("id", "citizen2",
+                    "extra", "U.S. citizen:")),
+            new SelectFormElement(new Dataset("id", "fruit2",
+                    "label", "Favorite fruit:",
+                    "choiceRequest", "demo.getFruits",
+                    "choiceName", "fruit")),
+            new TextAreaFormElement(new Dataset("id", "saying2",
+                    "label", "Favorite saying:", "rows", "3"))
+            );
+
     /**
      * Displays a page with various demonstrations of the TableSection
      * class.
@@ -136,15 +156,23 @@ public class Demo extends Interactor {
         html.setTitle("FormSection Demo");
         html.includeCssFile("demo/form.css");
         cr.showSections(
-                new TemplateSection("<h1>FormSection Demo</h1>\n"),
-                demoForm);
+                new TemplateSection("<h1>Side-By-Side Form</h1>\n"),
+                sideBySideForm,
+                new TemplateSection("<h1>Vertical Form</h1>\n"),
+                verticalForm);
     }
 
-    public void ajaxPost(ClientRequest cr) {
+    public void ajaxSideBySidePost(ClientRequest cr) {
         Dataset main = cr.getMainDataset();
         logger.info("Posted dataset:\n" + main.toString());
-        demoForm.post(cr, (main.get("state").length() == 0) ?
+        sideBySideForm.post(cr, (main.get("state").length() == 0) ?
                 "demo.formError1" : "demo.formError2");
 
+    }
+
+    public void ajaxVerticalPost(ClientRequest cr) {
+        Dataset main = cr.getMainDataset();
+        logger.info("Posted dataset:\n" + main.toString());
+        verticalForm.post(cr, "demo.formError3");
     }
 }

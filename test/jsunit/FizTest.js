@@ -13,8 +13,7 @@ test("Fiz_setBulletin_createBulletin", function() {
             "tagName:        div\n",
             printDataset(document.createdElements[0]),
             "contents of bulletin");
-    assertEqual("body.insertBefore(bulletin, paragraph1)\n" +
-            "bulletin.scrollIntoView()\n", jsunit.log,
+    assertEqual("body.insertBefore(bulletin, paragraph1)\n", jsunit.log,
             "jsunit log");
 });
 test("Fiz_setBulletin_bulletinExists", function() {
@@ -26,6 +25,5 @@ test("Fiz_setBulletin_bulletinExists", function() {
             "tagName:        div\n",
             printDataset(bulletin),
             "contents of bulletin");
-    assertEqual("bulletin.scrollIntoView()\n", jsunit.log,
-            "jsunit log");
+    assertEqual("", jsunit.log, "jsunit log");
 });

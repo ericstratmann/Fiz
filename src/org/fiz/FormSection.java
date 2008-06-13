@@ -32,8 +32,13 @@ package org.fiz;
  *                   HTML form element that displays the FormSection and
  *                   for various other purposes.  Must be unique among all
  *                   id's for the page.
+ *   layout:         (optional) If specified with the value {@code vertical}
+ *                   than the form is laid out in a single column with
+ *                   labels above controls.  Otherwise (default) a
+ *                   side-by-side layout is used with labels in the left
+ *                   column and controls in the right column.
  *   postUrl:        (optional) When the form is submitted an Ajax request
- *                   is sent to this URL; defaults to "ajaxPost".  The
+ *                   is sent to this URL; defaults to {@code ajaxPost}.  The
  *                   caller must ensure that this URL is implemented by an
  *                   Interactor.
  *   request:        (optional) Name of the DataRequest that will supply
@@ -97,6 +102,12 @@ public class FormSection implements Section {
     // id (contains help text specific to this form).  Null means no
     // such dataset.
     protected Dataset nestedHelp;
+
+    // Used to generate a <div> into which error information for an element
+    // can be injected later; @1 is the element's id.
+    protected static final String diagnosticTemplate =
+            "<div id=\"@1.diagnostic\" class=\"diagnostic\" " +
+            "style=\"display:none\"></div>";
 
     /**
      * Construct a FormSection.
@@ -239,52 +250,10 @@ public class FormSection implements Section {
         }
         Template.expand("\n<!-- Start FormSection @id -->\n" +
                 "<form id=\"@id\" class=\"@class?{FormSection}\" " +
-                "action=\"javascript: form_@id.post();\" method=\"post\">\n" +
-                "  <table cellspacing=\"0\">\n",
+                "action=\"javascript: form_@id.post();\" method=\"post\">\n",
                 properties, out);
-
-        // Each iteration of the following loop renders one row of the
-        // table, displaying one FormElement.
-        Dataset diagnosticInfo = new Dataset();
-        for (FormElement element : elements) {
-            Template.expand("    <tr {{title=\"@1\"}}>\n", out,
-                    getHelpText(element));
-            int startingLength = out.length();
-            out.append("      <td class=\"label\">");
-            if (!element.labelHtml(cr, data, out)) {
-                // This element requests that we not display any label and
-                // instead let the control span both columns.  Erase the
-                // information for this row and regenerate the row with
-                // a single column.
-                out.setLength(startingLength);
-                out.append("      <td class=\"control\" " +
-                        "colspan=\"2\">");
-            } else {
-                out.append("</td>\n      <td class=\"control\">");
-            }
-            element.html(cr, data, out);
-
-            // Create an extra <div> underneath the control.  Initially
-            // this is empty and invisible, but it may be used later to
-            // display an error message pertaining to this form element.
-            diagnosticInfo.set("id", element.getId());
-            Template.expand("<div id=\"@id.diagnostic\" " +
-                    "class=\"diagnostic\" style=\"display:none\">" +
-                    "</div></td>\n" +
-                    "    </tr>\n", diagnosticInfo, out);
-        }
-
-        // Add the submit button if desired, and finish up the form.
-        String buttonTemplate = Config.getDataset("formButtons").get(
-                buttonStyle);
-        if (buttonTemplate.length() > 0) {
-            out.append("    <tr>\n      <td class=\"submit\" " +
-                    "colspan=\"2\">");
-            Template.expand(buttonTemplate, new CompoundDataset(
-                    properties, mainDataset), out);
-            out.append("</td>\n    </tr>\n");
-        }
-        Template.expand("  </table>\n</form>\n" +
+        innerHtml(cr, data, out);
+        Template.expand("</form>\n" +
                 "<!-- End FormSection @id -->\n",
                 properties, out);
 
@@ -401,5 +370,118 @@ public class FormSection implements Section {
             }
         }
         return helpConfig.check(id);
+    }
+
+    /**
+     * This method generates the inner portion of the HTML for the form
+     * (everything inside the {@code <form>} element, which includes the
+     * actual form elements and submit button).  Subclasses can override
+     * this method to create different form layouts.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @param data                 Data for the form (a CompoundDataset
+     *                             including both form data, if any, and the
+     *                             main dataset).
+     * @param out                  Generated HTML is appended here.
+     */
+    protected void innerHtml(ClientRequest cr, Dataset data,
+            StringBuilder out) {
+        String layout = properties.check("layout");
+        boolean vertical = (layout != null) && layout.equals("vertical");
+        Template.expand("  <table cellspacing=\"0\" class=\"@1\">\n", out,
+                vertical ? "vertical" : "sideBySide");
+
+        // Each iteration of the following loop displays a single
+        // FormElement.
+        for (FormElement element : elements) {
+            if (vertical) {
+                verticalElement(cr, element, data, out);
+            } else {
+                sideBySideElement(cr, element, data, out);
+            }
+        }
+
+        // Add the submit button if desired, and finish up the form.
+        String buttonTemplate = Config.getDataset("formButtons").get(
+                buttonStyle);
+        if (buttonTemplate.length() > 0) {
+            Template.expand("    <tr>\n      <td class=\"submit\" " +
+                    "{{colspan=\"@1\"}}>", out,
+                    (vertical ? null : "2"));
+            Template.expand(buttonTemplate, new CompoundDataset(
+                    properties, cr.getMainDataset()), out);
+            out.append("</td>\n    </tr>\n");
+        }
+        out.append("  </table>\n");
+    }
+
+    /**
+     * Generate HTML for a single FormElement, consisting of one table
+     * row with a column for the label and the column for the control.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @param element              The form element to be rendered.
+     * @param data                 Data for the form (a CompoundDataset
+     *                             including both form data, if any, and the
+     *                             main dataset).
+     * @param out                  Generated HTML is appended here.
+     */
+    protected void sideBySideElement(ClientRequest cr, FormElement element,
+            Dataset data, StringBuilder out) {
+        Template.expand("    <tr {{title=\"@1\"}}>\n", out,
+                getHelpText(element));
+        int startingLength = out.length();
+        out.append("      <td class=\"label\">");
+        if (!element.labelHtml(cr, data, out)) {
+            // This element requests that we not display any label and
+            // instead let the control span both columns.  Erase the
+            // information for this row and regenerate the row with
+            // a single column.
+            out.setLength(startingLength);
+            out.append("      <td class=\"control\" " +
+                    "colspan=\"2\">");
+        } else {
+            out.append("</td>\n      <td class=\"control\">");
+        }
+        element.html(cr, data, out);
+
+        // Create an extra <div> underneath the control for displaying
+        // error messages pertaining to this form element.
+        Template.expand(diagnosticTemplate, out, element.getId());
+        out.append("</td>\n    </tr>\n");
+
+    }
+
+    /**
+     * Generate HTML for a single FormElement, consisting of a table
+     * row for the label followed by a table row for the control.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @param element              The form element to be rendered.
+     * @param data                 Data for the form (a CompoundDataset
+     *                             including both form data, if any, and the
+     *                             main dataset).
+     * @param out                  Generated HTML is appended here.
+     */
+    protected void verticalElement(ClientRequest cr, FormElement element,
+            Dataset data, StringBuilder out) {
+        int rowStart = out.length();
+        out.append("    <tr><td class=\"label\">");
+        int labelStart = out.length();
+        if (!element.labelHtml(cr, data, out)
+                || (labelStart == out.length())) {
+            // No label for this element; discard the entire row.
+            out.setLength(rowStart);
+        } else {
+            out.append("</td></tr>\n");
+        }
+        Template.expand("    <tr {{title=\"@1\"}}><td class=\"control\">",
+                out, getHelpText(element));
+        element.html(cr, data, out);
+
+        // Create an extra <div> underneath the control for displaying
+        // error messages pertaining to this form element.
+        Template.expand(diagnosticTemplate, out, element.getId());
+        out.append("</td></tr>\n");
     }
 }

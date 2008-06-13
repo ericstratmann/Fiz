@@ -18,6 +18,12 @@ error2:
       An error occurred that isn't associated with a particular
       form element, so this message should appear in the bulletin.
 
+error3:
+  culprit: fruit2
+  message: >
+      You have chosen an exceptionally bad tasting fruit;
+      please pick another.
+
 formData:
     data:
         name: Bill
