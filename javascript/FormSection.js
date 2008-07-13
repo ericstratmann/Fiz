@@ -21,9 +21,9 @@ Fiz.FormSection = function(id, postUrl) {
     this.id = id;
     this.postUrl = postUrl;
 
-    // The following property references the <div> element that currently
-    // displays a diagnostic message (null means none).
-    this.visibleDiagnostic = null;
+    // The following property stores references to all the <div> elements
+    // that currently display a diagnostic message.
+    this.visibleDiagnostics = new Array();
 }
 
 /**
@@ -70,9 +70,7 @@ Fiz.FormSection.prototype.post = function() {
 
 /**
  * This function is invoked as an Ajax response to display an error message
- * in the diagnostic row for the form element whose id is {@code id}.  If
- * there was previously an error message displayed for a different element,
- * that message is made invisible.
+ * in the diagnostic row for the form element whose id is {@code id}.
  * @param id                       Identifies a particular form element; used
  *                                 as the base of various HTML element ids.
  * @param html                     HTML to use as the body of the diagnostic
@@ -82,19 +80,16 @@ Fiz.FormSection.prototype.elementError = function(id, html) {
     var div = document.getElementById(id + ".diagnostic");
     div.style.display = "";
     div.innerHTML = html;
-    if (this.visibleDiagnostic && (this.visibleDiagnostic != div)) {
-        this.visibleDiagnostic.style.display = "none";
-    }
-    this.visibleDiagnostic = div;
+    this.visibleDiagnostics.push(div);
 }
 
 /**
  * If there is an element-specific error message displayed in this
  * form, undisplay it.
  */
-Fiz.FormSection.prototype.clearElementError = function() {
-    if (this.visibleDiagnostic) {
-        this.visibleDiagnostic.style.display = "none";
-        this.visibleDiagnostic = null;
+Fiz.FormSection.prototype.clearElementErrors = function() {
+    for (var i = 0, length = this.visibleDiagnostics.length; i < length; i++) {
+        this.visibleDiagnostics[i].style.display = "none";
     }
+    this.visibleDiagnostics.length = 0;
 }

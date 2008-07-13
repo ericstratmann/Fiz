@@ -170,8 +170,9 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         element.registerRequests(cr, "request");
         StringBuilder out = cr.getHtml().getBody();
         element.html(cr, new Dataset(), out);
-        assertEquals("Javascript for HTML",
-                "Fiz.setBulletin(\"bulletin: sample &lt;error&gt;\");",
+        assertEquals("Javascript for HTML","Fiz.clearBulletin(); " +
+                "Fiz.addBulletinMessage(\"bulletinError\", " +
+                "\"bulletin: sample &lt;error&gt;\");",
                 cr.getHtml().jsCode.toString());
     }
     public void test_html_choiceRequestSucceeds() {

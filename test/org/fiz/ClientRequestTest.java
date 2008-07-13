@@ -26,6 +26,58 @@ public class ClientRequestTest extends junit.framework.TestCase {
         servletRequest = (ServletRequestFixture) cr.getServletRequest();
     }
 
+    public void test_addMessageToBulletin_ajax() {
+        cr.setAjax(true);
+
+        // The first call should clear the existing bulletin.
+        cr.addMessageToBulletin("name: @name", new Dataset("name", "<Alice>"),
+                "xyzzy");
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        assertEquals("ajax response after first add",
+                "var actions = [{type: \"eval\", javascript: " +
+                "\"Fiz.clearBulletin(); " +
+                "Fiz.addBulletinMessage(\\\"xyzzy\\\", " +
+                "\\\"name: &lt;Alice&gt;\\\");\"}",
+                out.toString());
+
+        // The second call should add on without clearing the bulletin again.
+        cr.addMessageToBulletin("message #2", null, "class2");
+        assertEquals("ajax response after second add",
+                "var actions = [{type: \"eval\", javascript: " +
+                "\"Fiz.clearBulletin(); " +
+                "Fiz.addBulletinMessage(\\\"xyzzy\\\", " +
+                "\\\"name: &lt;Alice&gt;\\\");\"}, " +
+                "{type: \"eval\", javascript: \"Fiz.addBulletinMessage(" +
+                "\\\"class2\\\", \\\"message #2\\\");\"}",
+                out.toString());
+    }
+    public void test_addMessageToBulletin_html() {
+        cr.addMessageToBulletin("name: @name", new Dataset("name", "<Alice>"),
+                "xyzzy");
+        assertEquals("Javascript code",
+                "Fiz.clearBulletin(); Fiz.addBulletinMessage(\"xyzzy\", " +
+                "\"name: &lt;Alice&gt;\");",
+                cr.getHtml().jsCode.toString());
+    }
+
+    public void test_addErrorsToBulletin() {
+        Config.setDataset("errors", new Dataset("bulletin",
+                "error: @message"));
+        cr.addErrorsToBulletin(
+                new Dataset("message", "first"),
+                new Dataset("message", "second"),
+                new Dataset("message", "third"));
+        assertEquals("Javascript code",
+                "Fiz.clearBulletin(); " +
+                "Fiz.addBulletinMessage(\"bulletinError\", " +
+                "\"error: first\");Fiz.addBulletinMessage(" +
+                "\"bulletinError\", \"error: second\");" +
+                "Fiz.addBulletinMessage(\"bulletinError\", " +
+                "\"error: third\");",
+                cr.getHtml().jsCode.toString());
+    }
+
     public void test_ajaxErrorAction() {
         StringWriter out = ((ServletResponseFixture)
                 cr.getServletResponse()).out;
@@ -253,25 +305,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("set to false", false, cr.isAjax());
     }
 
-    public void test_setBulletinError_ajax() {
-        Config.setDataset("errors", new Dataset("bulletin", "XXX @message"));
-        cr.setAjax(true);
-        cr.setBulletinError(new Dataset("message", "sample <error>"));
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
-        assertEquals("ajax response",
-                "var actions = [{type: \"eval\", javascript: " +
-                "\"Fiz.setBulletin(\\\"XXX sample &lt;error&gt;\\\");\"}",
-                out.toString());
-    }
-    public void test_setBulletinError_html() {
-        Config.setDataset("errors", new Dataset("bulletin", "XXX @message"));
-        cr.setBulletinError(new Dataset("message", "sample error"));
-        assertEquals("Javascript code",
-                "Fiz.setBulletin(\"XXX sample error\");",
-                cr.getHtml().jsCode.toString());
-    }
-
     public void test_showErrorInfo_bulletin() {
         Config.setDataset("errors", new Dataset("bulletin123",
                 "Bulletin: @message (from @name)"));
@@ -280,7 +313,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
         StringWriter out = ((ServletResponseFixture)
                 cr.getServletResponse()).out;
         assertEquals("Javascript code",
-                "Fiz.setBulletin(\"Bulletin: sample &lt;error&gt; " +
+                "Fiz.addBulletinMessage(\"Bulletin: sample &lt;error&gt; " +
                 "(from Alice)\");",
                 cr.getHtml().jsCode.toString());
     }
@@ -292,7 +325,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
         StringWriter out = ((ServletResponseFixture)
                 cr.getServletResponse()).out;
         assertEquals("Javascript code",
-                "Fiz.setBulletin(\"Bulletin: sample &lt;error&gt;\");",
+                "Fiz.addBulletinMessage(\"Bulletin: sample &lt;error&gt;\");",
                 cr.getHtml().jsCode.toString());
     }
     public void test_showErrorInfo_notBulletin() {
@@ -304,6 +337,21 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 cr.getServletResponse()).out;
         assertEquals("generated HTML",
                 "<div class=\"error\">sample &lt;error&gt; (from Alice)</div>",
+                cr.getHtml().getBody().toString());
+    }
+    public void test_showErrorInfo_multipleDatasets() {
+        Config.setDataset("errors", new Dataset("style",
+                "error: @message\n"));
+        cr.showErrorInfo("style", null,
+                new Dataset("message", "error 1"),
+                new Dataset("message", "error 2"),
+                new Dataset("message", "error 3"));
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        assertEquals("generated HTML",
+                "error: error 1\n" +
+                        "error: error 2\n" +
+                        "error: error 3\n",
                 cr.getHtml().getBody().toString());
     }
 

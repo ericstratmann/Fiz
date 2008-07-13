@@ -204,7 +204,7 @@ public class DataRequestTest extends junit.framework.TestCase {
                 DataManagerFixture.getLogs());
     }
 
-    public void test_setError() {
+    public void test_setError_synchronizeProperly() {
         DataRequest request = new DataRequest(new Dataset(
                 "manager", "t2", "id", "40"));
         request.start();
@@ -225,7 +225,40 @@ public class DataRequestTest extends junit.framework.TestCase {
                     delay));
         }
         assertEquals("error dataset", "problem: core dump\n",
-                request.getErrorData().toString());
+                request.getErrorData()[0].toString());
+    }
+    public void test_setError_multipleDatasets() {
+        DataRequest request = new DataRequest(new Dataset(
+                "manager", "t2", "id", "40"));
+        request.start();
+        request.setError(new Dataset("message", "core dump", "code", "ENOENT"),
+                new Dataset("message", "error 33"));
+        assertEquals("count of error datasets", 2,
+                request.getErrorData().length);
+        assertEquals("first error dataset", "code:    ENOENT\n" +
+                "message: core dump\n",
+                request.getErrorData()[0].toString());
+        assertEquals("second error dataset", "message: error 33\n",
+                request.getErrorData()[1].toString());
+    }
+    public void test_setError_withArrayList() {
+        DataRequest request = new DataRequest(new Dataset(
+                "manager", "t2", "id", "40"));
+        request.start();
+        ArrayList<Dataset> errors = new ArrayList<Dataset>();
+        errors.add(new Dataset("message", "core dump", "code", "ENOENT"));
+        errors.add(new Dataset("message", "error 33"));
+        errors.add(new Dataset("message", "error 44"));
+        request.setError(errors);
+        assertEquals("count of error datasets", 3,
+                request.getErrorData().length);
+        assertEquals("first error dataset", "code:    ENOENT\n" +
+                "message: core dump\n",
+                request.getErrorData()[0].toString());
+        assertEquals("second error dataset", "message: error 33\n",
+                request.getErrorData()[1].toString());
+        assertEquals("third error dataset", "message: error 44\n",
+                request.getErrorData()[2].toString());
     }
 
     public void test_getErrorData() {
@@ -238,7 +271,24 @@ public class DataRequestTest extends junit.framework.TestCase {
                 request.getErrorData());
         request.setError(new Dataset("cause", "core dump"));
         assertEquals("error dataset", "cause: core dump\n",
-                request.getErrorData().toString());
+                request.getErrorData()[0].toString());
+    }
+    public void test_getErrorData_multipleErrors() {
+        DataRequest request = new DataRequest(new Dataset(
+                "manager", "t2", "id", "40"));
+        request.start();
+        request.setError(new Dataset("message", "first error"),
+                new Dataset("message", "second error"),
+                new Dataset("message", "third error"));
+        Dataset[] errors = request.getErrorData();
+        assertEquals("number of errors", 3,
+                errors.length);
+        assertEquals("first dataset", "message: first error\n",
+                errors[0].toString());
+        assertEquals("second dataset", "message: second error\n",
+                errors[1].toString());
+        assertEquals("third dataset", "message: third error\n",
+                errors[2].toString());
     }
 
     public void test_getErrorMessage_noError() {
@@ -246,29 +296,21 @@ public class DataRequestTest extends junit.framework.TestCase {
                 "manager", "t2", "id", "40"));
         assertEquals("error message", null, request.getErrorMessage());
     }
-    public void test_getErrorMessage_messagePresent() {
+    public void test_getErrorMessage_oneError() {
         DataRequest request = new DataRequest(new Dataset(
                 "manager", "t2", "id", "40"));
-        request.setError(new Dataset("message", "detail 47",
-                "code", "ENOENT"));
-        assertEquals("error message", "detail 47", request.getErrorMessage());
-    }
-    public void test_getErrorMessage_useCode() {
-        DataRequest request = new DataRequest(new Dataset(
-                "manager", "t2", "id", "40"));
-        request.setError(new Dataset("code", "ENOENT"));
-        assertEquals("error message", "error ENOENT",
-                request.getErrorMessage());
-    }
-    public void test_getErrorMessage_noInfoAvailable() {
-        DataRequest request = new DataRequest(new Dataset(
-                "manager", "t2", "id", "40"));
-        request.setError(new Dataset("reason", "earthquake"));
-        assertEquals("error message", "unknown error",
+        request.setError(new Dataset("message", "detail 47"));
+        assertEquals("error message", "detail 47",
                 request.getErrorMessage());
     }
 
-    public void test_getDetailedErrorMessage_basics() {
+
+    public void test_getDetailedErrorMessage_noError() {
+        DataRequest request = new DataRequest(new Dataset(
+                "manager", "t2", "id", "40"));
+        assertEquals("error message", null, request.getDetailedErrorMessage());
+    }
+    public void test_getDetailedErrorMessage_oneError() {
         DataRequest request = new DataRequest(new Dataset(
                 "manager", "t2", "id", "40"));
         request.setError(new Dataset("message", "access violation",
@@ -281,37 +323,6 @@ public class DataRequestTest extends junit.framework.TestCase {
                 "               third\n" +
                 "  time:        Thursday\n" +
                 "               3:15 P.M.",
-                request.getDetailedErrorMessage());
-    }
-    public void test_getDetailedErrorMessage_noMessage() {
-        DataRequest request = new DataRequest(new Dataset(
-                "manager", "t2", "id", "40"));
-        request.setError(new Dataset("code", "ENOENT", "time",
-                "Thursday\n3:15 P.M."));
-        assertEquals("error message", "error:\n" +
-                "  code:        ENOENT\n" +
-                "  time:        Thursday\n" +
-                "               3:15 P.M.",
-                request.getDetailedErrorMessage());
-    }
-    public void test_getDetailedErrorMessage_messageOnly() {
-        DataRequest request = new DataRequest(new Dataset(
-                "manager", "t2", "id", "40"));
-        request.setError(new Dataset("message", "access violation"));
-        assertEquals("error message", "access violation",
-                request.getDetailedErrorMessage());
-    }
-    public void test_getDetailedErrorMessage_ignoreNestedDataset() {
-        DataRequest request = new DataRequest(new Dataset(
-                "manager", "t2", "id", "40"));
-        request.setError(YamlDataset.newStringInstance(
-                "message: access violation\n" +
-                "nested:\n" +
-                "  value: 48\n" +
-                "  value2: 49\n" +
-                "details: xyzzy\n"));
-        assertEquals("error message", "access violation:\n" +
-                "  details:     xyzzy",
                 request.getDetailedErrorMessage());
     }
 

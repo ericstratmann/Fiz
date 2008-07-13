@@ -83,24 +83,25 @@ public class FormSectionTest extends junit.framework.TestCase {
         }
         catch (FormSection.PostError e) {
             gotException = true;
-        assertEquals("Error dataset", "culprit: age\n" +
+        assertEquals("Error datasets", "culprit: age\n" +
                 "message: age error\n",
-                e.getErrorData().toString());
+                StringUtil.join(e.getErrorData(), "\n"));
         }
         assertEquals("exception happened", true, gotException);
         StringWriter out = ((ServletResponseFixture)
                 cr.getServletResponse()).out;
         assertEquals("response Javascript for Ajax",
-                "var actions = [{type: \"eval\", javascript: \"form_form1." +
-                "elementError(\\\"name\\\", \\\"<span class=\\\\\\\"error" +
-                "\\\\\\\">name error</span>\\\");\"}, {type: \"eval\", " +
-                "javascript: \"Fiz.setBulletin(\\\"bulletin: Some of the " +
+                "var actions = [{type: \"eval\", javascript: " +
+                "\"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
+                "\\\"bulletinError\\\", \\\"bulletin: One or more of the " +
                 "input fields are invalid; see details below.\\\");\"}, " +
-                "{type: \"eval\", javascript: \"form_form1.elementError" +
-                "(\\\"age\\\", \\\"<span class=\\\\\\\"error\\\\\\\">age " +
+                "{type: \"eval\", javascript: " +
+                "\"form_form1.clearElementErrors();\"}, " +
+                "{type: \"eval\", javascript: \"form_form1.elementError(" +
+                "\\\"name\\\", \\\"<span class=\\\\\\\"error\\\\\\\">name " +
                 "error</span>\\\");\"}, {type: \"eval\", javascript: " +
-                "\"Fiz.setBulletin(\\\"bulletin: Some of the input fields " +
-                "are invalid; see details below.\\\");\"}",
+                "\"form_form1.elementError(\\\"age\\\", \\\"<span " +
+                "class=\\\\\\\"error\\\\\\\">age error</span>\\\");\"}",
                 out.toString());
     }
 
@@ -115,8 +116,40 @@ public class FormSectionTest extends junit.framework.TestCase {
         Config.setDataset("errors", new Dataset(
                 "style22", "error for @name: @message",
                 "bulletin", "bulletin: @message"));
-        DataManagerFixture.errorData = new Dataset("message", "<failure>",
-                "culprit", "age");
+        DataManagerFixture.setErrorData(new Dataset("message", "<failure>",
+                "culprit", "age"));
+        Dataset main = cr.getMainDataset();
+        main.set("name", "Alice");
+        main.set("age", "21");
+        form.elementError(cr, new Dataset("message", "<failure>",
+                "culprit", "age"), "id11");
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        assertEquals("response Javascript for Ajax",
+                "var actions = [{type: \"eval\", javascript: " +
+                "\"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
+                "\\\"bulletinError\\\", \\\"bulletin: One or more of the " +
+                "input fields are invalid; see details below.\\\");\"}, " +
+                "{type: \"eval\", javascript: " +
+                "\"form_form1.clearElementErrors();\"}, " +
+                "{type: \"eval\", javascript: \"form_form1.elementError(" +
+                "\\\"id11\\\", \\\"error for Alice: &lt;failure&gt;\\\");\"}",
+                out.toString());
+    }
+    public void test_elementError_notFirstError() {
+        FormSection form = new FormSection(
+                new Dataset("id", "form1", "elementErrorStyle", "style22"),
+                new EntryFormElement("name", "Name:"),
+                new EntryFormElement("age", "Age:"));
+        form.anyElementErrors = true;
+        cr.setAjax(true);
+        // Make sure that the template references data in the main dataset,
+        // to verify that it is available.
+        Config.setDataset("errors", new Dataset(
+                "style22", "error for @name: @message",
+                "bulletin", "bulletin: @message"));
+        DataManagerFixture.setErrorData(new Dataset("message", "<failure>",
+                "culprit", "age"));
         Dataset main = cr.getMainDataset();
         main.set("name", "Alice");
         main.set("age", "21");
@@ -127,9 +160,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
                 "\"form_form1.elementError(\\\"id11\\\", \\\"error for Alice: " +
-                "&lt;failure&gt;\\\");\"}, {type: \"eval\", javascript: " +
-                "\"Fiz.setBulletin(\\\"bulletin: Some of the input fields " +
-                "are invalid; see details below.\\\");\"}",
+                "&lt;failure&gt;\\\");\"}",
                 out.toString());
     }
     public void test_elementError_defaultStyle() {
@@ -137,10 +168,10 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "form1"),
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
+        form.anyElementErrors = true;
         cr.setAjax(true);
         Config.setDataset("errors", new Dataset(
-                "formElement", "default style: @message",
-                "bulletin", ""));
+                "formElement", "default style: @message"));
         form.elementError(cr, new Dataset("message", "<failure>",
                 "culprit", "age"), "id11");
         StringWriter out = ((ServletResponseFixture)
@@ -148,8 +179,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
                 "\"form_form1.elementError(\\\"id11\\\", \\\"default style: " +
-                "&lt;failure&gt;\\\");\"}, {type: \"eval\", " +
-                "javascript: \"Fiz.setBulletin(\\\"\\\");\"}",
+                "&lt;failure&gt;\\\");\"}",
                 out.toString());
     }
 
@@ -274,7 +304,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("returned dataset", "response: 4567\n",
                 result.toString());
     }
-    public void test_post_errorWithCulprit() {
+    public void test_post_errorWithCulprits() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1"),
                 new EntryFormElement("name", "Name:"),
@@ -283,8 +313,9 @@ public class FormSectionTest extends junit.framework.TestCase {
         Config.setDataset("errors", new Dataset(
                 "formElement", "element: @message",
                 "bulletin", "bulletin: @message"));
-        DataManagerFixture.errorData = new Dataset("message", "<failure>",
-                "culprit", "age");
+        DataManagerFixture.setErrorData(new Dataset("message", "<failure>",
+                "culprit", "age"), new Dataset("message", "error33",
+                "culprit", "name"));
         Dataset main = cr.getMainDataset();
         main.set("name", "Alice");
         main.set("age", "21");
@@ -300,10 +331,15 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getServletResponse()).out;
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
-                "\"form_form1.elementError(\\\"age\\\", \\\"element: " +
-                "&lt;failure&gt;\\\");\"}, {type: \"eval\", javascript: " +
-                "\"Fiz.setBulletin(\\\"bulletin: Some of the input fields " +
-                "are invalid; see details below.\\\");\"}",
+                "\"form_form1.clearElementErrors();\"}, {type: \"eval\", " +
+                "javascript: \"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
+                "\\\"bulletinError\\\", \\\"bulletin: One or more of the " +
+                "input fields are invalid; see details below.\\\");\"}, " +
+                "{type: \"eval\", " +
+                "javascript: \"form_form1.elementError(\\\"age\\\", " +
+                "\\\"element: &lt;failure&gt;\\\");\"}, {type: \"eval\", " +
+                "javascript: \"form_form1.elementError(\\\"name\\\", " +
+                "\\\"element: error33\\\");\"}",
                 out.toString());
     }
     public void test_post_errorButCulpritNotFound() {
@@ -312,8 +348,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
         cr.setAjax(true);
-        DataManagerFixture.errorData = new Dataset("message", "<failure>",
-                "culprit", "height");
+        DataManagerFixture.setErrorData(new Dataset("message", "<failure>",
+                "culprit", "height"));
         boolean gotException = false;
         try {
             Dataset result = form.post(cr, "fixture1");
@@ -326,9 +362,10 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getServletResponse()).out;
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
-                "\"Fiz.setBulletin(\\\"bulletin: &lt;failure&gt;\\\");\"}, " +
-                "{type: \"eval\", " +
-                "javascript: \"form_form1.clearElementError();\"}",
+                "\"form_form1.clearElementErrors();\"}, {type: \"eval\", " +
+                "javascript: \"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
+                "\\\"bulletinError\\\", \\\"bulletin: " +
+                "&lt;failure&gt;\\\");\"}",
                 out.toString());
     }
     public void test_post_errorWithNoCulpritValue() {
@@ -337,7 +374,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
         cr.setAjax(true);
-        DataManagerFixture.errorData = new Dataset("message", "<failure>");
+        DataManagerFixture.setErrorData(new Dataset("message", "<failure>"));
         Dataset main = cr.getMainDataset();
         main.set("name", "Alice");
         main.set("age", "21");
@@ -353,13 +390,14 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getServletResponse()).out;
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
-                "\"Fiz.setBulletin(\\\"bulletin: &lt;failure&gt;\\\");\"}, " +
-                "{type: \"eval\", javascript: " +
-                "\"form_form1.clearElementError();\"}",
+                "\"form_form1.clearElementErrors();\"}, {type: \"eval\", " +
+                "javascript: \"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
+                "\\\"bulletinError\\\", \\\"bulletin: " +
+                "&lt;failure&gt;\\\");\"}",
                 out.toString());
     }
 
-    public void test_registeredRequests() {
+    public void test_registerRequests() {
         Config.setDataset("dataRequests", YamlDataset.newStringInstance(
                 "getPerson:\n" +
                 "  manager: fixture\n" +
@@ -376,11 +414,37 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "getPerson, getPerson_id1, getPerson_id2",
                 cr.getRequestNames());
     }
-    public void test_registeredRequests_noRequest() {
+    public void test_registerRequests_noRequest() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1"));
         form.registerRequests(cr);
         assertEquals("registered requests", "", cr.getRequestNames());
+    }
+
+    public void test_clearOldElementErrors() {
+        FormSection form = new FormSection(
+                new Dataset("id", "form1"));
+        form.oldElementErrorsCleared = false;
+        cr.setAjax(true);
+        form.clearOldElementErrors(cr);
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        assertEquals("response Javascript for Ajax",
+                "var actions = [{type: \"eval\", " +
+                "javascript: \"form_form1.clearElementErrors();\"}",
+                out.toString());
+        assertEquals("oldElementErrorsCleared value", true,
+                form.oldElementErrorsCleared);
+    }
+    public void test_clearOldElementErrors_alreadyCleared() {
+        FormSection form = new FormSection(
+                new Dataset("id", "form1"));
+        form.oldElementErrorsCleared = true;
+        cr.setAjax(true);
+        form.clearOldElementErrors(cr);
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        assertEquals("response Javascript for Ajax", "", out.toString());
     }
 
     public void test_getHelpText() {

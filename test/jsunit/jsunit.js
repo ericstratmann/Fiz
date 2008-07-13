@@ -343,6 +343,9 @@ function printSubtree(node, firstPrefix, otherPrefix) {
     var maxLength = 0;
     var names = [];
     for (var name in node) {
+        if (node[name] instanceof Function) {
+            continue;
+        }
         if (name.length > maxLength) {
             maxLength = name.length;
         }
@@ -368,6 +371,14 @@ function printSubtree(node, firstPrefix, otherPrefix) {
                 result += printSubtree(value[j], otherPrefix + "  - ",
                         otherPrefix + "    ");
             }
+        } else if (value instanceof Element) {
+            // For an Element, don't print the detailed contents of the
+            // element (could cause infinite recursion).  Just print
+            // information to identify the element.
+            for (j = name.length; j < maxLength; j++) {
+                result += " ";
+            }
+            result += " " + value.getId() + "\n";
         } else if ((typeof value) == "object") {
                 result += "\n";
                 result += printSubtree(value, otherPrefix + "    ",

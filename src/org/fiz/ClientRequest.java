@@ -77,6 +77,11 @@ public class ClientRequest {
     // generated in response to this request.
     protected boolean anyAjaxActions = false;
 
+    // The following variable indicates whether any messages have been added
+    // to the bulletin during this request (it's used to clear the bulletin
+    // before the first message is added).
+    protected boolean anyBulletinMessages = false;
+
     // The following variable is used for log4j-based logging.
     protected static Logger logger = Logger.getLogger("org.fiz.ClientRequest");
 
@@ -100,6 +105,59 @@ public class ClientRequest {
         this.servletRequest = servletRequest;
         this.servletResponse = servletResponse;
         this.servlet = servlet;
+    }
+
+    /**
+     * Expands a template to generate HTML and adds it to the bulletin
+     * as a new message.  If this is the first message added to the bulletin
+     * for this request, any previous bulletin contents are cleared.  This
+     * method can be invoked for either Ajax requests or normal requests
+     * and does the right thing in either case.
+     * @param template             Template to expand to generate the HTML
+     *                             for the bulletin message.
+     * @param data                 Dataset to use when expanding
+     *                             {@code template}.
+     * @param divClass             The HTML will be added to the bulletin as
+     *                             the contents of a new div element; this
+     *                             parameter specifies the class of that
+     *                             element (typically this selects CSS
+     *                             that determines how the message is
+     *                             displayed).
+     */
+    public void addMessageToBulletin(String template, Dataset data,
+            String divClass) {
+        String html = Template.expand(template, data);
+        StringBuilder javascript = new StringBuilder();
+        if (!anyBulletinMessages) {
+            javascript.append("Fiz.clearBulletin(); ");
+            anyBulletinMessages = true;
+        }
+        Template.expand("Fiz.addBulletinMessage(\"@1\", \"@2\");",
+                javascript, Template.SpecialChars.JAVASCRIPT, divClass, html);
+        if (ajaxRequest) {
+            ajaxEvalAction(javascript.toString());
+        } else {
+            getHtml().includeJavascript(javascript.toString());
+        }
+    }
+
+    /**
+     * Generate bulletin messages for one or more errors, each described
+     * by a dataset.  Typically the errors are the result of a DataRequest.
+     * A separate bulletin message is generated for each dataset in
+     * {@code errors), using the {@code bulletin} template from the
+     * {@code errors} configuration dataset to generate HTML from the
+     * dataset.  The messages will appear in divs with class "bulletinError".
+     * @param errors               One or more Datasets, each containing
+     *                             information about a particular error;
+     *                             typically this is the return value from
+     *                             DataRequest.getErrors().
+     */
+    public void addErrorsToBulletin(Dataset... errors) {
+        for (Dataset error : errors) {
+            addMessageToBulletin(Config.get("errors", "bulletin"), error,
+                    "bulletinError");
+        }
     }
 
     /**
@@ -420,29 +478,6 @@ public class ClientRequest {
     }
 
     /**
-     * Given a dataset containing information about an error, display
-     * information about the error in the bulletin, using the {@code bulletin}
-     * template from the {@code errors} configuration dataset to generate
-     * HTML from the dataset.  This method can be invoked for either
-     * Ajax requests or normal requests and does the right thing in either
-     * case.
-     * @param errorData            Contains information about an error;
-     *                             must include at least a {@code message}
-     *                             value.
-     */
-    public void setBulletinError(Dataset errorData) {
-        String template = Config.get("errors", "bulletin");
-        String html = Template.expand(template, errorData);
-        if (ajaxRequest) {
-            ajaxEvalAction("Fiz.setBulletin(\"@html\");",
-                    new Dataset("html", html));
-        } else {
-            getHtml().includeJavascript("Fiz.setBulletin(\"@html\");",
-                    new Dataset("html", html));
-        }
-    }
-
-    /**
      * This method is invoked to display appropriate information after an
      * error has occurred.  {@code style} and {@code defaultStyle} are used
      * to select a template from the {@code errors} dataset, which is
@@ -455,23 +490,26 @@ public class ClientRequest {
      *                             HTML to describe the error.  May be null.
      * @param defaultStyle         If {@code style} is null, then this is used
      *                             as the name of the template.
-     * @param errorData            Data describing the error; must contain
+     * @param errorDatasets        One or more datasets, each describing one
+     *                             error; each dataset should contain
      *                             at least a {@code message} value.
      */
     public void showErrorInfo(String style, String defaultStyle,
-            Dataset errorData) {
-        CompoundDataset compound = new CompoundDataset(errorData,
-                getMainDataset());
-        if (style == null) {
-            style = defaultStyle;
-        }
-        if (style.startsWith("bulletin")) {
-            getHtml().includeJavascript("Fiz.setBulletin(\"@html\");",
-                    new Dataset("html", Template.expand(Config.get("errors",
-                    style), compound)));
-        } else {
-            Template.expand(Config.get("errors", style), compound,
-                    getHtml().getBody());
+            Dataset... errorDatasets) {
+        for (Dataset errorData: errorDatasets) {
+            CompoundDataset compound = new CompoundDataset(errorData,
+                    getMainDataset());
+            if (style == null) {
+                style = defaultStyle;
+            }
+            if (style.startsWith("bulletin")) {
+                getHtml().includeJavascript("Fiz.addBulletinMessage(\"@html\");",
+                        new Dataset("html", Template.expand(Config.get("errors",
+                        style), compound)));
+            } else {
+                Template.expand(Config.get("errors", style), compound,
+                        getHtml().getBody());
+            }
         }
     }
 

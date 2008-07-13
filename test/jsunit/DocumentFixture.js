@@ -14,7 +14,7 @@ function Document() {
     this.ids = new Object();
 
     // The following Array holds new Elements created by calling the
-    //createElement function.
+    // createElement function.
     this.createdElements = [];
 
     // Create a few sample Elements.

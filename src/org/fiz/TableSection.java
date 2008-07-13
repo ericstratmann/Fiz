@@ -138,10 +138,10 @@ public class TableSection implements Section {
             out.append("  <tr class=\"error\">\n    <td colspan=\"");
             out.append(columns.length);
             out.append("\">");
-            Dataset errorData = dataRequest.getErrorData();
-            errorData.set("sectionType", "table");
+            Dataset[] errors = dataRequest.getErrorData();
+            errors[0].set("sectionType", "table");
             cr.showErrorInfo(properties.check("errorStyle"),
-                    "tableSection", errorData);
+                    "tableSection", errors[0]);
             out.append("</td>\n  </tr>\n");
         } else {
             ArrayList<Dataset> rows = response.getChildren("data");

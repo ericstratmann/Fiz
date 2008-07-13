@@ -27,6 +27,84 @@ public class StringUtilTest extends junit.framework.TestCase {
                 StringUtil.addExtension("C:/code/foo.xx/bar", ".yml"));
     }
 
+    public void test_detailedErrorMessage_basics() {
+        String message = StringUtil.detailedErrorMessage(
+                new Dataset("message", "access violation",
+                "details", "firstline\nsecond line\nthird",
+                "code", "ENOENT", "time", "Thursday\n3:15 P.M."));
+        assertEquals("error message", "access violation:\n" +
+                "  code:        ENOENT\n" +
+                "  details:     firstline\n" +
+                "               second line\n" +
+                "               third\n" +
+                "  time:        Thursday\n" +
+                "               3:15 P.M.",
+                message);
+    }
+    public void test_detailedErrorMessage_multipleErrors() {
+        String message = StringUtil.detailedErrorMessage(
+                new Dataset("message", "access violation"),
+                new Dataset("details", "don't ask",
+                "time", "Thursday\n3:15 P.M."),
+                new Dataset("message", "disk full"));
+        assertEquals("error message", "access violation\n" +
+                "error:\n" +
+                "  details:     don't ask\n" +
+                "  time:        Thursday\n" +
+                "               3:15 P.M.\n" +
+                "disk full",
+                message);
+    }
+    public void test_detailedErrorMessage_noMessage() {
+        String message = StringUtil.detailedErrorMessage(
+                new Dataset("code", "ENOENT", "time",
+                "Thursday\n3:15 P.M."));
+        assertEquals("error message", "error:\n" +
+                "  code:        ENOENT\n" +
+                "  time:        Thursday\n" +
+                "               3:15 P.M.",
+                message);
+    }
+    public void test_detailedErrorMessage_messageOnly() {
+        String message = StringUtil.detailedErrorMessage(
+                new Dataset("message", "access violation"));
+        assertEquals("error message", "access violation",
+                message);
+    }
+    public void test_detailedErrorMessage_ignoreNestedDataset() {
+        String message = StringUtil.detailedErrorMessage(
+                YamlDataset.newStringInstance(
+                "message: access violation\n" +
+                "nested:\n" +
+                "  value: 48\n" +
+                "  value2: 49\n" +
+                "details: xyzzy\n"));
+        assertEquals("error message", "access violation:\n" +
+                "  details:     xyzzy",
+                message);
+    }
+
+    public void test_errorMessage_oneErrorWithMessage() {
+        String message = StringUtil.errorMessage(
+                new Dataset("message", "detail 47", "code", "ENOENT"));
+        assertEquals("error message", "detail 47", message);
+    }
+    public void test_errorMessage_oneErrorNoMessage() {
+        String message = StringUtil.errorMessage(
+                new Dataset("code", "earthquake"));
+        assertEquals("error message", "error earthquake",
+                message);
+    }
+    public void test_errorMessage_multipleErrors() {
+        String message = StringUtil.errorMessage(
+                new Dataset("message", "detail 47",
+                "code", "ENOENT"), new Dataset("code", "ENOENT"),
+                new Dataset("reason", "earthquake"));
+        assertEquals("error message", "detail 47\n" +
+                "error ENOENT\n" +
+                "unknown error", message);
+    }
+
     public void test_excerpt_String() {
         assertEquals("short value", "abcdef", StringUtil.excerpt("abcdef", 6));
         assertEquals("long value", "abc...", StringUtil.excerpt("abcdefg", 6));

@@ -89,9 +89,9 @@ public class DataRequest {
     // the request has not completed or it returned an error.
     protected Dataset response = null;
 
-    // If setError has been called, this holds the information about the
-    // error.  Null means setError has not been called.
-    protected Dataset error = null;
+    // If setError has been called, this holds information about all of
+    // the errors.  Null means setError has not been called.
+    protected Dataset[] errorDatasets = null;
 
     // Indicates the state of the request:
     protected boolean started = false;
@@ -209,7 +209,9 @@ public class DataRequest {
 
     /**
      * This method is invoked by data managers to indicate that a request
-     * has been completed successfully.
+     * has been completed successfully.  Either this method or
+     * {@code setError} should be invoked by the data manager exactly once
+     * for each request.
      * @param response             Result information provided by the data
      *                             manager.
      */
@@ -244,13 +246,15 @@ public class DataRequest {
     }
 
     /**
-     * This method is invoked by data managers to indicate that an error
-     * occurred while processing the request.  It also marks the request as
-     * complete and supplies a dataset containing information about the
-     * error. The following values in the dataset have well-defined
-     * interpretation and usage, so they should be included whenever
-     * possible.  DataManagers may also provide additional values of
-     * their own choosing.
+     * This method is invoked by data managers to indicate that one or more
+     * errors occurred while processing the request.  It also marks the
+     * request as complete and supplies a dataset containing information
+     * about each error.  This method should be invoked at most once for
+     * each request and should not be invoked if {@code setComplete} has
+     * been invoked.  The following values in the dataset(s) have
+     * well-defined interpretation and usage, so they should be included
+     * whenever appropriate.  DataManagers may also provide additional
+     * values of their own choosing.
      * code -              A succinct name for the error, typically useful
      *                     for debugging but not particularly meaningful
      *                     to an ordinary user.
@@ -269,125 +273,79 @@ public class DataRequest {
      *                     of the invalid value.  If the invalid value was
      *                     nested in the request dataset, this will be a path
      *                     with elements separated by dots.
-     * @param errorInfo            Dataset containing information about the
-     *                             error.
+     * @param errorInfo            One or more datasets, each containing
+     *                             information about one error that occurred
+     *                             while processing the request.
      */
-    public synchronized void setError(Dataset errorInfo) {
-        error = errorInfo;
+    public synchronized void setError(Dataset... errorInfo) {
+        errorDatasets = errorInfo;
         completed = true;
         notifyAll();
     }
 
     /**
-     * Returns detailed information about the error that occurred during
-     * this request, if there was one.
-     * @return                     A dataset whose elements describe the
-     *                             error.  If the request hasn't completed,
-     *                             or if it completed successfully, null
-     *                             is returned.
+     * Marks the request as having failed, and records detailed information
+     * about the error(s) that occurred.
+     * @param errorInfo            One or more datasets, each containing
+     *                             information about one error that occurred
+     *                             while processing the request.
      */
-    public synchronized Dataset getErrorData() {
-        return error;
+    public synchronized void setError(ArrayList<Dataset> errorInfo) {
+        Dataset[] datasetArray;
+        int length = errorInfo.size();
+        datasetArray = new Dataset[length];
+        for (int i = 0; i < length; i++) {
+            datasetArray[i] = errorInfo.get(i);
+        }
+        setError(datasetArray);
     }
 
     /**
-     * Returns a human-readable message describing the error that occurred in
-     * this request, if there was one.
+     * Returns detailed information about the error(s) that occurred during
+     * this request, if there were any.
+     * @return                     An array of datasets; each dataset
+     *                             contains elements describing one error.
+     *                             If the request hasn't completed,
+     *                             or if it completed successfully, null
+     *                             is returned.
+     */
+    public synchronized Dataset[] getErrorData() {
+        return errorDatasets;
+    }
+
+    /**
+     * Returns a human-readable message describing the errors that occurred in
+     * this request, if there were any.
      * @return                     If the request hasn't completed, or if it
      *                             completed successfully, then null is
      *                             returned.  Otherwise the return value is a
-     *                             description of the problem, intended for
+     *                             description of the problem(s), intended for
      *                             presentation to users (as opposed to
      *                             system maintainers).
      */
     public String getErrorMessage() {
-        if (error == null) {
+        if (errorDatasets == null) {
             return null;
         }
-
-        // Ideally, there is a "message" value in the error; if so, it is
-        // just what we're looking for, so return it.
-        String message = error.check("message");
-        if (message != null) {
-            return message;
-        }
-
-        // Next choice is a "code" value in the error; this is pretty terse,
-        // but better than nothing.
-        message = error.check("code");
-        if (message != null) {
-            return "error " + message;
-        }
-
-        // No reasonable information is available.
-        return "unknown error";
+        return StringUtil.errorMessage(errorDatasets);
     }
 
     /**
      * Returns a message containing all of the information available
-     * for this error; intended for logs, or for examination by developers
-     * to track down problems.
+     * for the error(s) that occurred in this request; intended for logs
+     * or for examination by developers to track down problems.
      * @return                     If the request hasn't completed, or if it
      *                             completed successfully, then null is
      *                             returned.  Otherwise the return value is a
      *                             string containing all of the information
-     *                             available for the error.
+     *                             available for the error(s) that have been
+     *                             recorded for the request.
      */
     public String getDetailedErrorMessage() {
-        if (error == null) {
+        if (errorDatasets == null) {
             return null;
         }
-
-        // First compute a header line containing the message, if there
-        // is one.
-        StringBuilder result = new StringBuilder();
-        String message = error.check("message");
-        if (message != null) {
-            result.append(message);
-        } else {
-            result.append("error");
-        }
-
-        // Add all of the values in the error dataset to the message,
-        // with "code" and "details" at the top.  If any of the values
-        // include newline characters, add indentation to the additional
-        // lines.
-        String prefix = ":\n  ";
-        String prefix2 = "\n  ";
-        String indent = "\n               ";
-        String code = error.check("code");
-        if (code != null) {
-            result.append(prefix);
-            result.append(String.format("%-12s %s", "code:",
-                    code.replace("\n", indent)));
-            prefix = prefix2;
-        }
-        String details = error.check("details");
-        if (details != null) {
-            result.append(prefix);
-            result.append(String.format("%-12s %s", "details:",
-                    details.replace("\n", indent)));
-            prefix = prefix2;
-        }
-        ArrayList<String> names = new ArrayList<String>();
-        names.addAll(error.keySet());
-        Collections.sort(names);
-        for (Object nameObject : names) {
-            String name = (String) nameObject;
-            if (name.equals("code") || name.equals("details")
-                    || name.equals("message")) {
-                continue;
-            }
-            String value = error.check(name);
-            if (value == null) {
-                continue;
-            }
-            result.append(prefix);
-            result.append(String.format("%-12s %s", (name + ":"),
-                    value.replace("\n", indent)));
-            prefix = prefix2;
-        }
-        return result.toString();
+        return StringUtil.detailedErrorMessage(errorDatasets);
     }
 
     /**

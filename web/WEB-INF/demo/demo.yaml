@@ -14,9 +14,11 @@ error1:
       characters: <&>!""
 
 error2:
-  message: >
+  - message: >
       An error occurred that isn't associated with a particular
       form element, so this message should appear in the bulletin.
+  - message: User doesn't exist
+    culprit: name
 
 error3:
   culprit: fruit2

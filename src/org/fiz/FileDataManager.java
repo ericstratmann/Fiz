@@ -36,7 +36,9 @@ import java.util.*;
  *                       elements in the top-level dataset but retains the
  *                       dataset and file.
  *             error:    Generates an error, using the target dataset
- *                       as the error information to return.
+ *                       as the error information to return.  If the target
+ *                       dataset is a list of datasets, then all of them
+ *                       are returned as errors.
  *   file:     (required) Name of the file containing the desired dataset.
  *             If the file already exists then it must contain a
  *             dataset in a supported format.  The file name is looked up
@@ -163,15 +165,25 @@ public class FileDataManager extends DataManager {
 
     /**
      * This method implements the "error" request.  Upon return the request
-     * has been completed with either a response or an error.
+     * has been completed with either an error.
      * @param request              The request being serviced.
      * @param parameters           The input dataset for the request.
      */
     protected void errorOperation(DataRequest request, Dataset parameters) {
         Dataset d = loadDataset(parameters.get("file"));
-        Dataset target = findNestedDataset(d, parameters.check("dataset"),
-                request);
-        request.setError(target);
+
+        String path = parameters.check("dataset");
+        if ((path == null) || (path.length() == 0)) {
+            request.setError(d);
+            return;
+        }
+        ArrayList<Dataset> errors = d.getChildrenPath(path);
+        if (errors.size() == 0) {
+            request.setError (new Dataset("message", "nested dataset \"" +
+                    path + "\" doesn't exist", "culprit", "dataset"));
+            throw new RequestAbortedError();
+        }
+        request.setError(errors);
     }
 
     /**

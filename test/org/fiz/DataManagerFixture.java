@@ -29,7 +29,7 @@ public class DataManagerFixture extends DataManager {
     // If the following variable is non-null, then an error response will
     // be generated for the next request that is started, with this
     // variable providing the error data.
-    public static Dataset errorData = null;
+    public static Dataset[] errorDatasets = null;
 
     public Dataset constructorArgs = null;
     public boolean destroyed = false;
@@ -47,9 +47,9 @@ public class DataManagerFixture extends DataManager {
             if (responseData != null) {
                 request.setComplete(responseData);
                 responseData = null;
-            } else if (errorData != null) {
-                request.setError(errorData);
-                errorData = null;
+            } else if (errorDatasets != null) {
+                request.setError(errorDatasets);
+                errorDatasets = null;
             }
         }
     }
@@ -95,6 +95,17 @@ public class DataManagerFixture extends DataManager {
             return id;
         }
         return "??";
+    }
+
+    /**
+     * Arrange for the next request to return an error, with the argument
+     * providing information about the error(s) to return.
+     * @param datasets             One or more datasets, which will be
+     *                             returned as an error response to the
+     *                             next request made by this data manager.
+     */
+    public static void setErrorData(Dataset... datasets) {
+        errorDatasets = datasets;
     }
 
     // This method is invoked by tests to retrieve all of the accumulated

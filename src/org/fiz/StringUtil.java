@@ -1,6 +1,6 @@
 package org.fiz;
 
-import java.util.Enumeration;
+import java.util.*;
 
 /**
  * The StringUtil class defines a collection of generally-useful methods
@@ -46,6 +46,118 @@ public final class StringUtil {
             return path;
         }
         return path + extension;
+    }
+
+    /**
+     * Returns a message containing all of the information available
+     * for one were errors; intended for logs or for examination by
+     * developers to track down problems.  Use {@code errorMessage}
+     * instead of this method if you want a message suitable for presentation
+     * to a user.
+     * @param errors               One or more datasets, each containing
+     *                             information about an error; this method
+     *                             looks for standard values in the datasets
+     *                             such as {@code message} and {@code code}.
+     * @return                     If the request hasn't completed, or if it
+     *                             completed successfully, then null is
+     *                             returned.  Otherwise the return value is a
+     *                             string containing all of the information
+     *                             available for the error(s) that have been
+     *                             recorded for the request.
+     */
+    public static String detailedErrorMessage(Dataset... errors) {
+        StringBuilder result = new StringBuilder();
+        for (Dataset error: errors) {
+            // Use a newline to separate information for different errors.
+            if (result.length() != 0) {
+                result.append('\n');
+            }
+
+            // Generate a header line containing the message, if there is one.
+            String message = error.check("message");
+            if (message != null) {
+                result.append(message);
+            } else {
+                result.append("error");
+            }
+
+            // Add all of the other values in the error dataset to the
+            // message. If any of the values include newline characters,
+            // add indentation to the additional lines.
+            String prefix = ":\n  ";
+            String prefix2 = "\n  ";
+            String indent = "\n               ";
+            ArrayList<String> names = new ArrayList<String>();
+            names.addAll(error.keySet());
+            Collections.sort(names);
+            for (Object nameObject : names) {
+                String name = (String) nameObject;
+                if (name.equals("message")) {
+                    continue;
+                }
+                String value = error.check(name);
+                if (value == null) {
+                    continue;
+                }
+                result.append(prefix);
+                result.append(String.format("%-12s %s", (name + ":"),
+                        value.replace("\n", indent)));
+                prefix = prefix2;
+            }
+        }
+        return result.toString();
+    }
+
+    /**
+     * Returns a human-readable message describing one or more errors,
+     * each described by a dataset.
+     * @param errors               One or more datasets, each containing
+     *                             information about an error; this method
+     *                             looks for standard values in the datasets
+     *                             such as {@code message} and {@code code}.
+     * @return                     If the request hasn't completed, or if it
+     *                             completed successfully, then null is
+     *                             returned.  Otherwise the return value is a
+     *                             description of the problem(s), intended for
+     *                             presentation to users (as opposed to
+     *                             system maintainers).
+     */
+    public static String errorMessage(Dataset... errors) {
+        // Handle the simple case of a single error with a "message" value.
+        if (errors.length == 1) {
+            String message = errors[0].check("message");
+            if (message != null) {
+                return message;
+            }
+        }
+
+        // Generate a message with one line for each error.
+        StringBuilder message = new StringBuilder();
+        for (Dataset error: errors) {
+            // Use newline as a separator between messages.
+            if (message.length() != 0) {
+                message.append('\n');
+            }
+
+            // Ideally, there is a "message" value in the error; if so, it is
+            // just what we're looking for.
+            String value = error.check("message");
+            if (value != null) {
+                message.append(value);
+            } else {
+                // Next choice is a "code" value in the error; this is pretty terse,
+                // but better than nothing.
+                value = error.check("code");
+                if (value != null) {
+                    message.append("error ");
+                    message.append(value);
+                } else {
+                    // No reasonable information is available.
+                    message.append("unknown error");
+                }
+            }
+        }
+        return message.toString();
     }
 
     /**

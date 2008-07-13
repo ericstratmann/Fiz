@@ -145,7 +145,7 @@ public class SelectFormElement extends FormElement {
             if (responseData == null) {
                 // The request to get the choices failed; display an error
                 // message and use an empty list of choices.
-                cr.setBulletinError(choiceRequest.getErrorData());
+                cr.addErrorsToBulletin(choiceRequest.getErrorData());
                 choices = new ArrayList<Dataset>();
             } else {
                 choices = responseData.getChildren(choiceName);

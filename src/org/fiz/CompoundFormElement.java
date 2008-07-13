@@ -1,7 +1,5 @@
 package org.fiz;
 
-import java.util.ArrayList;
-
 /**
  * The CompoundFormElement class creates a form element consisting of
  * any number of other form elements.  Furthermore, the component form
@@ -103,7 +101,7 @@ public class CompoundFormElement extends FormElement {
             if (responseData == null) {
                 // The request to get the choices failed; display an error
                 // message and carry on without the additional data.
-                cr.setBulletinError(request.getErrorData());
+                cr.addErrorsToBulletin(request.getErrorData());
             } else {
                 data = new CompoundDataset(responseData, data);
             }

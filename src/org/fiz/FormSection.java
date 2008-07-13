@@ -65,10 +65,11 @@ public class FormSection implements Section {
         /**
          * Construct a PostError with the error data returned by the failed
          * DataRequest.
-         * @param errorData        Dataset describing the error.
+         * @param errorDatasets    One or more data sets, each describing
+         *                         an error.
          */
-        public PostError(Dataset errorData) {
-            super(errorData);
+        public PostError(Dataset... errorDatasets) {
+            super(errorDatasets);
         }
     }
 
@@ -114,6 +115,17 @@ public class FormSection implements Section {
             "<div id=\"@1.diagnostic\" class=\"diagnostic\" " +
             "style=\"display:none\"></div>";
 
+    // The following variable is used to identify the first error in
+    // form data for a given post.  False means that the current call
+    // to the {@code post} method has not yet invoked the {@code elementError}
+    // method.
+    protected boolean anyElementErrors;
+
+    // The following variable is used to make sure old form element
+    // errors get cleared no more than once during each indication of the
+    // {@code post} method.
+    protected boolean oldElementErrorsCleared;
+
     /**
      * Construct a FormSection.
      * @param properties           Contains configuration information
@@ -129,8 +141,7 @@ public class FormSection implements Section {
             buttonStyle = "standard";
         }
         helpConfig = Config.getDataset("help");
-        nestedHelp = (Dataset) helpConfig.lookup(properties.get("id"),
-                Dataset.DesiredType.DATASET, Dataset.Quantity.FIRST_ONLY);
+        nestedHelp = helpConfig.checkChild(properties.get("id"));
     }
 
     /**
@@ -202,15 +213,23 @@ public class FormSection implements Section {
         Template.expand(Config.get("errors", templateName),
                 new CompoundDataset(errorData, cr.getMainDataset()), html);
 
+        // Display a bulletin message indicating that there are problems,
+        // but only generate one message regardless of how many errors have
+        // occurred during this post.
+        if (!anyElementErrors) {
+            cr.addErrorsToBulletin(new Dataset("message",
+                    "One or more of the input fields are invalid; " +
+                    "see details below."));
+            anyElementErrors = true;
+            clearOldElementErrors(cr);
+        }
+
         // Invoke a Javascript method, passing it information about
         // the form element plus the HTML.
         cr.ajaxEvalAction("form_@formId.elementError(" +
                 "\"@elementId\", \"@html\");",
                 new Dataset("formId", properties.get("id"),
                 "elementId", id, "html", html.toString()));
-        cr.setBulletinError(new Dataset("message",
-                "Some of the input fields are invalid; " +
-                "see details below."));
     }
 
     /**
@@ -301,6 +320,8 @@ public class FormSection implements Section {
             throws PostError {
         // Collect the form's data, issue a request to the data manager,
         // and wait for it to complete.
+        anyElementErrors = false;
+        oldElementErrorsCleared = false;
         DataRequest request = new DataRequest(requestName,
                 cr.getMainDataset());
         request.getRequestData().createChild("data", collectFormData(cr));
@@ -309,32 +330,31 @@ public class FormSection implements Section {
             return responseData;
         }
 
-        // An error occurred while processing the request.  If the error
-        // can be attributed to a particular form element, display an error
-        // message next to the culprit.  Otherwise display the error message
-        // in the bulletin.
-        Dataset errorData = request.getErrorData();
-        String culprit = errorData.check("culprit");
-        StringBuilder html = new StringBuilder(100);
-        boolean foundCulprit = false;
-        if (culprit != null) {
-            for (FormElement element : elements) {
-                if (element.responsibleFor(culprit)) {
-                    elementError(cr, errorData, element.getId());
-                    foundCulprit = true;
-                    break;
+        // One or more errors occurred while processing the request.  If an
+        // error can be attributed to a particular form element, display an
+        // error message next to the culprit.  Otherwise display the error
+        // message in the bulletin.  If there are any element-specific
+        // messages currently displayed because of a previous post,
+        // undisplay them.
+        Dataset[] errors = request.getErrorData();
+        clearOldElementErrors(cr);
+        for (Dataset errorData : errors) {
+            String culprit = errorData.check("culprit");
+            boolean foundCulprit = false;
+            if (culprit != null) {
+                for (FormElement element : elements) {
+                    if (element.responsibleFor(culprit)) {
+                        elementError(cr, errorData, element.getId());
+                        foundCulprit = true;
+                        break;
+                    }
                 }
             }
+            if (!foundCulprit) {
+                cr.addErrorsToBulletin(errorData);
+            }
         }
-        if (!foundCulprit) {
-            cr.setBulletinError(errorData);
-
-            // If there are any element-specific messages currently displayed
-            // because of a previous post, undisplay them.
-            cr.ajaxEvalAction("form_@formId.clearElementError();",
-                    new Dataset("formId", properties.get("id")));
-        }
-        throw new PostError(errorData);
+        throw new PostError(errors);
     }
 
     /**
@@ -352,6 +372,22 @@ public class FormSection implements Section {
         }
         for (FormElement element : elements) {
             element.registerRequests(cr, query);
+        }
+    }
+
+    /**
+     * This method generates an AJAX action to clear any old error messages
+     * attached to form elements from previous failed post operations.
+     * This method makes sure that we only clear the messages once per
+     * called to the {@code post} method.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    protected void clearOldElementErrors(ClientRequest cr) {
+        if (!oldElementErrorsCleared) {
+            cr.ajaxEvalAction(Template.expand("form_@id.clearElementErrors();",
+                    properties, Template.SpecialChars.JAVASCRIPT));
+            oldElementErrorsCleared = true;
         }
     }
 

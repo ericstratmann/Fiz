@@ -74,34 +74,39 @@ test("FormSection_elementError", function() {
             "div1.innerHTML after first call");
     assertEqual("", div1.style.display,
             "div1.style.display after first call");
-    assertEqual("div1.diagnostic", form.visibleDiagnostic.id,
-            "form.visibleDiagnostic after first call");
+    assertEqual("1", form.visibleDiagnostics.length,
+            "form.visibleDiagnostics length");
+    assertEqual("div1.diagnostic", form.visibleDiagnostics[0].id,
+            "form.visibleDiagnostics[0] after first call");
 
     // Make a second call on a different element, and make sure that
-    // the first element gets undisplayed.
+    // visibleDiagnostics records both elements.
     form.elementError("div2", "error2");
     assertEqual("error1",div1.innerHTML,
             "div1.innerHTML after second call");
-    assertEqual("none", div1.style.display,
-            "div1.style.display after second call");
-    assertEqual("error2", div2.innerHTML,
-            "div2.innerHTML  after second call");
-    assertEqual("", div2.style.display,
-            "div2.style.display after second call");
-    assertEqual("div2.diagnostic", form.visibleDiagnostic.id,
-            "form.visibleDiagnostic after second call");
+    assertEqual("2", form.visibleDiagnostics.length,
+            "form.visibleDiagnostics length");
+    assertEqual("div1.diagnostic", form.visibleDiagnostics[0].id,
+            "form.visibleDiagnostics[0] after first call");
+    assertEqual("div2.diagnostic", form.visibleDiagnostics[1].id,
+            "form.visibleDiagnostics[1] after first call");
 });
 
-test("FormSection_clearElementError", function() {
+test("FormSection_clearElementErrors", function() {
     document = new Document();
     var div1 = document.addElementWithId("div1.diagnostic",
         {style: {display: "none"}, innerHTML: "xxx"});
+    var div2 = document.addElementWithId("div2.diagnostic",
+            {style: {display: "none"}, innerHTML: "yyy"});
     var form = new Fiz.FormSection("form16", "/a/b/c");
 
     form.elementError("div1", "error1");
-    form.clearElementError();
+    form.elementError("div2", "error2");
+    form.clearElementErrors();
     assertEqual("none", div1.style.display,
             "div1.style.display after call");
-    assertEqual(null, form.visibleDiagnostic,
-            "form.visibleDiagnostic after call");
+    assertEqual("none", div2.style.display,
+            "div2.style.display after call");
+    assertEqual("0", form.visibleDiagnostics.length,
+            "form.visibleDiagnostics.length after call");
 });

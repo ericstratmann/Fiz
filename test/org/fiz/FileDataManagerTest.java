@@ -154,11 +154,11 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "    message: 7.9 earthquake\n" +
                 "first:  abc\n" +
                 "second: def\n" +
-                "third:  ghi\n", request1.getErrorData().toString());
+                "third:  ghi\n", request1.getErrorData()[0].toString());
         assertEquals("response for second request",
                 "culprit: San Andreas\n" +
                 "message: 7.9 earthquake\n",
-                request2.getErrorData().toString());
+                request2.getErrorData()[0].toString());
     }
     public void test_startRequests_unknownOperation() {
         DataRequest request = new DataRequest(new Dataset("manager", "test",
@@ -171,7 +171,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "message: \"unknown request \\\"bogus\\\" for " +
                 "FileDataManager; must be create, read, update, " +
                 "delete, or error\"\n",
-                request.getErrorData().toString());
+                request.getErrorData()[0].toString());
     }
     public void test_startRequests_missingParameter_operationNonNull() {
         DataRequest request = new DataRequest(new Dataset("manager", "test",
@@ -183,7 +183,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         assertEquals("error information",
                 "message: FileDataManager \"read\" request didn't " +
                 "contain required parameter \"file\"\n",
-                request.getErrorData().toString());
+                request.getErrorData()[0].toString());
     }
     public void test_startRequests_missingParameter_operationNull() {
         DataRequest request = new DataRequest(new Dataset("manager", "test"));
@@ -193,7 +193,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         assertEquals("response", null, request.getResponseData());
         assertEquals("error information",
                 "message: FileDataManager request didn't contain required " +
-                "parameter \"request\"\n", request.getErrorData().toString());
+                "parameter \"request\"\n", request.getErrorData()[0].toString());
     }
     public void test_startRequests_unknownError() {
         DataRequest request = new DataRequest(new Dataset("manager", "test",
@@ -206,7 +206,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "internal error in FileDataManager \"read\" request: " +
                 "couldn't find dataset file \"test\" in path (\"bogus\", " +
                 "\"_testData_\")",
-                request.getErrorData().get("message"));
+                request.getErrorData()[0].get("message"));
     }
 
     public void test_createOperation_modifyRoot() throws IOException {
@@ -250,12 +250,13 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 Util.readFile("_testData_/test.yml").toString());
     }
 
-    public void test_errorOperation() {
+    public void test_errorOperation_basics() {
         TestUtil.writeFile("_testData_/test.yml",
                 "first: abc\n" +
                 "error1:\n" +
-                "  message: Name not in database\n" +
-                "  culprit: name\n" +
+                "  - message: Name not in database\n" +
+                "    culprit: name\n" +
+                "  - message: error33\n" +
                 "second: def\n" +
                 "third: ghi\n");
         DataRequest request = new DataRequest(new Dataset("manager", "test"));
@@ -263,7 +264,43 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "dataset", "error1"));
         assertEquals("response", "culprit: name\n" +
                 "message: Name not in database\n",
-                request.getErrorData().toString());
+                request.getErrorData()[0].toString());
+        assertEquals("response", "message: error33\n",
+                request.getErrorData()[1].toString());
+    }
+    public void test_errorOperation_noPath() {
+        TestUtil.writeFile("_testData_/test.yml",
+                "message: error33\n" +
+                "second: def\n");
+        DataRequest request = new DataRequest(new Dataset("manager", "test"));
+        manager.errorOperation(request, new Dataset("file", "test",
+                "dataset", ""));
+        assertEquals("response", "message: error33\n" +
+                "second:  def\n",
+                request.getErrorData()[0].toString());
+        manager.errorOperation(request, new Dataset("file", "test"));
+        assertEquals("response", "message: error33\n" +
+                "second:  def\n",
+                request.getErrorData()[0].toString());
+    }
+
+    public void test_errorOperation_cantFindDataset() {
+        TestUtil.writeFile("_testData_/test.yml",
+                "first: abc\n");
+        DataRequest request = new DataRequest(new Dataset("manager", "test"));
+        boolean gotException = false;
+        try {
+            manager.errorOperation(request, new Dataset("file", "test",
+                    "dataset", "first.second"));
+        }
+        catch (FileDataManager.RequestAbortedError e) {
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+        assertEquals("error dataset",
+                "culprit: dataset\n" +
+                "message: nested dataset \"first.second\" doesn't exist\n",
+                request.getErrorData()[0].toString());
     }
 
     public void test_readOperation() {
@@ -341,7 +378,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         assertEquals("error dataset",
                 "culprit: dataset\n" +
                 "message: nested dataset \"child.grandchild\" doesn't exist\n",
-                request.getErrorData().toString());
+                request.getErrorData()[0].toString());
         assertEquals("dataset file not modified",
                 "child:\n" +
                 "  name: Alice\n" +
@@ -432,7 +469,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         assertEquals("error dataset",
                 "culprit: dataset\n" +
                 "message: nested dataset \"level1.level2\" doesn't exist\n",
-                request.getErrorData().toString());
+                request.getErrorData()[0].toString());
     }
 
     public void test_flush() {

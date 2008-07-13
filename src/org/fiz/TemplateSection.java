@@ -80,8 +80,8 @@ public class TemplateSection implements Section {
             if (response == null) {
                 // There was an error fetching our data; display
                 // appropriate error information.
-                Dataset errorData = dataRequest.getErrorData();
-                cr.showErrorInfo(errorStyle, "templateSection", errorData);
+                Dataset[] errors = dataRequest.getErrorData();
+                cr.showErrorInfo(errorStyle, "templateSection", errors[0]);
                 return;
             }
             data = new CompoundDataset(response, cr.getMainDataset());

@@ -11,23 +11,35 @@ package org.fiz;
 
 public class HandledError extends Error {
     // Copied from the constructor parameter with the same name.
-    protected Dataset errorData;
+    protected Dataset[] errorDatasets;
 
     /**
-     * Construct a HandledError object from a dataset describing the error.
-     * @param errorData            Dataset whose values described the problem.
+     * Construct a HandledError object from dataset(s) describing the error(s).
+     * @param errorDatasets        One or more datasets, each describing a
+     *                             problem that occurred.
      */
-    public HandledError(Dataset errorData) {
-        super(errorData.get("message"));
-        this.errorData = errorData;
+    public HandledError(Dataset... errorDatasets) {
+        super();
+        this.errorDatasets = errorDatasets;
     }
 
     /**
-     * Returns the dataset with detailed information about this error.
-     * @return                     The Dataset from which this Error was
+     * Returns the datasets with detailed information about the error(s).
+     * @return                     The datasets from which this Error was
      *                             constructed.
      */
-    public Dataset getErrorData() {
-        return errorData;
+    public Dataset[] getErrorData() {
+        return errorDatasets;
+    }
+
+    /**
+     * Returns a string describing all of the errors that resulted
+     * in this Error.
+     * @return                     A human-readable string describing each
+     *                             of the errors in the {@code errorData}
+     *                             parameter passed to the constructor.
+     */
+    public String getMessage() {
+        return StringUtil.errorMessage(errorDatasets);
     }
 }
