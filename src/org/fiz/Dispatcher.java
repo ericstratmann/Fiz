@@ -157,12 +157,10 @@ public class Dispatcher extends HttpServlet {
 
             // The "pathInfo" portion of the URL (the part that belongs to
             // us) must have the form /class/method/... Peel off the
-            // "class/method" part and see if we already have information
-            // about the method.
+            // "class/method" part and lookup the method.
 
             String pathInfo = request.getPathInfo();
-            String methodKey = null;
-            InteractorMethod method = null;
+            String classAndMethod;
             int endOfMethod = -1;
             int endOfClass = pathInfo.indexOf('/', 1);
             if (endOfClass >= 1) {
@@ -170,65 +168,15 @@ public class Dispatcher extends HttpServlet {
                 if (endOfMethod == -1) {
                     endOfMethod = pathInfo.length();
                 }
-                methodKey = pathInfo.substring(1, endOfMethod);
-                method = methodMap.get(methodKey);
+            }
+            if ((endOfClass < 2) || (endOfMethod < (endOfClass+2))) {
+                throw new UnsupportedUrlError(request.getRequestURI(),
+                        "URL doesn't contain class name and/or method "
+                        + "name");
             }
             isAjax = pathInfo.startsWith("ajax", endOfClass+1);
-
-            if (method == null) {
-                // We don't currently have any information about this method.
-                // If we haven't already done so, scan the class specified
-                // in the URL and update our tables with information about it.
-
-                if ((endOfClass < 2) || (endOfMethod < (endOfClass+2))) {
-                    throw new UnsupportedUrlError(request.getRequestURI(),
-                            "URL doesn't contain class name and/or method "
-                            + "name");
-                }
-
-                // See if we already know about this class.  Note: URL
-                // characters are all lower-case, but class names must have
-                // leading upper-case char.
-                String className = Character.toUpperCase(pathInfo.charAt(1))
-                        + pathInfo.substring(2, endOfClass);
-                Interactor interactor = classMap.get(className);
-                if (interactor == null) {
-                    // The class name is not already known; load the class
-                    // and create an instance of it.
-                    interactor = (Interactor) Util.newInstance(className,
-                            "org.fiz.Interactor");
-                    classMap.put(className, interactor);
-                    interactor.init();
-                    logger.info("loaded Interactor " +
-                            interactor.getClass().getName());
-
-                    // Scan the methods for the class and remember each method
-                    // that is public and takes a single argument that is a
-                    // subclass of ClientRequest.
-                    Class<?> requestClass = findClass("org.fiz.ClientRequest",
-                            request);
-                    for (Method m : interactor.getClass().getMethods()) {
-                        Class[] parameterTypes = m.getParameterTypes();
-                        if ((parameterTypes.length != 1)
-                                || !requestClass.isAssignableFrom(
-                                parameterTypes[0])) {
-                            continue;
-                        }
-                        String key = pathInfo.substring(1, endOfClass+1)
-                                + m.getName();
-                        methodMap.put(key, new InteractorMethod(m, interactor));
-                    }
-
-                    // Try one more time to find the method we need.
-                    method = methodMap.get(methodKey);
-                }
-                if (method == null) {
-                    throw new UnsupportedUrlError(request.getRequestURI(),
-                            "couldn't find method \""
-                            + pathInfo.substring(endOfClass+1, endOfMethod)
-                            + "\" with proper signature in class " + className);
-                }
-            }
+            InteractorMethod method = findMethod(
+                    pathInfo.substring(1, endOfMethod), endOfClass-1, request);
 
             // At this point we have located the method to service this
             // request.  Package up relevant information into a ClientRequest
@@ -319,7 +267,7 @@ public class Dispatcher extends HttpServlet {
      * Error if the class can't be found.
      * @param className            Name of the desired class
      * @param request              Information about the HTTP request (used
-     *                             for generating error messages)
+     *                             for generating error messages).
      * @return                     The Class object corresponding to
      *                             className.
      */
@@ -331,5 +279,77 @@ public class Dispatcher extends HttpServlet {
             throw new UnsupportedUrlError(request.getRequestURI(),
                     "can't find class \"" + className + "\"");
         }
+    }
+
+    /**
+     * Find the method that will handle a request.  If needed, information
+     * is added to our cache of known methods.
+     * @param classPlusMethod      Portion of the URL identifies the method
+     *                             to handle the request. Has the form
+     *                             {@code class/method}.
+     * @param slashIndex           Index within {@code classPlusMethod} of
+     *                             the letter slash that separates the class
+     *                             and method.
+     * @param request              Information about the HTTP request (used
+     *                             for generating error messages).
+     * @return                     An InteractorMethod object describing
+     *                             the method corresponding to
+     *                             {@code classPlusMethod}.
+     */
+    protected synchronized InteractorMethod findMethod(String classPlusMethod,
+            int slashIndex, HttpServletRequest request) {
+        InteractorMethod method = methodMap.get(classPlusMethod);
+        if (method != null) {
+            return method;
+        }
+
+        // We don't currently have any information about this method.
+        // If we haven't already done so, scan the class specified
+        // in the URL and update our tables with information about it.
+        // First, see if we already know about this class.  Note: URL
+        // characters are all lower-case, but class names must have
+        // leading upper-case char.
+        String className = Character.toUpperCase(classPlusMethod.charAt(0))
+                + classPlusMethod.substring(1, slashIndex);
+        String methodName = classPlusMethod.substring(slashIndex+1);
+        Interactor interactor = classMap.get(className);
+        if (interactor == null) {
+            // The class name is not already known; load the class
+            // and create an instance of it.
+            interactor = (Interactor) Util.newInstance(className,
+                    "org.fiz.Interactor");
+            classMap.put(className, interactor);
+            interactor.init();
+            logger.info("loaded Interactor " +
+                    interactor.getClass().getName());
+
+            // Scan the methods for the class and remember each method
+            // that is public and takes a single argument that is a
+            // subclass of ClientRequest.
+            Class<?> requestClass = findClass("org.fiz.ClientRequest",
+                    request);
+            for (Method m : interactor.getClass().getMethods()) {
+                Class[] parameterTypes = m.getParameterTypes();
+                if ((parameterTypes.length != 1)
+                        || !requestClass.isAssignableFrom(
+                        parameterTypes[0])) {
+                    continue;
+                }
+                String key = classPlusMethod.substring(0, slashIndex+1)
+                        + m.getName();
+                methodMap.put(key, new InteractorMethod(m, interactor));
+            }
+
+            // Try one more time to find the method we need.
+            method = methodMap.get(classPlusMethod);
+            if (method != null) {
+                return method;
+            }
+        }
+
+        throw new UnsupportedUrlError(request.getRequestURI(),
+                "couldn't find method \"" + methodName
+                + "\" with proper signature in class " + className);
+
     }
 }

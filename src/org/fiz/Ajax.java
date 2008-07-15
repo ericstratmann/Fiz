@@ -70,7 +70,7 @@ public class Ajax {
     }
 
     /**
-     * This method is most of the work of {@code be serializedInputData}.
+     * This method does most of the work of {@code be serializedInputData}.
      * It recursively reads a single dataset.
      * @param source               Encoded input string.
      * @param start                Index of the first character of this

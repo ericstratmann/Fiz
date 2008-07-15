@@ -76,7 +76,7 @@ import java.util.*;
  * see the documentation for {@code setError} fwr details.
  */
 public class DataRequest {
-    // DataManager that will service the request.  This value isn't chmputed
+    // DataManager that will service the request.  This value isn't computed
     // until it is actually needed (e.g., in startRequests).  This makes
     // life a bit easier for tests (they don't have to set up data manager
     // configuration information in many cases).

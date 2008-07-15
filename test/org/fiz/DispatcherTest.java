@@ -94,53 +94,7 @@ public class DispatcherTest  extends junit.framework.TestCase {
                 "couldn't find class \"A\"",
                 dispatcher.basicMessage);
     }
-    public void test_service_nonexistentClass() {
-        dispatcher.service(new ServletRequestFixture("/missingClass/a"),
-                new ServletResponseFixture());
-        TestUtil.assertSubstring("error message",
-                "couldn't find class \"MissingClass\"",
-                dispatcher.basicMessage);
-    }
-    public void test_service_updateClassMap() {
-        dispatcher.service(new ServletRequestFixture(
-                "/dispatcherTest1/incCount/extra"),
-                new ServletResponseFixture());
-        assertEquals("DispatcherTest1",
-                StringUtil.join(dispatcher.classMap.keySet(), ", "));
-    }
-    public void test_service_invokeInit() {
-        DispatcherTest1.count = 0;
-        DispatcherTest1.initCount = 0;
-        dispatcher.service(new ServletRequestFixture(
-                "/dispatcherTest1/incCount"), new ServletResponseFixture());
-        assertEquals("init invoked during first request", 1,
-                DispatcherTest1.initCount);
-        dispatcher.service(new ServletRequestFixture(
-                "/dispatcherTest1/incCount"), new ServletResponseFixture());
-        assertEquals("init not invoked during second request", 1,
-                DispatcherTest1.initCount);
-        assertEquals("method invoked during both requests", 2,
-                DispatcherTest1.count);
-    }
-    public void test_service_scanMethods() {
-        dispatcher.service(new ServletRequestFixture(
-                "/dispatcherTest1/incCount/extra"),
-                new ServletResponseFixture());
-        assertEquals("dispatcherTest1/incCount, " +
-                "dispatcherTest1/ajaxIncCount, " +
-                "dispatcherTest1/handledError, " +
-                "dispatcherTest1/resetCount, dispatcherTest1/error",
-                StringUtil.join(dispatcher.methodMap.keySet(), ", "));
-    }
-    public void test_service_methodNotFound() {
-        dispatcher.service(new ServletRequestFixture(
-                "/dispatcherTest1/twoArgs"), new ServletResponseFixture());
-        TestUtil.assertSubstring("error message",
-                "couldn't find method \"twoArgs\" with proper signature " +
-                "in class DispatcherTest1",
-                dispatcher.basicMessage);
-    }
-    public void test_service_setAjax() {
+    public void test_service_setAjaxAndInvokeMethod() {
         DispatcherTest1.count = 0;
         dispatcher.service(new ServletRequestFixture(
                 "/dispatcherTest1/incCount"), new ServletResponseFixture());
@@ -251,6 +205,84 @@ public class DispatcherTest  extends junit.framework.TestCase {
             assertEquals("exception message",
                     "unsupported URL \"/x/y/z\": can't find class " +
                     "\"bogus_xyz\"", e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+
+    public void test_findMethod_basics() {
+        DispatcherTest1.initCount = 0;
+        Dispatcher.InteractorMethod method = dispatcher.findMethod(
+                "dispatcherTest1/incCount", 15,
+                new ServletRequestFixture("/dispatcherTest1/incCount"));
+        assertEquals("init invoked during first call", 1,
+                DispatcherTest1.initCount);
+        assertEquals("method name from first call", "incCount",
+                method.method.getName());
+        assertEquals("class of Interactor object", "DispatcherTest1",
+                method.interactor.getClass().getSimpleName());
+        DispatcherTest1.initCount = 0;
+        method = dispatcher.findMethod("dispatcherTest1/incCount", 15,
+                new ServletRequestFixture("/dispatcherTest1/incCount"));
+        assertEquals("init not invoked during second call", 0,
+                DispatcherTest1.initCount);
+        assertEquals("method name from second call", "incCount",
+                method.method.getName());
+    }
+    public void test_findMethod_nonexistentClass() {
+        boolean gotException = false;
+        try {
+            dispatcher.findMethod("missingClass/a", 12,
+                    new ServletRequestFixture("/missingClass/a"));
+        }
+        catch (ClassNotFoundError e) {
+            assertEquals("exception message",
+                    "couldn't find class \"MissingClass\"", e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_findMethod_updateClassMap() {
+        dispatcher.findMethod("dispatcherTest1/incCount", 15,
+                new ServletRequestFixture("/dispatcherTest1/incCount/extra"));
+        assertEquals("DispatcherTest1",
+                StringUtil.join(dispatcher.classMap.keySet(), ", "));
+    }
+    public void test_findMethod_invokeInit() {
+        DispatcherTest1.count = 0;
+        DispatcherTest1.initCount = 0;
+        dispatcher.findMethod("dispatcherTest1/incCount", 15,
+                new ServletRequestFixture("/dispatcherTest1/incCount"));
+        assertEquals("init invoked during first request", 1,
+                DispatcherTest1.initCount);
+        dispatcher.findMethod("dispatcherTest1/incCount", 15,
+                new ServletRequestFixture("/dispatcherTest1/incCount"));
+        assertEquals("init not invoked during second request", 1,
+                DispatcherTest1.initCount);
+    }
+    public void test_findMethod_scanMethods() {
+        dispatcher.findMethod("dispatcherTest1/incCount", 15,
+                new ServletRequestFixture("/dispatcherTest1/incCount/extra"));
+        assertEquals("dispatcherTest1/incCount, " +
+                "dispatcherTest1/ajaxIncCount, " +
+                "dispatcherTest1/handledError, " +
+                "dispatcherTest1/resetCount, dispatcherTest1/error",
+                StringUtil.join(dispatcher.methodMap.keySet(), ", "));
+    }
+    public void test_findMethod_methodNotFound() {
+        Class<?> cl = dispatcher.findClass("org.fiz.Interactor", null);
+        TestUtil.assertSubstring("name of found class", "org.fiz.Interactor",
+                cl.getName());
+        boolean gotException = false;
+        try {
+        dispatcher.findMethod("dispatcherTest1/twoArgs", 15,
+                new ServletRequestFixture("/dispatcherTest1/twoArgs"));
+        }
+        catch (Dispatcher.UnsupportedUrlError e) {
+            assertEquals("exception message",
+                    "unsupported URL \"/x/y/z\": couldn't find method " +
+                    "\"twoArgs\" with proper signature in class " +
+                    "DispatcherTest1", e.getMessage());
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
