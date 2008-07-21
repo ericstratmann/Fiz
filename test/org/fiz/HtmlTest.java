@@ -1,5 +1,6 @@
 package org.fiz;
 import java.io.*;
+import java.util.*;
 
 /**
  * Junit tests for the Html class.
@@ -36,6 +37,7 @@ public class HtmlTest extends junit.framework.TestCase {
     protected HtmlFixture html = new HtmlFixture();
 
     public void setUp() {
+        Html.clearJsDependencyCache();
         html = new HtmlFixture();
         Css.init("test/testData/WEB-INF/css");
         Config.init("test/testData/WEB-INF/config");
@@ -63,6 +65,20 @@ public class HtmlTest extends junit.framework.TestCase {
                 "<p>Text</p>\n" +
                 "</body>\n" +
                 "</html>\n", html.toString());
+    }
+
+    public void test_clearJsDependencyCache() {
+        (new File("_test_")).mkdir();
+        TestUtil.writeFile("_test_/file1.js", "// Fiz:include file2.js\n");
+        assertEquals("dependencies", "file2.js",
+                StringUtil.join(html.getJsDependencies("_test_/file1.js"),
+                ", "));
+        TestUtil.writeFile("_test_/file1.js", "// Fiz:include file4.js\n");
+        Html.clearJsDependencyCache();
+        assertEquals("dependencies", "file4.js",
+                StringUtil.join(html.getJsDependencies("_test_/file1.js"),
+                ", "));
+        TestUtil.deleteTree("_test_");
     }
 
     // No tests for getBody; too trivial.
@@ -436,7 +452,19 @@ public class HtmlTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
     }
 
-    public void test_includeJsDependencies_commentLines() {
+    public void test_getJsDependencies_useCachedInformation() {
+        (new File("_test_")).mkdir();
+        TestUtil.writeFile("_test_/file1.js", "// Fiz:include file2.js\n");
+        assertEquals("dependencies", "file2.js",
+                StringUtil.join(html.getJsDependencies("_test_/file1.js"),
+                ", "));
+        TestUtil.writeFile("_test_/file1.js", "// Fiz:include file4.js\n");
+        assertEquals("dependencies", "file2.js",
+                StringUtil.join(html.getJsDependencies("_test_/file1.js"),
+                ", "));
+        TestUtil.deleteTree("_test_");
+    }
+    public void test_getJsDependencies_commentLines() {
         (new File("_test_")).mkdir();
         TestUtil.writeFile("_test_/file1.js",
                 "//\n" +
@@ -449,17 +477,12 @@ public class HtmlTest extends junit.framework.TestCase {
                 "abc" +
                 "// Fiz:include file3.js\n");
         TestUtil.writeFile("_test_/file2.js", "");
-        html.jsDirectory = "_test_/";
-        html.includeJsDependencies("file1.js");
-        assertEquals("jsFileHtml string",
-                "<script type=\"text/javascript\" " +
-                "src=\"/servlet/Fiz.js\"></script>\n" +
-                "<script type=\"text/javascript\" " +
-                "src=\"/servlet/file2.js\"></script>\n",
-                html.jsFileHtml.toString());
+        ArrayList<String> deps = html.getJsDependencies("_test_/file1.js");
+        assertEquals("dependencies", "file2.js",
+                StringUtil.join(deps, ", "));
         TestUtil.deleteTree("_test_");
     }
-    public void test_includeJsDependencies_parsingFizIncludeLine() {
+    public void test_getJsDependencies_parsingFizIncludeLine() {
         (new File("_test_")).mkdir();
         TestUtil.writeFile("_test_/file1.js",
                 "   //    Fiz:include file2.js,  file3.js, file4.js   " +
@@ -470,28 +493,16 @@ public class HtmlTest extends junit.framework.TestCase {
         TestUtil.writeFile("_test_/file3.js", "");
         TestUtil.writeFile("_test_/file4.js", "");
         TestUtil.writeFile("_test_/file5.js", "");
-        html.jsDirectory = "_test_/";
-        html.includeJsDependencies("file1.js");
-        assertEquals("jsFileHtml string",
-                "<script type=\"text/javascript\" " +
-                "src=\"/servlet/Fiz.js\"></script>\n" +
-                "<script type=\"text/javascript\" " +
-                "src=\"/servlet/file2.js\"></script>\n" +
-                "<script type=\"text/javascript\" " +
-                "src=\"/servlet/file3.js\"></script>\n" +
-                "<script type=\"text/javascript\" " +
-                "src=\"/servlet/file4.js\"></script>\n" +
-                "<script type=\"text/javascript\" " +
-                "src=\"/servlet/file5.js\"></script>\n",
-                html.jsFileHtml.toString());
+        ArrayList<String> deps = html.getJsDependencies("_test_/file1.js");
+        assertEquals("dependencies", "file2.js, file3.js, file4.js, file5.js",
+                StringUtil.join(deps, ", "));
         TestUtil.deleteTree("_test_");
     }
-    public void test_includeJsDependencies_missingFile() {
+    public void test_getJsDependencies_missingFile() {
         boolean gotException = false;
         Dataset d = new Dataset();
         try {
-            html.jsDirectory = "_test_/";
-            html.includeJsDependencies("bogus.js");
+            html.getJsDependencies("_test_/bogus.js");
         }
         catch (FileNotFoundError e) {
             assertEquals("exception message",

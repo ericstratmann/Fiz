@@ -34,6 +34,17 @@ public class Html {
     // TODO: eventually this must be a path with both Fiz and app directories.
     protected String jsDirectory;
 
+    // The following field caches information about dependencies between
+    // Javascript files.  It is shared and persistent, so accesses to it
+    // must be synchronized.  The key for each entry is the file name for
+    // a Javascript file and the value is a list of other Javascript
+    // files that must be included if the file named by the key is included.
+    // The values are never changed once created, so it is safe to access
+    // them concurrently (once fetched from the HashMap); only the HashMap
+    // requires synchronization.
+    protected static HashMap<String, ArrayList<String>> jsDependencyCache =
+            new HashMap<String, ArrayList<String>>();
+
     // The following field keeps track of all the Javascript files that
     // will be included in the HTML document.  The keys in this set are
     // the names passed to the includeJsFile method.
@@ -83,6 +94,17 @@ public class Html {
         jsFileHtml.setLength(0);
         jsCode.setLength(0);
         includeJsFile("Fiz.js");
+    }
+
+    /**
+     * Remove all entries from the shared cache of Javascript file
+     * dependencies.  The cache will be regenerated automatically in
+     * future calls to includeJsFile.  This method is typically invoked
+     * when information in the on-disc Javascript files has changed,
+     * potentially invalidating the cash.
+     */
+    public synchronized static void clearJsDependencyCache() {
+        jsDependencyCache.clear();
     }
 
     /**
@@ -234,7 +256,9 @@ public class Html {
 
         // Check for other files that this file depends on, and include
         // them (and any files they depend on, and so on).
-        includeJsDependencies(fileName);
+        for (String dependency : getJsDependencies(jsDirectory + fileName)) {
+            includeJsFile(dependency);
+        }
 
         // Generate an HTML <script> statement to include the current file.
         jsFileHtml.append("<script type=\"text/javascript\" src=\"");
@@ -526,15 +550,23 @@ public class Html {
      * @param fileName             Name of a Javascript file that has been
      *                             requested for this HTML document.
      */
-    protected void includeJsDependencies(String fileName) {
-        String fullName = jsDirectory + fileName;
+    protected synchronized static ArrayList<String> getJsDependencies(
+            String fileName) {
+        ArrayList<String> result = jsDependencyCache.get(fileName);
+        if (result != null) {
+            // We have cached information for this file; just return it.
+            return result;
+        }
+
+        // This is the first time we have seen this file; search the first
+        // few lines of the file for comment lines containing "Fiz:include";
+        // stop as soon as we see a line that isn't blank and isn't a comment.
+        result = new ArrayList<String>();
+        jsDependencyCache.put(fileName, result);
         try {
             BufferedReader reader = new BufferedReader(
-                    new FileReader(fullName));
+                    new FileReader(fileName));
             String line;
-            // Search the first few lines of the file for comment lines
-            // containing "Fiz:include";  stop as soon as we see a line
-            // that isn't blank and isn't a comment.
             while ((line = reader.readLine()) != null) {
                 int i = StringUtil.skipSpaces(line, 0);
                 if (i == line.length()) {
@@ -565,18 +597,18 @@ public class Html {
                 String[] files = StringUtil.split(
                         line.substring(i+12, end).trim(), ',');
                 for (String file: files) {
-                    includeJsFile(file);
+                    result.add(file);
                 }
             }
             reader.close();
         }
         catch (FileNotFoundException e) {
-            throw new FileNotFoundError(fullName, "javascript",
+            throw new FileNotFoundError(fileName, "javascript",
                     e.getMessage());
         }
         catch (IOException e) {
-            throw IOError.newFileInstance(fullName, e.getMessage());
+            throw IOError.newFileInstance(fileName, e.getMessage());
         }
-
+        return result;
     }
 }

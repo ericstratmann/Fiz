@@ -125,6 +125,23 @@ public class Dispatcher extends HttpServlet {
         logger.info("main configuration dataset:\n    " +
                 main.toString().trim().replace("\n", "\n    "));
         Css.init(contextRoot + "/WEB-INF/css");
+
+        // The following line should be left uncommented to disable more
+        // detailedlogging, such as request URLs.
+        // logger.setLevel(Level.WARN);
+    }
+
+    /**
+     * Resets all of the statistics about Interactor execution time.
+     */
+    public void clearInteractorStatistics() {
+        for (String methodName : methodMap.keySet()) {
+            InteractorMethod method = methodMap.get(methodName);
+            method.invocations = 0;
+            method.totalNs = method.totalSquaredNs = 0.0;
+        }
+        unsupportedURL.invocations = 0;
+        unsupportedURL.totalNs = unsupportedURL.totalSquaredNs = 0.0;
     }
 
     /**
@@ -191,6 +208,7 @@ public class Dispatcher extends HttpServlet {
     public void service (HttpServletRequest request,
         HttpServletResponse response) {
         long startTime = System.nanoTime();
+//        Perf.resetIntervals();
         InteractorMethod method = null;
         ClientRequest cr = null;
         boolean isAjax = false;
@@ -307,6 +325,8 @@ public class Dispatcher extends HttpServlet {
             }
             cr.finish();
         }
+//        Perf.markInterval("end");
+//        logger.warn("Time intervals:\n" + Perf.intervalInfo("  "));
         if (method == null) {
             method = unsupportedURL;
         }

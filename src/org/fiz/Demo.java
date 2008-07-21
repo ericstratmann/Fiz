@@ -191,6 +191,16 @@ public class Demo extends Interactor {
                     new Column("Average (ms)", "@averageMs"),
                     new Column("Std Dev. (ms)", "@standardDeviationMs"))
         );
+        StringBuilder body = html.getBody();
+        Link link = new Link(new Dataset("text", "Clear statistics",
+                "ajaxUrl", "demo/ajaxClearStats"));
+        body.append("<p>");
+        link.html(cr, cr.getMainDataset(), body);
+    }
+
+    public void ajaxClearStats(ClientRequest cr) {
+        ((Dispatcher) cr.getServlet()).clearInteractorStatistics();
+        cr.ajaxRedirectAction("stats");
     }
 
     public void ajaxSideBySidePost(ClientRequest cr) {

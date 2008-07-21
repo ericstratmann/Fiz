@@ -37,6 +37,21 @@ public class DispatcherTest  extends junit.framework.TestCase {
                 Css.getSearchPath()[0]);
     }
 
+    public void test_clearInteractorStatistics() {
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest1/bogus/a/b/c"), new ServletResponseFixture());
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest1/incCount"), new ServletResponseFixture());
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest1/incCount"), new ServletResponseFixture());
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest1/resetCount"), new ServletResponseFixture());
+        dispatcher.clearInteractorStatistics ();
+        ArrayList<Dataset> children = dispatcher.getInteractorStatistics();
+        assertEquals("count of records", 0,
+                dispatcher.getInteractorStatistics().size());
+    }
+
     public void test_destroy() {
         DispatcherTest1.count = 0;
         DispatcherTest1.destroyCount = 0;
