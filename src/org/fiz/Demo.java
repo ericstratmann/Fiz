@@ -1,4 +1,5 @@
 package org.fiz;
+import java.util.*;
 import org.apache.log4j.*;
 
 /**
@@ -98,6 +99,22 @@ public class Demo extends Interactor {
             );
 
     /**
+     * Displays a page illustrating the FormSection class.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    public void formSection(ClientRequest cr) {
+        Html html = cr.getHtml();
+        html.setTitle("FormSection Demo");
+        html.includeCssFile("demo/form.css");
+        cr.showSections(
+                new TemplateSection("<h1>Side-By-Side Form</h1>\n"),
+                sideBySideForm,
+                new TemplateSection("<h1>Vertical Form</h1>\n"),
+                verticalForm);
+    }
+
+    /**
      * Displays a page with various demonstrations of the TableSection
      * class.
      * @param cr                   Overall information about the client
@@ -147,19 +164,33 @@ public class Demo extends Interactor {
     }
 
     /**
-     * Displays a page illustrating the FormSection class.
+     * Displays a page containing statistics about Interactor invocations.
+     * class.
      * @param cr                   Overall information about the client
      *                             request being serviced.
      */
-    public void formSection(ClientRequest cr) {
+    public void stats(ClientRequest cr) {
         Html html = cr.getHtml();
-        html.setTitle("FormSection Demo");
-        html.includeCssFile("demo/form.css");
+        html.setTitle("Interactor Statistics");
+        ArrayList<Dataset> stats = ((Dispatcher) cr.getServlet()).
+                getInteractorStatistics();
+        Collections.sort(stats, new DatasetComparator("averageMs",
+                DatasetComparator.Type.FLOAT,
+                DatasetComparator.Order.DECREASING));
+        Dataset statsDataset = new Dataset();
+        for (Dataset d : stats) {
+            statsDataset.addChild("data", d);
+        }
         cr.showSections(
-                new TemplateSection("<h1>Side-By-Side Form</h1>\n"),
-                sideBySideForm,
-                new TemplateSection("<h1>Vertical Form</h1>\n"),
-                verticalForm);
+                new TemplateSection("<h1>Interactor Statistics</h1>\n"),
+                new TableSection(
+                    RawDataManager.setRequest(new Dataset(), "request",
+                            statsDataset),
+                    new Column("Class/Method", "@name"),
+                    new Column("# Invocations", "@invocations"),
+                    new Column("Average (ms)", "@averageMs"),
+                    new Column("Std Dev. (ms)", "@standardDeviationMs"))
+        );
     }
 
     public void ajaxSideBySidePost(ClientRequest cr) {

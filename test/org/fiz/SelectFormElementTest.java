@@ -244,12 +244,17 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         SelectFormElement element = new SelectFormElement(
                 YamlDataset.newStringInstance(
                 "id: id11\n" +
-                "choiceRequest: getFruits\n" +
+                "choiceRequest:\n" +
+                "  manager: fruitSeller\n" +
+                "  type: apples\n" +
                 "choiceName: fruit\n"));
         ClientRequest cr = new ClientRequestFixture();
         element.registerRequests(cr, "request");
-        assertEquals("registered requests", "getFruits",
-                cr.getRequestNames());
+        assertEquals("count of registered requests", 1,
+                cr.unnamedRequests.size());
+        assertEquals("contents of request", "manager: fruitSeller\n" +
+                "type:    apples\n",
+                cr.unnamedRequests.get(0).getRequestData().toString());
     }
     public void test_registerRequests_noRequest() {
         SelectFormElement element = new SelectFormElement(

@@ -273,7 +273,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
 
     // isAjax is tested by the tests for setAjax.
 
-    public void test_registerDataRequest_byName() {
+    public void test_registerDataRequest_withName() {
         DataRequest data1 = cr.registerDataRequest("fixture1");
         DataRequest data2 = cr.registerDataRequest("fixture2");
         DataRequest data3 = cr.registerDataRequest("fixture1");
@@ -286,15 +286,45 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 data2.getRequestData().toString());
     }
 
-    public void test_registerDataRequest_byDataset() {
+    public void test_registerDataRequest_withDataRequest() {
         DataRequest data1 = cr.registerDataRequest(
                 new DataRequest(new Dataset("name", "Bill")));
         DataRequest data2 = cr.registerDataRequest(
                 new DataRequest(new Dataset("name", "Carol")));
-        assertEquals("count of registered crs", 2,
+        assertEquals("count of registered requests", 2,
                 cr.unnamedRequests.size());
-        assertEquals("contents of cr", "name: Carol\n",
+        assertEquals("contents of request", "name: Carol\n",
                 cr.unnamedRequests.get(1).getRequestData().toString());
+    }
+
+    public void test_registerDataRequest_withDatasetAndPath_nonexistentPath() {
+        DataRequest request = cr.registerDataRequest(
+                new Dataset("a:", "1234"), "b");
+        assertEquals("no request created", null, request);
+    }
+    public void test_registerDataRequest_withDatasetAndPath_string() {
+        DataRequest request1 = cr.registerDataRequest(
+                YamlDataset.newStringInstance("a:\n  request: fixture1\n"),
+                "a.request");
+        DataRequest request2 = cr.registerDataRequest("fixture1");
+        assertEquals("count of registered requests", 1,
+                cr.namedRequests.size());
+        assertEquals("contents of request", "id:      fixture1\n" +
+                "manager: fixture\n",
+                request1.getRequestData().toString());
+        assertEquals("request is shared", request1, request2);
+    }
+    public void test_registerDataRequest_withDatasetAndPath_dataset() {
+        DataRequest request = cr.registerDataRequest(
+                YamlDataset.newStringInstance("a:\n  request:\n" +
+                "    first: 16\n" +
+                "    second: '@99'\n"),
+                "a.request");
+        assertEquals("count of registered requests", 1,
+                cr.unnamedRequests.size());
+        assertEquals("contents of request", "first:  16\n" +
+                "second: \"@99\"\n",
+                request.getRequestData().toString());
     }
 
     public void test_setAjax() {

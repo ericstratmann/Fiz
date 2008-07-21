@@ -47,6 +47,30 @@ public class UtilTest extends junit.framework.TestCase {
                 Util.deleteTree("_test"));
     }
 
+    public void test_findClass_classNameWorksImmediately() {
+        Class result = Util.findClass("org.fiz.Dataset");
+        assertEquals("name of result class", "org.fiz.Dataset",
+                result.getName());
+    }
+    public void test_findClass_noSearchPackagesConfig() {
+        Config.setDataset("main", new Dataset());
+        Class result = Util.findClass("Dataset");
+        assertEquals("null result", null, result);
+    }
+    public void test_findClass_classInPackage() {
+        Config.setDataset("main", new Dataset("searchPackages",
+                "foo.bar, org.fiz, bogus.moreBogus"));
+        Class result = Util.findClass("Dataset");
+        assertEquals("name of result class", "org.fiz.Dataset",
+                result.getName());
+    }
+    public void test_findClass_notInSearchPackages() {
+        Config.setDataset("main", new Dataset("searchPackages",
+                "foo.bar, bogus.moreBogus"));
+        Class result = Util.findClass("gorp");
+        assertEquals("null result", null, result);
+    }
+
      public void test_findFileWithExtension() {
         TestUtil.writeFile("_test_.abc", "abc");
         TestUtil.writeFile("_test_.x", "abc");
@@ -69,12 +93,7 @@ public class UtilTest extends junit.framework.TestCase {
                 Util.getUrlWithQuery(request));
     }
 
-    public void test_newInstance_classNameWorksImmediately() {
-        Object result = Util.newInstance("org.fiz.Dataset", "org.fiz.Dataset");
-        assertEquals ("class of result", "org.fiz.Dataset",
-                result.getClass().getName());
-    }
-    public void test_newInstance_noSearchPackagesConfig() {
+    public void test_newInstance_classNotFound() {
         Config.setDataset("main", new Dataset());
         boolean gotException = false;
         try {
@@ -83,28 +102,6 @@ public class UtilTest extends junit.framework.TestCase {
         catch (ClassNotFoundError e) {
             assertEquals("exception message",
                     "couldn't find class \"Dataset\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-    public void test_newInstance_classInPackage() {
-        Config.setDataset("main", new Dataset("searchPackages",
-                "foo.bar, org.fiz, bogus.moreBogus"));
-        Object result = Util.newInstance("Dataset", null);
-        assertEquals ("class of result", "org.fiz.Dataset",
-                result.getClass().getName());
-    }
-    public void test_newInstance_notInSearchPackagesg() {
-        Config.setDataset("main", new Dataset("searchPackages",
-                "foo.bar, bogus.moreBogus"));
-        boolean gotException = false;
-        try {
-            Util.newInstance("gorp", null);
-        }
-        catch (ClassNotFoundError e) {
-            assertEquals("exception message",
-                    "couldn't find class \"gorp\"",
                     e.getMessage());
             gotException = true;
         }

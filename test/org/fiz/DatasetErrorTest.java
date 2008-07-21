@@ -3,9 +3,9 @@ package org.fiz;
 /**
  * Junit tests for the HandledError class.
  */
-public class HandledErrorTest extends junit.framework.TestCase {
+public class DatasetErrorTest extends junit.framework.TestCase {
     public void test_getErrorData_oneError() {
-        HandledError e = new HandledError(new Dataset("x", "123",
+        DatasetError e = new DatasetError(new Dataset("x", "123",
             "message", "Sample error message"));
         assertEquals("number of data sets returned", 1,
                 e.getErrorData().length);
@@ -14,7 +14,7 @@ public class HandledErrorTest extends junit.framework.TestCase {
                 e.getErrorData()[0].toString());
     }
     public void test_getErrorData_multipleErrors() {
-        HandledError e = new HandledError(new Dataset("error", "first"),
+        DatasetError e = new DatasetError(new Dataset("error", "first"),
                 new Dataset("error", "second"),
                 new Dataset("error", "third"));
         assertEquals("number of data sets returned", 3,
@@ -28,13 +28,13 @@ public class HandledErrorTest extends junit.framework.TestCase {
     }
 
     public void test_getMessage_oneError() {
-        HandledError e = new HandledError(new Dataset("x", "123",
+        DatasetError e = new DatasetError(new Dataset("x", "123",
             "message", "Sample error message"));
         assertEquals("error message", "Sample error message",
                 e.getMessage());
     }
     public void test_getMessage_multipleErrors() {
-        HandledError e = new HandledError(
+        DatasetError e = new DatasetError(
                 new Dataset("message", "first"),
                 new Dataset("message", "second"),
                 new Dataset("message", "third"));

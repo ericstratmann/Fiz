@@ -1,7 +1,7 @@
 package org.fiz;
 import java.io.*;
 import java.lang.reflect.*;
-import java.util.Hashtable;
+import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import org.apache.log4j.*;
@@ -36,13 +36,23 @@ public class Dispatcher extends HttpServlet {
     // There exists one object of the following type for each method we
     // have discovered that can service an incoming request.
 
-    protected class InteractorMethod {
+    protected static class InteractorMethod {
         public Method method;      // Java reflection info about the method;
                                    // used to invoke it.
         public Interactor interactor;
                                    // The Interactor object to which "method"
                                    // belongs.  We invoke method on this
                                    // object to service incoming requests.
+        public int invocations;    // Number of times an incoming request
+                                   // invoked this method.
+        public double totalNs;     // Total time spent executing requests
+                                   // for this method, and nanoseconds.
+        public double totalSquaredNs;
+                                   // The sum across all requests for this
+                                   // method of the squares of the execution
+                                   // times.  Used to compute standard
+                                   // deviations.
+
         public InteractorMethod(Method method, Interactor interactor) {
            this.method = method;
            this.interactor = interactor;
@@ -56,6 +66,7 @@ public class Dispatcher extends HttpServlet {
     //
     // Note: this table may be accessed and updated concurrently by
     // requests running in parallel.
+    // TODO: change from Hashtable to HashMap?
 
     protected Hashtable<String,Interactor> classMap
             = new Hashtable<String,Interactor>();
@@ -83,6 +94,12 @@ public class Dispatcher extends HttpServlet {
     // If the following variable is true, it means we are running tests
     // and should configure slightly differently.
     protected static boolean testMode = false;
+
+    // The following object is used to gather performance statistics
+    // for requests that cannot be mapped to an Interactor method
+    // (i.e., all of the requests that don't get logged in methodMap).
+    protected InteractorMethod unsupportedURL =
+            new InteractorMethod(null, null);
 
     /**
      * This method is invoked by the servlet container when the servlet
@@ -133,6 +150,34 @@ public class Dispatcher extends HttpServlet {
     }
 
     /**
+     * Generates a dataset containing usage statistics for all of the
+     * Interactor methods that have been invoked.
+     * @return                     The return value is a collection containing
+     * one Dataset for each Interactor method that has been invoked so far,
+     * plus an extra child with the name "unsupportedURL", which records
+     * information about URLs that could not be mapped to a method.  Each
+     * dataset contains the following elements:
+     *   averageMs:                Average execution time (total, including
+     *                             dispatch overhead) for each invocation
+     *                             of this method, in milliseconds (float).
+     *   invocations:              Number of times this method has been
+     *                             invoked.
+     *   name:                     Name of the Interactor method (class/name).
+     *   standardDeviationMs:      The standard deviation of the execution
+     *                             time for this method, in milliseconds
+     *                             float).
+     */
+    public ArrayList<Dataset> getInteractorStatistics() {
+        ArrayList<Dataset> result = new ArrayList<Dataset>();
+        for (String methodName : methodMap.keySet()) {
+            InteractorMethod method = methodMap.get(methodName);
+            addStatistics(methodName, method, result);
+        }
+        addStatistics("unsupportedURL", unsupportedURL, result);
+        return result;
+    }
+
+    /**
      * This method is invoked for each incoming HTTP request whose URL
      * matches this application.  PathInfo (the portion of the URL
      * "owned" by this servlet) must have the form {@code /class/method/...},
@@ -145,6 +190,8 @@ public class Dispatcher extends HttpServlet {
     @Override
     public void service (HttpServletRequest request,
         HttpServletResponse response) {
+        long startTime = System.nanoTime();
+        InteractorMethod method = null;
         ClientRequest cr = null;
         boolean isAjax = false;
         try {
@@ -175,8 +222,8 @@ public class Dispatcher extends HttpServlet {
                         + "name");
             }
             isAjax = pathInfo.startsWith("ajax", endOfClass+1);
-            InteractorMethod method = findMethod(
-                    pathInfo.substring(1, endOfMethod), endOfClass-1, request);
+            method = findMethod(pathInfo.substring(1, endOfMethod),
+                    endOfClass-1, request);
 
             // At this point we have located the method to service this
             // request.  Package up relevant information into a ClientRequest
@@ -260,6 +307,38 @@ public class Dispatcher extends HttpServlet {
             }
             cr.finish();
         }
+        if (method == null) {
+            method = unsupportedURL;
+        }
+        long endTime = System.nanoTime();
+        double elapsed = endTime - startTime;
+        method.invocations++;
+        method.totalNs += elapsed;
+        method.totalSquaredNs += elapsed*elapsed;
+    }
+
+    /**
+     * This method does most of the work of {@code getInteractorStatistics}:
+     * it adds information for one method to the result Dataset being
+     * assembled.
+     * @param methodName           Name of the method.
+     * @param method               Record containing statistics about the
+     *                             method.
+     * @param result               A new dataset, containing the information
+     *                             for {@code method}, is appended here..
+     */
+    protected static void addStatistics(String methodName,
+            InteractorMethod method, ArrayList<Dataset> result) {
+        if (method.invocations == 0) {
+            return;
+        }
+        double average = method.totalNs/method.invocations;
+        double deviation = Math.sqrt(method.totalSquaredNs/method.invocations
+                - average*average);
+        result.add(new Dataset("name", methodName,
+                "invocations", Integer.toString(method.invocations),
+                "averageMs", Double.toString(average/1.0e6),
+                "standardDeviationMs", Double.toString(deviation/1.0e6)));
     }
 
     /**

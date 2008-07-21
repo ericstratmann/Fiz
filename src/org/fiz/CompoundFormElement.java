@@ -15,12 +15,14 @@ package org.fiz;
  *                   related to this form element.
  *   label:          (optional) Template for label to display next to the
  *                   checkbox to identify the element for the user.
- *   request:        (optional) If this property is specified, it gives the
- *                   name of a data request for this form elements to issue.
- *                   The results of that request will be combined with the
- *                   data provided by the form and used both for expanding
- *                   {@code template} and for passing to the component
- *                   elements when they are generating HTML.
+ *   request:        (optional) Specifies a DataRequest (either the name of
+ *                   a request in the {@code dataRequests} configuration
+ *                   dataset or a nested dataset containing the request's
+ *                   arguments directly).  The results of the request will
+ *                   be combined with the data provided by the form and
+ *                   used both for expanding {@code template} and for
+ *                   passing to the component elements when they are
+ *                   generating HTML.
  *   template:       (optional) HTML template that arranges and decorates the
  *                   component form elements.  Substitutions such as
  *                   {@code @3} cause the HTML for a component form
@@ -152,10 +154,7 @@ public class CompoundFormElement extends FormElement {
      */
     @Override
     public void registerRequests(ClientRequest cr, String formRequest) {
-        String query = properties.check("request");
-        if (query != null) {
-            request = cr.registerDataRequest(query);
-        }
+        request = cr.registerDataRequest(properties, "request");
         for (FormElement component : components) {
             component.registerRequests(cr, formRequest);
         }

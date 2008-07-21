@@ -70,7 +70,7 @@ public class TemplateSectionTest extends junit.framework.TestCase {
     }
 
     public void test_registerRequests() {
-        Section section = new TemplateSection("abc");
+        TemplateSection section = new TemplateSection("abc");
         section.registerRequests(cr);
         assertEquals("registered requests", "",
                 cr.getRequestNames());
@@ -79,5 +79,15 @@ public class TemplateSectionTest extends junit.framework.TestCase {
         section.registerRequests(cr);
         assertEquals("registered requests", "getState",
                 cr.getRequestNames());
+
+        section = new TemplateSection(YamlDataset.newStringInstance(
+                "template: abcdef\n" +
+                "request:\n" +
+                "  first: 16\n" +
+                "  second: 99\n"));
+        section.registerRequests(cr);
+        assertEquals("request arguments", "first:  16\n" +
+                "second: 99\n",
+                section.dataRequest.getRequestData().toString());
     }
 }

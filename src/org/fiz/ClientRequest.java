@@ -145,7 +145,7 @@ public class ClientRequest {
      * Generate bulletin messages for one or more errors, each described
      * by a dataset.  Typically the errors are the result of a DataRequest.
      * A separate bulletin message is generated for each dataset in
-     * {@code errors), using the {@code bulletin} template from the
+     * {@code errors}, using the {@code bulletin} template from the
      * {@code errors} configuration dataset to generate HTML from the
      * dataset.  The messages will appear in divs with class "bulletinError".
      * @param errors               One or more Datasets, each containing
@@ -426,11 +426,12 @@ public class ClientRequest {
     }
 
     /**
-     * This method is typically invoked by the {@code registerDataRequests}
-     * methods of Sections to specify the data they will need to display
-     * themselves.  This object keeps track of all of the requests that have
-     * been requested; if the same request is registered multiple times, a
-     * single request is shared by all of the requesters.
+     * Create a new DataRequest based on the name of an entry in the
+     * {@code dataRequests} configuration dataset, and associate it with
+     * this ClientRequest so that it will be started by the
+     * {@code startDataRequests} method.  This method is typically invoked
+     * by the {@code registerDataRequests} methods of Sections to specify
+     * the data they will need in order to display themselves.
      * @param name                 Symbolic name for the request; must
      *                             correspond to a template in the
      *                             {@code dataRequests} configuration dataset.
@@ -452,15 +453,50 @@ public class ClientRequest {
     }
 
     /**
-     * This method is typically invoked by the {@code registerDataRequests}
-     * methods of Sections to indicate the data they will need to display
-     * themselves.  In this version of the method the caller has already
+     * Given a DatedRequest created by the caller, associate it with this
+     * ClientRequest so that it will be started by the
+     * {@code startDataRequests} method.  This method is typically invoked
+     * by the {@code registerDataRequests} methods of Sections to specify
+     * the data they will need in order to display themselves.
      * created the DataRequest; it will not be shared with any other Section.
      * @param request              DataRequest that will retrieve data needed
      *                             by the caller.
      * @return                     {@code request}.
      */
     public DataRequest registerDataRequest(DataRequest request) {
+        unnamedRequests.add(request);
+        return request;
+    }
+
+    /**
+     * Create a DataRequest based on an element of a dataset, and associate
+     * it with this  ClientRequest so that it will be started by the
+     * {@code startDataRequests} method.  If the dataset element named by
+     * {@code d} and {@code path} is a string, then a (potentially shared)
+     * DataRequest is created in the same way as if the string had been
+     * passed directly to {@code registerDataRequest}.  If the dataset element
+     * is a nested dataset, then its contents are used directly as the
+     * arguments for the request.
+     * @param d                    Dataset whose contents will be used to
+     *                             create a DataRequest.
+     * @param path                 Specifies the path to an element
+     *                             within {@code d}.  If there is no such
+     *                             element in the dataset then no DataRequest
+     *                             is created.
+     * @return                     The DataRequest corresponding to
+     *                             {@code d} and {@code path}, or  null if
+     *                             {@code path} doesn't exist.
+     */
+    public DataRequest registerDataRequest(Dataset d, String path) {
+        Object value = d.lookupPath(path, Dataset.DesiredType.ANY,
+                Dataset.Quantity.FIRST_ONLY);
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String) {
+            return registerDataRequest((String) value);
+        }
+        DataRequest request = new DataRequest((Dataset) value);
         unnamedRequests.add(request);
         return request;
     }

@@ -261,6 +261,13 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
                 null));
     }
 
+    public void test_lookupPath_3args() {
+        Object out = compound.lookupPath("nested.x",
+                Dataset.DesiredType.STRING, Dataset.Quantity.ALL);
+        assertEquals("result value", "x_value, xxxx, zzzz",
+                StringUtil.join((ArrayList) out, ", "));
+    }
+
     public void test_lookupPath_returnFirst() {
         assertEquals("value of nested.x", "x_value",
                 compound.lookupPath("nested.x", Dataset.DesiredType.STRING,
@@ -374,49 +381,38 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
     }
 
-//    public void test_lookupPathHelper() {
-//        ArrayList<Object> results = new ArrayList<Object>();
-//        compound.lookupPathHelper("nested.x", 0, null,
-//                Dataset.DesiredType.ALL, results);
-//        assertEquals("wanted == ALL", "x_value, xxxx, zzzz",
-//                StringUtil.join(results, ", "));
-//        compound.lookupPathHelper("nested.x", 0, null,
-//                Dataset.DesiredType.STRING, results);
-//        assertEquals("wanted == STRING", "x_value", results.get(0));
-//    }
-
-//    public void test_compoundCompound() {
-//        // This test makes sure that CompoundDatasets can contain
-//        // other CompoundDatasets.
-//        Dataset d1 = YamlDataset.newStringInstance(
-//                "a: 111\n" +
-//                "child:\n" +
-//                "  - name: Alice\n" +
-//                "    age:  40\n" +
-//                "  - name: Bob\n");
-//        Dataset d2 = YamlDataset.newStringInstance(
-//                "b: 222\n" +
-//                "child:\n" +
-//                "    name: Carol\n" +
-//                "    age:  24\n");
-//        Dataset d3 = YamlDataset.newStringInstance(
-//                "a: 333\n" +
-//                "b: 444\n" +
-//                "c: 555\n");
-//        Dataset d4 = YamlDataset.newStringInstance(
-//                "a: 666\n" +
-//                "child:\n" +
-//                "  - name: David\n" +
-//                "    age:  12\n" +
-//                "  - name: Elise\n" +
-//                "    age:  18\n" +
-//                "  - name: Fred\n");
-//        CompoundDataset c1 = new CompoundDataset(d1, d2);
-//        CompoundDataset c2 = new CompoundDataset(d3, d4);
-//        CompoundDataset compound = new CompoundDataset(c1, c2);
-//        assertEquals("nested strings",
-//                "Alice, Bob, Carol, David, Elise, Fred",
-//                StringUtil.join((Object[]) compound.lookupPath("child.name",
-//                Dataset.DesiredType.ALL), ", "));
-//    }
+    public void test_compoundCompound() {
+        // This test makes sure that CompoundDatasets can contain
+        // other CompoundDatasets.
+        Dataset d1 = YamlDataset.newStringInstance(
+                "a: 111\n" +
+                "child:\n" +
+                "  - name: Alice\n" +
+                "    age:  40\n" +
+                "  - name: Bob\n");
+        Dataset d2 = YamlDataset.newStringInstance(
+                "b: 222\n" +
+                "child:\n" +
+                "    name: Carol\n" +
+                "    age:  24\n");
+        Dataset d3 = YamlDataset.newStringInstance(
+                "a: 333\n" +
+                "b: 444\n" +
+                "c: 555\n");
+        Dataset d4 = YamlDataset.newStringInstance(
+                "a: 666\n" +
+                "child:\n" +
+                "  - name: David\n" +
+                "    age:  12\n" +
+                "  - name: Elise\n" +
+                "    age:  18\n" +
+                "  - name: Fred\n");
+        CompoundDataset c1 = new CompoundDataset(d1, d2);
+        CompoundDataset c2 = new CompoundDataset(d3, d4);
+        CompoundDataset compound = new CompoundDataset(c1, c2);
+        assertEquals("nested strings",
+                "Alice, Bob, Carol, David, Elise, Fred",
+                StringUtil.join((ArrayList) compound.lookupPath("child.name",
+                Dataset.DesiredType.ANY, Dataset.Quantity.ALL), ", "));
+    }
 }

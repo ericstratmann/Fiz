@@ -48,6 +48,43 @@ public final class Util {
     }
 
     /**
+     * Find the class corresponding to particular name; if the name
+     * doesn't exist and doesn't contain any dot separators, also search
+     * in various packages defined by the {@code searchPackages} value
+     * in the {@code main} configuration dataset.
+     * @param className            Name of the desired class.
+     * @return                     The Class object corresponding to
+     *                             {@code className}, or null if no such class
+     *                             could be found.
+     */
+    public static Class findClass(String className) {
+        Class<?> cl = null;
+        try {
+            cl = Class.forName(className);
+        }
+        catch (ClassNotFoundException e) {
+            // Just keep going if the class could be found.
+        }
+        if ((cl == null) && (className.indexOf('.') < 0)) {
+            // Couldn't find the given name; try prepending various package
+            // names provided by configuration information.
+            Dataset config = Config.getDataset("main");
+            String path = config.check("searchPackages");
+            if (path != null) {
+                for (String packageName : StringUtil.split(path, ',')) {
+                    try {
+                        cl = Class.forName(packageName + "."  + className);
+                        break;
+                    }
+                    catch (ClassNotFoundException e) {
+                    }
+                }
+            }
+        }
+        return cl;
+    }
+
+    /**
      * Given a file name without an extension, this checks to see if there
      * exists a file with this base name and one of several possible
      * extensions.
@@ -112,29 +149,7 @@ public final class Util {
             Object... constructorArgs) {
 
         // Look up the class.
-        Class<?> cl = null;
-        try {
-            cl = Class.forName(className);
-        }
-        catch (ClassNotFoundException e) {
-        }
-        searchPackages: if ((cl == null) && (className.indexOf('.') < 0)) {
-            // Couldn't find the given name; try prepending various package
-            // names provided by configuration information.
-            Dataset config = Config.getDataset("main");
-            String path = config.check("searchPackages");
-            if (path == null) {
-                break searchPackages;
-            }
-            for (String packageName : StringUtil.split(path, ',')) {
-                try {
-                    cl = Class.forName(packageName + "."  + className);
-                    break searchPackages;
-                }
-                catch (ClassNotFoundException e) {
-                }
-            }
-        }
+        Class<?> cl = findClass(className);
         if (cl == null) {
             throw new ClassNotFoundError(className);
         }

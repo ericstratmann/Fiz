@@ -33,10 +33,12 @@ import java.util.*;
  *                   if some of the columns offer header information.
  *                   Regardless of this property, the header row will be
  *                   omitted if none of the columns generate header info.
- *   request:        (required) Name of the DataRequest that will supply
- *                   data to display in the TableSection; the response to
- *                   this request must contain one {@code data} child for
- *                   each row of the table.
+ *   request:        (required) Specifies a DataRequest that will supply
+ *                   data to display in the TableSection (either the name
+ *                   of a request in the {@code dataRequests} configuration
+ *                   dataset or a nested dataset containing the request's
+ *                   arguments directly).  The response to this request must
+ *                   contain one {@code data} child for each row of the table.
  */
 public class TableSection implements Section {
     // The following variables are copies of constructor arguments.  See
@@ -194,8 +196,10 @@ public class TableSection implements Section {
      */
     @Override
     public void registerRequests(ClientRequest cr) {
-        dataRequest = cr.registerDataRequest(
-                properties.get("request"));
+        dataRequest = cr.registerDataRequest(properties, "request");
+        if (dataRequest == null) {
+            throw new Dataset.MissingValueError("request");
+        }
     }
 
     /**

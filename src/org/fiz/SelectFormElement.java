@@ -23,10 +23,12 @@ import java.util.*;
  *   choice:         (optional) Default location for the choice datasets, if
  *                   neither the {@code choiceRequest} nor the
  *                   {@code choiceName} property is specified.
- *   choiceRequest:  (optional) If this property is specified, then it is the
- *                   name of a data request whose result will contain the
- *                   choices.  If this property is omitted then the choices
- *                   must be present in the properties.
+ *   choiceRequest:  (optional) Specifies a DataRequest whose result will
+ *                   contain the choices (either the name of a request in
+ *                   the {@code dataRequests} configuration dataset or a
+ *                   nested dataset containing the request's arguments
+ *                   directly).  If this property is omitted then the
+ *                   choices must be present in the properties.
  *   choiceName:     (optional) The name of the nested datasets (either in
  *                   the properties or in the result of the data request
  *                   specified by {@code choiceRequest}) containing the
@@ -182,9 +184,6 @@ public class SelectFormElement extends FormElement {
      */
     @Override
     public void registerRequests(ClientRequest cr, String formRequest) {
-        String query = properties.check("choiceRequest");
-        if (query != null) {
-            choiceRequest = cr.registerDataRequest(query);
-        }
+        choiceRequest = cr.registerDataRequest(properties, "choiceRequest");
     }
 }

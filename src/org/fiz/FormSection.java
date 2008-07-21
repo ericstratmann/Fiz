@@ -46,22 +46,26 @@ package org.fiz;
  *                   is sent to this URL; defaults to {@code ajaxPost}.  The
  *                   caller must ensure that this URL is implemented by an
  *                   Interactor.
- *   request:        (optional) Name of the DataRequest that will supply
- *                   initial values to display in the FormSection.  If the
- *                   response to the request contains a {@code data}
- *                   nested dataset, then the contents of that nested dataset
- *                   will be used to provide the form's initial data.  If
- *                   there is no {@code data} nested dataset then the
- *                   top-level contents of the results are used for the
- *                   form's initial data.  If this property is omitted the
- *                   form will initially be empty.
+ *   request:        (optional) Specifies a DataRequest that will supply
+ *                   initial values to display in the FormSection (either
+ *                   the name of a request in the {@code dataRequests}
+ *                   configuration dataset or a nested dataset containing
+ *                   the request's arguments directly).  If the response to
+ *                   the request contains a {@code data} nested dataset,
+ *                   then the contents of that nested dataset will be used
+ *                   to provide the form's initial data.  If there is no
+ *                   {@code data} nested dataset then the top-level contents
+ *                   of the results are used for the form's initial data.
+ *                   If this property is omitted the form will initially be
+ *                   empty.
  */
 public class FormSection implements Section {
     /**
      * PostError is thrown when the {@code post} method detects an error
      * in its DataRequest.
      */
-    public static class PostError extends HandledError {
+    public static class PostError extends DatasetError
+            implements HandledError {
         /**
          * Construct a PostError with the error data returned by the failed
          * DataRequest.
@@ -366,12 +370,9 @@ public class FormSection implements Section {
      */
     @Override
     public void registerRequests(ClientRequest cr) {
-        String query = properties.check("request");
-        if (query != null) {
-            dataRequest = cr.registerDataRequest(query);
-        }
+        dataRequest = cr.registerDataRequest(properties, "request");
         for (FormElement element : elements) {
-            element.registerRequests(cr, query);
+            element.registerRequests(cr, properties.check("request"));
         }
     }
 

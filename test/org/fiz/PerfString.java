@@ -10,21 +10,19 @@ public class PerfString {
     public static void main(String[] argv) throws IOException {
         int count = 10000;
         Dataset d = null;
+        int value = 0;
 
         for (int i = 0; i < 10; i++) {
             long start = System.nanoTime();
             for (int j= 0; j < count; j++) {
-                d = new Dataset("name", "Alice", "age", "24",
-                        "weight", "140", "height", "64", "ssn",
-                        "xxx-yy-zzzz", "element6", "9254231",
-                        "element7", "9254231", "element8", "9254231",
-                        "element9", "9254231", "element10", "9254231");
+                // value = Integer.parseInt("144444") - Integer.parseInt("53535");
+                value = DatasetComparator.compareIntegers("144444", "53535");
             }
             long finish = System.nanoTime();
             System.out.printf("%.4f us per iteration%n",
                     (finish - start)/(1000.0*count));
         }
-        System.out.printf("Dataset:\n%s\n", d.toString());
+        System.out.printf("value: %d\n", value);
     }
 
     protected static int inc(int i) {

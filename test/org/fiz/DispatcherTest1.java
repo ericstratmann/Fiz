@@ -7,6 +7,12 @@ import javax.servlet.http.*;
  */
 
 public class DispatcherTest1 extends Interactor {
+    public static class TestError extends DatasetError
+            implements HandledError {
+        public TestError(Dataset... errorDatasets) {
+            super(errorDatasets);
+        }
+    }
     public static int count = 0;
     public static int initCount = 0;
     public static int destroyCount = 0;
@@ -33,7 +39,7 @@ public class DispatcherTest1 extends Interactor {
         throw new Error("error in method");
     }
     public void handledError(ClientRequest cr) {
-        throw new HandledError(new Dataset("message", "error handled OK",
+        throw new TestError(new Dataset("message", "error handled OK",
                 "name", "Alice"));
     }
     private void privateMethod(ClientRequest cr) {

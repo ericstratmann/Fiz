@@ -420,6 +420,20 @@ public class FormSectionTest extends junit.framework.TestCase {
         form.registerRequests(cr);
         assertEquals("registered requests", "", cr.getRequestNames());
     }
+    public void test_registerRequests_requestDataset() {
+        FormSection form = new FormSection(
+                YamlDataset.newStringInstance(
+                "id: form1\n" +
+                "request:\n" +
+                "  manager: test14\n" +
+                "  arg1: 45\n"));
+        form.registerRequests(cr);
+        assertEquals("count of registered requests", 1,
+                cr.unnamedRequests.size());
+        assertEquals("contents of request", "arg1:    45\n" +
+                "manager: test14\n",
+                cr.unnamedRequests.get(0).getRequestData().toString());
+    }
 
     public void test_clearOldElementErrors() {
         FormSection form = new FormSection(

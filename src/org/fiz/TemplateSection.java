@@ -12,8 +12,11 @@ package org.fiz;
  *                   {@code errorStyle} starts with "bulletin", in which
  *                   case the resulting HTML is displayed in the bulletin.
  *                   Defaults to "section".
- *   request:        (optional) Name of a DataRequest that will supply
- *                   data for use by {@code template}.
+ *   request:        (optional) Specifies a DataRequest that will supply
+ *                   data for use by {@code template} (either the name of
+ *                   a request in the {@code dataRequests} configuration
+ *                   dataset or a nested dataset containing the request's
+ *                   arguments directly).
  *   template:       (required) Template that will generate HTML for the
  *                   section.  If {@code request} is specified then the
  *                   template is expanded in the context of the response
@@ -23,9 +26,10 @@ package org.fiz;
 public class TemplateSection implements Section {
     // The following variables hold values for the properties that define
     // the section; see above for definitions.
+    protected Dataset properties = null;
+    protected String errorStyle = null;
     protected String request = null;
     protected String template;
-    protected String errorStyle;
 
     // Source of data for the section:
     protected DataRequest dataRequest = null;
@@ -36,9 +40,9 @@ public class TemplateSection implements Section {
      *                             for the section; see description above.
      */
     public TemplateSection(Dataset properties) {
-        request = properties.check("request");
         template = properties.get("template");
         errorStyle = properties.check("errorStyle");
+        this.properties = properties;
     }
 
     /**
@@ -100,7 +104,9 @@ public class TemplateSection implements Section {
      */
     @Override
     public void registerRequests(ClientRequest cr) {
-        if (request != null) {
+        if (properties != null) {
+            dataRequest = cr.registerDataRequest(properties, "request");
+        } else if (request != null) {
             dataRequest = cr.registerDataRequest(request);
         }
     }

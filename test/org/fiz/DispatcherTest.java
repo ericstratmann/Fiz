@@ -1,5 +1,6 @@
 package org.fiz;
 import java.io.*;
+import java.util.*;
 import javax.servlet.*;
 
 /**
@@ -53,6 +54,30 @@ public class DispatcherTest  extends junit.framework.TestCase {
                 DispatcherTest1.destroyCount);
         assertEquals("second interactor destroyed", 3,
                 DispatcherTest2.destroyCount);
+    }
+
+    public void test_getInteractorStatistics() {
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest1/bogus/a/b/c"), new ServletResponseFixture());
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest1/incCount"), new ServletResponseFixture());
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest1/incCount"), new ServletResponseFixture());
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest1/resetCount"), new ServletResponseFixture());
+        ArrayList<Dataset> children = dispatcher.getInteractorStatistics();
+        Collections.sort(children, new DatasetComparator("name",
+                DatasetComparator.Type.STRING,
+                DatasetComparator.Order.INCREASING));
+        assertEquals("info about first method", "dispatcherTest1/incCount 2",
+                children.get(0).get("name") + " " +
+                children.get(0).get("invocations"));
+        assertEquals("info about second method", "dispatcherTest1/resetCount 1",
+                children.get(1).get("name") + " " +
+                children.get(1).get("invocations"));
+        assertEquals("info about third method", "unsupportedURL 1",
+                children.get(2).get("name") + " " +
+                children.get(2).get("invocations"));
     }
 
     public void test_service_parseMethodEndingInSlash() {
@@ -190,6 +215,34 @@ public class DispatcherTest  extends junit.framework.TestCase {
                 "the server!  Details are in the server's log</div>.\n" +
                 "</body>\n",
                 response.out.toString());
+    }
+
+    public void test_addStatistics() {
+        ArrayList<Dataset> result = new ArrayList<Dataset>();
+        Dispatcher.InteractorMethod method = new Dispatcher.InteractorMethod(
+                null, null);
+        method.invocations = 0;
+        method.totalNs = 1000.0;
+        method.totalSquaredNs = 25000;
+        Dispatcher.addStatistics("method0", method, result);
+        method.invocations = 10;
+        method.totalNs = 1000.0;
+        method.totalSquaredNs = 325000;
+        Dispatcher.addStatistics("method1", method, result);
+        method.invocations = 2;
+        method.totalNs = 500;
+        method.totalSquaredNs = 125000;
+        Dispatcher.addStatistics("method2", method, result);
+        assertEquals("result after 3 calls", "averageMs:           1.0E-4\n" +
+                "invocations:         10\n" +
+                "name:                method1\n" +
+                "standardDeviationMs: 1.5E-4\n" +
+                "\n" +
+                "averageMs:           2.5E-4\n" +
+                "invocations:         2\n" +
+                "name:                method2\n" +
+                "standardDeviationMs: 0.0\n",
+                StringUtil.join(result, "\n"));
     }
 
     public void test_findClass() {
