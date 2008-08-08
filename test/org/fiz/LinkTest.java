@@ -116,17 +116,6 @@ public class LinkTest extends junit.framework.TestCase {
                 + "name=Alice&amp;weight=%22110%22\">Alice</a>", out.toString());
         TestUtil.assertXHTML(out.toString());
     }
-    public void test_html_addUrlPrefix() {
-        StringBuilder out = new StringBuilder();
-        Dataset data = new Dataset();
-        cr.urlPrefix = "/fiz/demo";
-        Link link = new Link(new Dataset("text", "Sample",
-                "url", "test/test1"));
-        link.html(cr, data, out);
-        assertEquals("HTML for link",
-                "<a href=\"/fiz/demo/test/test1\">Sample</a>", out.toString());
-        TestUtil.assertXHTML(out.toString());
-    }
     public void test_html_ajaxExpandUrlTemplate() {
         StringBuilder out = new StringBuilder();
         Dataset data = new Dataset("name", "Alice", "weight", "\"110\"");
@@ -139,18 +128,6 @@ public class LinkTest extends junit.framework.TestCase {
         TestUtil.assertSubstring("include Javascript file",
                 "/servlet/Ajax.js",
                 cr.getHtml().jsFileHtml.toString());
-        TestUtil.assertXHTML(out.toString());
-    }
-    public void test_html_ajaxAddUrlPrefix() {
-        StringBuilder out = new StringBuilder();
-        Dataset data = new Dataset();
-        cr.urlPrefix = "/fiz/demo";
-        Link link = new Link(new Dataset("text", "Sample",
-                "ajaxUrl", "test/test1"));
-        link.html(cr, data, out);
-        assertEquals("HTML for link", "<a href=\"javascript:void new " +
-                "Fiz.Ajax(&quot;/fiz/demo/test/test1&quot;);\">Sample</a>",
-                out.toString());
         TestUtil.assertXHTML(out.toString());
     }
     public void test_html_javascriptHref() {
@@ -220,17 +197,6 @@ public class LinkTest extends junit.framework.TestCase {
         assertEquals("HTML for icon",
                 "<img class=\"Link\" src=\"/icons/x.gif?name=Alice&amp;" +
                 "value=%22xyz%22\" alt=\"\" />",
-                out.toString());
-    }
-    public void test_iconHtml_addUrlPrefix() {
-        StringBuilder out = new StringBuilder();
-        Dataset data = new Dataset("name", "Alice");
-        cr.urlPrefix = "/fiz/demo";
-        Link link = new Link(new Dataset("url", "http://foo",
-                "iconUrl", "icons/x.gif"));
-        link.iconHtml(cr, data, out);
-        assertEquals("HTML for icon",
-                "<img class=\"Link\" src=\"/fiz/demo/icons/x.gif\" alt=\"\" />",
                 out.toString());
     }
     public void test_iconHtml_noAltText() {

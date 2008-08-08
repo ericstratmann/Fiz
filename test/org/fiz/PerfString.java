@@ -1,6 +1,8 @@
 package org.fiz;
+
 import java.io.*;
 import java.util.*;
+import org.apache.log4j.*;
 
 /**
  * This class is an application that measures the performance of the
@@ -8,6 +10,7 @@ import java.util.*;
  */
 
 public class PerfString {
+    protected static Logger logger = Logger.getLogger("org.fiz.Dispatcher");
     public static void main(String[] argv) throws IOException {
         int count = 10000;
         Dataset d = null;
@@ -19,8 +22,8 @@ public class PerfString {
             long start = System.nanoTime();
             for (int j= 0; j < count; j++) {
                 // value = Integer.parseInt("144444") - Integer.parseInt("53535");
-                sum += System.nanoTime();
-                
+                logger.isTraceEnabled();
+
             }
             long finish = System.nanoTime();
             System.out.printf("%.4f us per iteration%n",

@@ -12,25 +12,21 @@ package org.fiz;
  * text -       (optional) Template for text and/or other HTML to display
  *              for the Link.
  * url -        (optional) Template for URL that will be visited when the
- *              text or icon is clicked.  May include query values.  If this
- *              URL isn't complete (as defined by Util.urlComplete), then
- *              the Fiz prefix (as defined by cr.getUrlPrefix is prepended
- *              to it to make it complete.  Note: either this property or
- *              {@code ajaxUrl} or {@code javascript} should be specified.
+ *              text or icon is clicked.  May include query values.  Note:
+ *              either this property or {@code ajaxUrl} or {@code javascript}
+ *              should be specified.
  * ajaxUrl -    (optional) If this property is specified, clicking on the
  *              text or image will invoke an Ajax request; the value of this
  *              property is a template for the URL of the Ajax request,
- *              expanded and completed in the same way as {@code url}.  This
- *              property is ignored if {@code url} is specified.
+ *              expanded in the same way as {@code url}.  This property is
+ *              ignored if {@code url} is specified.
  * javascript - (optional) If this property specified, clicking on the text
  *              or image will cause the value of this property to be invoked
  *              as Javascript code.  The property value is a template,
  *              expanded using Javascript string quoting.  This property is
  *              ignored if {@code url} or {@code ajaxUrl} is specified.
  * iconUrl -    (optional) URL for an image to display to the left of the
- *              text.  This is also a template.  If this URL isn't complete
- *              (as defined by Util.urlComplete), the Fiz prefix (as defined
- *              by cr.getUrlPrefix is prepended to it to make it complete.
+ *              text.  This is also a template.
  * alt -        (optional) Template for the {@code alt} attribute for the
  *              icon.  Defaults to an empty string.
  * confirm -    (optional) If specified, the user will be asked to
@@ -143,10 +139,6 @@ public class Link implements Formatter {
             // Normal href.
             StringBuilder expandedUrl = new StringBuilder(url.length());
             Template.expand(url, data, expandedUrl, Template.SpecialChars.URL);
-            if (!Util.urlComplete(expandedUrl)) {
-                out.append(cr.getUrlPrefix());
-                out.append('/');
-            }
             Html.escapeHtmlChars(expandedUrl, out);
         } else if (ajaxUrl != null) {
             // Ajax request.  Quoting is tricky:
@@ -163,10 +155,6 @@ public class Link implements Formatter {
                     Template.SpecialChars.URL);
             // TODO: don't generate Javascript directly; let Ajax do it.
             Html.escapeHtmlChars("javascript:void new Fiz.Ajax(\"", out);
-            if (!Util.urlComplete(expandedUrl)) {
-                out.append(cr.getUrlPrefix());
-                out.append('/');
-            }
             Html.escapeHtmlChars(expandedUrl, out);
             Html.escapeHtmlChars("\");", out);
         } else if (javascript != null) {
@@ -219,10 +207,6 @@ public class Link implements Formatter {
         StringBuilder expandedUrl = new StringBuilder(iconUrl.length());
         Template.expand(iconUrl, data, expandedUrl, Template.SpecialChars.URL);
         out.append("<img class=\"Link\" src=\"");
-        if (!Util.urlComplete(expandedUrl)) {
-            out.append(cr.getUrlPrefix());
-            out.append('/');
-        }
         Html.escapeHtmlChars(expandedUrl, out);
         out.append("\" alt=\"");
         if (alt != null) {

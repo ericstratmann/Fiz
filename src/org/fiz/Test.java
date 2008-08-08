@@ -94,8 +94,7 @@ public class Test extends Interactor {
         ajaxCount = 0;
         startTime = System.nanoTime();
         cr.ajaxUpdateAction("perf", "<br>Measuring ...");
-        cr.ajaxEvalAction("new Fiz.Ajax(\"" + cr.getUrlPrefix() +
-                "/test/ajaxPerf2\");");
+        cr.ajaxEvalAction("new Fiz.Ajax(\"ajaxPerf2\");");
     }
 
     // This entry point is visited repeatedly during Ajax performance
@@ -105,8 +104,7 @@ public class Test extends Interactor {
         ajaxCount++;
         final int count = 100;
         if (ajaxCount < count) {
-            cr.ajaxEvalAction("new Fiz.Ajax(\"" + cr.getUrlPrefix() +
-                    "/test/ajaxPerf2\");");
+            cr.ajaxEvalAction("new Fiz.Ajax(\"ajaxPerf2\");");
             return;
         }
 
@@ -147,7 +145,7 @@ public class Test extends Interactor {
                 "to go to page @next.</p>\n" +
                 "<p>", globalData, body);
         Link link = new Link(new Dataset("text", "Go to page @next",
-                "url", "test/link?current=@next"));
+                "url", "link?current=@next"));
         link.html(cr, globalData, body);
         body.append("</p>\n");
         body.append("<p>The following link uses Javascript to display " +
@@ -158,14 +156,14 @@ public class Test extends Interactor {
         link2.html(cr, globalData, body);
         body.append("</p>\n");
         Link link3 = new Link(new Dataset("text", "Click here",
-                "ajaxUrl", "test/ajaxUpdateTime"));
+                "ajaxUrl", "/fiz/test/ajaxUpdateTime"));
         body.append("<p>");
         link3.html(cr, globalData, body);
         body.append(" to update the time below.</p>\n" +
                 "<p>Latest date/time from Ajax: " +
                 "<span id=\"updateMe\">None</span></p>\n");
         Link link4 = new Link(new Dataset("text", "Click here.",
-                "ajaxUrl", "test/ajaxPerf"));
+                "ajaxUrl", "ajaxPerf"));
         body.append("Want to measure the round-trip latency for Ajax?  ");
         link4.html(cr, globalData, body);
         body.append("<span id=\"perf\"></span>\n");

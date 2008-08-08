@@ -272,31 +272,4 @@ public final class Util {
         copyStream(in, response.getWriter());
         in.close();
     }
-
-    /**
-     * Determine whether a URL is "complete" (ready to be used as-is) or
-     * just consists of the Fiz-relative portion of the URL.  The URL
-     * is considered to be complete if it starts with a slash, or if
-     * it contains a colon before the first slash.  For example,
-     * {@code /a/b/c} and {@code http://www.company.com/x/y} are both
-     * complete, but {@code demo/link} is not complete.
-     * @param url                  URL to check for completeness.
-     * @return                     True if {@code url} is complete, false
-     *                             if it isn't.
-     */
-    public static boolean urlComplete(CharSequence url) {
-        if (url.charAt(0) == '/') {
-            return true;
-        }
-        for (int i = 0; i < url.length(); i++) {
-            char c = url.charAt(i);
-            if (c == '/') {
-                return false;
-            }
-            if (c == ':') {
-                return true;
-            }
-        }
-        return false;
-    }
 }

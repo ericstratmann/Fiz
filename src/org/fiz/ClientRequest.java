@@ -65,10 +65,6 @@ public class ClientRequest {
     protected ArrayList<DataRequest> unnamedRequests =
             new ArrayList<DataRequest>();
 
-    // The following variable contains the return value from the last call to
-    // getUrlPrefix, or null if that method hasn't yet been called.
-    protected String urlPrefix = null;
-
     // The following variable indicates whether this request is an Ajax
     // request (false means it is a normal HTML request).
     protected boolean ajaxRequest = false;
@@ -395,25 +391,6 @@ public class ClientRequest {
      */
     public HttpServletResponse getServletResponse() {
         return servletResponse;
-    }
-
-    /**
-     * This method returns a string representing the path prefix that
-     * is shared by all URL's in this application that refer to
-     * Fiz Interactors.  In other words, if the full URL to invoke
-     * method {@code method} in class {@code class} is
-     * {@code http://www.company.com/a/b/c/class/method}, this method
-     * will return {@code /a/b/c}.  The return value does not end with
-     * a slash.  In servlet terms, the return value is the concatenation
-     * of the servlet path and the context path.
-     * @return                     See above.
-     */
-    public String getUrlPrefix() {
-        if (urlPrefix == null) {
-            urlPrefix = getServletContext().getContextPath () +
-                    getServletRequest().getServletPath();
-        }
-        return urlPrefix;
     }
 
     /**

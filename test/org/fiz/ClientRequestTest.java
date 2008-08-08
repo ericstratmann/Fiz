@@ -261,16 +261,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals(newResponse, cr.getServletResponse());
     }
 
-    public void test_getUrlPrefix_useSavedValue() {
-        cr.urlPrefix = "/foo/bar";
-        assertEquals("request already has a value", "/foo/bar",
-                cr.getUrlPrefix());
-    }
-    public void test_getUrlPrefix_generateValue() {
-        assertEquals("computed value", "/context/cpath/servlet/spath",
-                cr.getUrlPrefix());
-    }
-
     // isAjax is tested by the tests for setAjax.
 
     public void test_registerDataRequest_withName() {

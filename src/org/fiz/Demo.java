@@ -193,7 +193,7 @@ public class Demo extends Interactor {
         );
         StringBuilder body = html.getBody();
         Link link = new Link(new Dataset("text", "Clear statistics",
-                "ajaxUrl", "demo/ajaxClearStats"));
+                "ajaxUrl", "/fiz/demo/ajaxClearStats"));
         body.append("<p>");
         link.html(cr, cr.getMainDataset(), body);
     }

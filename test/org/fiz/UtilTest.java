@@ -248,17 +248,4 @@ public class UtilTest extends junit.framework.TestCase {
                 response.out.toString());
         TestUtil.deleteTree("test.html");
     }
-
-    public void test_urlComplete() {
-        assertEquals("url /a/b/c", true,
-                Util.urlComplete(new StringBuffer("/a/b/c")));
-        assertEquals("url a/b/c", false,
-                Util.urlComplete("a/b/c"));
-        assertEquals("url http://www.xyz/com/foo", true,
-                Util.urlComplete("http://www.xyz/com/foo"));
-        assertEquals("url ftp://cs.berkeley.edu/foo", true,
-                Util.urlComplete("ftp://cs.berkeley.edu/foo"));
-        assertEquals("url noSlashes", false,
-                Util.urlComplete("noSlashes"));
-    }
 }
