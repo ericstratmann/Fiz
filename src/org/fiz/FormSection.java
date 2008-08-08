@@ -230,7 +230,7 @@ public class FormSection implements Section {
 
         // Invoke a Javascript method, passing it information about
         // the form element plus the HTML.
-        cr.ajaxEvalAction("form_@formId.elementError(" +
+        cr.ajaxEvalAction("Fiz.ids.@formId.elementError(" +
                 "\"@elementId\", \"@html\");",
                 new Dataset("formId", properties.get("id"),
                 "elementId", id, "html", html.toString()));
@@ -283,7 +283,7 @@ public class FormSection implements Section {
         }
         Template.expand("\n<!-- Start FormSection @id -->\n" +
                 "<form id=\"@id\" class=\"@class?{FormSection}\" " +
-                "action=\"javascript: form_@id.post();\" method=\"post\">\n",
+                "action=\"javascript: Fiz.ids.@id.post();\" method=\"post\">\n",
                 properties, out);
         innerHtml(cr, data, out);
         Template.expand("</form>\n" +
@@ -291,7 +291,7 @@ public class FormSection implements Section {
                 properties, out);
 
         // Generate a Javascript object containing information about the form.
-        html.includeJavascript("window.form_@id = new Fiz.FormSection(" +
+        html.includeJavascript("Fiz.ids.@id = new Fiz.FormSection(" +
                 "\"@id\", \"@postUrl?{ajaxPost}\");\n", properties);
         html.includeJsFile("FormSection.js");
     }
@@ -386,7 +386,8 @@ public class FormSection implements Section {
      */
     protected void clearOldElementErrors(ClientRequest cr) {
         if (!oldElementErrorsCleared) {
-            cr.ajaxEvalAction(Template.expand("form_@id.clearElementErrors();",
+            cr.ajaxEvalAction(Template.expand(
+                    "Fiz.ids.@id.clearElementErrors();",
                     properties, Template.SpecialChars.JAVASCRIPT));
             oldElementErrorsCleared = true;
         }

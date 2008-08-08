@@ -96,11 +96,11 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "\\\"bulletinError\\\", \\\"bulletin: One or more of the " +
                 "input fields are invalid; see details below.\\\");\"}, " +
                 "{type: \"eval\", javascript: " +
-                "\"form_form1.clearElementErrors();\"}, " +
-                "{type: \"eval\", javascript: \"form_form1.elementError(" +
+                "\"Fiz.ids.form1.clearElementErrors();\"}, " +
+                "{type: \"eval\", javascript: \"Fiz.ids.form1.elementError(" +
                 "\\\"name\\\", \\\"<span class=\\\\\\\"error\\\\\\\">name " +
                 "error</span>\\\");\"}, {type: \"eval\", javascript: " +
-                "\"form_form1.elementError(\\\"age\\\", \\\"<span " +
+                "\"Fiz.ids.form1.elementError(\\\"age\\\", \\\"<span " +
                 "class=\\\\\\\"error\\\\\\\">age error</span>\\\");\"}",
                 out.toString());
     }
@@ -131,8 +131,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "\\\"bulletinError\\\", \\\"bulletin: One or more of the " +
                 "input fields are invalid; see details below.\\\");\"}, " +
                 "{type: \"eval\", javascript: " +
-                "\"form_form1.clearElementErrors();\"}, " +
-                "{type: \"eval\", javascript: \"form_form1.elementError(" +
+                "\"Fiz.ids.form1.clearElementErrors();\"}, " +
+                "{type: \"eval\", javascript: \"Fiz.ids.form1.elementError(" +
                 "\\\"id11\\\", \\\"error for Alice: &lt;failure&gt;\\\");\"}",
                 out.toString());
     }
@@ -159,7 +159,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getServletResponse()).out;
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
-                "\"form_form1.elementError(\\\"id11\\\", \\\"error for Alice: " +
+                "\"Fiz.ids.form1.elementError(\\\"id11\\\", \\\"error for Alice: " +
                 "&lt;failure&gt;\\\");\"}",
                 out.toString());
     }
@@ -178,7 +178,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getServletResponse()).out;
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
-                "\"form_form1.elementError(\\\"id11\\\", \\\"default style: " +
+                "\"Fiz.ids.form1.elementError(\\\"id11\\\", \\\"default style: " +
                 "&lt;failure&gt;\\\");\"}",
                 out.toString());
     }
@@ -277,7 +277,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new EntryFormElement("name", "Name:"));
         cr.showSections(form);
         assertEquals("Javascript code",
-                "window.form_form1 = new Fiz.FormSection(\"form1\", " +
+                "Fiz.ids.form1 = new Fiz.FormSection(\"form1\", " +
                 "\"ajaxPost\");\n",
                 cr.getHtml().jsCode.toString());
         assertEquals("Javascript files", "Ajax.js, Fiz.js, FormSection.js",
@@ -331,14 +331,14 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getServletResponse()).out;
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
-                "\"form_form1.clearElementErrors();\"}, {type: \"eval\", " +
+                "\"Fiz.ids.form1.clearElementErrors();\"}, {type: \"eval\", " +
                 "javascript: \"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
                 "\\\"bulletinError\\\", \\\"bulletin: One or more of the " +
                 "input fields are invalid; see details below.\\\");\"}, " +
                 "{type: \"eval\", " +
-                "javascript: \"form_form1.elementError(\\\"age\\\", " +
+                "javascript: \"Fiz.ids.form1.elementError(\\\"age\\\", " +
                 "\\\"element: &lt;failure&gt;\\\");\"}, {type: \"eval\", " +
-                "javascript: \"form_form1.elementError(\\\"name\\\", " +
+                "javascript: \"Fiz.ids.form1.elementError(\\\"name\\\", " +
                 "\\\"element: error33\\\");\"}",
                 out.toString());
     }
@@ -362,7 +362,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getServletResponse()).out;
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
-                "\"form_form1.clearElementErrors();\"}, {type: \"eval\", " +
+                "\"Fiz.ids.form1.clearElementErrors();\"}, {type: \"eval\", " +
                 "javascript: \"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
                 "\\\"bulletinError\\\", \\\"bulletin: " +
                 "&lt;failure&gt;\\\");\"}",
@@ -390,7 +390,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getServletResponse()).out;
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
-                "\"form_form1.clearElementErrors();\"}, {type: \"eval\", " +
+                "\"Fiz.ids.form1.clearElementErrors();\"}, {type: \"eval\", " +
                 "javascript: \"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
                 "\\\"bulletinError\\\", \\\"bulletin: " +
                 "&lt;failure&gt;\\\");\"}",
@@ -445,7 +445,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getServletResponse()).out;
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", " +
-                "javascript: \"form_form1.clearElementErrors();\"}",
+                "javascript: \"Fiz.ids.form1.clearElementErrors();\"}",
                 out.toString());
         assertEquals("oldElementErrorsCleared value", true,
                 form.oldElementErrorsCleared);
@@ -499,7 +499,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("generated HTML", "\n" +
                 "<!-- Start FormSection form1 -->\n" +
                 "<form id=\"form1\" class=\"FormSection\" " +
-                "action=\"javascript: form_form1.post();\" " +
+                "action=\"javascript: Fiz.ids.form1.post();\" " +
                 "method=\"post\">\n" +
                 "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
                 "    <tr>\n" +
@@ -520,7 +520,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("generated HTML", "\n" +
                 "<!-- Start FormSection form1 -->\n" +
                 "<form id=\"form1\" class=\"FormSection\" " +
-                "action=\"javascript: form_form1.post();\" " +
+                "action=\"javascript: Fiz.ids.form1.post();\" " +
                 "method=\"post\">\n" +
                 "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
                 "    <tr>\n" +
@@ -549,7 +549,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("generated HTML", "\n" +
                 "<!-- Start FormSection form1 -->\n" +
                 "<form id=\"form1\" class=\"FormSection\" action=" +
-                "\"javascript: form_form1.post();\" method=\"post\">\n" +
+                "\"javascript: Fiz.ids.form1.post();\" method=\"post\">\n" +
                 "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
                 "    <tr>\n" +
                 "      <td class=\"control\" colspan=\"2\">element 1 html" +
@@ -581,7 +581,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("generated HTML", "\n" +
                 "<!-- Start FormSection form1 -->\n" +
                 "<form id=\"form1\" class=\"FormSection\" action=" +
-                "\"javascript: form_form1.post();\" method=\"post\">\n" +
+                "\"javascript: Fiz.ids.form1.post();\" method=\"post\">\n" +
                 "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
                 "    <tr title=\"Sample help text\">\n" +
                 "      <td class=\"label\"></td>\n" +
@@ -611,7 +611,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("generated HTML", "\n" +
                 "<!-- Start FormSection form1 -->\n" +
                 "<form id=\"form1\" class=\"FormSection\" " +
-                "action=\"javascript: form_form1.post();\" " +
+                "action=\"javascript: Fiz.ids.form1.post();\" " +
                 "method=\"post\">\n" +
                 "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
                 "    <tr>\n" +
@@ -651,7 +651,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("generated HTML", "\n" +
                 "<!-- Start FormSection form1 -->\n" +
                 "<form id=\"form1\" class=\"FormSection\" action=" +
-                "\"javascript: form_form1.post();\" method=\"post\">\n" +
+                "\"javascript: Fiz.ids.form1.post();\" method=\"post\">\n" +
                 "  <table cellspacing=\"0\" class=\"vertical\">\n" +
                 "    <tr><td class=\"control\">element 1 html" +
                 "<div id=\"id1.diagnostic\" class=\"diagnostic\" " +
@@ -680,7 +680,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("generated HTML", "\n" +
                 "<!-- Start FormSection form1 -->\n" +
                 "<form id=\"form1\" class=\"FormSection\" action=" +
-                "\"javascript: form_form1.post();\" method=\"post\">\n" +
+                "\"javascript: Fiz.ids.form1.post();\" method=\"post\">\n" +
                 "  <table cellspacing=\"0\" class=\"vertical\">\n" +
                 "    <tr title=\"Sample help text\">" +
                 "<td class=\"control\">element 1 html" +
@@ -705,7 +705,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("generated HTML", "\n" +
                 "<!-- Start FormSection form1 -->\n" +
                 "<form id=\"form1\" class=\"FormSection\" " +
-                "action=\"javascript: form_form1.post();\" " +
+                "action=\"javascript: Fiz.ids.form1.post();\" " +
                 "method=\"post\">\n" +
                 "  <table cellspacing=\"0\" class=\"vertical\">\n" +
                 "    <tr><td class=\"label\">Name:</td></tr>\n" +

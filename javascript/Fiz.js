@@ -9,6 +9,14 @@
 // Prototype without worrying about name conflicts.
 Fiz = Object();
 
+// Some Fiz objects, such as FormSections, create a Javascript object
+// that holds additional data related to an HTML element (Fiz.FormSection
+// in the case of a FormSection).  When this happens, a reference to
+// the Javascript object is stored as a property of the following
+// object, using the id of the corresponding HTML element as the name
+// of the Javascript object.
+Fiz.ids = Object();
+
 /**
  * Adds a message to the "bulletin" area at the top of the page.  First,
  * this function looks for a div with id {@code bulletin}, and creates one
