@@ -10,6 +10,21 @@ public class AjaxTest extends junit.framework.TestCase {
         assertEquals("missing comma", error.getMessage());
     }
 
+    public void test_invoke() {
+        ClientRequest cr = new ClientRequestFixture();
+        StringBuilder out = new StringBuilder();
+        Dataset data = new Dataset("name", "Alice", "weight", "\"110\"");
+        Ajax.invoke(cr, "/fiz/test/alert?age=24&name=@name&weight=@weight",
+                data, out);
+        TestUtil.assertSubstring("include Javascript file",
+                "/servlet/Ajax.js",
+                cr.getHtml().jsFileHtml.toString());
+        assertEquals("generated HTML",
+                "void new Fiz.Ajax(&quot;/fiz/test/alert" +
+                "?age=24&amp;name=Alice&amp;weight=%22110%22&quot;);",
+                out.toString());
+    }
+
     public void test_readInputData() {
         String source = "3.age2.24\n" +
                 "8.children(4.name5.Alice\n" +

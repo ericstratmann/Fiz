@@ -28,6 +28,39 @@ public class Ajax {
     }
 
     /**
+     * Generate Javascript code that will invoke an Ajax request.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @param urlTemplate          Template for the URL to be invoked
+     *                             via Ajax.  Must refer to an Interactor
+     *                             method.
+     * @param data                 Data to use while expanding urlTemplate.
+     * @param out                  Javascript to invoke the Ajax request
+     *                             using the class Fiz.Ajax.  The code is
+     *                             quoted for inclusion in HTML (e.g. as
+     *                             part of an attribute for an element).
+     */
+    public static void invoke(ClientRequest cr, CharSequence urlTemplate,
+            Dataset data, StringBuilder out) {
+        cr.getHtml().includeJsFile("Ajax.js");
+        
+        // Quoting is tricky:
+        //   * Must first use URL quoting while expanding the URL template.
+        //   * Would normally apply string quoting next (because the URL
+        //     will be passed in a Javascript string) but we can skip this
+        //     because URL quoting has already quoted all the characters
+        //     that are special in strings.
+        //   * Apply HTML quoting because the entire Javascript script
+        //     is output as part of the HTML.
+        StringBuilder expandedUrl = new StringBuilder(urlTemplate.length());
+        Template.expand(urlTemplate, data, expandedUrl,
+                Template.SpecialChars.URL);
+        Html.escapeHtmlChars("void new Fiz.Ajax(\"", out);
+        Html.escapeHtmlChars(expandedUrl, out);
+        Html.escapeHtmlChars("\");", out);
+    }
+
+    /**
      * Parse the message from an incoming Ajax request and add all of
      * its data to a dataset.  The POST data for an Ajax request
      * represents a dataset using a special-purpose format that is easy

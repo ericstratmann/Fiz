@@ -116,7 +116,7 @@ public class LinkTest extends junit.framework.TestCase {
                 + "name=Alice&amp;weight=%22110%22\">Alice</a>", out.toString());
         TestUtil.assertXHTML(out.toString());
     }
-    public void test_html_ajaxExpandUrlTemplate() {
+    public void test_html_ajaxUrl() {
         StringBuilder out = new StringBuilder();
         Dataset data = new Dataset("name", "Alice", "weight", "\"110\"");
         Link link = new Link(new Dataset("text", "@name",
@@ -125,9 +125,6 @@ public class LinkTest extends junit.framework.TestCase {
         assertEquals("HTML for link", "<a href=\"javascript:void new " +
                 "Fiz.Ajax(&quot;/ajaxUrl?age=24&amp;name=Alice&amp;" +
                 "weight=%22110%22&quot;);\">Alice</a>", out.toString());
-        TestUtil.assertSubstring("include Javascript file",
-                "/servlet/Ajax.js",
-                cr.getHtml().jsFileHtml.toString());
         TestUtil.assertXHTML(out.toString());
     }
     public void test_html_javascriptHref() {

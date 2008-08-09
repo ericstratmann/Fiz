@@ -141,22 +141,8 @@ public class Link implements Formatter {
             Template.expand(url, data, expandedUrl, Template.SpecialChars.URL);
             Html.escapeHtmlChars(expandedUrl, out);
         } else if (ajaxUrl != null) {
-            // Ajax request.  Quoting is tricky:
-            //   * Must first use URL quoting.
-            //   * Would normally apply string quoting next (because the URL
-            //     will be passed in a Javascript string) but we can skip this
-            //     because URL quoting has already quoted all the characters
-            //     that are special in strings.
-            //   * Apply HTML quoting because the entire Javascript script
-            //     is stored in the HTML.
-            cr.getHtml().includeJsFile("Ajax.js");
-            StringBuilder expandedUrl = new StringBuilder(ajaxUrl.length());
-            Template.expand(ajaxUrl, data, expandedUrl,
-                    Template.SpecialChars.URL);
-            // TODO: don't generate Javascript directly; let Ajax do it.
-            Html.escapeHtmlChars("javascript:void new Fiz.Ajax(\"", out);
-            Html.escapeHtmlChars(expandedUrl, out);
-            Html.escapeHtmlChars("\");", out);
+            out.append("javascript:");
+            Ajax.invoke(cr, ajaxUrl, data, out);
         } else if (javascript != null) {
             // Javascript code.
             StringBuilder expanded = new StringBuilder(javascript.length());

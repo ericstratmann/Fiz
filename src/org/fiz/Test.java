@@ -166,6 +166,9 @@ public class Test extends Interactor {
                 "ajaxUrl", "ajaxPerf"));
         body.append("Want to measure the round-trip latency for Ajax?  ");
         link4.html(cr, globalData, body);
+        body.append("  Or, ");
+        Button.html(cr, new Dataset("text", "Click", "ajaxUrl", "ajaxPerf"),
+                new Dataset(), body);
         body.append("<span id=\"perf\"></span>\n");
     }
 
