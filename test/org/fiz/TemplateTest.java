@@ -1,5 +1,7 @@
 package org.fiz;
 
+import java.util.*;
+
 /**
  * Junit tests for the Template class.
  */
@@ -23,6 +25,8 @@ public class TemplateTest extends junit.framework.TestCase {
             info.templateEnd = -15;
             info.data = data;
             info.out = out;
+            info.quoting = Template.SpecialChars.NONE;
+            info.indexedQuoting = Template.SpecialChars.NONE;
             info.ignoreErrors = false;
             info.missingData = false;
             info.skip = false;
@@ -39,6 +43,8 @@ public class TemplateTest extends junit.framework.TestCase {
             info.templateEnd = template.length();
             info.data = data;
             info.out = out;
+            info.quoting = Template.SpecialChars.NONE;
+            info.indexedQuoting = Template.SpecialChars.NONE;
             info.ignoreErrors = conditional;
             info.missingData = false;
             info.skip = false;
@@ -84,12 +90,14 @@ public class TemplateTest extends junit.framework.TestCase {
 
         public static void appendValue(String name, Dataset data,
                 StringBuilder out, boolean conditional,
-                Template.SpecialChars encoding) {
+                Template.SpecialChars encoding,
+                ArrayList<String> sqlParameters) {
             Template.ParseInfo info = new Template.ParseInfo();
             info.template = "dummy template";
             info.data = data;
             info.out = out;
             info.quoting = encoding;
+            info.sqlParameters = sqlParameters;
             info.ignoreErrors = conditional;
             info.missingData = false;
             info.skip = false;
@@ -106,6 +114,8 @@ public class TemplateTest extends junit.framework.TestCase {
             info.templateEnd = template.length();
             info.data = data;
             info.out = out;
+            info.quoting = Template.SpecialChars.NONE;
+            info.indexedQuoting = Template.SpecialChars.NONE;
             info.ignoreErrors = false;
             info.missingData = true;
             info.skip = false;
@@ -275,6 +285,36 @@ public class TemplateTest extends junit.framework.TestCase {
         assertEquals("output string",
                 "name: &lt;index data #1&gt;, age: &lt;index data #2&gt;",
                 result);
+    }
+
+    public void test_expandSql() {
+        ArrayList<String> parameters = new ArrayList<String>();
+        String result = Template.expandSql("SELECT * FROM people " +
+                "WHERE name=@name AND age=@age;",
+                new Dataset("name", "\"Alice\"", "age", "28"), parameters);
+        assertEquals("output string",
+                "SELECT * FROM people WHERE name=? AND age=?;",
+                result);
+        assertEquals("saved variables", "\"Alice\", 28",
+                StringUtil.join(parameters, ", "));
+    }
+    public void test_expandSql_withConditional() {
+        ArrayList<String> parameters = new ArrayList<String>();
+        String result = Template.expandSql("xyz{{@a @x @c}}abc{{b:@b}}",
+                new Dataset("a", "0", "b", "1", "c", "2"), parameters);
+        assertEquals("output string", "xyzabcb:?",
+                result);
+        assertEquals("saved variables", "1",
+                StringUtil.join(parameters, ", "));
+    }
+    public void test_expandSql_withSkips() {
+        ArrayList<String> parameters = new ArrayList<String>();
+        String result = Template.expandSql("@a?{b:@b} @x?{a:@a|c:@c}",
+                new Dataset("a", "0", "b", "1", "c", "2"), parameters);
+        assertEquals("output string", "? c:?",
+                result);
+        assertEquals("saved variables", "0, 2",
+                StringUtil.join(parameters, ", "));
     }
 
     public void test_expandRange_atSign() {
@@ -547,7 +587,7 @@ public class TemplateTest extends junit.framework.TestCase {
         Dataset data = new Dataset("last_name", "West");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.appendValue("last_name", data, out, true,
-                Template.SpecialChars.HTML);
+                Template.SpecialChars.HTML, null);
         assertEquals("missingData", false, TemplateFixture.missingData);
         assertEquals("output string", "123West", out.toString());
     }
@@ -555,7 +595,7 @@ public class TemplateTest extends junit.framework.TestCase {
         Dataset data = new Dataset("last_name", "West");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.appendValue("first_name", data, out, true,
-                Template.SpecialChars.HTML);
+                Template.SpecialChars.HTML, null);
         assertEquals("missingData", true, TemplateFixture.missingData);
         assertEquals("output string", "123", out.toString());
     }
@@ -563,7 +603,7 @@ public class TemplateTest extends junit.framework.TestCase {
         Dataset data = new Dataset("last_name", "West");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.appendValue("last_name", data, out, false,
-                Template.SpecialChars.HTML);
+                Template.SpecialChars.HTML, null);
         assertEquals("missingData", false, TemplateFixture.missingData);
         assertEquals("output string", "123West", out.toString());
     }
@@ -573,7 +613,7 @@ public class TemplateTest extends junit.framework.TestCase {
             Dataset data = new Dataset();
             StringBuilder out = new StringBuilder("123");
             TemplateFixture.appendValue("last_name", data, out, false,
-                    Template.SpecialChars.HTML);
+                    Template.SpecialChars.HTML, null);
         }
         catch (Template.MissingValueError e) {
             assertEquals("exception message",
@@ -588,29 +628,39 @@ public class TemplateTest extends junit.framework.TestCase {
         Dataset data = new Dataset("last_name", "<West>");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.appendValue("last_name", data, out, false,
-                Template.SpecialChars.HTML);
+                Template.SpecialChars.HTML, null);
         assertEquals("output string", "123&lt;West&gt;", out.toString());
     }
     public void test_appendValue_UrlEncoding() {
         Dataset data = new Dataset("last_name", "<West>");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.appendValue("last_name", data, out, false,
-                Template.SpecialChars.URL);
+                Template.SpecialChars.URL, null);
         assertEquals("output string", "123%3cWest%3e", out.toString());
     }
     public void test_appendValue_JavascriptEncoding() {
         Dataset data = new Dataset("value", "\\\n\"");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.appendValue("value", data, out, false,
-                Template.SpecialChars.JAVASCRIPT);
+                Template.SpecialChars.JAVASCRIPT, null);
         assertEquals("output string", "123\\\\\\n\\\"", out.toString());
     }
     public void test_appendValue_NoEncoding() {
         Dataset data = new Dataset("last_name", "<West>");
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.appendValue("last_name", data, out, false,
-                Template.SpecialChars.NONE);
+                Template.SpecialChars.NONE, null);
         assertEquals("output string", "123<West>", out.toString());
+    }
+    public void test_appendValue_Sql() {
+        Dataset data = new Dataset("last_name", "<West>");
+        StringBuilder out = new StringBuilder("123");
+        ArrayList<String> parameters = new ArrayList<String>();
+        TemplateFixture.appendValue("last_name", data, out, false,
+                null, parameters);
+        assertEquals("output string", "123?", out.toString());
+        assertEquals("saved variables", "<West>",
+                StringUtil.join(parameters, ", "));
     }
 
     public void test_expandBraces_basics() {
@@ -697,6 +747,14 @@ public class TemplateTest extends junit.framework.TestCase {
         Template.expand("<{{@x}}abc + y{{@x}}y + <{{@x}}", data, out);
         assertEquals("don't remove spaces", "<abc + yy + <",
                 out.toString());
+    }
+    public void test_expandBraces_discardCollectedVariables() {
+        Dataset data = new Dataset("a", "0", "x", "1", "y", "2");
+        ArrayList<String> parameters = new ArrayList<String>();
+        String out = Template.expandSql("a:@a {{x:@x x:@x z:@z}} y:@y", data, parameters);
+        assertEquals("expanded template", "a:? y:?", out);
+        assertEquals("saved variables", "0, 2",
+                StringUtil.join(parameters, ", "));
     }
     public void test_expandEmbraces_missingCloseBrace() {
         boolean gotException = false;

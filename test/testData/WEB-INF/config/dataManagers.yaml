@@ -7,3 +7,9 @@ file:
 fixture:
   class:   DataManagerFixture
   arg1:    1234
+sql:
+  class:        SqlDataManager
+  driverClass:  com.mysql.jdbc.Driver
+  serverUrl:    jdbc:mysql://localhost:3306/test
+  user:         test
+  password:     test

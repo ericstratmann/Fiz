@@ -1,5 +1,7 @@
 package org.fiz;
 
+import java.util.*;
+
 /**
  * The Template class substitutes values from a Dataset into a template
  * string to produce a new string through a process called "expansion".
@@ -136,17 +138,27 @@ public class Template {
         StringBuilder out;         // Output information is appended here.
         SpecialChars quoting;      // How to transform special characters
                                    // in substituted values from {@code data}.
+                                   // Null means we are doing SQL template
+                                   // expansion.
         Object[] indexedData;      // Used in some forms of {@code expand}:
                                    // provides additional data referenced with
                                    // numerical specifiers such as {@code @1}.
+        ArrayList<String> sqlParameters;
+                                   // Non-null means we are expanding an SQL
+                                   // template, so variables don't get
+                                   // substituted into the output string: this
+                                   // object (provided by the caller) collects
+                                   // the values of all of the variables,
+                                   // which are then added to the SQL statement
+                                   // by the caller.
         SpecialChars indexedQuoting;
                                    // How to transform special characters when
                                    // substituting values from
-                                   // {@code indexedData}.
+                                   // {@code indexedData}.  Null means we are
+                                   // doing SQL template expansion.
         SpecialChars currentQuoting;
-                                   // Used as a return value from
-                                   // {@code findValue}: either {@code quoting}
-                                   // or {@code indexedQuoting}.
+                                   // Set by {@code findValue}: either
+                                   // {@code quoting} or {@code indexedQuoting}.
         boolean ignoreErrors;      // True means we are processing information
                                    // between curly braces, so don't get upset
                                    // if data values can't be found.
@@ -169,7 +181,7 @@ public class Template {
         int lastDeletedSpace;      // Used in collapsing space characters
                                    // around braces to handle cumulative
                                    // situations like "<{@a} {@b} {@c}>":
-                                   // if all three sets embraces drop out,
+                                   // if all three sets in braces drop out,
                                    // we want to eliminate exactly 2 spaces.
                                    // This field holds the index into the
                                    // template of the last space character
@@ -300,6 +312,7 @@ public class Template {
         info.out = out;
         info.quoting = quoting;
         info.indexedData = indexedData;
+        info.sqlParameters = null;
         info.indexedQuoting = indexedQuoting;
         info.ignoreErrors = false;
         info.missingData = false;
@@ -482,6 +495,42 @@ public class Template {
         expand(template, null, out, null, Template.SpecialChars.HTML,
                 indexedData);
         return out.toString();
+    }
+
+    /**
+     * Substitute data into a template SQL query and return the expanded
+     * result.  Because of the way variables are handled in SQL queries,
+     * variable values are not substituted directly into the query.  Instead,
+     * each substitution causes a "?" character to appear in the output query.
+     * The variable values are collected in a separate ArrayList for the
+     * caller, which will then invoke a JDBC method to attach them to the
+     * SQL statement for the query.
+     * @param template             Contains an SQL query that may contain
+     *                             substitution specifiers such as
+     *                             {@code @foo}.
+     * @param data                 Provides data to be substituted into the
+     *                             template.
+     * @return                     The result produced by expanding the
+     *                             template.
+     * @throws MissingValueError   A required data value couldn't be found.
+     * @throws SyntaxError         The template contains an illegal construct
+     *                             such as {@code @+}.
+     */
+    public static String expandSql(CharSequence template, Dataset data,
+            ArrayList<String> sqlParameters)
+            throws MissingValueError, SyntaxError {
+        ParseInfo info = new ParseInfo();
+        info.template = template;
+        info.data = data;
+        info.out = new StringBuilder(template.length() + 50);
+        info.quoting = null;
+        info.sqlParameters = sqlParameters;
+        info.indexedQuoting = null;
+        info.ignoreErrors = false;
+        info.missingData = false;
+        info.lastDeletedSpace = -1;
+        expandRange(info, 0, template.length());
+        return info.out.toString();
     }
 
     /**
@@ -701,14 +750,23 @@ public class Template {
             Html.escapeStringChars(value, info.out);
         } else if (info.currentQuoting == SpecialChars.URL) {
             Html.escapeUrlChars(value, info.out);
-        } else {
+        } else if (info.currentQuoting == SpecialChars.NONE) {
             info.out.append(value);
+        } else if (info.sqlParameters != null) {
+            // The template being expanded is an SQL query.  Substitute
+            // "?" into the query, and save the variable value so that
+            // the caller can add it to the SQL statement.
+            info.sqlParameters.add(value);
+            info.out.append("?");
+        } else {
+            throw new InternalError("unknown quoting value in " +
+                    "Template.appendValue");
         }
     }
 
     /**
      * This method is invoked to expand a portion of a template that
-     * lies between curly braces.
+     * lies between double curly braces.
      * @param info                 Contains information about the template
      *                             being expanded.  This method modifies
      *                             info.out, info.missingInfo, and info.end.
@@ -725,6 +783,8 @@ public class Template {
         info.ignoreErrors = true;
         info.missingData = false;
         int oldEnd = info.out.length();
+        int oldSqlParametersSize = (info.sqlParameters != null) ?
+                info.sqlParameters.size() : 0;
         CharSequence template = info.template;
 
         for (int i = start; i < info.templateEnd; ) {
@@ -787,6 +847,13 @@ public class Template {
                         }
                     }
                     info.out.setLength(oldEnd);
+                    if (info.sqlParameters != null) {
+                        for (int size = info.sqlParameters.size();
+                                size > oldSqlParametersSize; ) {
+                            size--;
+                            info.sqlParameters.remove(size);
+                        }
+                    }
                 }
                 info.ignoreErrors = false;
                 return;
@@ -867,7 +934,7 @@ public class Template {
      *                             can't be found
      * @return                     The value corresponding to {@code name}.
      * @throws MissingValueError   The desired value could not be found
-     *                             and {@code required} was true.
+     *                             and {@code requaired} was true.
      */
     protected static String findValue(ParseInfo info, String name,
             boolean required) throws MissingValueError {

@@ -228,22 +228,30 @@ public class YamlDatasetTest extends junit.framework.TestCase {
                 "  d:\n" +
                 "    e: Arizona\n" +
                 "  f: California\n" +
-                "funny : \" abcd\\n\\n\"\n");
+                "funny : \" abcd\\n\\n\"\n" );
         assertEquals("generated YAML",
                 "a:     45\n" +
-                        "b:     Simple  name\n" +
-                        "c:\n" +
-                        "    d:\n" +
-                        "        e: Arizona\n" +
-                        "    f: California\n" +
-                        "children:\n" +
-                        "  - age:  18\n" +
-                        "    name: Bill\n" +
-                        "  - age:  36\n" +
-                        "    name: Alice\n" +
-                        "  - age:  25\n" +
-                        "    name: Susan\n" +
-                        "funny: \" abcd\\n\\n\"\n", d.toString());
+                "b:     Simple  name\n" +
+                "c:\n" +
+                "    d:\n" +
+                "        e: Arizona\n" +
+                "    f: California\n" +
+                "children:\n" +
+                "  - age:  18\n" +
+                "    name: Bill\n" +
+                "  - age:  36\n" +
+                "    name: Alice\n" +
+                "  - age:  25\n" +
+                "    name: Susan\n" +
+                "funny: \" abcd\\n\\n\"\n", d.toString());
+    }
+    public void test_writeSubtree_nameNeedsQuoting() {
+        Dataset d = new Dataset("'abc'", "first", "a\nb", "second",
+                "x:y:z", "third");
+        assertEquals("generated YAML",
+                "\"'abc'\": first\n" +
+                "\"a\\nb\":   second\n" +
+                "\"x:y:z\": third\n", d.toString());
     }
     public void test_writeSubtree_rereadOutput() {
         Dataset d = YamlDataset.newStringInstance(

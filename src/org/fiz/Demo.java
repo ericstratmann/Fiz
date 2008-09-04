@@ -89,7 +89,7 @@ public class Demo extends Interactor {
             new EntryFormElement(new Dataset("id", "state2",
                     "label", "Home state:")),
             new CheckboxFormElement(new Dataset("id", "citizen2",
-                    "extra", "U.S. citizen:")),
+                    "extra", "U.S. citizen")),
             new SelectFormElement(new Dataset("id", "fruit2",
                     "label", "Favorite fruit:",
                     "choiceRequest", "demo.getFruits",

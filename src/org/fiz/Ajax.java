@@ -43,7 +43,7 @@ public class Ajax {
     public static void invoke(ClientRequest cr, CharSequence urlTemplate,
             Dataset data, StringBuilder out) {
         cr.getHtml().includeJsFile("Ajax.js");
-        
+
         // Quoting is tricky:
         //   * Must first use URL quoting while expanding the URL template.
         //   * Would normally apply string quoting next (because the URL
@@ -103,7 +103,7 @@ public class Ajax {
     }
 
     /**
-     * This method does most of the work of {@code be serializedInputData}.
+     * This method does most of the work of {@code readInputData}.
      * It recursively reads a single dataset.
      * @param source               Encoded input string.
      * @param start                Index of the first character of this

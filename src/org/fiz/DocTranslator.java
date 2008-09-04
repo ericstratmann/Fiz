@@ -249,7 +249,7 @@ public class DocTranslator {
         // there's a run of at least two space characters (not preceded
         // by a "." or ";") later in the line.  Also, don't treat this as a
         // definition if the term has the form "@foo": these are Javadoc
-        // tanks and will be handled elsewhere.
+        // tags and will be handled elsewhere.
         defCheck: for (i = left+1; (i+1) < lineEnd; i++) {
             if ((input.charAt(i) == ' ') && (input.charAt(i+1) == ' ')
                     && (input.charAt(i-1) != '.')

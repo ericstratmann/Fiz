@@ -254,7 +254,7 @@ public class  YamlDataset extends Dataset {
             String name = (String) nameObject;
             Object value = dataset.get(name);
             writer.append(prefix);
-            writer.append(name);
+            writer.append(escapeYamlChars(name));
             if (value instanceof HashMap) {
                 writer.append(":\n");
                 String childIndent = otherPrefix + "    ";
@@ -281,9 +281,9 @@ public class  YamlDataset extends Dataset {
     }
 
     /**
-     * This method is invoked when writing YAML to handle values that
+     * This method is invoked when writing YAML to handle names and values that
      * may include special characters that require quoting.
-     * @param value                Raw value of a YAML element.
+     * @param value                Raw name or value for a YAML element.
      * @return                     In most cases, this is the same as
      *                             {@code value}.  However, if {@code value}
      *                             would cause confusion to the YAML
@@ -309,11 +309,12 @@ public class  YamlDataset extends Dataset {
             }
 
             // Certain characters have special meaning to YAML if they appear
-            // anywhere within a value.
+            // anywhere within a name or value.
             for (int i = 0; i < value.length(); i++) {
                 c = value.charAt(i);
                 if ((c == '&') || (c == '!') || (c == '@') || (c == ',')
-                        || (c == '`') || (c == '#') || (c <= 0x1f)) {
+                        || (c == '`') || (c == '#') || (c == ':')
+                        || (c <= 0x1f)) {
                     break checkForIssues;
                 }
             }

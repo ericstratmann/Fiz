@@ -340,7 +340,7 @@ public final class StringUtil {
      *                                 values.
      */
     public static String join(CharSequence[] values, CharSequence separator) {
-        StringBuilder builder= new StringBuilder(joinedLength(values,
+        StringBuilder builder = new StringBuilder(joinedLength(values,
                 separator));
         CharSequence prefix = "";
         for (int i = 0; i < values.length; i++) {
