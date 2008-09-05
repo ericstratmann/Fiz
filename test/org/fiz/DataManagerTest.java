@@ -18,24 +18,9 @@ public class DataManagerTest extends junit.framework.TestCase {
                 manager.toString());
     }
 
-    public void test_getDataManager() {
-        // First attempt: fails because the desired data manager isn't
-        // listed in the configuration dataset.
+    public void test_getDataManager_basics() {
+        // First attempt: loads cache and succeeds.
         DataManager.destroyAll();
-        Config.setDataset("dataManagers", new Dataset());
-        boolean gotException = false;
-        try {
-            DataManager.getDataManager("testManager");
-        }
-        catch (Error e) {
-            assertEquals("exception message",
-                    "couldn't find dataset element \"testManager\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-
-        // Second attempt: loads cache and succeeds.
         Config.setDataset("dataManagers", YamlDataset.newStringInstance(
                 "testManager:\n" +
                 "  class: org.fiz.DataManagerFixture\n" +
@@ -48,7 +33,7 @@ public class DataManagerTest extends junit.framework.TestCase {
         assertEquals("count of cached data managers", 1,
                 DataManager.cache.size());
 
-        // Third attempt: finds value in cache.  Erase the configuration
+        // Second attempt: finds value in cache.  Erase the configuration
         // dataset so the attempt will fail if it tries to reinstantiate
         // the data manager.
         Config.setDataset("dataManagers", new Dataset());
@@ -56,6 +41,28 @@ public class DataManagerTest extends junit.framework.TestCase {
                 DataManager.getDataManager("testManager");
         assertEquals("argument to constructor", "923",
                 manager.constructorArgs.get("value2"));
+    }
+    public void test_getDataManager_defaultConfigurationInfo() {
+        DataManager.destroyAll();
+        Config.setDataset("main", YamlDataset.newStringInstance(
+                "searchPackages: org.fiz\n"));
+        Config.setDataset("dataManagers", YamlDataset.newStringInstance(
+                "bogus:\n" +
+                "  value1: 478\n"));
+        DataManager manager = DataManager.getDataManager("raw");
+        assertEquals("class of data manager", "RawDataManager",
+                manager.getClass().getSimpleName());
+    }
+    public void test_getDataManager_defaultClass() {
+        DataManager.destroyAll();
+        Config.setDataset("main", YamlDataset.newStringInstance(
+                "searchPackages: org.fiz\n"));
+        Config.setDataset("dataManagers", YamlDataset.newStringInstance(
+                "raw:\n" +
+                "  value1: 478\n"));
+        DataManager manager = DataManager.getDataManager("raw");
+        assertEquals("class of data manager", "RawDataManager",
+                manager.getClass().getSimpleName());
     }
     public void test_getDataManager_setName() {
         DataManagerFixture.init();

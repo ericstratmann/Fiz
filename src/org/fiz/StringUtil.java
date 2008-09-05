@@ -555,4 +555,24 @@ public final class StringUtil {
         }
         return result;
     }
+
+    /**
+     * If the first character in a string is lowercase, convert it to
+     * uppercase.
+     * @param s                    Input string
+     * @return                     The return value is identical to {@code s}
+     *                             except that its first character is
+     *                             converted to uppercase if it was previously
+     *                             lowercase.
+     */
+    public static String ucFirst(String s) {
+        if (s.length() == 0) {
+            return s;
+        }
+        char first = s.charAt (0);
+        if (!Character.isLowerCase(first)) {
+            return s;
+        }
+        return Character.toUpperCase(first) + s.substring(1);
+    }
 }

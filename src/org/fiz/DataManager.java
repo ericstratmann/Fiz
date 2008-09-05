@@ -13,12 +13,20 @@ import org.apache.log4j.*;
  * and how data managers respond to requests.
  * <p>
  * The {@code dataManagers} dataset provides configuration information
- * for all of the data managers of the application, with one child dataset
+ * for the data managers of the application, with one child dataset
  * for each data manager.  The name of the child is the name of the data
  * manager and the values within the child specify the configuration for that
- * data manager.  There must be a {@code class} value, which specifies
- * the class that implements that data manager; any other values are used
- * by the data manager's constructor in a manager-specific fashion.
+ * data manager.  The {@code class} value specifies the class that implements
+ * the data manager; any other values are used by the data manager's
+ * constructor in a manager-specific fashion.  If there is no {@code class}
+ * value, and the class name is generated automatically from the data manager
+ * name: if the data manager name is {@code foo}, then the class name will
+ * be {@code FooDataManager}.
+ * <p>
+ * It is possible to use a data manager without creating any configuration
+ * information for it: if the class of the data manager is
+ * {@code FooDataManager}, it can be referenced with the name "foo"; it
+ * will receive an empty dataset as its configuration dataset.
  * <p>
  * Here are some other properties of the DataManager mechanism:
  *   - In addition to the abstract methods declared here, each data manager
@@ -130,8 +138,14 @@ public abstract class DataManager {
         // We haven't seen this name before.  First, find the configuration
         // info that describes the data manager, then extract the name of the
         // DataManager class and instantiate it.
-        Dataset config = Config.getDataset("dataManagers").getChild(name);
-        String dmClass = config.get("class");
+        Dataset config = Config.getDataset("dataManagers").checkChild(name);
+        if (config == null) {
+            config = new Dataset();
+        }
+        String dmClass = config.check("class");
+        if (dmClass == null) {
+            dmClass = StringUtil.ucFirst(name) + "DataManager";
+        }
         manager = (DataManager) Util.newInstance(dmClass,
                 "org.fiz.DataManager", config);
         manager.name = name;

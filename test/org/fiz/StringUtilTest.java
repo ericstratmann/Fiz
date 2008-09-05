@@ -268,4 +268,12 @@ public class StringUtilTest extends junit.framework.TestCase {
         assertEquals("trim spaces", "no separators", result2[0]);
         assertEquals("trim spaces ", "second", result[1]);
     }
+
+    public void test_ucFirst() {
+        assertEquals("empty string", "", StringUtil.ucFirst(""));
+        assertEquals("not lowercase", "12345", StringUtil.ucFirst("12345"));
+        assertEquals("already uppercase", "John", StringUtil.ucFirst("John"));
+        assertEquals("must convert", "Bermuda", StringUtil.ucFirst("bermuda"));
+        assertEquals("single character", "I", StringUtil.ucFirst("i"));
+    }
 }
