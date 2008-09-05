@@ -170,6 +170,16 @@ public class DataRequestTest extends junit.framework.TestCase {
                 request.getResponseData().toString());
     }
 
+    public void test_setComplete_noResponse() {
+        DataRequest request = new DataRequest(new Dataset(
+                "manager", "t2", "id", "707"));
+        request.start();
+        request.setComplete();
+        assertEquals("after completion", true, request.completed);
+        assertEquals("result dataset", "",
+                request.getResponseData().toString());
+    }
+
     public void test_getResponseData_notYetStarted() {
         DataRequest request = new DataRequest(new Dataset(
                 "manager", "t2", "id", "707"));
@@ -264,12 +274,7 @@ public class DataRequestTest extends junit.framework.TestCase {
     public void test_getErrorData() {
         DataRequest request = new DataRequest(new Dataset(
                 "manager", "t2", "id", "40"));
-        assertEquals("error data before start", null,
-                request.getErrorData());
-        request.start();
-        assertEquals("error data before completion", null,
-                request.getErrorData());
-        request.setError(new Dataset("cause", "core dump"));
+        DataManagerFixture.setErrorData(new Dataset("cause", "core dump"));
         assertEquals("error dataset", "cause: core dump\n",
                 request.getErrorData()[0].toString());
     }
@@ -294,26 +299,28 @@ public class DataRequestTest extends junit.framework.TestCase {
     public void test_getErrorMessage_noError() {
         DataRequest request = new DataRequest(new Dataset(
                 "manager", "t2", "id", "40"));
+        DataManagerFixture.responseData = new Dataset("x", "1");
         assertEquals("error message", null, request.getErrorMessage());
     }
     public void test_getErrorMessage_oneError() {
         DataRequest request = new DataRequest(new Dataset(
                 "manager", "t2", "id", "40"));
-        request.setError(new Dataset("message", "detail 47"));
+        DataManagerFixture.setErrorData(new Dataset("message", "detail 47"));
         assertEquals("error message", "detail 47",
                 request.getErrorMessage());
     }
 
-
     public void test_getDetailedErrorMessage_noError() {
         DataRequest request = new DataRequest(new Dataset(
                 "manager", "t2", "id", "40"));
+        DataManagerFixture.responseData = new Dataset("x", "1");
         assertEquals("error message", null, request.getDetailedErrorMessage());
     }
     public void test_getDetailedErrorMessage_oneError() {
         DataRequest request = new DataRequest(new Dataset(
                 "manager", "t2", "id", "40"));
-        request.setError(new Dataset("message", "access violation",
+        DataManagerFixture.setErrorData(new Dataset(
+                "message", "access violation",
                 "details", "firstline\nsecond line\nthird",
                 "code", "ENOENT", "time", "Thursday\n3:15 P.M."));
         assertEquals("error message", "access violation:\n" +

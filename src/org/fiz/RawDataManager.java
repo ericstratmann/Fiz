@@ -6,13 +6,18 @@ import java.util.*;
 /**
  * RawDataManager is a DataManager that responds to each request with a
  * dataset contained in the request itself.  It allows precomputed data
- * to be used in situations that receive data via DataRequests.
+ * to be used in situations that receive data via DataRequests.  It is
+ * also used for testing.
  * <p>
  * RawDataManager does not use any information in the configuration
  * dataset for the data manager.  It supports the following arguments
  * in DataRequests:
- *   result:    (required) A nested dataset, which will be returned as the
+ *   result:    (optional) A nested dataset, which will be returned as the
  *              result of the request.
+ *   error:     (optional) One or more nested data sets, which will be
+ *              returned as errors for the request.  If {@code result} is
+ *              not specified then {@code error} must be specified; if
+ *              {@code result} is specified then {@code error} is ignored.
  */
 public class RawDataManager extends DataManager {
     /**
@@ -34,12 +39,18 @@ public class RawDataManager extends DataManager {
     public void startRequests(Collection<DataRequest> requests) {
         for (DataRequest request : requests) {
             Dataset result = request.getRequestData().checkChild("result");
-            if (result == null) {
-                request.setError(new Dataset("message",
-                        "no \"result\" argument provided in request",
-                        "culprit", "result"));
-            } else {
+            if (result != null) {
                 request.setComplete(result);
+            } else {
+                ArrayList<Dataset> errors =
+                        request.getRequestData().getChildren("error");
+                if (errors.size() > 0) {
+                    request.setError(errors);
+                } else {
+                    request.setError(new Dataset("message", "no \"result\" " +
+                            "or \"error\" argument provided in request",
+                            "culprit", "result"));
+                }
             }
         }
     }

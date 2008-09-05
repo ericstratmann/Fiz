@@ -5,8 +5,10 @@ file:
   class:        FileDataManager
   pathTemplate: "_testData_, test/testData"
 fixture:
-  class:   DataManagerFixture
-  arg1:    1234
+  class:        DataManagerFixture
+  arg1:         1234
+raw:
+  class:        RawDataManager
 sql:
   class:        SqlDataManager
   driverClass:  com.mysql.jdbc.Driver

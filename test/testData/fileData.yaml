@@ -2,7 +2,7 @@
 # to a FileDataManager request used for testing.
 
 people:
-  data:
+  record:
     - name: Alice
       age: 24
       height: 65
@@ -22,7 +22,7 @@ people:
       height: 71
 
 person:
-  data:
+  record:
     - name: David
       age: 66
       weight: 220

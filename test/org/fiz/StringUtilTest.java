@@ -223,6 +223,14 @@ public class StringUtilTest extends junit.framework.TestCase {
 
     }
 
+    public void test_lcFirst() {
+        assertEquals("empty string", "", StringUtil.lcFirst(""));
+        assertEquals("not uppercase", "12345", StringUtil.lcFirst("12345"));
+        assertEquals("already lowercase", "aBCD", StringUtil.lcFirst("aBCD"));
+        assertEquals("must convert", "john", StringUtil.lcFirst("John"));
+        assertEquals("single character", "x", StringUtil.lcFirst("X"));
+    }
+
     public void test_newCharArray() {
         char[] ch = StringUtil.newCharArray("abc");
         assertEquals("array length", 3, ch.length);

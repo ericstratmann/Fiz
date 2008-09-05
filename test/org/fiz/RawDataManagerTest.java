@@ -38,12 +38,24 @@ public class RawDataManagerTest extends junit.framework.TestCase {
         assertEquals("response from second request", "name: Alice\n",
                 request2.getResponseData().toString());
     }
-    public void test_startRequests_missingResultElement() {
+    public void test_startRequests_error() {
+        DataRequest request = new DataRequest(YamlDataset.newStringInstance(
+                "manager: raw\n" +
+                "error:\n" +
+                "  - message: The first error\n" +
+                "  - message: The second error\n"));
+        request.start();
+        assertEquals("error messages", "The first error\n" +
+                "The second error",
+                request.getErrorMessage());
+    }
+    public void test_startRequests_noResultOrError() {
         DataRequest request = new DataRequest(new Dataset(
                 "manager", "raw"));
         request.start();
         assertEquals("error data", "culprit: result\n" +
-                "message: no \"result\" argument provided in request\n",
+                "message: no \"result\" or \"error\" argument " +
+                "provided in request\n",
                 request.getErrorData()[0].toString());
     }
 

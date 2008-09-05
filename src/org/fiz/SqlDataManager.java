@@ -25,10 +25,59 @@ import org.apache.log4j.*;
  * that selects an operation to perform; it must be one of the values
  * listed below.  Based on {@code request}, additional DataRequest values
  * are required or supported:
+ *   clearTable:       Remove all rows from a dataset table.
+ *       table:        (required) The name of the table to clear.
+ *   delete:           Removed from a table all rows with a particular value
+ *                     in a particular column.
+ *       table:        (required) The name of the table.
+ *       column:       (required) The name of a column in {@code table}.
+ *       value:        (required) Delete all rows with this value
+ *                      for {@code column}.
+ *   find:             Find all the rows in a table with a given value
+ *                     in a given column.  The result dataset contains
+ *                     one nested dataset (named {@code record}) for each
+ *                     matching row.
+ *       table:        (required) The name of the table.
+ *       column:       (required) The name of a column in {@code table}.
+ *       value:        (required) Desired value for {@code column}.
  *   findWithSql:      Issue a SQL query and returned a dataset containing
- *                     one nested dataset (named {@code data}) for each
+ *                     one nested dataset (named {@code record}) for each
  *                     record returned.
- *       sql:          (required) The SQL query to issue.
+ *       sql:          (required) The SQL query to issue.  This is a
+ *                     template, which is expanded using information in
+ *                     {@code queryData}.
+ *       queryData:    (optional) Nested dataset containing values
+ *                     referenced by {@code sql}.  Can be omitted if
+ *                     {@code sql} doesn't specify any substitutions.
+ *   insert:           Add one or more new rows to a table.
+ *       table:        (required) The name of the table.
+ *       record:       (optional) Nested dataset containing values for
+ *                     the new row.  If there are multiple datasets with
+ *                     the name {@code record}, that one new row is a
+ *                     inserted for each dataset.  If this parameter is
+ *                     omitted then the values for the new row must be
+ *                     supplied in the top-level request dataset (i.e. at
+ *                     the same level as {@code table}).
+ *   update:           Modify the contents of all rows in a table that
+ *                     have a given value in a given column.
+ *       table:        (required) The name of a table.
+ *       column:       (required) The name of a column in {@code table}.
+ *       value:        (required) Desired value for {@code column}.
+ *       record:       (optional) Nested dataset containing new values
+ *                     for the rows selected by {@code table}, {@code column},
+ *                     and {@code value}.  Only the columns selected by
+ *                     the contents of {@code record} are updated.  If this
+ *                     parameter is omitted then the values to update are
+ *                     taken from the top-level request dataset: any values
+ *                     whose names match columns in {@code table} are used.
+ *   updateWithSql:    Issue a SQL update command.  The result is an empty
+ *                     dataset.
+ *       sql:          (required) The SQL update statement.  This is a
+ *                     template, which is expanded using information in
+ *                     {@code queryData}.
+ *       queryData:    (optional) Nested dataset containing values
+ *                     referenced by {@code sql}.  Can be omitted if
+ *                     {@code sql} doesn't specify any substitutions.
  */
 
 public class SqlDataManager extends DataManager {
@@ -270,12 +319,49 @@ public class SqlDataManager extends DataManager {
             String operation = null;
             try {
                 operation = parameters.get("request");
-                if (operation.equals("findWithSql")) {
-                    request.setComplete(findWithSql(parameters.get("sql")));
+                if (operation.equals("clearTable")) {
+                    clearTable(parameters.get("table"));
+                    request.setComplete();
+                } else if (operation.equals("delete")) {
+                    delete(parameters.get("table"), parameters.get("column"),
+                            parameters.get("value"));
+                    request.setComplete();
+                } else if (operation.equals("find")) {
+                    request.setComplete(find(parameters.get("table"),
+                            parameters.get("column"),
+                            parameters.get("value")));
+                } else if (operation.equals("findWithSql")) {
+                    request.setComplete(findWithSql(parameters.get("sql"),
+                            parameters.checkChild("queryData")));
+                } else if (operation.equals("insert")) {
+                    ArrayList<Dataset> records = parameters.getChildren(
+                            "record");
+                    if (records.size() == 0) {
+                        insert(parameters.get("table"), parameters);
+                    } else {
+                        for (Dataset record : records) {
+                            insert(parameters.get("table"), record);
+                        }
+                    }
+                    request.setComplete();
+                } else if (operation.equals("update")) {
+                    Dataset record = parameters.checkChild("record");
+                    if (record == null) {
+                        record = parameters;
+                    }
+                    update(parameters.get("table"), parameters.get("column"),
+                            parameters.get("value"), record);
+                    request.setComplete();
+                } else if (operation.equals("updateWithSql")) {
+                    updateWithSql(parameters.get("sql"),
+                            parameters.checkChild("queryData"));
+                    request.setComplete();
                 } else {
                     request.setError(new Dataset("message",
                             "unknown request \"" + operation +
-                            "\" for SqlDataManager; must be findWithSql"));
+                            "\" for SqlDataManager; must be clearTable, " +
+                            "delete, find, findWithSql, insert, update, " +
+                            "or updateWithSql"));
                 }
             }
             catch (Dataset.MissingValueError e) {
@@ -288,7 +374,7 @@ public class SqlDataManager extends DataManager {
             catch (SqlError e) {
                 String message = "SQL error in SqlDataManager \"" +
                         operation + "\" request: " +
-                        e.getCause().getMessage();
+                        StringUtil.lcFirst(e.getCause().getMessage());
                 logger.error(message);
                 request.setError(new Dataset("message", message));
             }
@@ -297,7 +383,7 @@ public class SqlDataManager extends DataManager {
                         operation + "\" request: " +
                         ((operation != null) ?
                         ("\"" + operation + "\" ") : "") +
-                        "request: " + e.getMessage();
+                        "request: " + StringUtil.lcFirst(e.getMessage());
                 logger.error(message);
                 request.setError(new Dataset("message", message));
             }

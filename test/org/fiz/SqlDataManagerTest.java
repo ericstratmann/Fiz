@@ -105,9 +105,6 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         manager.clearTable("states");
         Dataset out = manager.findWithSql("SELECT * FROM states;");
         assertEquals("retrieved rows", "", out.toString());
-        manager.insert("states", new Dataset("name", "California",
-                "capital", "Sacramento", "id", "442"));
-        out = manager.findWithSql("SELECT * FROM states;");
     }
     public void test_clearTable_SqlError() {
         boolean gotException = false;
@@ -116,7 +113,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         }
         catch (SqlError e) {
             assertEquals("exception message",
-                    "SQL error in clearTable: Table 'test.bogus' " +
+                    "SQL error in clearTable: table 'test.bogus' " +
                     "doesn't exist",
                     e.getMessage());
             gotException = true;
@@ -146,7 +143,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         }
         catch (SqlError e) {
             assertEquals("exception message",
-                    "SQL error in delete: Table 'test.bogus' doesn't exist",
+                    "SQL error in delete: table 'test.bogus' doesn't exist",
                     e.getMessage());
             gotException = true;
         }
@@ -176,7 +173,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         }
         catch (SqlError e) {
             assertEquals("exception message",
-                    "SQL error in find: Table 'test.bogus' doesn't exist",
+                    "SQL error in find: table 'test.bogus' doesn't exist",
                     e.getMessage());
             gotException = true;
         }
@@ -199,7 +196,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         }
         catch (SqlError e) {
             assertEquals("exception message",
-                    "SQL error in findWithSql: Table 'test.bogustable' doesn't exist",
+                    "SQL error in findWithSql: table 'test.bogustable' doesn't exist",
                     e.getMessage());
             gotException = true;
         }
@@ -237,7 +234,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         }
         catch (SqlError e) {
             assertEquals("exception message",
-                    "SQL error in insert: Duplicate entry '1' for key 1",
+                    "SQL error in insert: duplicate entry '1' for key 1",
                     e.getMessage());
             gotException = true;
         }
@@ -264,26 +261,217 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
                 "    first: Bob\n",
                 requests.get(1).getResponseData().toString());
     }
-    public void test_startRequests_findWithSqlRequest() {
+    public void test_startRequests_clearTable() {
+        manager.insert("states", new Dataset("name", "Alaska",
+                "capital", "Juneau"));
+        DataRequest request = new DataRequest(new Dataset(
+                "manager", "sql",
+                "request", "clearTable",
+                "table", "states"));
+        assertEquals("response", "",
+                request.getResponseData().toString());
+        Dataset out = manager.findWithSql("SELECT * FROM states;");
+        assertEquals("retrieved rows", "", out.toString());
+    }
+    public void test_startRequests_clearTable_error() {
+        DataRequest request = new DataRequest(new Dataset(
+                "manager", "sql",
+                "request", "clearTable",
+                "table", "bogusTable"));
+        assertEquals("error message",
+                "SQL error in SqlDataManager \"clearTable\" request: " +
+                "table 'test.bogustable' doesn't exist",
+                request.getErrorMessage());
+    }
+    public void test_startRequests_delete() {
+        manager.clearTable("states");
+        manager.insert("states", new Dataset("name", "California",
+                "capital", "Sacramento", "id", "442"));
+        manager.insert("states", new Dataset("name", "California",
+                "capital", "Palo Alto", "id", "443"));
+        manager.insert("states", new Dataset("name", "Colorado",
+                "capital", "Denver", "id", "999"));
+        DataRequest request = new DataRequest(new Dataset(
+                "manager", "sql", "request", "delete", "table", "states",
+                "column", "name", "value", "California"));
+        assertEquals("response", "",
+                request.getResponseData().toString());
+        Dataset out = manager.findWithSql("SELECT name, capital FROM states;");
+        assertEquals("table after deletion",
+                "record:\n" +
+                "    capital: Denver\n" +
+                "    name:    Colorado\n", out.toString());
+    }
+    public void test_startRequests_find() {
+        DataRequest request = new DataRequest(new Dataset(
+                "manager", "sql",
+                "request", "find",
+                "table", "people",
+                "column", "state",
+                "value", "California"));
+        assertEquals("response",
+                "record:\n" +
+                "  - age:    24\n" +
+                "    first:  Alice\n" +
+                "    id:     1\n" +
+                "    last:   Adams\n" +
+                "    state:  California\n" +
+                "    weight: 115\n" +
+                "  - age:    32\n" +
+                "    first:  Carol\n" +
+                "    id:     3\n" +
+                "    last:   Collins\n" +
+                "    state:  California\n" +
+                "    weight: 130\n",
+                request.getResponseData().toString());
+    }
+    public void test_startRequests_findWithSql() {
         DataRequest request = new DataRequest(new Dataset(
                 "manager", "sql",
                 "request", "findWithSql",
                 "sql", "SELECT last FROM people WHERE state = 'California';"));
-        assertEquals("first response",
+        assertEquals("response",
                 "record:\n" +
                 "  - last: Adams\n" +
                 "  - last: Collins\n",
                 request.getResponseData().toString());
+    }
+    public void test_startRequests_findWithSql_withTemplate() {
+        DataRequest request = new DataRequest(YamlDataset.newStringInstance(
+                "manager:    sql\n" +
+                "request:    findWithSql\n" +
+                "sql:        \"SELECT first FROM people WHERE state = @state;\"\n" +
+                "queryData:\n" +
+                "    state:  California\n"));
+        assertEquals("response",
+                "record:\n" +
+                "  - first: Alice\n" +
+                "  - first: Carol\n",
+                request.getResponseData().toString());
+    }
+    public void test_startRequests_insert_noRecordDataset() {
+        DataRequest request = new DataRequest(new Dataset(
+                "manager", "sql",
+                "request", "insert",
+                "table", "states",
+                "name", "Illinois",
+                "capital", "Springfield"));
+        assertEquals("response", "",
+                request.getResponseData().toString());
+        Dataset out = manager.find("states", "name", "Illinois");
+        assertEquals("retrieved rows", "record:\n" +
+                "    capital: Springfield\n" +
+                "    id:      \"\"\n" +
+                "    name:    Illinois\n", out.toString());
+    }
+    public void test_startRequests_insert_multipleRecords() {
+        manager.clearTable("states");
+        DataRequest request = new DataRequest(YamlDataset.newStringInstance(
+                "manager:    sql\n" +
+                "request:    insert\n" +
+                "table:      states\n" +
+                "record:\n" +
+                "  - name:     Michigan\n" +
+                "    capital:  Lansing\n" +
+                "  - name:     Ohio\n" +
+                "    capital:  Columbus\n" +
+                "    id:       50\n"));
+        assertEquals("response", "",
+                request.getResponseData().toString());
+        Dataset out = manager.findWithSql("SELECT * FROM states;");
+        assertEquals("retrieved rows", "record:\n" +
+                "  - capital: Lansing\n" +
+                "    id:      \"\"\n" +
+                "    name:    Michigan\n" +
+                "  - capital: Columbus\n" +
+                "    id:      50\n" +
+                "    name:    Ohio\n", out.toString());
+    }
+    public void test_startRequests_update_noRecordDataset() {
+        manager.clearTable("states");
+        manager.insert("states", new Dataset("name", "California",
+                "capital", "Sacramento", "id", "442"));
+        DataRequest request = new DataRequest(new Dataset(
+                "manager", "sql",
+                "request", "update",
+                "table", "states",
+                "column", "name",
+                "value", "California",
+                "name", "Michigan",
+                "capital", "Lansing"));
+        assertEquals("response", "",
+                request.getResponseData().toString());
+        Dataset out = manager.findWithSql("SELECT * FROM states;");
+        assertEquals("retrieved rows", "record:\n" +
+                "    capital: Lansing\n" +
+                "    id:      442\n" +
+                "    name:    Michigan\n", out.toString());
+    }
+    public void test_startRequests_update_withRecord() {
+        manager.clearTable("states");
+        manager.insert("states", new Dataset("name", "California",
+                "capital", "Sacramento", "id", "442"));
+        DataRequest request = new DataRequest(YamlDataset.newStringInstance(
+                "manager:    sql\n" +
+                "request:    update\n" +
+                "table:      states\n" +
+                "column:     name\n" +
+                "value:      California\n" +
+                "record:\n" +
+                "  - name:     Michigan\n" +
+                "    id:       991\n"));
+        assertEquals("response", "",
+                request.getResponseData().toString());
+        Dataset out = manager.findWithSql("SELECT * FROM states;");
+        assertEquals("retrieved rows", "record:\n" +
+                "    capital: Sacramento\n" +
+                "    id:      991\n" +
+                "    name:    Michigan\n", out.toString());
+    }
+    public void test_startRequests_updateWithSql() {
+        manager.clearTable("states");
+        DataRequest request = new DataRequest(new Dataset(
+                "manager", "sql",
+                "request", "updateWithSql",
+                "sql", "INSERT INTO states (name, capital) " +
+                "VALUES ('Texas', 'Austin');"));
+        assertEquals("response", "",
+                request.getResponseData().toString());
+        Dataset out = manager.findWithSql("SELECT * FROM states;");
+        assertEquals("retrieved rows", "record:\n" +
+                "    capital: Austin\n" +
+                "    id:      \"\"\n" +
+                "    name:    Texas\n", out.toString());
+    }
+    public void test_startRequests_updateWithSql_withTemplate() {
+        manager.clearTable("states");
+        DataRequest request = new DataRequest(YamlDataset.newStringInstance(
+                "manager:    sql\n" +
+                "request:    updateWithSql\n" +
+                "sql:        \"INSERT INTO states (name, capital) " +
+                "VALUES (@name, @capital);\"\n" +
+                "queryData:\n" +
+                "  name:     Colorado\n" +
+                "  capital:  Denver\n"));
+        assertEquals("error message", null, request.getErrorMessage());
+        assertEquals("response", "",
+                request.getResponseData().toString());
+        Dataset out = manager.findWithSql("SELECT * FROM states;");
+        assertEquals("retrieved rows", "record:\n" +
+                "    capital: Denver\n" +
+                "    id:      \"\"\n" +
+                "    name:    Colorado\n", out.toString());
     }
     public void test_startRequests_bogusRequestName() {
         DataRequest request = new DataRequest(new Dataset(
                 "manager", "sql",
                 "request", "bogusRequest"));
         request.start();
-        assertEquals("error dataset",
-                "message: unknown request \"bogusRequest\" for " +
-                "SqlDataManager; must be findWithSql\n",
-                request.getErrorData()[0].toString());
+        assertEquals("error message",
+                "unknown request \"bogusRequest\" for " +
+                "SqlDataManager; must be clearTable, delete, find, " +
+                "findWithSql, insert, update, or updateWithSql",
+                request.getErrorMessage());
     }
     public void test_startRequests_MissingValueError() {
         DataRequest request = new DataRequest(new Dataset(
@@ -301,7 +489,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         request.start();
         assertEquals("error message",
                 "SQL error in SqlDataManager \"findWithSql\" request: " +
-                "Table 'test.bogustable' doesn't exist",
+                "table 'test.bogustable' doesn't exist",
                 request.getErrorData()[0].check("message"));
     }
 
@@ -333,7 +521,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         }
         catch (SqlError e) {
             assertEquals("error message",
-                    "SQL error in update: Unknown column 'bogus' in " +
+                    "SQL error in update: unknown column 'bogus' in " +
                     "'where clause'",
                     e.getMessage());
             gotException = true;
@@ -360,7 +548,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         }
         catch (SqlError e) {
             TestUtil.assertSubstring("first part of exception message",
-                    "SQL error in updateWithSql: You have an error in " +
+                    "SQL error in updateWithSql: you have an error in " +
                     "your SQL syntax",
                     e.getMessage());
             gotException = true;
@@ -387,7 +575,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         }
         catch (SqlError e) {
             TestUtil.assertSubstring("first part of exception message",
-                    "SQL error in updateWithSql: You have an error in " +
+                    "SQL error in updateWithSql: you have an error in " +
                     "your SQL syntax",
                     e.getMessage());
             gotException = true;
@@ -429,6 +617,9 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
                 "    last:  Collins\n", out.toString());
     }
     public void test_getResults_duplicatedColumnName() {
+        manager.clearTable("states");
+        manager.insert("states", new Dataset("name", "California",
+                "capital", "Sacramento", "id", "442"));
         Dataset out = manager.findWithSql("SELECT people.id, " +
                 "states.id, capital FROM people JOIN states " +
                 "WHERE people.state = states.name");
@@ -441,6 +632,9 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
                 "    \"states:id\": 442\n", out.toString());
     }
     public void test_getResults_firstDupHasNoTableName() {
+        manager.clearTable("states");
+        manager.insert("states", new Dataset("name", "California",
+                "capital", "Sacramento", "id", "442"));
         Dataset out = manager.findWithSql(
                 "SELECT 'xyzzy' id, id FROM states WHERE name = 'California'");
         assertEquals("retrieved rows", "record:\n" +
@@ -448,6 +642,9 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
                 "    \"states:id\": 442\n", out.toString());
     }
     public void test_getResults_secondDupHasNoTableName() {
+        manager.clearTable("states");
+        manager.insert("states", new Dataset("name", "California",
+                "capital", "Sacramento", "id", "442"));
         Dataset out = manager.findWithSql(
                 "SELECT id, 'xyzzy' id FROM states WHERE name = 'California'");
         assertEquals("retrieved rows", "record:\n" +

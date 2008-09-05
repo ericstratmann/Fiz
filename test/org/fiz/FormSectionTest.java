@@ -295,11 +295,11 @@ public class FormSectionTest extends junit.framework.TestCase {
         main.set("age", "21");
         Dataset result = form.post(cr, "fixture1");
         assertEquals("request dataset",
-                "data:\n" +
-                "    age:  21\n" +
-                "    name: Alice\n" +
                 "id:      fixture1\n" +
-                "manager: fixture\n",
+                "manager: fixture\n" +
+                "record:\n" +
+                "    age:  21\n" +
+                "    name: Alice\n",
                 DataManagerFixture.requestData.toString());
         assertEquals("returned dataset", "response: 4567\n",
                 result.toString());

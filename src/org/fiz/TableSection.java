@@ -38,7 +38,8 @@ import java.util.*;
  *                   of a request in the {@code dataRequests} configuration
  *                   dataset or a nested dataset containing the request's
  *                   arguments directly).  The response to this request must
- *                   contain one {@code data} child for each row of the table.
+ *                   contain one {@code record} child for each row of
+ *                   the table.
  */
 public class TableSection implements Section {
     // The following variables are copies of constructor arguments.  See
@@ -146,7 +147,7 @@ public class TableSection implements Section {
                     "tableSection", errors[0]);
             out.append("</td>\n  </tr>\n");
         } else {
-            ArrayList<Dataset> rows = response.getChildren("data");
+            ArrayList<Dataset> rows = response.getChildren("record");
             if (rows.size() == 0) {
                 // The table is empty.  Display a single row containing
                 // information about that fact.

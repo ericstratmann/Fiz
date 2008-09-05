@@ -20,6 +20,7 @@ public class SqlError extends Error {
      *                             "in SqlDataManager.updateWithSql".
      */
     public SqlError(SQLException e, String context) {
-        super("SQL error " + context + ": " + e.getMessage(), e);
+        super("SQL error " + context + ": " +
+                StringUtil.lcFirst(e.getMessage()), e);
     }
 }

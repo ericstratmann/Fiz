@@ -179,7 +179,7 @@ public class Demo extends Interactor {
                 DatasetComparator.Order.DECREASING));
         Dataset statsDataset = new Dataset();
         for (Dataset d : stats) {
-            statsDataset.addChild("data", d);
+            statsDataset.addChild("record", d);
         }
         cr.showSections(
                 new TemplateSection("<h1>Interactor Statistics</h1>\n"),

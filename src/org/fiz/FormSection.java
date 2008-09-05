@@ -51,10 +51,10 @@ package org.fiz;
  *                   the name of a request in the {@code dataRequests}
  *                   configuration dataset or a nested dataset containing
  *                   the request's arguments directly).  If the response to
- *                   the request contains a {@code data} nested dataset,
+ *                   the request contains a {@code record} nested dataset,
  *                   then the contents of that nested dataset will be used
  *                   to provide the form's initial data.  If there is no
- *                   {@code data} nested dataset then the top-level contents
+ *                   {@code record} nested dataset then the top-level contents
  *                   of the results are used for the form's initial data.
  *                   If this property is omitted the form will initially be
  *                   empty.
@@ -265,8 +265,8 @@ public class FormSection implements Section {
                         properties, out);
                 return;
             }
-            if (response.containsKey("data")) {
-                response = response.getChild("data");
+            if (response.containsKey("record")) {
+                response = response.getChild("record");
             }
             data = new CompoundDataset(response, mainDataset);
         } else {
@@ -328,7 +328,7 @@ public class FormSection implements Section {
         oldElementErrorsCleared = false;
         DataRequest request = new DataRequest(requestName,
                 cr.getMainDataset());
-        request.getRequestData().createChild("data", collectFormData(cr));
+        request.getRequestData().createChild("record", collectFormData(cr));
         Dataset responseData = request.getResponseData();
         if (responseData != null) {
             return responseData;

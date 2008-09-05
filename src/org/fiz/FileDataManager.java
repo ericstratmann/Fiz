@@ -139,7 +139,7 @@ public class FileDataManager extends DataManager {
                 request.setError(new Dataset("message",
                         "internal error in FileDataManager " +
                         ((operation != null) ? ("\"" + operation + "\" ") : "") +
-                        "request: " + e.getMessage()));
+                        "request: " + StringUtil.lcFirst(e.getMessage())));
             }
         }
     }

@@ -40,7 +40,8 @@ public class TestUtil {
             p.waitFor();
         }
         catch (Exception e) {
-            Assert.assertEquals("error running xmlvalid: " + e.getMessage(),
+            Assert.assertEquals("error running xmlvalid: " +
+                    StringUtil.lcFirst(e.getMessage()),
                     true, false);
         }
         deleteTree("xmlvalid.tmp");

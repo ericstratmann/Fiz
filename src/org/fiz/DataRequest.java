@@ -222,6 +222,17 @@ public class DataRequest {
     }
 
     /**
+     * This method is invoked by data managers to indicate that a request
+     * has been completed successfully and should return an empty Dataset
+     * as result.
+     */
+    public synchronized void setComplete() {
+        this.response = new Dataset();
+        completed = true;
+        notifyAll();
+    }
+
+    /**
      * Returns the response from the request. If the request hasn't yet
      * completed, this method will wait for the request to complete before
      * returning.  If the request hasn't yet started, this method will
@@ -302,28 +313,36 @@ public class DataRequest {
 
     /**
      * Returns detailed information about the error(s) that occurred during
-     * this request, if there were any.
+     * this request, if there were any.  If the request hasn't yet completed
+     * this method first waits for the request to complete (if the request
+     * hasn't yet started then this method will start it also).
      * @return                     An array of datasets; each dataset
      *                             contains elements describing one error.
-     *                             If the request hasn't completed,
-     *                             or if it completed successfully, null
-     *                             is returned.
+     *                             If the request completed successfully,
+     *                             null is returned.
      */
     public synchronized Dataset[] getErrorData() {
+        if (!completed) {
+            getResponseData();
+        }
         return errorDatasets;
     }
 
     /**
      * Returns a human-readable message describing the errors that occurred in
-     * this request, if there were any.
-     * @return                     If the request hasn't completed, or if it
-     *                             completed successfully, then null is
-     *                             returned.  Otherwise the return value is a
-     *                             description of the problem(s), intended for
-     *                             presentation to users (as opposed to
-     *                             system maintainers).
+     * this request, if there were any.  If the request hasn't yet completed
+     * this method first waits for the request to complete (if the request
+     * hasn't yet started then this method will start it also).
+     * @return                     If the request completed successfully then
+     *                             null is returned.  Otherwise the return
+     *                             value is a description of the problem(s),
+     *                             intended for presentation to users (as
+     *                             opposed to system maintainers).
      */
     public String getErrorMessage() {
+        if (!completed) {
+            getResponseData();
+        }
         if (errorDatasets == null) {
             return null;
         }
@@ -333,15 +352,20 @@ public class DataRequest {
     /**
      * Returns a message containing all of the information available
      * for the error(s) that occurred in this request; intended for logs
-     * or for examination by developers to track down problems.
-     * @return                     If the request hasn't completed, or if it
-     *                             completed successfully, then null is
-     *                             returned.  Otherwise the return value is a
-     *                             string containing all of the information
-     *                             available for the error(s) that have been
-     *                             recorded for the request.
+     * or for examination by developers to track down problems.  If the
+     * request hasn't yet completed this method first waits for the request
+     * to complete (if the request hasn't yet started then this method
+     * will start it also).
+     * @return                     If the request completed successfully, null
+     *                             is returned.  Otherwise the return value
+     *                             is a string containing all of the
+     *                             information available for the error(s)
+     *                             that have been recorded for the request.
      */
     public String getDetailedErrorMessage() {
+        if (!completed) {
+            getResponseData();
+        }
         if (errorDatasets == null) {
             return null;
         }

@@ -192,7 +192,8 @@ public final class Util {
                 cause = e;
             }
             throw new InstantiationError(className,
-                    "exception in constructor: " + cause.getMessage());
+                    "exception in constructor: " +
+                    StringUtil.lcFirst(cause.getMessage()));
         }
     }
 

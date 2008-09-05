@@ -246,7 +246,8 @@ public class ClientRequest {
         }
         catch (IOException e) {
             logger.error("I/O error retrieving response writer in " +
-                    "ClientRequest.finish: " + e.getMessage());
+                    "ClientRequest.finish: " +
+                    StringUtil.lcFirst(e.getMessage()));
             return;
         }
         if (ajaxRequest) {
