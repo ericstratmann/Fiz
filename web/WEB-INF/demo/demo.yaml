@@ -27,7 +27,7 @@ error3:
       please pick another.
 
 formData:
-    data:
+    record:
         name: Bill
         age: 41
         height: 73
@@ -58,7 +58,7 @@ fruits:
         value: watermelon
 
 people:
-    data:
+    record:
         - name: Alice
           age: 24
           height: 65
@@ -78,14 +78,14 @@ people:
           height: 71
 
 person:
-    data:
+    record:
         name: Bill
         age: 41
         height: 73
         weight: 195
 
 shoppingCart:
-    data:
+    record:
         - item:  Thin spaghetti
           price: $0.89
         - item:  Large Grade AA eggs

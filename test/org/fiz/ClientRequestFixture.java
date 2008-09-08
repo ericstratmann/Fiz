@@ -11,8 +11,8 @@ public class ClientRequestFixture extends ClientRequest {
                 new ServletContextFixture())),
                 new ServletRequestFixture(),
                 new ServletResponseFixture());
-        Config.init("test/testData/WEB-INF/config", "web/WEB-INF/config");
-        Css.init("web/WEB-INF/css");
+        Config.init("test/testData/WEB-INF/config", "web/WEB-INF/fiz/config");
+        Css.init("web/WEB-INF/fiz/css");
         DataManager.destroyAll();
         DataManagerFixture.clearLogs();
         DataManager.logger.setLevel(Level.ERROR);

@@ -4,7 +4,8 @@
 <web-app>
 <servlet>
     <servlet-name>fiz</servlet-name>
-    <description>Various Fiz demos and tests</description>
+    <description>The Fiz dispatcher: invokes Interactor methods to handle
+    incoming requests.</description>
     <servlet-class>org.fiz.Dispatcher</servlet-class>
 </servlet>
 <servlet-mapping>

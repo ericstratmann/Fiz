@@ -114,7 +114,8 @@ public class Dispatcher extends HttpServlet {
         }
         String contextRoot = config.getServletContext().getRealPath("");
         logger.info("Fiz initializing with context root " + contextRoot);
-        Config.init(contextRoot + "/WEB-INF/config");
+        Config.init(contextRoot + "/WEB-INF/config",
+                contextRoot + "/WEB-INF/fiz/config");
         Dataset main = Config.getDataset("main");
         if (main instanceof CompoundDataset) {
             Dataset[] components = ((CompoundDataset) main).getComponents();
@@ -124,10 +125,11 @@ public class Dispatcher extends HttpServlet {
         }
         logger.info("main configuration dataset:\n    " +
                 main.toString().trim().replace("\n", "\n    "));
-        Css.init(contextRoot + "/WEB-INF/css");
+        Css.init(contextRoot + "/WEB-INF/css",
+                contextRoot + "/WEB-INF/fiz/css");
 
-        // The following line should be left uncommented to disable more
-        // detailedlogging, such as request URLs.
+        // If you want more detailed logging, such as request URLs, uncomment
+        // the following line.
         // logger.setLevel(Level.WARN);
     }
 
