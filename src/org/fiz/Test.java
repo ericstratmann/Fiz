@@ -137,7 +137,7 @@ public class Test extends Interactor {
             globalData.set("current", "1");
         }
         html.setTitle("Link Page");
-        html.includeJsFile("Ajax.js");
+        html.includeJsFile("fizlib/Ajax.js");
         StringBuilder body = html.getBody();
         Template.expand("<h1>Test Links</h1>\n" +
                 "<p>This page demonstrates several uses of links.</p>\n" +

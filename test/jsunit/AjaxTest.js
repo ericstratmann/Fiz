@@ -2,8 +2,8 @@
 //
 // Jsunit tests for Ajax.js, organized in the standard fashion.
 
-include("Fiz.js");
-include("Ajax.js");
+include("fizlib/Fiz.js");
+include("fizlib/Ajax.js");
 include("XmlHttpFixture.js");
 
 window.XMLHttpRequest = true;
@@ -80,7 +80,7 @@ test("stateChange_errorInResponseJavascript", function() {
     ajax.xmlhttp.responseText = "x(;";
     ajax.stateChange();
     assertEqual("alert(message: Error in Ajax request for /a/b: error " +
-            "processing responseText (javascript/Ajax.js(eval):1): " +
+            "processing responseText (javascript/fizlib/Ajax.js(eval):1): " +
             "SyntaxError: syntax error)\n",
             jsunit.log.replace(/\.js#\d*\(/, ".js("), "jsunit.log");
 });
@@ -123,7 +123,7 @@ test("stateChange_evalAction_syntaxError", function() {
             "javascript: \"x(;\"}]";
     ajax.stateChange();
     assertEqual("alert(message: Error in Ajax request for /a/b: error " +
-            "processing responseText (javascript/Ajax.js(eval):1): " +
+            "processing responseText (javascript/fizlib/Ajax.js(eval):1): " +
             "SyntaxError: syntax error)\n",
             jsunit.log.replace(/\.js#\d*\(/, ".js("), "jsunit.log");
 });
@@ -154,7 +154,7 @@ test("stateChange_exceptionWithLineNumber", function() {
             "javascript: \"x(;\"}]";
     ajax.stateChange();
     assertEqual("alert(message: Error in Ajax request for /a/b: error " +
-            "processing responseText (javascript/Ajax.js(eval):1): " +
+            "processing responseText (javascript/fizlib/Ajax.js(eval):1): " +
             "SyntaxError: syntax error)\n",
             jsunit.log.replace(/\.js#\d*\(/, ".js("), "jsunit.log");
 });

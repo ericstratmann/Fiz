@@ -293,7 +293,7 @@ public class FormSection implements Section {
         // Generate a Javascript object containing information about the form.
         html.includeJavascript("Fiz.ids.@id = new Fiz.FormSection(" +
                 "\"@id\", \"@postUrl?{ajaxPost}\");\n", properties);
-        html.includeJsFile("FormSection.js");
+        html.includeJsFile("fizlib/FormSection.js");
     }
 
     /**

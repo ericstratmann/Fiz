@@ -2,7 +2,7 @@
 //
 // Jsunit tests for Fiz.js, organized in the standard fashion.
 
-include("Fiz.js");
+include("fizlib/Fiz.js");
 
 test("Fiz_addBulletinMessage_createBulletin", function() {
     document = new Document();

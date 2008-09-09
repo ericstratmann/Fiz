@@ -17,7 +17,7 @@ public class AjaxTest extends junit.framework.TestCase {
         Ajax.invoke(cr, "/fiz/test/alert?age=24&name=@name&weight=@weight",
                 data, out);
         TestUtil.assertSubstring("include Javascript file",
-                "/servlet/Ajax.js",
+                "/servlet/fizlib/Ajax.js",
                 cr.getHtml().jsFileHtml.toString());
         assertEquals("generated HTML",
                 "void new Fiz.Ajax(&quot;/fiz/test/alert" +

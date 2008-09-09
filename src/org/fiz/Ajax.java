@@ -42,7 +42,7 @@ public class Ajax {
      */
     public static void invoke(ClientRequest cr, CharSequence urlTemplate,
             Dataset data, StringBuilder out) {
-        cr.getHtml().includeJsFile("Ajax.js");
+        cr.getHtml().includeJsFile("fizlib/Ajax.js");
 
         // Quoting is tricky:
         //   * Must first use URL quoting while expanding the URL template.

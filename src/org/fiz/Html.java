@@ -31,7 +31,6 @@ public class Html {
     protected StringBuilder css = new StringBuilder(1000);
 
     // Directory containing Javascript files, ending in "/".
-    // TODO: eventually this must be a path with both Fiz and app directories.
     protected String jsDirectory;
 
     // The following field caches information about dependencies between
@@ -78,7 +77,7 @@ public class Html {
             contextPath = "/servlet";
             jsDirectory = "javascript/";
         }
-        includeJsFile("Fiz.js");
+        includeJsFile("fizlib/Fiz.js");
     }
 
     /**
@@ -93,7 +92,8 @@ public class Html {
         jsFiles.clear();
         jsFileHtml.setLength(0);
         jsCode.setLength(0);
-        includeJsFile("Fiz.js");
+
+        includeJsFile("fizlib/Fiz.js");
     }
 
     /**
@@ -246,7 +246,6 @@ public class Html {
      * in the file and recursively includes all of the Javascript files
      * so mentioned.
      * @param fileName             Name of the Javascript file.
-     *                             TODO: need support for paths here.
      */
     public void includeJsFile(String fileName) {
         if (jsFiles.contains(fileName)) {

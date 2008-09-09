@@ -47,7 +47,7 @@ public class HtmlTest extends junit.framework.TestCase {
         html.setTitle("sample");
         html.getBody().append("body info\n");
         html.includeCssFile("test.css");
-        html.includeJsFile("Ajax.js");
+        html.includeJsFile("fizlib/Ajax.js");
         html.includeJavascript("window.dummy = 1;");
         html.clear();
         html.getBody().append("<p>Text</p>\n");
@@ -60,7 +60,8 @@ public class HtmlTest extends junit.framework.TestCase {
                 "</style>\n" +
                 "</head>\n" +
                 "<body>\n" +
-                "<script type=\"text/javascript\" src=\"/servlet/Fiz.js\">" +
+                "<script type=\"text/javascript\" " +
+                "src=\"/servlet/fizlib/Fiz.js\">" +
                 "</script>\n" +
                 "<p>Text</p>\n" +
                 "</body>\n" +
@@ -107,7 +108,7 @@ public class HtmlTest extends junit.framework.TestCase {
         html.includeJsFile("file1.js");
         html.includeJsFile("file2.js");
         assertEquals("Javascript file names",
-                "Fiz.js, file1.js, file2.js",
+                "file1.js, file2.js, fizlib/Fiz.js",
                 html.getJsFiles());
         Util.deleteTree("_test_");
     }
@@ -192,7 +193,7 @@ public class HtmlTest extends junit.framework.TestCase {
         html.includeJsFile("file1.js");
         assertEquals("jsFileHtml string",
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/Fiz.js\"></script>\n" +
+                "src=\"/servlet/fizlib/Fiz.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
                 "src=\"/servlet/file2.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
@@ -202,7 +203,7 @@ public class HtmlTest extends junit.framework.TestCase {
         html.includeJsFile("file2.js");
         assertEquals("only include each file once",
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/Fiz.js\"></script>\n" +
+                "src=\"/servlet/fizlib/Fiz.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
                 "src=\"/servlet/file2.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
@@ -216,12 +217,12 @@ public class HtmlTest extends junit.framework.TestCase {
         html.jsDirectory = "_test_/";
         assertEquals("jsFileHtml string",
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/Fiz.js\"></script>\n",
+                "src=\"/servlet/fizlib/Fiz.js\"></script>\n",
                 html.jsFileHtml.toString());
-        html.includeJsFile("Fiz.js");
+        html.includeJsFile("fizlib/Fiz.js");
         assertEquals("only include Fiz.js once",
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/Fiz.js\"></script>\n",
+                "src=\"/servlet/fizlib/Fiz.js\"></script>\n",
                 html.jsFileHtml.toString());
         TestUtil.deleteTree("_test_");
     }
@@ -250,7 +251,7 @@ public class HtmlTest extends junit.framework.TestCase {
                 "</head>\n" +
                 "<body>\n" +
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/Fiz.js\"></script>\n" +
+                "src=\"/servlet/fizlib/Fiz.js\"></script>\n" +
                 "first line\n" +
                 "second line\n" +
                 "</body>\n" +
@@ -271,7 +272,7 @@ public class HtmlTest extends junit.framework.TestCase {
                 "</head>\n" +
                 "<body>\n" +
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/Fiz.js\"></script>\n" +
+                "src=\"/servlet/fizlib/Fiz.js\"></script>\n" +
                 "first line\n" +
                 "</body>\n" +
                 "</html>\n",
@@ -342,7 +343,7 @@ public class HtmlTest extends junit.framework.TestCase {
         TestUtil.assertSubstring("body section",
                 "<body>\n" +
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/Fiz.js\"></script>\n" +
+                "src=\"/servlet/fizlib/Fiz.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
                 "src=\"/servlet/file1.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
@@ -360,7 +361,7 @@ public class HtmlTest extends junit.framework.TestCase {
                 "var i = 444;\n");
         TestUtil.assertSubstring("<body> element from document", "<body>\n" +
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/Fiz.js\"></script>\n" +
+                "src=\"/servlet/fizlib/Fiz.js\"></script>\n" +
                 "<p> First paragraph.</p>\n" +
                 "<script type=\"text/javascript\">\n" +
                 "//<![CDATA[\n" +
@@ -385,7 +386,7 @@ public class HtmlTest extends junit.framework.TestCase {
                 "</head>\n" +
                 "<body>\n" +
                 "<script type=\"text/javascript\" " +
-                "src=\"/servlet/Fiz.js\"></script>\n" +
+                "src=\"/servlet/fizlib/Fiz.js\"></script>\n" +
                 "first line\n" +
                 "</body>\n" +
                 "</html>\n",

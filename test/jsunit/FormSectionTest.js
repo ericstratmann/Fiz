@@ -2,8 +2,8 @@
 //
 // Jsunit tests for FormSection.js, organized in the standard fashion.
 
-include("Fiz.js");
-include("FormSection.js");
+include("fizlib/Fiz.js");
+include("fizlib/FormSection.js");
 
 // Following is a replacement for the Ajax constructor; it just logs
 // information about its arguments.
