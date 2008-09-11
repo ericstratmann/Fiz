@@ -2,6 +2,13 @@
 <project relativePaths="false" version="4">
   <component name="AntConfiguration">
     <defaultAnt bundledAnt="true" />
+    <buildFile url="file://$PROJECT_DIR$/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
   </component>
   <component name="BuildJarProjectSettings">
     <option name="BUILD_JARS_ON_MAKE" value="false" />
@@ -65,11 +72,7 @@
               <file url="file://$PROJECT_DIR$/web/WEB-INF/web.xml" />
             </files>
           </module>
-          <module name="Fiz">
-            <files>
-              <file url="file://$PROJECT_DIR$/web/WEB-INF/web.xml" />
-            </files>
-          </module>
+          <module name="Fiz" />
         </modules>
       </facet-type>
     </autodetection-disabled>
@@ -247,7 +250,7 @@
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
-    <output url="file://$PROJECT_DIR$/web/WEB-INF/classes" />
+    <output url="file://C:/Documents and Settings/John Ousterhout/My Documents/Fiz/out/classes" />
   </component>
   <component name="ResourceManagerContainer">
     <option name="myResourceBundles">
@@ -271,14 +274,6 @@
   </component>
   <component name="WebServicesPlugin" addRequiredLibraries="true" />
   <component name="libraryTable">
-    <library name="commander">
-      <CLASSES>
-        <root url="file://C:/code/commander/lib" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-      <jarDirectory url="file://C:/code/commander/lib" recursive="false" />
-    </library>
     <library name="Java tools">
       <CLASSES>
         <root url="file://C:/cygwin/usr/local/tools/i686_win32/jdk1.6.0_01/lib" />
@@ -286,6 +281,14 @@
       <JAVADOC />
       <SOURCES />
       <jarDirectory url="file://C:/cygwin/usr/local/tools/i686_win32/jdk1.6.0_01/lib" recursive="false" />
+    </library>
+    <library name="Misc. libraries">
+      <CLASSES>
+        <root url="file://C:/Documents and Settings/John Ousterhout/My Documents/Fiz/lib" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+      <jarDirectory url="file://C:/Documents and Settings/John Ousterhout/My Documents/Fiz/lib" recursive="false" />
     </library>
   </component>
 </project>

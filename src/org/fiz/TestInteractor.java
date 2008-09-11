@@ -12,8 +12,8 @@ import org.mozilla.javascript.*;
  * or as an Interactor invoked by the Dispatcher.
  */
 
-public class Test extends Interactor {
-    protected Logger logger = Logger.getLogger("Test");
+public class TestInteractor extends Interactor {
+    protected Logger logger = Logger.getLogger("TestInteractor");
 
     // The following fields are used for measuring Ajax latency.
     int ajaxCount = 0;

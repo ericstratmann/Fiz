@@ -1,5 +1,4 @@
 package org.fiz;
-import java.io.*;
 import java.util.*;
 import javax.servlet.*;
 
@@ -53,22 +52,22 @@ public class DispatcherTest  extends junit.framework.TestCase {
     }
 
     public void test_destroy() {
-        DispatcherTest1.count = 0;
-        DispatcherTest1.destroyCount = 0;
-        DispatcherTest2.destroyCount = 0;
+        DispatcherTest1Interactor.count = 0;
+        DispatcherTest1Interactor.destroyCount = 0;
+        DispatcherTest2Interactor.destroyCount = 0;
         dispatcher.service(new ServletRequestFixture(
                 "/dispatcherTest1/incCount"), new ServletResponseFixture());
         dispatcher.service(new ServletRequestFixture("/dispatcherTest2/xyz"),
                 new ServletResponseFixture());
         assertEquals("first interactor not yet destroyed", 0,
-                DispatcherTest1.destroyCount);
+                DispatcherTest1Interactor.destroyCount);
         assertEquals("second interactor not yet destroyed", 0,
-                DispatcherTest2.destroyCount);
+                DispatcherTest2Interactor.destroyCount);
         dispatcher.destroy();
         assertEquals("first interactor destroyed", 1,
-                DispatcherTest1.destroyCount);
+                DispatcherTest1Interactor.destroyCount);
         assertEquals("second interactor destroyed", 3,
-                DispatcherTest2.destroyCount);
+                DispatcherTest2Interactor.destroyCount);
     }
 
     public void test_getInteractorStatistics() {
@@ -131,19 +130,19 @@ public class DispatcherTest  extends junit.framework.TestCase {
         dispatcher.service(new ServletRequestFixture("/a/b/c"),
                 new ServletResponseFixture());
         TestUtil.assertSubstring("simplest valid URL",
-                "couldn't find class \"A\"",
+                "couldn't find class \"AInteractor\"",
                 dispatcher.basicMessage);
     }
     public void test_service_setAjaxAndInvokeMethod() {
-        DispatcherTest1.count = 0;
+        DispatcherTest1Interactor.count = 0;
         dispatcher.service(new ServletRequestFixture(
                 "/dispatcherTest1/incCount"), new ServletResponseFixture());
-        assertEquals("non-Ajax request", false, DispatcherTest1.isAjax);
+        assertEquals("non-Ajax request", false, DispatcherTest1Interactor.isAjax);
         dispatcher.service(new ServletRequestFixture(
                 "/dispatcherTest1/ajaxIncCount"),
                 new ServletResponseFixture());
-        assertEquals("Ajax request", true, DispatcherTest1.isAjax);
-        assertEquals("count variable", 2, DispatcherTest1.count);
+        assertEquals("Ajax request", true, DispatcherTest1Interactor.isAjax);
+        assertEquals("count variable", 2, DispatcherTest1Interactor.count);
     }
     public void test_service_exceptionInMethod() {
         dispatcher.service(new ServletRequestFixture("/dispatcherTest1/error"),
@@ -158,7 +157,7 @@ public class DispatcherTest  extends junit.framework.TestCase {
         assertEquals("AJAX response", "var actions = [{type: \"error\", " +
                 "properties: {message: \"uncaughtAjax: unsupported URL " +
                 "\\\"/x/y/z\\\": couldn't find method \\\"ajaxBogus\\\" with " +
-                "proper signature in class DispatcherTest2\"}}];",
+                "proper signature in class DispatcherTest2Interactor\"}}];",
                 response.out.toString());
     }
     public void test_service_exception_HandledError() {
@@ -176,7 +175,7 @@ public class DispatcherTest  extends junit.framework.TestCase {
         TestUtil.assertSubstring("error message",
                 "unhandled exception for URL \"/x/y/z?a=b&c=d\":\n" +
                 "java.lang.Error: error in method\n" +
-                "\tat org.fiz.DispatcherTest1.error",
+                "\tat org.fiz.DispatcherTest1Interactor.error",
                 message);
     }
     public void test_service_exception_ajaxResponse() {
@@ -186,7 +185,7 @@ public class DispatcherTest  extends junit.framework.TestCase {
         assertEquals("AJAX response", "var actions = [{type: \"error\", " +
                 "properties: {message: \"uncaughtAjax: unsupported URL " +
                 "\\\"/x/y/z\\\": couldn't find method \\\"ajaxBogus\\\" with " +
-                "proper signature in class DispatcherTest2\"}}];",
+                "proper signature in class DispatcherTest2Interactor\"}}];",
                 response.out.toString());
     }
     public void test_service_exception_htmlResponseClearFirst() {
@@ -279,21 +278,21 @@ public class DispatcherTest  extends junit.framework.TestCase {
     }
 
     public void test_findMethod_basics() {
-        DispatcherTest1.initCount = 0;
+        DispatcherTest1Interactor.initCount = 0;
         Dispatcher.InteractorMethod method = dispatcher.findMethod(
                 "dispatcherTest1/incCount", 15,
                 new ServletRequestFixture("/dispatcherTest1/incCount"));
         assertEquals("init invoked during first call", 1,
-                DispatcherTest1.initCount);
+                DispatcherTest1Interactor.initCount);
         assertEquals("method name from first call", "incCount",
                 method.method.getName());
-        assertEquals("class of Interactor object", "DispatcherTest1",
+        assertEquals("class of Interactor object", "DispatcherTest1Interactor",
                 method.interactor.getClass().getSimpleName());
-        DispatcherTest1.initCount = 0;
+        DispatcherTest1Interactor.initCount = 0;
         method = dispatcher.findMethod("dispatcherTest1/incCount", 15,
                 new ServletRequestFixture("/dispatcherTest1/incCount"));
         assertEquals("init not invoked during second call", 0,
-                DispatcherTest1.initCount);
+                DispatcherTest1Interactor.initCount);
         assertEquals("method name from second call", "incCount",
                 method.method.getName());
     }
@@ -305,7 +304,8 @@ public class DispatcherTest  extends junit.framework.TestCase {
         }
         catch (ClassNotFoundError e) {
             assertEquals("exception message",
-                    "couldn't find class \"MissingClass\"", e.getMessage());
+                    "couldn't find class \"MissingClassInteractor\"",
+                    e.getMessage());
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
@@ -313,20 +313,20 @@ public class DispatcherTest  extends junit.framework.TestCase {
     public void test_findMethod_updateClassMap() {
         dispatcher.findMethod("dispatcherTest1/incCount", 15,
                 new ServletRequestFixture("/dispatcherTest1/incCount/extra"));
-        assertEquals("DispatcherTest1",
+        assertEquals("DispatcherTest1Interactor",
                 StringUtil.join(dispatcher.classMap.keySet(), ", "));
     }
     public void test_findMethod_invokeInit() {
-        DispatcherTest1.count = 0;
-        DispatcherTest1.initCount = 0;
+        DispatcherTest1Interactor.count = 0;
+        DispatcherTest1Interactor.initCount = 0;
         dispatcher.findMethod("dispatcherTest1/incCount", 15,
                 new ServletRequestFixture("/dispatcherTest1/incCount"));
         assertEquals("init invoked during first request", 1,
-                DispatcherTest1.initCount);
+                DispatcherTest1Interactor.initCount);
         dispatcher.findMethod("dispatcherTest1/incCount", 15,
                 new ServletRequestFixture("/dispatcherTest1/incCount"));
         assertEquals("init not invoked during second request", 1,
-                DispatcherTest1.initCount);
+                DispatcherTest1Interactor.initCount);
     }
     public void test_findMethod_scanMethods() {
         dispatcher.findMethod("dispatcherTest1/incCount", 15,
@@ -350,7 +350,7 @@ public class DispatcherTest  extends junit.framework.TestCase {
             assertEquals("exception message",
                     "unsupported URL \"/x/y/z\": couldn't find method " +
                     "\"twoArgs\" with proper signature in class " +
-                    "DispatcherTest1", e.getMessage());
+                    "DispatcherTest1Interactor", e.getMessage());
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);

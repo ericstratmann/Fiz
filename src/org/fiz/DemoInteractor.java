@@ -7,9 +7,9 @@ import org.apache.log4j.*;
  * facilities of Fiz.
  */
 
-public class Demo extends Interactor {
+public class DemoInteractor extends Interactor {
     // The following variable is used for log4j-based logging.
-    protected Logger logger = Logger.getLogger("org.fiz.Demo");
+    protected Logger logger = Logger.getLogger("org.fiz.DemoInteractor");
 
     FormSection sideBySideForm =new FormSection(
             new Dataset("id", "form1", "request", "demo.getFormData",

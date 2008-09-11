@@ -407,11 +407,11 @@ public class Dispatcher extends HttpServlet {
         // We don't currently have any information about this method.
         // If we haven't already done so, scan the class specified
         // in the URL and update our tables with information about it.
-        // First, see if we already know about this class.  Note: URL
-        // characters are all lower-case, but class names must have
-        // leading upper-case char.
-        String className = Character.toUpperCase(classPlusMethod.charAt(0))
-                + classPlusMethod.substring(1, slashIndex);
+        // First, see if we already know about this class.  The class
+        // name is computed by upper-casing the first character of the
+        // class in the URL and appending "Interactor".
+        String className = StringUtil.ucFirst(classPlusMethod.substring(0,
+                slashIndex)) + "Interactor";
         String methodName = classPlusMethod.substring(slashIndex+1);
         Interactor interactor = classMap.get(className);
         if (interactor == null) {

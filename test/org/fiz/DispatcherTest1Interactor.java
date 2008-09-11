@@ -6,7 +6,7 @@ import javax.servlet.http.*;
  * See the unit tests in DispatcherTest.java for details.
  */
 
-public class DispatcherTest1 extends Interactor {
+public class DispatcherTest1Interactor extends Interactor {
     public static class TestError extends DatasetError
             implements HandledError {
         public TestError(Dataset... errorDatasets) {
