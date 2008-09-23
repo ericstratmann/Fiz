@@ -33,6 +33,12 @@ public class CssTest extends junit.framework.TestCase {
                 "Child template: 99234", css);
     }
 
+    public void test_getPath() {
+        Css.init("a/b", "c/d", "e/f");
+        String[] path = Css.getPath();
+        assertEquals("a/b, c/d, e/f", StringUtil.join(path, ", "));
+    }
+
     public void test_getStylesheet() {
         String css = Css.getStylesheet("Test.css");
         assertEquals("first call: nothing cached", "Sample: 99234", css);

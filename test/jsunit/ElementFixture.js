@@ -74,6 +74,7 @@ Element.prototype.printChildren = function() {
 // information about their parameters.
 
 Element.prototype.appendChild = function(element) {
+    element.parentNode = this;
     if (!this.lastChild) {
         this.firstChild = this.lastChild = element;
         return;
@@ -84,6 +85,7 @@ Element.prototype.appendChild = function(element) {
 }
 
 Element.prototype.insertBefore = function(element, successor) {
+    element.parentNode = this;
     if (successor == null) {
         appendChild(element);
         return;

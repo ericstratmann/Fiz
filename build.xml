@@ -57,14 +57,21 @@ for the Fiz framework.
 
         <!-- Source files -->
         <mkdir dir="${distdir}/src"/>
+        <copy todir="${distdir}/src/javascript">
+            <fileset dir="javascript" />
+        </copy>
+        <copy todir="${distdir}/src/src">
+            <fileset dir="src" />
+        </copy>
+        <copy todir="${distdir}/src/test">
+            <fileset dir="test" />
+        </copy>
+        <copy todir="${distdir}/src/web">
+            <fileset dir="web" />
+        </copy>
         <copy todir="${distdir}/src">
-            <dirset dir="." includes="javascript, src, test, web" />
             <fileset dir="." includes="build.xml, Fiz.iml,
                     Fiz.ipr, Fiz.iws javadoc.css" />
-        </copy>
-        <mkdir dir="${distdir}/test"/>
-        <copy todir="${distdir}/test">
-            <fileset dir="javascript"/>
         </copy>
 
         <!-- Create archives -->

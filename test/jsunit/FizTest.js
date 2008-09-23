@@ -12,16 +12,18 @@ test("Fiz_addBulletinMessage_createBulletin", function() {
             "id:          bulletin\n" +
             "lastChild:   div#1\n" +
             "nextSibling: paragraph1\n" +
+            "parentNode:  unknown element\n" +
             "style:\n" +
             "    display: \"\"\n" +
             "tagName:     div\n",
             document.body.firstChild.toString(),
             "contents of first element in body");
     assertEqual("Child #0:\n" +
-            "    className: error\n" +
-            "    innerHTML: Message #1\n" +
+            "    className:  error\n" +
+            "    innerHTML:  Message #1\n" +
+            "    parentNode: bulletin\n" +
             "    style:\n" +
-            "    tagName:   div\n",
+            "    tagName:    div\n",
             document.body.firstChild.printChildren(),
             "children of bulletin");
 });
@@ -30,10 +32,11 @@ test("Fiz_addBulletinMessage_bulletinExists", function() {
     var bulletin = document.addElementWithId("bulletin", {tagName: "div"});
     Fiz.addBulletinMessage("error", "Message #1");
     assertEqual("Child #0:\n" +
-            "    className: error\n" +
-            "    innerHTML: Message #1\n" +
+            "    className:  error\n" +
+            "    innerHTML:  Message #1\n" +
+            "    parentNode: bulletin\n" +
             "    style:\n" +
-            "    tagName:   div\n",
+            "    tagName:    div\n",
             bulletin.printChildren(),
             "contents of bulletin");
 });

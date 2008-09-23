@@ -1,0 +1,74 @@
+/* TabSection.css -
+ *
+ * This file is used to generate style information for TabSection class.
+ * This file contains a template, but it is *not* expanded in the usual
+ * fashion for CSS templates.  Instead, this template is expanded separately
+ * for each TabSection in a page, using the configuration dataset for
+ * the TabSection's style, the configuration properties specific to that
+ * TabSection, and the css configuration data set.
+ */
+
+#@id {
+    width: 100%;
+}
+#@id a {
+    text-decoration: none;
+}
+#@id a:hover {
+    color: @activeColor;
+}
+#@id a div {
+    cursor: pointer;
+    vertical-align: top;
+    padding: 3px 5px 3px 5px;
+    white-space: nowrap;
+}
+
+/* Style information for tabs that are not selected: */
+
+#@id td.left {
+    padding-left: @sidePadding;
+    background-image: url(@imageBase-leftBg.gif);
+    border-bottom: @border;
+}
+#@id td.mid {
+    background-image: url(@imageBase-midBg.gif);
+    background-repeat: repeat-x;
+    border-bottom: @border;
+}
+#@id td.right {
+    padding-left: @sidePadding;
+    background-image: url(@imageBase-rightBg.gif);
+    border-bottom: @border;
+}
+
+/* Style information for the selected tab: */
+
+#@id td.leftSelected {
+    padding-left: @selectedSidePadding;
+    background-image: url(@imageBase-leftBgSelected.gif);
+}
+#@id td.midSelected {
+    background-image: url(@imageBase-midBgSelected.gif);
+    background-repeat: repeat-x;
+    font-weight: bold;
+}
+#@id td.rightSelected {
+    padding-left: @selectedSidePadding;
+    background-image: url(@imageBase-rightBgSelected.gif);
+}
+
+/* Style information for the spacer element to the left of each tab: */
+
+#@id td.spacer {
+    border-bottom: @border;
+    padding-left: 4px;
+    height: 1px;
+}
+
+/* Style information for the space to the right of all tabs: */
+
+.TabSection td.rightSpacer {
+    width: 100%;
+    border-bottom: @border;
+}

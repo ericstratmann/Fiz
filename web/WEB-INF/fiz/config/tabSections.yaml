@@ -1,0 +1,56 @@
+# tabSections.yaml -
+#
+# This dataset defines the different styles available for use with the
+# TabSection class.  When creating a TabSection, the "style" property
+# must be the name of a top-level nested dataset here.  The values
+# in the dataset provide information about images, dimensions, and colors
+# required for that style of TabSection.
+#
+# Information for designers of new TabSection styles:
+# ---------------------------------------------------
+#
+# Each tab is drawn in three vertical strips.  The left and right strips
+# are empty except for a background image displaying the edge of the tab.
+# The middle strip contains the text of the tab's name, as well as a
+# background image.  Each of the background images should be as tall as the
+# tallest imaginable tab (determined by the size of the font for the text);
+# if the actual tab is smaller than this then only the top portion of the
+# background images will be visible.
+#
+# A border separates the tabs from the information below them, except that
+# there is no border underneath the selected tab so that it appears to be
+# connected to the information below the tabs.
+#
+# The following values must be present in the nested dataset for each style:
+#
+# border:                 CSS specification for the border beneath the
+#                         tabs, such as "1px solid #cccc" (used everywhere
+#                         except underneath the selected tab).
+# sidePadding:            By default the vertical strips on the sides of
+#                         unselected tabs will be 1 pixel wide; this specifies
+#                         additional space to add to that (so that the full
+#                         without the background image will be visible).
+# selectedSidePadding:    Additional space for the side strips of the selected
+#                         tab.
+# imageBase:              The base name for a collection of background images
+#                         used for the tabs.  If {@code imageBase} is "x",
+#                         then the following images must exist:
+#     x-leftBg.gif:            Background image for the left strip of
+#                              unselected tabs.
+#     x-midBg.gif:             Background image for the central portion of
+#                              unselected tabs; repeats horizontally as
+#                              needed.
+#     x-rightBg.gif:           Background image for the right strip of
+#                              unselected tabs.
+#     x-leftBgSelected.gif:    Background image for the left strip of the
+#                              selected tab.
+#     x-midBgSelected.gif:     Background image for the central portion of the
+#                              selected tab; repeats horizontally as needed.
+#     x-rightBgSelected.gif:   Background image for the right strip of the
+#                              selected tab.
+
+tabGray:
+  border:               1px solid #cccccc
+  sidePadding:          2px
+  selectedSidePadding:  2px
+  imageBase:            /fizlib/images/tabGray

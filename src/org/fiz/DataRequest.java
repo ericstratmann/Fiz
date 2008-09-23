@@ -15,9 +15,11 @@ import java.util.*;
  *     value names a nested dataset within the {@code DataManagers}
  *     configuration dataset, which selects the data manager and also
  *     provides additional properties used by that data manager.
- *   - Other values in the dataset specify the operation to be performed
- *     and any parameters needed by that operation; each data manager
- *     defines its own conventions for the values it expects.
+ *   - By convention there is a {@code request} value in the dataset,
+ *     which specifies the operation to be performed.
+ *   - Other values in the dataset provide parameters as needed by the
+ *     particular operation; each data manager defines its own conventions
+ *     for the values it expects.
  *   - By convention, a request may contain extraneous values not needed
  *     by the data manager.  If this happens, the data manager will ignore
  *     the extra values.
@@ -76,6 +78,22 @@ import java.util.*;
  * see the documentation for {@code setError} fwr details.
  */
 public class DataRequest {
+    /**
+     * RequestError is used to abort execution when an unrecoverable
+     * error occurs in a DataRequest.
+     */
+    public static class RequestError extends Error {
+        /**
+         * Constructs a RequestError based on information in a failed
+         * DataRequest.  Note: don't use this constructor directly;
+         * invoke DataRequest.throwError instead.
+         * @param message            Message describing the failure.
+         */
+        protected RequestError(String message) {
+            super(message);
+        }
+    }
+
     // DataManager that will service the request.  This value isn't computed
     // until it is actually needed (e.g., in startRequests).  This makes
     // life a bit easier for tests (they don't have to set up data manager
@@ -257,6 +275,21 @@ public class DataRequest {
     }
 
     /**
+     * Wait for the request to complete (starting it if necessary) and either
+     * return its response (if it completed successfully) or throw a
+     * RequestError if it failed.
+     * @return                     A dataset containing the results of the
+     *                             request.
+     */
+    public Dataset getResponseOrAbort() {
+        Dataset response = getResponseData();
+        if (response == null) {
+            throwError();
+        }
+        return response;
+    }
+
+    /**
      * This method is invoked by data managers to indicate that one or more
      * errors occurred while processing the request.  It also marks the
      * request as complete and supplies a dataset containing information
@@ -392,6 +425,21 @@ public class DataRequest {
      */
     public Dataset getRequestData() {
         return request;
+    }
+
+    /**
+     * Throws a RequestError exception containing information about the
+     * failure in this request.  This method should only be invoked if
+     * the request has failed.
+     */
+    public void throwError() {
+        String managerName = request.get("manager");
+        String requestName = request.check("request");
+        if (requestName == null) {
+            requestName = "??";
+        }
+        throw new RequestError("error in DataRequest " + managerName +
+                ":" + requestName + ": " + getDetailedErrorMessage());
     }
 
     /**

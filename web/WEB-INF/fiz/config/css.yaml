@@ -11,6 +11,9 @@ background:          #ffffff
 # Overall foreground color:
 color:               #000000
 
+# Foreground color for link mouse-overs:
+activeColor:         #cc6600;
+
 # Dimmed versions of foreground color (either item is disabled, or we
 # need headroom to brighten up the color when the mouse passes over).
 dimColor1:           #404040

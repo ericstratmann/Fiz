@@ -46,6 +46,12 @@ public class DataRequestTest extends junit.framework.TestCase {
                 "  id: 22\n"));
     }
 
+    public void test_RequestError() {
+        DataRequest.RequestError e = new DataRequest.RequestError(
+                "test message");
+        assertEquals("exception message", "test message", e.getMessage());
+    }
+
     public void test_constructor() {
         DataRequest request = new DataRequest(new Dataset(
                 "name", "Bob", "manager", "testManager", "age", "18"));
@@ -214,6 +220,32 @@ public class DataRequestTest extends junit.framework.TestCase {
                 DataManagerFixture.getLogs());
     }
 
+    public void test_getResponseOrAbort_success() {
+        DataRequest request = new DataRequest(new Dataset(
+                "manager", "t2", "id", "707"));
+        request.start();
+        request.setComplete(new Dataset("status", "ok"));
+        Dataset response = request.getResponseOrAbort();
+        assertEquals("result dataset", "status: ok\n",
+                response.toString());
+    }
+    public void test_getResponseOrAbort_error() {
+        DataRequest request = new DataRequest(new Dataset("manager", "mgr",
+                "request", "noop"));
+        request.setError(new Dataset("message", "test message"));
+        boolean gotException = false;
+        try {
+            request.getResponseOrAbort();
+        }
+        catch (DataRequest.RequestError e) {
+            assertEquals("exception message",
+                    "error in DataRequest mgr:noop: test message",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+
     public void test_setError_synchronizeProperly() {
         DataRequest request = new DataRequest(new Dataset(
                 "manager", "t2", "id", "40"));
@@ -351,6 +383,40 @@ public class DataRequestTest extends junit.framework.TestCase {
         assertEquals("contents of request dataset", "id:      40\n" +
                 "manager: t2\n",
                 request.getRequestData().toString());
+    }
+
+    public void test_throwError() {
+        DataRequest request = new DataRequest(new Dataset(
+                "manager", "t2", "request", "op1"));
+        request.setError(new Dataset("message", "test message",
+                "culprit", "field #1"));
+        boolean gotException = false;
+        try {
+            request.throwError();
+        }
+        catch (DataRequest.RequestError e) {
+            assertEquals("exception message",
+                    "error in DataRequest t2:op1: test message:\n" +
+                            "  culprit:     field #1",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_throwError_noRequestName() {
+        DataRequest request = new DataRequest(new Dataset("manager", "t2"));
+        request.setError(new Dataset("message", "test message"));
+        boolean gotException = false;
+        try {
+            request.throwError();
+        }
+        catch (DataRequest.RequestError e) {
+            assertEquals("exception message",
+                    "error in DataRequest t2:??: test message",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
     }
 
     public void test_makeRequest_findTemplateUsingPath() {

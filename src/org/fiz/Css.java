@@ -37,6 +37,15 @@ class Css {
     }
 
     /**
+     * Returns the current path being used for finding stylesheet files.
+     * @return                     The directories supplied in the most
+     *                             recent call to {@code init}.
+     */
+    public static synchronized String[] getPath() {
+        return path;
+    }
+
+    /**
      * Returns the contents of a dynamically generated stylesheet.
      * @param name                 Path for the stylesheet.  This is the
      *                             the remainder of the URL after "fiz/css";

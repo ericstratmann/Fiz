@@ -1,0 +1,8 @@
+This directory contains files that are used to generate images for
+Fiz.  Typically each file in this directory is a master file used to
+generate a family of related images.  For example, the file tabGray.ai
+is an Adobe Illustrator file used to create the images for the
+"tabGray" style for TabSections.  To generate the detailed images,
+tabGray.ai is saved (manually, alas) in PNG format, read into Adobe
+Photoshop, and then cropped (still manually) in various ways to create
+the images in web/fizlib/images/tabGray*.gif.

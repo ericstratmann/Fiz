@@ -56,6 +56,24 @@ h2 {
     text-align: center;
 }
 
+/* Set default colors for hrefs: same as body text except during
+ * mouse-overs.
+ */
+
+a {
+    color: @color;
+}
+a:hover {
+    color: @activeColor;
+}
+
+/* By default Firefox displays a dotted outline around the focused
+ * element, such as href's.  This eliminates that.
+ */
+a:focus {
+    outline: none;
+}
+
 /* The following styles override defaults that vary from browser to
  * browser.
  */

@@ -115,6 +115,50 @@ public class DemoInteractor extends Interactor {
     }
 
     /**
+     * Displays a page illustrating the TabSection class.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    public void tabSection(ClientRequest cr) {
+        Html html = cr.getHtml();
+        html.setTitle("TabSection Demo");
+        String selected = cr.getMainDataset().check("tab");
+        if (selected == null) {
+            selected = "";
+        }
+        cr.showSections(
+                new TemplateSection("<h1>Sample TabSection</h1>\n"),
+                new TabSection(new Dataset("id", "tabs"),
+                        selected,
+                        new Dataset("id", "t1", "text", "First",
+                                "url", "tabSection?tab=t1"),
+                        new Dataset("id", "t2", "text", "Second",
+                                "url", "tabSection?tab=t2"),
+                        new Dataset("id", "t3", "text", "Third",
+                                "ajaxUrl", "ajaxTab?tab=t3"),
+                        new Dataset("id", "t4", "text", "Fourth",
+                                "javascript",
+                                "document.getElementById(\"text\").innerHTML " +
+                                "= 'You clicked on tab \"t4\", which caused " +
+                                "this text to be updated by Javascript.'"),
+                        new Dataset("id", "t5", "text", "Last One",
+                                "url", "tabSection?tab=t5")),
+                new TemplateSection("<p id=\"text\">The currently selected " +
+                        "tab has id \"@tab?{??}\"</p>\n"));
+    }
+
+    /**
+     * Invoked by some of the tabs in {@code tabSection}.  Modifies
+     * the text displayed underneath the tabs.
+     * @param cr
+     */
+    public void ajaxTab(ClientRequest cr) {
+        cr.ajaxUpdateAction("text", "You clicked on tab \"" +
+                cr.getMainDataset().get("tab") +
+                "\", which caused this text to be updated via AJAX.");
+    }
+
+    /**
      * Displays a page with various demonstrations of the TableSection
      * class.
      * @param cr                   Overall information about the client
