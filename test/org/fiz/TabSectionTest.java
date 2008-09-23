@@ -160,7 +160,7 @@ public class TabSectionTest extends junit.framework.TestCase {
         cr.getMainDataset().set("text", "<\">");
         section.html(cr);
         assertEquals("included Javascript files",
-                "fizlib/Ajax.js, fizlib/Fiz.js, fizlib/TabSection.js",
+                "fizlib/Fiz.js, fizlib/TabSection.js",
                 cr.getHtml().getJsFiles());
         TestUtil.assertSubstring("onclick handler",
                 "<a href=\"#\" onclick=\"Fiz.TabSection.selectTab" +
