@@ -99,6 +99,38 @@ public class DemoInteractor extends Interactor {
             );
 
     /**
+     * Displays a page illustrating usage of the CompoundSection class.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    public void compound(ClientRequest cr) {
+        Html html = cr.getHtml();
+        html.setTitle("CompoundSection Demo");
+        CompoundSection section = new CompoundSection (
+                new Dataset("borderBase", "/fizlib/images/borderBlueFilled",
+                        "background", "#f1f5fb"),
+                new TemplateSection ("<p>Here is some sample text " +
+                        "to fill the body of this compound section.</p>\n"),
+                new TemplateSection ("<p>This is a second paragraph, " +
+                        "which follows the first.</p>\n")
+        );
+        CompoundSection section2 = new CompoundSection (
+                new Dataset("borderBase", "/fizlib/images/borderGrayFilled",
+                        "background", "#f5f5f5"),
+                new TemplateSection ("<p>This text provides the body " +
+                        "of the second compound section.  I will type " +
+                        "and type and type some more, in order to " +
+                        "provide lots of text for this section, " +
+                        "so that it overflows onto several lines.</p>\n")
+        );
+        cr.showSections(
+                new TemplateSection("<h1>Compound Section</h1>\n"),
+                section,
+                new TemplateSection("<br>"),
+                section2);
+    }
+
+    /**
      * Displays a page illustrating the FormSection class.
      * @param cr                   Overall information about the client
      *                             request being serviced.
