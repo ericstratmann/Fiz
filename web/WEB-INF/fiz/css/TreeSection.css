@@ -1,0 +1,21 @@
+/* TreeSection.css -
+ *
+ * This file contains style information used for TreeSections.
+ */
+
+.TreeSection .left {
+    padding-right: 2px;
+}
+
+.TreeSection .right {
+    cursor: default;
+}
+
+.TreeSection .right img {
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+.TreeSection .label {
+    vertical-align: middle;
+}

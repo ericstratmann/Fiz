@@ -1,8 +1,9 @@
 package org.fiz;
 
 import java.io.*;
-import java.sql.*;
+import java.security.*;
 import java.util.*;
+import javax.crypto.*;
 import org.apache.log4j.*;
 
 /**
@@ -12,29 +13,38 @@ import org.apache.log4j.*;
 
 public class PerfString {
     protected static Logger logger = Logger.getLogger("org.fiz.Dispatcher");
-    public static void main(String[] argv) throws IOException, SQLException {
-        int count = 10;
+    public static void main(String[] argv)
+            throws IOException, NoSuchAlgorithmException,
+            InvalidKeyException {
+        int count = 10000;
         Dataset d = null;
         int value = 0;
         ArrayList<String> list = new ArrayList<String>();
         long sum = 0;
         Dataset response = null;
         Config.init("test/testData/WEB-INF/config");
-        SqlDataManager manager = (SqlDataManager)
-                DataManager.getDataManager("sql");
-        Dataset row = new Dataset("name", "California",
-                "capital", "Sacramento");
+
+        // Generate secret key for HMAC-MD5
+        KeyGenerator kg = KeyGenerator.getInstance("HmacSHA256");
+        SecretKey sk = kg.generateKey();
+        // Get instance of Mac object implementing HMAC-MD5, and
+        // initialize it with the above secret key
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(sk);
+        byte[] input = ("123456789a123456789b").getBytes();
+        byte[] result = null;
 
         for (int i = 0; i < 10; i++) {
             long start = System.nanoTime();
             for (int j= 0; j < count; j++) {
-                response = manager.findWithSql("SELECT * FROM people;");
+                result = mac.doFinal(input);
             }
             long finish = System.nanoTime();
             System.out.printf("%.4f us per iteration%n",
                     (finish - start)/(1000.0*count));
         }
-        // System.out.printf("Response dataset:\n%s", response.toString());
+        System.out.printf("Input size: %d, result bytes: %d\n",
+                input.length, result.length);
     }
 
     protected static int inc(int i) {

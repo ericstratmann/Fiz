@@ -23,6 +23,8 @@ public class Html {
 
     // The following field keeps track of all of the stylesheet files that
     // have already been included in the HTML document.
+    // TODO: this and other fields should be null unless actually used,
+    // TODO: to reduce allocation/garbage collection overhead.
     protected HashSet<String> cssFiles = new HashSet<String>();
 
     // The following field accumulates CSS information as the document
@@ -50,7 +52,7 @@ public class Html {
     protected HashSet<String> jsFiles = new HashSet<String>();
 
     // The following field accumulates HTML that will read all of the files
-    // in javascriptFiles.
+    // in jsFiles.
     protected StringBuilder jsFileHtml = new StringBuilder();
 
     // The following field accumulates Javascript code that will be invoked

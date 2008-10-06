@@ -60,19 +60,19 @@ public class Button implements Formatter {
      */
     public static void html(ClientRequest cr,  Dataset properties,
             Dataset data, StringBuilder out) {
-        Template.expand("<button {{class=\"@class\"}} onclick=\"",
-                properties, out);
+        StringBuilder javascript;
         String ajaxUrl = properties.check("ajaxUrl");
         if (ajaxUrl != null) {
-            Ajax.invoke(cr, ajaxUrl, data, out);
+            javascript = Ajax.invoke(cr, ajaxUrl, data);
         } else {
-            String javascript = properties.get("javascript");
-            StringBuilder expanded = new StringBuilder(javascript.length());
-            Template.expand(javascript, data, expanded,
+            String jsTemplate = properties.get("javascript");
+            javascript = new StringBuilder(jsTemplate.length());
+            Template.expand(jsTemplate, data, javascript,
                     Template.SpecialChars.JAVASCRIPT);
-            Html.escapeHtmlChars(expanded, out);
         }
-        out.append(" return false;\">");
+        Template.expand("<button {{class=\"@class\"}} " +
+                "onclick=\"@1 return false;\">",
+                properties, out, javascript);
         Template.expand(properties.get("text"), data, out);
         out.append("</button>");
     }

@@ -122,9 +122,10 @@ public class LinkTest extends junit.framework.TestCase {
         Link link = new Link(new Dataset("text", "@name",
                 "ajaxUrl", "/ajaxUrl?age=24&name=@name&weight=@weight"));
         link.html(cr, data, out);
-        assertEquals("HTML for link", "<a href=\"javascript:void new " +
+        assertEquals("HTML for link", "<a href=\"#\" onclick=\"void new " +
                 "Fiz.Ajax(&quot;/ajaxUrl?age=24&amp;name=Alice&amp;" +
-                "weight=%22110%22&quot;);\">Alice</a>", out.toString());
+                "weight=%22110%22&quot;); return false;\">Alice</a>",
+                out.toString());
         TestUtil.assertXHTML(out.toString());
     }
     public void test_html_javascriptHref() {
@@ -133,9 +134,9 @@ public class LinkTest extends junit.framework.TestCase {
         Link link = new Link(new Dataset("text", "@name",
                 "javascript", "alert(\"name: @name, weight: @weight\");"));
         link.html(cr, data, out);
-        assertEquals("HTML for link", "<a href=\"javascript: alert" +
-                "(&quot;name: Alice, weight: \\&quot;110\\&quot;&quot;);\">" +
-                "Alice</a>", out.toString());
+        assertEquals("HTML for link", "<a href=\"#\" onclick=\"alert(&quot;" +
+                "name: Alice, weight: \\&quot;110\\&quot;&quot;); " +
+                "return false;\">Alice</a>", out.toString());
         TestUtil.assertXHTML(out.toString());
     }
     public void test_html_confirmation() {
@@ -224,7 +225,7 @@ public class LinkTest extends junit.framework.TestCase {
         Link link = new Link(new Dataset("url", "http://foo"));
         link.confirmHtml("about to modify name: @name", data, out);
         assertEquals("confirmation attribute",
-                "onclick=\"if (!confirm(&quot;about to modify name: "
+                " onclick=\"if (!confirm(&quot;about to modify name: "
                 + "Alice&quot;) {return false;}\"", out.toString());
     }
     public void test_confirmHtml_quoteMessageChars() {
@@ -233,7 +234,7 @@ public class LinkTest extends junit.framework.TestCase {
         Link link = new Link(new Dataset("url", "http://foo"));
         link.confirmHtml("OK to modify \"@name\"?", data, out);
         assertEquals("confirmation attribute",
-                "onclick=\"if (!confirm(&quot;OK to modify "
+                " onclick=\"if (!confirm(&quot;OK to modify "
                 + "\\&quot;Alice\\&quot;?&quot;) {return false;}\"",
                 out.toString());
     }

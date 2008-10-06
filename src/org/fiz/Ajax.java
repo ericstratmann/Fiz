@@ -35,13 +35,14 @@ public class Ajax {
      *                             via Ajax.  Must refer to an Interactor
      *                             method.
      * @param data                 Data to use while expanding urlTemplate.
-     * @param out                  Javascript to invoke the Ajax request
-     *                             using the class Fiz.Ajax.  The code is
-     *                             quoted for inclusion in HTML (e.g. as
-     *                             part of an attribute for an element).
+     *                             May be null if there are no substitutions
+     *                             in the template.
+     * @param out                  Javascript code gets appended here; when
+     *                             executed, it will invoke the Ajax request
+     *                             using the class Fiz.Ajax.
      */
-    public static void invoke(ClientRequest cr, CharSequence urlTemplate,
-            Dataset data, StringBuilder out) {
+    public static void invoke(ClientRequest cr,
+            CharSequence urlTemplate, Dataset data, StringBuilder out) {
         cr.getHtml().includeJsFile("fizlib/Ajax.js");
 
         // Quoting is tricky:
@@ -50,14 +51,31 @@ public class Ajax {
         //     will be passed in a Javascript string) but we can skip this
         //     because URL quoting has already quoted all the characters
         //     that are special in strings.
-        //   * Apply HTML quoting because the entire Javascript script
-        //     is output as part of the HTML.
-        StringBuilder expandedUrl = new StringBuilder(urlTemplate.length());
-        Template.expand(urlTemplate, data, expandedUrl,
+        out.append("void new Fiz.Ajax(\"");
+        Template.expand(urlTemplate, data, out,
                 Template.SpecialChars.URL);
-        Html.escapeHtmlChars("void new Fiz.Ajax(\"", out);
-        Html.escapeHtmlChars(expandedUrl, out);
-        Html.escapeHtmlChars("\");", out);
+        out.append("\");");
+    }
+
+    /**
+     * Generate Javascript code that will invoke an Ajax request.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @param urlTemplate          Template for the URL to be invoked
+     *                             via Ajax.  Must refer to an Interactor
+     *                             method.
+     * @param data                 Data to use while expanding urlTemplate.
+     *                             May be null if there are no substitutions
+     *                             in the template.
+     * @return                     Javascript code that will invoke the Ajax
+     *                             request using the class Fiz.Ajax.
+     */
+    public static StringBuilder invoke(ClientRequest cr,
+            CharSequence urlTemplate, Dataset data) {
+        StringBuilder javascript = new StringBuilder(urlTemplate.length()
+                + 40);
+        invoke(cr, urlTemplate, data, javascript);
+        return javascript;
     }
 
     /**

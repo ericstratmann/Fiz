@@ -89,7 +89,7 @@ public class TabSection implements Section{
     public void html(ClientRequest cr) {
         Html html = cr.getHtml();
         StringBuilder out = html.getBody();
-        StringBuilder expanded = new StringBuilder();
+        StringBuilder javascript = new StringBuilder();
         boolean anyJavascript = false;
         String sectionId = properties.get("id");
 
@@ -163,29 +163,27 @@ public class TabSection implements Section{
                     anyJavascript = true;
                 }
                 out.append(" href=\"#\" onclick=\"");
-                expanded.setLength(0);
+                javascript.setLength(0);
 
                 // For Javascript and AJAX actions we need to call
                 // Javascript code to modify the DOM so that the new selected
                 // will appear selected (no need for this in the URL case
                 // because an entirely new page will be displayed).
                 Template.expand("Fiz.TabSection.selectTab(\"@1\"); ",
-                        expanded, Template.SpecialChars.JAVASCRIPT, tabId);
-                Html.escapeHtmlChars(expanded, out);
+                        javascript, Template.SpecialChars.JAVASCRIPT, tabId);
                 String ajaxUrl = tab.check("ajaxUrl");
                 if (ajaxUrl != null) {
                     // AJAX action.
-                    Ajax.invoke(cr, ajaxUrl, data, out);
+                    Ajax.invoke(cr, ajaxUrl, data, javascript);
                 } else {
                     // Javascript action.
-                    String javascript = tab.check("javascript");
-                    if (javascript != null) {
-                        expanded.setLength(0);
-                        Template.expand(javascript, data, expanded,
+                    String jsTemplate = tab.check("javascript");
+                    if (jsTemplate != null) {
+                        Template.expand(jsTemplate, data, javascript,
                                 Template.SpecialChars.JAVASCRIPT);
-                        Html.escapeHtmlChars(expanded, out);
                     }
                 }
+                Html.escapeHtmlChars(javascript, out);
                 out.append("; return false;\"");
             }
 

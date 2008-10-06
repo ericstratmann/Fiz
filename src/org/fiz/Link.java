@@ -23,8 +23,9 @@ package org.fiz;
  * javascript - (optional) If this property specified, clicking on the text
  *              or image will cause the value of this property to be invoked
  *              as Javascript code.  The property value is a template,
- *              expanded using Javascript string quoting.  This property is
- *              ignored if {@code url} or {@code ajaxUrl} is specified.
+ *              expanded using Javascript string quoting, and must end with
+ *              ";".  This property is ignored if {@code url} or
+ *              {@code ajaxUrl} is specified.
  * iconUrl -    (optional) URL for an image to display to the left of the
  *              text.  This is also a template.
  * alt -        (optional) Template for the {@code alt} attribute for the
@@ -134,30 +135,28 @@ public class Link implements Formatter {
 
         // Generate the <a> element, including an event handler for
         // confirmation, if requested.
-        out.append("<a href=\"");
         if (url != null) {
             // Normal href.
-            StringBuilder expandedUrl = new StringBuilder(url.length());
-            Template.expand(url, data, expandedUrl, Template.SpecialChars.URL);
-            Html.escapeHtmlChars(expandedUrl, out);
-        } else if (ajaxUrl != null) {
-            out.append("javascript:");
-            Ajax.invoke(cr, ajaxUrl, data, out);
-        } else if (javascript != null) {
-            // Javascript code.
-            StringBuilder expanded = new StringBuilder(javascript.length());
-            Template.expand(javascript, data, expanded,
-                    Template.SpecialChars.JAVASCRIPT);
-            out.append("javascript: ");
-            Html.escapeHtmlChars(expanded, out);
+            Template.expand("<a href=\"@1\"", out, Template.expand(url,
+                    data, Template.SpecialChars.URL));
+        } else {
+            StringBuilder expandedJs;
+            if (ajaxUrl != null) {
+                // AJAX invocation.
+                expandedJs = Ajax.invoke(cr, ajaxUrl, data);
+            } else {
+                // Javascript code.
+                expandedJs = new StringBuilder(javascript.length());
+                Template.expand(javascript, data, expandedJs,
+                        Template.SpecialChars.JAVASCRIPT);
+            }
+            Template.expand("<a href=\"#\" onclick=\"@1 return false;\"",
+                    out, expandedJs);
         }
         if (confirm != null) {
-            out.append("\" ");
             confirmHtml(confirm, data, out);
-            out.append(">");
-        } else {
-            out.append("\">");
         }
+        out.append(">");
 
         // Generate the icon and/or text.
         if (displayText && displayIcon) {
@@ -222,7 +221,7 @@ public class Link implements Formatter {
         StringBuilder code = new StringBuilder("if (!confirm(\"");
         Html.escapeStringChars(message.toString(), code);
         code.append("\") {return false;}");
-        out.append("onclick=\"");
+        out.append(" onclick=\"");
         Html.escapeHtmlChars(code.toString(), out);
         out.append("\"");
     }

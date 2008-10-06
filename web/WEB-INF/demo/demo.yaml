@@ -98,3 +98,16 @@ shoppingCart:
           price: $4.27
         - item:  Total
           price: $14.06
+
+treeTopLevel:
+    record:
+        - text:       Alice
+          name:       alice
+        - text:       Bill
+          name:       bill
+          expandable: 1
+        - text:       Carol
+          name:       carol
+          expandable: 1
+        - text:       David
+          name:       david

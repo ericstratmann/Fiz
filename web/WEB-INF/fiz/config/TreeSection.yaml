@@ -1,0 +1,9 @@
+# TreeSection.yaml -
+#
+# This dataset provides information used by the TreeSection class to
+# display trees in different styles.
+# TODO: fill in this documentation once things have settled down a bit.
+
+node: <img src="/fizlib/images/folder.gif" /><span class="label">@text</span>
+
+leaf: <span class="label">@text</span>

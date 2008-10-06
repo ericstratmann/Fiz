@@ -10,18 +10,33 @@ public class AjaxTest extends junit.framework.TestCase {
         assertEquals("missing comma", error.getMessage());
     }
 
-    public void test_invoke() {
+    public void test_invoke_withStringBuilder() {
         ClientRequest cr = new ClientRequestFixture();
-        StringBuilder out = new StringBuilder();
         Dataset data = new Dataset("name", "Alice", "weight", "\"110\"");
+        StringBuilder out = new StringBuilder();
         Ajax.invoke(cr, "/fiz/test/alert?age=24&name=@name&weight=@weight",
                 data, out);
         TestUtil.assertSubstring("include Javascript file",
                 "/servlet/fizlib/Ajax.js",
                 cr.getHtml().jsFileHtml.toString());
         assertEquals("generated HTML",
-                "void new Fiz.Ajax(&quot;/fiz/test/alert" +
-                "?age=24&amp;name=Alice&amp;weight=%22110%22&quot;);",
+                "void new Fiz.Ajax(\"/fiz/test/alert?age=24&name=Alice&" +
+                "weight=%22110%22\");",
+                out.toString());
+    }
+
+    public void test_invoke_withoutStringBuilder() {
+        ClientRequest cr = new ClientRequestFixture();
+        Dataset data = new Dataset("name", "Alice", "weight", "\"110\"");
+        StringBuilder out = Ajax.invoke(cr,
+                "/fiz/test/alert?age=24&name=@name&weight=@weight",
+                data);
+        TestUtil.assertSubstring("include Javascript file",
+                "/servlet/fizlib/Ajax.js",
+                cr.getHtml().jsFileHtml.toString());
+        assertEquals("generated HTML",
+                "void new Fiz.Ajax(\"/fiz/test/alert?age=24&name=Alice&" +
+                "weight=%22110%22\");",
                 out.toString());
     }
 

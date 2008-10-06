@@ -274,6 +274,34 @@ public class DemoInteractor extends Interactor {
         link.html(cr, cr.getMainDataset(), body);
     }
 
+    /**
+     * Displays a page demonstrates the TableSection class.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    public void tree(ClientRequest cr) {
+        Html html = cr.getHtml();
+        html.setTitle("TreeSection Demo");
+        Dataset main = cr.getMainDataset();
+        String edgeStyle = main.check("edgeStyle");
+        if (edgeStyle == null) {
+            edgeStyle = "treeSolid";
+        }
+        cr.showSections(
+                new TemplateSection("<h1>TreeSection Demo</h1>\n" +
+                        "<p>Current edge style: @edgeStyle?{treeSolid}</p>\n" +
+                        "<p><a href=\"tree?edgeStyle=treeSolid\">Change " +
+                        "edge style to treeSolid</a><br />\n" +
+                        "<a href=\"tree?edgeStyle=treeDotted\">Change " +
+                        "edge style to treeDotted</a><br />\n" +
+                        "<a href=\"tree?edgeStyle=treeNoLines\">Change " +
+                        "edge style to treeNoLines</a></p>\n"),
+                new TreeSection(
+                    new Dataset("id", "tree1", "request", "demo.treeTopLevel",
+                            "edgeStyle", edgeStyle))
+        );
+    }
+
     public void ajaxClearStats(ClientRequest cr) {
         ((Dispatcher) cr.getServlet()).clearInteractorStatistics();
         cr.ajaxRedirectAction("stats");

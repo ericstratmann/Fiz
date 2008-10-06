@@ -55,3 +55,8 @@ demo:
         request: read
         file:    demo
         dataset: empty
+    treeTopLevel:
+        manager: demo
+        request: read
+        file:    demo
+        dataset: treeTopLevel
