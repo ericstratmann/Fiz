@@ -53,6 +53,41 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("dataset contents", "a: a_value\n", d.toString());
     }
 
+    // Constructor Dataset(Object... keysAndValues)
+
+    public void test_constructor_keysAndValuesObjects_basics() {
+        Dataset d = new Dataset("a", "123", "b", "abcde",
+                "b", new Dataset("name", "Alice", "age", "23"),
+                "b", new Dataset("child", new Dataset("name", "Bill")),
+                "c", new Dataset("state", "California"));
+        assertEquals("dataset contents", "a: 123\n" +
+                "b:\n" +
+                "  - age:  23\n" +
+                "    name: Alice\n" +
+                "  - child:\n" +
+                "        name: Bill\n" +
+                "c:\n" +
+                "    state: California\n", d.toString());
+    }
+    public void test_constructor_keysAndValuesObjects_extraKey() {
+        Dataset d = new Dataset("a", new Dataset("x", "1"), "b");
+        assertEquals("dataset contents", "a:\n" +
+                "    x: 1\n", d.toString());
+    }
+    public void test_constructor_keysAndValuesObjects_typeError() {
+        boolean gotException = false;
+        try {
+            Dataset d = new Dataset("a", new int[] {1, 2, 3});
+        }
+        catch (ClassCastException e) {
+            assertEquals("exception message",
+                    "[I cannot be cast to org.fiz.Dataset",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+
     // Constructor Dataset(HashMap contents, String fileName)
 
     @SuppressWarnings("unchecked")

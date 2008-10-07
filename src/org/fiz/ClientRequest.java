@@ -236,6 +236,41 @@ public class ClientRequest {
     }
 
     /**
+     * Generate Ajax actions that will replace the innerHTML for one or more
+     * Sections.
+     * @param idsAndSections       An even number of arguments, grouped in
+     *                             pairs of which the first argument is a
+     *                             String containing an HTML element id, and
+     *                             the second is a Section.  Each Section's
+     *                             HTML will be regenerated and an Ajax
+     *                             action will be created that uses the HTML
+     *                             to replace the innerHTML of the
+     *                             corresponding HTML element.
+     */
+    public void ajaxUpdateSections(Object... idsAndSections) {
+        StringBuilder out = getHtml().getBody();
+        int oldLength = out.length();
+        int lastId = idsAndSections.length - 2;
+
+        // This method operates in 2 passes, much like showSections:
+        // the first pass registers of data requests, which can then
+        // execute in parallel.  The second pass generates the HTML
+        // and the Ajax actions.
+        for (int i = 0; i <= lastId; i += 2) {
+            Section section = (Section) idsAndSections[i+1];
+            section.registerRequests(this);
+        }
+        startDataRequests();
+        for (int i = 0; i <= lastId; i += 2) {
+            String id = (String) idsAndSections[i];
+            Section section = (Section) idsAndSections[i+1];
+            section.html(this);
+            ajaxUpdateAction(id, out.substring(oldLength));
+            out.setLength(oldLength);
+        }
+    }
+
+    /**
      * This method is invoked by the Dispatcher at the end of a request
      * to complete the transmission of the response back to the client.
      */

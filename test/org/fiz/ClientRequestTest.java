@@ -140,6 +140,31 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 out.toString());
     }
 
+    public void test_ajaxUpdateSections() {
+        Section section1 = new TemplateSection(new Dataset(
+                "template", "state: @state",
+                "request", new Dataset("manager", "raw",
+                "result", new Dataset("state", "California"))
+        ));
+        Section section2 = new TemplateSection(new Dataset(
+                "template", "capital: @capital",
+                "request", new Dataset("manager", "raw",
+                "result", new Dataset("capital", "Sacramento"))
+        ));
+        cr.getHtml().getBody().append("Original text");
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        cr.setAjax(true);
+        cr.ajaxUpdateSections("id44", section1, "id55", section2);
+        assertEquals("response",
+                "var actions = [{type: \"update\", id: \"id44\", html: " +
+                "\"state: California\"}, {type: \"update\", id: \"id55\", " +
+                "html: \"capital: Sacramento\"}",
+                out.toString());
+        assertEquals("don't leave permanent modifications in HTML body",
+                "Original text", cr.getHtml().getBody().toString());
+    }
+
     public void test_finish_ajax() throws IOException {
         StringWriter out = ((ServletResponseFixture)
                 cr.getServletResponse()).out;

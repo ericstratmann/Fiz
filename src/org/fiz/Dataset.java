@@ -201,6 +201,33 @@ public class Dataset implements Cloneable {
     }
 
     /**
+     * Construct a dataset from keys and values passed as arguments,
+     * where each value can be either a string or a nested dataset.
+     * @param keysAndValues        An even number of argument objects;
+     *                             the first argument of each pair must be
+     *                             a string key and the second argument of
+     *                             each pair must be a value for that key
+     *                             (either a String or a Dataset).  To
+     *                             create multiple nested datasets with the
+     *                             same name, use multiple key/value pairs
+     *                             with the same key.
+     */
+    @SuppressWarnings("unchecked")
+    public Dataset(Object... keysAndValues) {
+        map = new HashMap();
+        int last = keysAndValues.length - 2;
+        for (int i = 0; i <= last; i += 2) {
+            String key = (String) keysAndValues[i];
+            Object value = keysAndValues[i+1];
+            if (value instanceof String) {
+                map.put(key, (String) value);
+            } else {
+                addChild(key, (Dataset) value);
+            }
+        }
+    }
+
+    /**
      * Private constructor, used by checkValue, newFileInstance, and other
      * methods.
      * @param contents             HashMap holding the contents of the
