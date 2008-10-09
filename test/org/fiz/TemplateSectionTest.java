@@ -1,5 +1,7 @@
 package org.fiz;
 
+import java.io.*;
+
 /**
  * Junit tests for the TableSection class.
  */
@@ -67,6 +69,19 @@ public class TemplateSectionTest extends junit.framework.TestCase {
                 "name: @name, height: @height"));
         assertEquals("generated HTML", "name: Alice, height: 66",
                 cr.getHtml().getBody().toString());
+    }
+    public void test_html_templateInFile() {
+        (new File("_testData_/WEB-INF")).mkdirs();
+        TestUtil.writeFile("_testData_/WEB-INF/template",
+                "@name is @height inches tall.");
+        ServletContextFixture context = (ServletContextFixture)
+                cr.getServletContext();
+        context.contextRoot = "_testData_/";
+        cr.showSections(new TemplateSection(new Dataset(
+                "file", "template")));
+        assertEquals("generated HTML", "Alice is 66 inches tall.",
+                cr.getHtml().getBody().toString());
+        TestUtil.deleteTree("_testData_");
     }
 
     public void test_registerRequests() {

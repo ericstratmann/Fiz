@@ -20,11 +20,10 @@ public class TabSectionTest extends junit.framework.TestCase {
 
     public void test_constructor() {
         TabSection section = new TabSection(new Dataset("a", "1", "b", "2"),
-                "tab14", new Dataset("id", "1"), new Dataset("id", "2"));
+                new Dataset("id", "1"), new Dataset("id", "2"));
         assertEquals("configuration properties", "a: 1\n" +
                 "b: 2\n",
                 section.properties.toString());
-        assertEquals("selected tab", "tab14", section.selected);
         assertEquals("tab descriptions", "id: 1\n" +
                 "--------\n" +
                 "id: 2\n",
@@ -32,11 +31,12 @@ public class TabSectionTest extends junit.framework.TestCase {
     }
 
     public void test_html_basics() {
-        TabSection section = new TabSection(new Dataset("id", "section12"),
-                "second",
+        TabSection section = new TabSection(new Dataset("id", "section12",
+                "selector", "selectedTab"),
                 new Dataset("id", "first", "text", "First", "url", "/a/b"),
                 new Dataset("id", "second", "text", "Second", "url", "/a/c"),
                 new Dataset("id", "third", "text", "Third", "url", "/xyz"));
+        cr.getMainDataset().set("selectedTab", "second");
         section.html(cr);
         TestUtil.assertXHTML(cr.getHtml().getBody().toString());
         assertEquals("generated HTML", "\n" +
@@ -74,9 +74,31 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "<!-- End TabSection section12 -->\n",
                 cr.getHtml().getBody().toString());
     }
+    public void test_html_noSelectorProperty() {
+        TabSection section = new TabSection(new Dataset("id", "section12"),
+                new Dataset("id", "first", "text", "label1",
+                "url", "/a/b"));
+        cr.showSections(section);
+        TestUtil.assertXHTML(cr.getHtml().getBody().toString());
+        TestUtil.assertSubstring("first tab selected",
+                "<td class=\"midSelected\" id=\"section12.first\">" +
+                "<a href=\"/a/b\"><div>label1",
+                cr.getHtml().getBody().toString());
+    }
+    public void test_html_selectorNameNonexistent() {
+        TabSection section = new TabSection(new Dataset("id", "section12",
+                "selector", "bogusSelector"),
+                new Dataset("id", "first", "text", "label1",
+                "url", "/a/b"));
+        cr.showSections(section);
+        TestUtil.assertXHTML(cr.getHtml().getBody().toString());
+        TestUtil.assertSubstring("first tab selected",
+                "<td class=\"midSelected\" id=\"section12.first\">" +
+                "<a href=\"/a/b\"><div>label1",
+                cr.getHtml().getBody().toString());
+    }
     public void test_html_noRequest() {
         TabSection section = new TabSection(new Dataset("id", "section12"),
-                "xxx",
                 new Dataset("id", "first", "text", "Name: @name, age: @age",
                 "url", "/a/b"));
         cr.showSections(section);
@@ -91,7 +113,6 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "  manager: raw\n" +
                 "  result:\n" +
                 "    age: 44\n"),
-                "xxx",
                 new Dataset("id", "first", "text", "Name: @name, age: @age",
                 "url", "/a/b"));
         cr.showSections(section);
@@ -109,7 +130,6 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "border", "1px solid red"));
         TabSection.setTemplate("name: <@name>, border: @border");
         TabSection section = new TabSection(new Dataset("id", "section12"),
-                "xxx",
                 new Dataset("id", "first", "text", "Name: @name, age: @age",
                 "url", "/a/b"));
         section.html(cr);
@@ -124,7 +144,6 @@ public class TabSectionTest extends junit.framework.TestCase {
         TabSection.setTemplate("sidePadding: @sidePadding, border: @border");
         TabSection section = new TabSection(new Dataset("id", "section12",
                 "style", "testStyle"),
-                "xxx",
                 new Dataset("id", "first", "text", "Name: @name, age: @age",
                 "url", "/a/b"));
         section.html(cr);
@@ -135,7 +154,6 @@ public class TabSectionTest extends junit.framework.TestCase {
     public void test_html_explicitClass() {
         TabSection section = new TabSection(new Dataset("id", "section12",
                 "class", "testClass"),
-                "xxx",
                 new Dataset("id", "first", "text", "Name: @name, age: @age",
                 "url", "/a/b"));
         section.html(cr);
@@ -143,9 +161,25 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "<table id=\"section12\" class=\"testClass\"",
                 cr.getHtml().getBody().toString());
     }
+    public void test_html_defaultForSelectedTab() {
+        TabSection section = new TabSection(new Dataset("id", "section12"),
+                new Dataset("id", "first", "text", "label1",
+                "url", "/a/b"),
+                new Dataset("id", "second", "text", "label2",
+                "url", "/a/b"));
+        cr.showSections(section);
+        TestUtil.assertXHTML(cr.getHtml().getBody().toString());
+        TestUtil.assertSubstring("first tab selected",
+                "<td class=\"midSelected\" id=\"section12.first\">" +
+                "<a href=\"/a/b\"><div>label1",
+                cr.getHtml().getBody().toString());
+        TestUtil.assertSubstring("second tab not selected",
+                "<td class=\"mid\" id=\"section12.second\">" +
+                "<a href=\"/a/b\"><div>label2",
+                cr.getHtml().getBody().toString());
+    }
     public void test_html_templateExpansionForUrl() {
         TabSection section = new TabSection(new Dataset("id", "section12"),
-                "xxx",
                 new Dataset("id", "first", "text", "First",
                 "url", "/a/@name"));
         section.html(cr);
@@ -154,7 +188,6 @@ public class TabSectionTest extends junit.framework.TestCase {
     }
     public void test_html_javascriptAction() {
         TabSection section = new TabSection(new Dataset("id", "section12"),
-                "xxx",
                 new Dataset("id", "first", "text", "First",
                 "javascript", "window.xyz=\"@text\""));
         cr.getMainDataset().set("text", "<\">");
@@ -170,7 +203,6 @@ public class TabSectionTest extends junit.framework.TestCase {
     }
     public void test_html_ajaxAction() {
         TabSection section = new TabSection(new Dataset("id", "section12"),
-                "xxx",
                 new Dataset("id", "first", "text", "First",
                 "ajaxUrl", "a/b/@name"));
         section.html(cr);
@@ -188,7 +220,6 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "  manager: raw\n" +
                 "  result:\n" +
                 "    age: 44\n"),
-                "xxx",
                 new Dataset("id", "first", "text", "Name: @name, age: @age",
                 "url", "/a/b"));
         section.registerRequests(cr);
@@ -200,7 +231,6 @@ public class TabSectionTest extends junit.framework.TestCase {
     }
     public void test_registerRequests_noRequest() {
         TabSection section = new TabSection(new Dataset("id", "section12"),
-                "xxx",
                 new Dataset("id", "first", "text", "First",
                 "ajaxUrl", "a/b/@name"));
         section.registerRequests(cr);

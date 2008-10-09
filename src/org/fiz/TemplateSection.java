@@ -12,12 +12,17 @@ package org.fiz;
  *                   {@code errorStyle} starts with "bulletin", in which
  *                   case the resulting HTML is displayed in the bulletin.
  *                   Defaults to "section".
+ *   file:           (optional) The name of a file in the {@code WEB-INF}
+ *                   directory that contains the template for the section.
+ *                   If this property has specified that it takes precedence
+ *                   over {@code template}.  Expanded in the same way as
+ *                   {@code request}.
  *   request:        (optional) Specifies a DataRequest that will supply
  *                   data for use by {@code template} (either the name of
  *                   a request in the {@code dataRequests} configuration
  *                   dataset or a nested dataset containing the request's
  *                   arguments directly).
- *   template:       (required) Template that will generate HTML for the
+ *   template:       (optional) Template that will generate HTML for the
  *                   section.  If {@code request} is specified then the
  *                   template is expanded in the context of the response
  *                   to that request plus the main dataset; otherwise the
@@ -40,7 +45,7 @@ public class TemplateSection implements Section {
      *                             for the section; see description above.
      */
     public TemplateSection(Dataset properties) {
-        template = properties.get("template");
+        template = properties.check("template");
         errorStyle = properties.check("errorStyle");
         this.properties = properties;
     }
@@ -91,6 +96,19 @@ public class TemplateSection implements Section {
             data = new CompoundDataset(response, cr.getMainDataset());
         } else {
             data = cr.getMainDataset();
+        }
+
+        // Find the template (either a file on disk or a property from the
+        // configuration data set) and expand it.
+        if (properties != null) {
+            String fileName = properties.check("file");
+            if (fileName != null) {
+                StringBuilder contents = Util.readFileFromPath(fileName,
+                        "template",
+                        cr.getServletContext().getRealPath("WEB-INF"));
+                Template.expand(contents, data, cr.getHtml().getBody());
+                return;
+            }
         }
         Template.expand(template, data, cr.getHtml().getBody());
     }

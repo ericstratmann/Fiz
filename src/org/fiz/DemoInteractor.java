@@ -154,14 +154,9 @@ public class DemoInteractor extends Interactor {
     public void tabSection(ClientRequest cr) {
         Html html = cr.getHtml();
         html.setTitle("TabSection Demo");
-        String selected = cr.getMainDataset().check("tab");
-        if (selected == null) {
-            selected = "";
-        }
         cr.showSections(
                 new TemplateSection("<h1>Sample TabSection</h1>\n"),
-                new TabSection(new Dataset("id", "tabs"),
-                        selected,
+                new TabSection(new Dataset("id", "tabs", "selector", "tab"),
                         new Dataset("id", "t1", "text", "First",
                                 "url", "tabSection?tab=t1"),
                         new Dataset("id", "t2", "text", "Second",

@@ -19,6 +19,11 @@ package org.fiz;
  *                   If this property is specified than the data from its
  *                   response is used for expanding templates in the individual
  *                   tabs.
+ *   selector:       (optional) Name of an entry in the main dataset, whose
+ *                   value identifies the selected tab by giving its
+ *                   {@code id}.  If this property is omitted or if the
+ *                   indicated value doesn't exist then the first tab will be
+ *                   selected.
  *   style:          (optional) Selects one of several different ways of
  *                   displaying tabs; must correspond to the name of a
  *                   nested dataset in the {@code tabSections} configuration
@@ -51,7 +56,6 @@ public class TabSection implements Section{
     // The following variables are copies of constructor arguments.  See
     // the constructor documentation for details.
     protected Dataset properties;
-    protected String selected;
     protected Dataset[] tabs;
 
     // Cached copy of TabSection.css.
@@ -64,16 +68,12 @@ public class TabSection implements Section{
      * Construct a TabSection.
      * @param properties           Contains configuration information that
      *                             applies to the entire section.
-     * @param selected             Identifier for the tab that is selected;
-     *                             must match the {@code id} property for one
-     *                             of the tabs.
      * @param tabs                 One or more Datasets, each describing a
      *                             single tab.  The tabs will be displayed
      *                             in the order of these arguments.
      */
-    public TabSection(Dataset properties, String selected, Dataset ... tabs) {
+    public TabSection(Dataset properties, Dataset ... tabs) {
         this.properties = properties;
-        this.selected = selected;
         this.tabs = tabs;
     }
 
@@ -92,6 +92,13 @@ public class TabSection implements Section{
         StringBuilder javascript = new StringBuilder();
         boolean anyJavascript = false;
         String sectionId = properties.get("id");
+
+        // To get information about which that is selected?
+        String selected = null;
+        String selector = properties.check("selector");
+        if (selector != null) {
+            selected = cr.getMainDataset().check(selector);
+        }
 
         // Collect the data that will be available for templates, including
         // the response to the section's request, if there was one.
@@ -132,6 +139,9 @@ public class TabSection implements Section{
         // spacer to the right of all of the tabs.
         for (Dataset tab: tabs) {
             String tabId = tab.get("id");
+            if (selected == null) {
+                selected = tabId;
+            }
             String suffix = (tabId.equals(selected)) ?
                     "Selected" : "";
             tabId = sectionId + "." + tabId;
