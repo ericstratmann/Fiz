@@ -78,6 +78,15 @@ public class TabSection implements Section{
     }
 
     /**
+     * Discard all cached information (such as the CSS template), so that
+     * it will be refetched from disk the next time is needed.  Typically
+     * invoked during debugging sessions to flush caches on every request.
+     */
+    public static synchronized void clearCache() {
+        cssTemplate = null;
+    }
+
+    /**
      * This method is invoked during the final phase of rendering a page;
      * it generates HTML for this section and appends it to the Html
      * object associated with {@code cr}.

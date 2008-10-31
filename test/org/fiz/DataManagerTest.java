@@ -18,6 +18,26 @@ public class DataManagerTest extends junit.framework.TestCase {
                 manager.toString());
     }
 
+    public void test_getDataManager_clearCaches() {
+        // First attempt: loads cache and succeeds.
+        DataManager.destroyAll();
+        Config.setDataset("dataManagers", YamlDataset.newStringInstance(
+                "m1:\n" +
+                "  class: org.fiz.DataManagerFixture\n" +
+                "m2:\n" +
+                "  class: org.fiz.DataManagerFixture\n"));
+        DataManager.getDataManager("m1");
+        DataManager.getDataManager("m2");
+        assertEquals("# cached managers before clearCache", 2,
+                DataManager.cache.size());
+        DataManager.clearCaches();
+        assertEquals("# cached managers after clearCache", 0,
+                DataManager.cache.size());
+        assertEquals("log from DataManagerFixture",
+                "m1 clearCache; m2 clearCache",
+                DataManagerFixture.getLogs());
+    }
+
     public void test_getDataManager_basics() {
         // First attempt: loads cache and succeeds.
         DataManager.destroyAll();

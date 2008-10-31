@@ -13,3 +13,9 @@ home: TBD
 # names in the following (comma-separated) list:
 searchPackages: "org.fiz"
 
+# If the following value is set to "true" than all of Fiz's internal
+# caches will be cleared before each request.  This is useful in debug
+# configurations so that file changes take effect immediately without
+# restarting the application.
+clearCaches: true
+

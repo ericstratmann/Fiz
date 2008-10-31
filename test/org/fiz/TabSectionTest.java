@@ -29,6 +29,15 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "id: 2\n",
                 StringUtil.join(section.tabs, "--------\n"));
     }
+    
+    public void test_clearCache() {
+        TabSection.setTemplate("xyzzy");
+        assertEquals("template before clearCache", "xyzzy",
+                TabSection.cssTemplate);
+        TabSection.clearCache();
+        assertEquals("template after clearCache", null,
+                TabSection.cssTemplate);
+    }
 
     public void test_html_basics() {
         TabSection section = new TabSection(new Dataset("id", "section12",

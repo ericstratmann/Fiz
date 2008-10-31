@@ -101,6 +101,14 @@ public class Dispatcher extends HttpServlet {
     protected InteractorMethod unsupportedURL =
             new InteractorMethod(null, null);
 
+    // If the following variable is true, we flush all of our internal
+    // caches on every request.  This variable mirrors the "clearCaches"
+    // entry in the main configuration dataset.  If the dataset value
+    // changes to false then we stop flushing caches (and will no longer
+    // see any changes to that dataset; to reenable cache flushing you
+    // will have to change the dataset and also restart the application).
+    protected boolean clearCaches = true;
+
     /**
      * This method is invoked by the servlet container when the servlet
      * is first loaded; we use it to perform our own initialization.
@@ -116,21 +124,30 @@ public class Dispatcher extends HttpServlet {
         logger.info("Fiz initializing with context root " + contextRoot);
         Config.init(contextRoot + "/WEB-INF/config",
                 contextRoot + "/WEB-INF/fiz/config");
-        Dataset main = Config.getDataset("main");
-        if (main instanceof CompoundDataset) {
-            Dataset[] components = ((CompoundDataset) main).getComponents();
-            components[0].set("home", contextRoot);
-        } else {
-            main.set("home", contextRoot);
-        }
+        initMainConfigDataset(contextRoot);
         logger.info("main configuration dataset:\n    " +
-                main.toString().trim().replace("\n", "\n    "));
+                Config.getDataset("main").toString().trim().replace(
+                "\n", "\n    "));
         Css.init(contextRoot + "/WEB-INF/css",
                 contextRoot + "/WEB-INF/fiz/css");
 
         // If you want more detailed logging, such as request URLs, uncomment
         // the following line.
         // logger.setLevel(Level.WARN);
+    }
+
+    /**
+     * Clear all of the caches maintained by Fiz, so that it will be
+     * reloaded from disk the next time is needed.  This is typically done
+     * when debugging, so that file changes will be reflected immediately,
+     * without restarting the application.
+     */
+    public static void clearCaches() {
+        Config.clearCache();
+        Css.clearCache();
+        DataManager.clearCaches();
+        Html.clearJsDependencyCache();
+        TabSection.clearCache();
     }
 
     /**
@@ -217,6 +234,18 @@ public class Dispatcher extends HttpServlet {
         try {
             if (logger.isTraceEnabled()) {
                 logger.trace("incoming URL: " + Util.getUrlWithQuery(request));
+            }
+
+            // See if we are in a debugging mode where we should flush caches
+            // before every request.
+            if (clearCaches) {
+                String clear = Config.get("main", "clearCaches");
+                if ((clear != null) && (!clear.equals("true"))) {
+                    clearCaches = false;
+                } else {
+                    clearCaches();
+                    initMainConfigDataset(getServletContext().getRealPath(""));
+                }
             }
 
             // Use UTF-8 as the default encoding for all responses.
@@ -359,8 +388,8 @@ public class Dispatcher extends HttpServlet {
                 - average*average);
         result.add(new Dataset("name", methodName,
                 "invocations", Integer.toString(method.invocations),
-                "averageMs", Double.toString(average/1.0e6),
-                "standardDeviationMs", Double.toString(deviation/1.0e6)));
+                "averageMs", String.format("%.3f", average/1.0e6),
+                "standardDeviationMs", String.format("%.3f", deviation/1.0e6)));
     }
 
     /**
@@ -452,5 +481,21 @@ public class Dispatcher extends HttpServlet {
                 "couldn't find method \"" + methodName
                 + "\" with proper signature in class " + className);
 
+    }
+
+    /**
+     * Load the main configuration data set and add a "home" entry to
+     * it that refers to our context root (the directory that contains
+     * the WEB-INF directory).
+     * @param home                 Root directory for this application.
+     */
+    protected static void initMainConfigDataset(String home) {
+        Dataset main = Config.getDataset("main");
+        if (main instanceof CompoundDataset) {
+            Dataset[] components = ((CompoundDataset) main).getComponents();
+            components[0].set("home", home);
+        } else {
+            main.set("home", home);
+        }
     }
 }

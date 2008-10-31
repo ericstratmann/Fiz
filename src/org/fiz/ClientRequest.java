@@ -430,6 +430,21 @@ public class ClientRequest {
     }
 
     /**
+     * Arrange for the response to include Javascript code, which will be
+     * evaluated by the browser when it receives a response.  This method
+     * works for both AJAX requests and normal HTML requests.
+     * @param javascript           Javascript code for the browser to
+     *                             execute.
+     */
+    public void includeJavascript(CharSequence javascript) {
+        if (ajaxRequest) {
+            ajaxEvalAction(javascript);
+        } else {
+            getHtml().includeJavascript(javascript);
+        }
+    }
+
+    /**
      * Returns true if this client request is an Ajax request, false
      * if it is a traditional HTTP/HTML request.
      * @return                     See above.

@@ -4,6 +4,7 @@
 # display trees in different styles.
 # TODO: fill in this documentation once things have settled down a bit.
 
-node: <img src="/fizlib/images/folder.gif" /><span class="label">@text</span>
+node:             <img src="/fizlib/images/folder.gif" /><span class="label">@text</span>
+node-expanded:    <img src="/fizlib/images/folder-open.gif" /><span class="label"><b>@text</b></span>
 
-leaf: <span class="label">@text</span>
+leaf:             <span class="label">@text</span>

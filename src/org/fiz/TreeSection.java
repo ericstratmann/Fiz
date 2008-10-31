@@ -65,6 +65,47 @@ public class TreeSection implements Section {
     }
 
     /**
+     * This method is invoked during Ajax requests to expand an element
+     * in a TreeSection.
+     * @param cr                   Overall information about the client
+     *                             request being serviced;  there must
+     *                             be {@code id} and {@code name}
+     *                             values in the main dataset, which
+     *                             identify the HTML element to be updated
+     *                             and the data manager's name for the
+     *                             contents of that element.
+     */
+    public void expandElement(ClientRequest cr) {
+        // Invoke a data request to fetch information about the children of
+        // the element being expanded, then generate a <table> that will
+        // display the children.
+        registerRequests(cr);
+
+        ArrayList<Dataset> children = dataRequest.getResponseOrAbort().
+                getChildren("record");
+        StringBuilder html = new StringBuilder();
+        String id = cr.getMainDataset().get("id");
+        String edgeStyle = properties.check("edgeStyle");
+        if (edgeStyle == null) {
+            edgeStyle = "treeSolid";
+        }
+        Template.expand("<table cellspacing=\"0\" " +
+                "class=\"@class?{TreeSection}\" " +
+                "id=\"@1\">\n", properties, html, id);
+        childrenHtml(cr,
+                dataRequest.getResponseOrAbort().getChildren("record"),
+                id, edgeStyle, html);
+        html.append("</table>\n");
+
+        // Generate a Javascript method invocation for the browser to
+        // invoke, which will instantiate the HTML.
+        StringBuilder javascript = new StringBuilder(html.length() + 50);
+        Template.expand("Fiz.ids[\"@1\"].expand(\"@2\");", javascript,
+                Template.SpecialChars.JAVASCRIPT, id, html);
+        cr.ajaxEvalAction(javascript);
+    }
+
+    /**
      * This method is invoked during the final phase of rendering a page;
      * it generates HTML for this section and appends it to the Html
      * object associated with {@code cr}.
@@ -76,7 +117,6 @@ public class TreeSection implements Section {
     public void html(ClientRequest cr) {
         Html html = cr.getHtml();
         StringBuilder out = html.getBody();
-        Dataset mainDataset = cr.getMainDataset();
         String edgeStyle = properties.check("edgeStyle");
         if (edgeStyle == null) {
             edgeStyle = "treeSolid";
@@ -84,6 +124,7 @@ public class TreeSection implements Section {
         if (!properties.containsKey("class")) {
             html.includeCssFile("TreeSection.css");
         }
+        html.includeJsFile("fizlib/TreeRow.js");
         Template.expand("\n<!-- Start TreeSection @id -->\n" +
                 "<table cellspacing=\"0\" class=\"@class?{TreeSection}\" " +
                 "id=\"@id\">\n", properties, out);
@@ -128,8 +169,10 @@ public class TreeSection implements Section {
      */
     protected void childrenHtml(ClientRequest cr, ArrayList<Dataset> children,
             String baseId, String edgeStyle, StringBuilder out) {
+        StringBuilder expandedRow = new StringBuilder();
         for (int i = 0; i < children.size(); i++) {
             Dataset child = children.get(i);
+            Boolean lastElement = (i == (children.size()-1));
 
             // Is this child a node (expandable) or a leaf?
             Boolean expandable = false;
@@ -152,38 +195,31 @@ public class TreeSection implements Section {
             // left cell contains lines connecting all of the children
             // together (if desired) and a box displaying plus or minus
             // for nodes.  The right cell displays icons and name for this
-            // child (or whatever it is specified by the template for
+            // child (or whatever is specified by the template for
             // this child's style).
-            Template.expand("  <tr id=\"@1.@2\">\n", out, baseId, i);
-            if (i == (children.size()-1)) {
-                // Last child: display an L-shaped line as the background
-                // for the cell.
-                Template.expand("    <td class=\"left\" " +
-                        "style=\"background-image: url(/fizlib/images" +
-                        "/@1-last.gif); background-repeat: no-repeat;\"",
-                        out, edgeStyle);
-            } else {
-                // Not the last child: display a vertical line, stretching
-                // to cover the cell from top to bottom.
-                Template.expand("    <td class=\"left\" " +
-                        "style=\"background-image: url(/fizlib/images/" +
-                        "@1-line.gif); background-repeat: repeat-y;\"",
-                        out, edgeStyle);
+            String rowId = baseId + "_" + i;
+            int rowStart = out.length();
+            Template.expand("  <tr id=\"@1\">\n", out, rowId);
+            String repeat = "repeat-y";
+            if (lastElement) {
+                // Don't extend the vertical line for the last element:
+                // it should have an "L" shape.
+                repeat = "no-repeat";
             }
+            Template.expand("    <td class=\"left\" " +
+                    "style=\"background-image: url(/fizlib/images/" +
+                    "@1-line.gif); background-repeat: @2;\"",
+                    out, edgeStyle, repeat);
+            int midPoint = out.length();
 
             // Now display one of 2 images in the left cell: a plus if the
-            // cell is expandable, or an empty image otherwise (needed to
-            // set the size for the cell).
-            if (expandable) {
-                Template.expand(" onclick=\"@1\"><img src=" +
-                        "\"/fizlib/images/@2-plus.gif\"></td>\n",
-                        out, Ajax.invoke(cr, "ajaxTreeUpdate?name=@name",
-                        child), edgeStyle);
-            } else {
-                Template.expand("><img src=\"/fizlib/images/@1-leaf.gif\">" +
-                        "</td>\n",
-                        out, edgeStyle);
-            }
+            // element is expandable, or a horizontal line if this is a
+            // leaf node.
+            Template.expand(" onclick=\"@1\"><img src=" +
+                    "\"/fizlib/images/@2-@3.gif\"></td>\n",
+                    out, Ajax.invoke(cr, "ajaxTreeExpand?id=" + rowId +
+                    "&name=@name",child), edgeStyle,
+                    (expandable ? "plus": "leaf"));
 
             // Render the cell on the right, using a template selected by
             // the style.
@@ -192,6 +228,52 @@ public class TreeSection implements Section {
             Template.expand(Config.get("treeSection", style), child, out);
             out.append("    </td>\n");
             out.append("  </tr>\n");
+
+            // If this element is expandable then do some additional things
+            // to support expansion and unexpansion of this element.
+            //  to 2 more things:
+
+            if (expandable) {
+                // First, create a Javascript object holding two copies of
+                // the HTML for the table row: the one we just rendered (used
+                // when the element is unexpanded), and an alternate version
+                // to use when the element is expanded.
+                expandedRow.setLength(0);
+                expandedRow.append(out.substring(rowStart, midPoint));
+                Template.expand(" onclick=\"Fiz.ids['@1'].unexpand();\">" +
+                        "<img src=\"/fizlib/images/@2-minus.gif\"></td>\n",
+                        expandedRow, rowId, edgeStyle);
+                expandedRow.append("    <td class=\"right\">");
+                Template.expand(Config.get("treeSection", style + "-expanded"),
+                        child, expandedRow);
+                expandedRow.append("    </td>\n");
+                expandedRow.append("  </tr>\n");
+                cr.includeJavascript(Template.expand("Fiz.ids[\"@1\"] = " +
+                        "new Fiz.TreeRow(\"@1\", \"@2\", \"@3\");\n",
+                        Template.SpecialChars.JAVASCRIPT, rowId,
+                        out.substring(rowStart), expandedRow));
+
+                // Second, add an additional row to the table we are
+                // generating, which will hold the children of this element
+                // if/when the element is expanded.  For now, this row is
+                // invisible.  We add this row now because we have information
+                // now that is needed to generate the row (lastEement), and
+                // that information won't be readily available when it's
+                // time to expand the element.
+                Template.expand("  <tr id=\"@(1)_childRow\" " +
+                        "style=\"display:none\">\n", out, rowId);
+                if (!lastElement) {
+                    Template.expand("    <td style=\"background-image: " +
+                            "url(/fizlib/images/@1-line.gif); " +
+                            "background-repeat: repeat-y;\">",
+                            out, edgeStyle);
+                } else {
+                    out.append("    <td>");
+                }
+                Template.expand("</td>\n    <td><div class=\"nested\" " +
+                        "id=\"@(1)_childDiv\"></div></td>\n", out, rowId);
+                out.append("  </tr>\n");
+            }
         }
     }
 }

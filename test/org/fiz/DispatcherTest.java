@@ -13,6 +13,7 @@ public class DispatcherTest  extends junit.framework.TestCase {
     public void setUp() throws ServletException {
         dispatcher = new Dispatcher();
         Dispatcher.testMode = true;
+        dispatcher.clearCaches = false;
         dispatcher.init(new ServletConfigFixture(
                 new ServletContextFixture()));
         Config.setDataset("main", new Dataset("searchPackages", "org.fiz"));
@@ -30,11 +31,11 @@ public class DispatcherTest  extends junit.framework.TestCase {
         dispatcher.init(config);
         assertEquals("Config path", "test/testData/WEB-INF/config",
                 Config.getSearchPath()[0]);
-        assertEquals("home entry in main config dataset", "test/testData",
-                Config.getDataset("main").check("home"));
         assertEquals("Css path", "test/testData/WEB-INF/css",
                 Css.getSearchPath()[0]);
     }
+
+    // Node tests for clearCaches: it is already exercised elsewhere.
 
     public void test_clearInteractorStatistics() {
         dispatcher.service(new ServletRequestFixture(
@@ -94,6 +95,25 @@ public class DispatcherTest  extends junit.framework.TestCase {
                 children.get(2).get("invocations"));
     }
 
+    public void test_service_clearCaches() {
+        dispatcher.clearCaches = true;
+        Config.setDataset("test", new Dataset());
+        Config.setDataset("main", new Dataset("clearCaches", "true"));
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest1/incCount"), new ServletResponseFixture());
+        assertEquals("Config cache size (caches cleared)", 1,
+                Config.cache.size());
+        assertEquals("clearCaches variable true", true,
+                dispatcher.clearCaches);
+        Config.setDataset("test", new Dataset());
+        Config.setDataset("main", new Dataset("clearCaches", "not true"));
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest1/incCount"), new ServletResponseFixture());
+        assertEquals("Config cache size (caches no longer cleared)", 2,
+                Config.cache.size());
+        assertEquals("clearCaches variable false", false,
+                dispatcher.clearCaches);
+    }
     public void test_service_parseMethodEndingInSlash() {
         dispatcher.service(new ServletRequestFixture(
                 "/dispatcherTest1/bogus/a/b/c"), new ServletResponseFixture());
@@ -236,26 +256,26 @@ public class DispatcherTest  extends junit.framework.TestCase {
         Dispatcher.InteractorMethod method = new Dispatcher.InteractorMethod(
                 null, null);
         method.invocations = 0;
-        method.totalNs = 1000.0;
-        method.totalSquaredNs = 25000;
+        method.totalNs = 100000.0;
+        method.totalSquaredNs = 250000000;
         Dispatcher.addStatistics("method0", method, result);
         method.invocations = 10;
-        method.totalNs = 1000.0;
-        method.totalSquaredNs = 325000;
+        method.totalNs = 100000.0;
+        method.totalSquaredNs = 3250000000.0;
         Dispatcher.addStatistics("method1", method, result);
         method.invocations = 2;
-        method.totalNs = 500;
-        method.totalSquaredNs = 125000;
+        method.totalNs = 50000;
+        method.totalSquaredNs = 1250000000.0;
         Dispatcher.addStatistics("method2", method, result);
-        assertEquals("result after 3 calls", "averageMs:           1.0E-4\n" +
+        assertEquals("result after 3 calls", "averageMs:           0.010\n" +
                 "invocations:         10\n" +
                 "name:                method1\n" +
-                "standardDeviationMs: 1.5E-4\n" +
+                "standardDeviationMs: 0.015\n" +
                 "\n" +
-                "averageMs:           2.5E-4\n" +
+                "averageMs:           0.025\n" +
                 "invocations:         2\n" +
                 "name:                method2\n" +
-                "standardDeviationMs: 0.0\n",
+                "standardDeviationMs: 0.000\n",
                 StringUtil.join(result, "\n"));
     }
 
@@ -354,5 +374,24 @@ public class DispatcherTest  extends junit.framework.TestCase {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
+    }
+
+    public void test_initMainConfigDataset_compound() {
+        Config.setDataset("main", new CompoundDataset(new Dataset("a", "1"),
+                new Dataset("b", "2")));
+        Dispatcher.initMainConfigDataset("/a/b/c");
+        assertEquals("updated main dataset", "Component #0:\n" +
+                "  a:    1\n" +
+                "  home: /a/b/c\n" +
+                "Component #1:\n" +
+                "  b: 2\n",
+                Config.getDataset("main").toString());
+    }
+    public void test_initMainConfigDataset_simpleDataset() {
+        Config.setDataset("main", new Dataset("a", "1"));
+        Dispatcher.initMainConfigDataset("/a/b/c");
+        assertEquals("updated main dataset", "a:    1\n" +
+                "home: /a/b/c\n",
+                Config.getDataset("main").toString());
     }
 }

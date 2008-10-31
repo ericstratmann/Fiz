@@ -93,6 +93,15 @@ public class FileDataManager extends DataManager {
     }
 
     /**
+     * Flushes all datasets that have been cached in memory, so that they
+     * will be reread from disk the next time they are needed.
+     */
+    @Override
+    public void clearCache() {
+        datasetCache.clear();
+    }
+
+    /**
      * This method is invoked by DataRequest.startRequests to process
      * one or more requests for this data manager.  The requests are
      * processed synchronously, so that they are all complete before
@@ -274,13 +283,5 @@ public class FileDataManager extends DataManager {
                     path + "\" doesn't exist", "culprit", "dataset"));
             throw new RequestAbortedError();
         }
-    }
-
-    /**
-     * Flushes all datasets that have been cached in memory, so that they
-     * will be reread from disk the next time they are needed.
-     */
-    public void flush() {
-        datasetCache.clear();
     }
 }

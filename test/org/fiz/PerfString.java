@@ -16,13 +16,60 @@ public class PerfString {
     public static void main(String[] argv)
             throws IOException, NoSuchAlgorithmException,
             InvalidKeyException {
-        int count = 10000;
+        int count = 100000;
         Dataset d = null;
         int value = 0;
         ArrayList<String> list = new ArrayList<String>();
         long sum = 0;
         Dataset response = null;
+        String s = "3";
         Config.init("test/testData/WEB-INF/config");
+
+        for (int i = 0; i < 10; i++) {
+            long start = System.nanoTime();
+            for (int j= 0; j < count; j++) {
+                value = getInt(s);
+            }
+            long finish = System.nanoTime();
+            System.out.printf("%.4f us per iteration%n",
+                    (finish - start)/(1000.0*count));
+        }
+        System.out.printf("Value: %d\n", value);
+    }
+
+    protected static int inc(int i) {
+        return i+1;
+    }
+    protected static boolean stringEquals(String first, String second) {
+        int length1 = first.length();
+        int length2 = second.length();
+        if (length1 != length2) {
+            return false;
+        }
+        for (int i = 0; i <length1; i++) {
+            if (first.charAt(i) != second.charAt(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected static int getInt(String s) {
+        int result = 0;
+        int count = s.length();
+        for (int i = 0; i < count; i++) {
+            int digit = s.charAt(i) - '0';
+            if ((digit < 0) || (digit > 9)) {
+                break;
+            }
+            result = result*10 + digit;
+        }
+        return result;
+    }
+
+    protected static void perfMac() throws NoSuchAlgorithmException,
+            InvalidKeyException {
+        int count = 10000;
 
         // Generate secret key for HMAC-MD5
         KeyGenerator kg = KeyGenerator.getInstance("HmacSHA256");
@@ -45,22 +92,5 @@ public class PerfString {
         }
         System.out.printf("Input size: %d, result bytes: %d\n",
                 input.length, result.length);
-    }
-
-    protected static int inc(int i) {
-        return i+1;
-    }
-    protected static boolean stringEquals(String first, String second) {
-        int length1 = first.length();
-        int length2 = second.length();
-        if (length1 != length2) {
-            return false;
-        }
-        for (int i = 0; i <length1; i++) {
-            if (first.charAt(i) != second.charAt(i)) {
-                return false;
-            }
-        }
-        return true;
     }
 }

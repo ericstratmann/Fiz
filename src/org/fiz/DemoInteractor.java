@@ -270,7 +270,7 @@ public class DemoInteractor extends Interactor {
     }
 
     /**
-     * Displays a page demonstrates the TableSection class.
+     * Displays a page demonstrating the TableSection class.
      * @param cr                   Overall information about the client
      *                             request being serviced.
      */
@@ -284,7 +284,7 @@ public class DemoInteractor extends Interactor {
         }
         cr.showSections(
                 new TemplateSection("<h1>TreeSection Demo</h1>\n" +
-                        "<p>Current edge style: @edgeStyle?{treeSolid}</p>\n" +
+                        "<div id=\"p1\"><p>Current edge style: @edgeStyle?{treeSolid}</p></div>\n" +
                         "<p><a href=\"tree?edgeStyle=treeSolid\">Change " +
                         "edge style to treeSolid</a><br />\n" +
                         "<a href=\"tree?edgeStyle=treeDotted\">Change " +
@@ -295,6 +295,13 @@ public class DemoInteractor extends Interactor {
                     new Dataset("id", "tree1", "request", "demo.treeTopLevel",
                             "edgeStyle", edgeStyle))
         );
+    }
+
+    public void ajaxTreeExpand(ClientRequest cr) {
+        TreeSection section = new TreeSection(
+                new Dataset("id", "tree1", "request", "demo.treeTopLevel",
+                "edgeStyle", "treeSolid"));
+        section.expandElement(cr);
     }
 
     public void ajaxClearStats(ClientRequest cr) {

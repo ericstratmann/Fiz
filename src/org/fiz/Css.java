@@ -37,6 +37,15 @@ class Css {
     }
 
     /**
+     * Discards all cached information, so that it will be refetched from
+     * disk the next time is needed.  Typically invoked during debugging
+     * sessions to flush caches on every request.
+     */
+    public static synchronized void clearCache() {
+        cache.clear();
+    }
+
+    /**
      * Returns the current path being used for finding stylesheet files.
      * @return                     The directories supplied in the most
      *                             recent call to {@code init}.

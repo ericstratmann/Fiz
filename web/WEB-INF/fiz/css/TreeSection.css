@@ -4,7 +4,13 @@
  */
 
 .TreeSection .left {
-    padding-right: 2px;
+    padding: 0px 2px 0px 0px;
+    line-height: 0;
+}
+
+.TreeSection .left img {
+    vertical-align: middle;
+    background-position: top;
 }
 
 .TreeSection .right {
@@ -18,4 +24,11 @@
 
 .TreeSection .label {
     vertical-align: middle;
+}
+
+/* The div's containing nested TreeSection tables need to be indented
+ * slightly for better appearance.
+ */
+.nested {
+    margin-left: 3px;
 }

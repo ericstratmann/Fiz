@@ -243,6 +243,18 @@ public class Html {
     }
 
     /**
+     * Expand a Javascript code template (using arguments rather than a
+     * dataset) and then arrange for the result to be executed by the browser
+     * after the page has been processed.
+     * @param template             Javascript code template.
+     * @param args                 Values to be substituted into the template.
+     */
+    public void includeJavascript(CharSequence template, Object... args) {
+        Template.expand(template, jsCode, Template.SpecialChars.JAVASCRIPT,
+                args);
+    }
+
+    /**
      * Arrange for a given Javascript file to be included in the
      * document.  This method also checks for Fiz:include comment lines
      * in the file and recursively includes all of the Javascript files

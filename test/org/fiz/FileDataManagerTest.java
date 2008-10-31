@@ -38,6 +38,16 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 StringUtil.join(manager.path, ", "));
     }
 
+    public void test_clearCache() {
+        TestUtil.writeFile("_testData_/test.yml", "value: abc\n");
+        Dataset d = manager.loadDataset("test");
+        assertEquals("# cached files before clearCache", 1,
+                manager.datasetCache.size());
+        manager.clearCache();
+        assertEquals("# cached files after clearCache", 0,
+                manager.datasetCache.size());
+    }
+
     public void test_startRequests_create() throws IOException {
         TestUtil.writeFile("_testData_/test.yml",
                 "child:\n" +
@@ -470,15 +480,5 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "culprit: dataset\n" +
                 "message: nested dataset \"level1.level2\" doesn't exist\n",
                 request.getErrorData()[0].toString());
-    }
-
-    public void test_flush() {
-        TestUtil.writeFile("_testData_/test.yml", "value: abc\n");
-        Dataset d = manager.loadDataset("test");
-        assertEquals("value before flushing", "abc", d.get("value"));
-        TestUtil.writeFile("_testData_/test.yml", "value: def\n");
-        manager.flush();
-        d = manager.loadDataset( "test");
-        assertEquals("value after flushing", "def", d.get("value"));
     }
 }

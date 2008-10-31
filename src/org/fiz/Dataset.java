@@ -13,7 +13,7 @@ import java.util.*;
  *     them to standard identifier characters)
  *   - Values can have two forms:
  *     - A string
- *     - A list of one or more lnested datasets, each of which contains
+ *     - A list of one or more nested datasets, each of which contains
  *       additional key-value pairs).
  *   - Datasets can be created from a variety of sources, such as
  *     XML and YAML files (see classes such as XmlDataset and

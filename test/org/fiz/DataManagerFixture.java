@@ -8,7 +8,7 @@ import org.apache.log4j.*;
 
 public class DataManagerFixture extends DataManager {
     // The following variable maintains a log of methods that have been
-    // invoked on each DataManagerFixture objects, so that tests can check
+    // invoked on each DataManagerFixture object, so that tests can check
     // to see that methods really were invoked.  The logs are kept
     // separately for each data manager and then merged by the getLogs
     // method; this is needed to generate predictable test results, because
@@ -60,6 +60,15 @@ public class DataManagerFixture extends DataManager {
         }
         log.append(name + " canceled " + getId(request));
     }
+
+    public void clearCache() {
+        StringBuilder log = getLog();
+        if (log.length() > 0) {
+            log.append("; ");
+        }
+        log.append(name + " clearCache");
+    }
+
     public void destroy() {
         destroyed = true;
     }

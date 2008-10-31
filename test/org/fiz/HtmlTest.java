@@ -177,11 +177,19 @@ public class HtmlTest extends junit.framework.TestCase {
                 html.jsCode.toString());
     }
 
-    public void test_includeJavascript_template() {
+    public void test_includeJavascript_withTemplateAndDataset() {
         html.includeJavascript("foo(\"@value1\", value2);",
                 new Dataset("value1", "\"\n\000<&'>", "value2", "345"));
         assertEquals("accumulated Javascript",
                 "foo(\"\\\"\\n\\x00<&'>\", value2);",
+                html.jsCode.toString());
+    }
+
+    public void test_includeJavascript_withTemplateAndArgs() {
+        html.includeJavascript("foo(\"@1\", \"@3\");",
+                "\"\n\000<&'>", "value2", "value3");
+        assertEquals("accumulated Javascript",
+                "foo(\"\\\"\\n\\x00<&'>\", \"value3\");",
                 html.jsCode.toString());
     }
 

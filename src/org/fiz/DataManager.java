@@ -97,9 +97,9 @@ public abstract class DataManager {
      * delete all such cached information so that it gets reloaded from
      * its ultimate source the next time it is referenced.  If the cache
      * contains modified data that has not been written to the backing
-     * storage, it will be written as part of the flush operation.
+     * storage, it will be written as part of the clearCache operation.
      */
-    public void flush() {
+    public void clearCache() {
     }
 
     /**
@@ -117,6 +117,20 @@ public abstract class DataManager {
             return name + " data manager";
         }
         return "unnamed data manager";
+    }
+
+    /**
+     * Discards all cached information for data managers, including both
+     * information kept by this class about data managers and cached
+     * information in any existing data managers.  The cached data will
+     * be refetched from disk the next time is needed.  Typically invoked
+     * during debugging sessions to flush caches on every request.
+     */
+    public static synchronized void clearCaches() {
+        for (DataManager manager : cache.values()) {
+            manager.clearCache();
+        }
+        cache.clear();
     }
 
     /**

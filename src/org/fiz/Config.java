@@ -21,7 +21,7 @@ public class Config {
     // for more information.
     protected static String[] path = new String[] {"."};
 
-    // No constructor: this class only has a static methods.
+    // No constructor: this class only has static methods.
     private Config() {}
 
     /**
@@ -37,6 +37,15 @@ public class Config {
     public static synchronized void init(String... path) {
         cache.clear();
         Config.path = path.clone();
+    }
+
+    /**
+     * Discards all cached information, so that it will be refetched from
+     * disk the next time is needed.  Typically invoked during debugging
+     * sessions to flush caches on every request.
+     */
+    public static synchronized void clearCache() {
+        cache.clear();
     }
 
     /**

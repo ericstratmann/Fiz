@@ -22,6 +22,18 @@ public class ConfigTest extends junit.framework.TestCase {
         TestUtil.deleteTree("_test1_");
     }
 
+    public void test_clearCache() {
+        Config.init(".");
+        TestUtil.writeFile("main.yaml",
+                "name1: value1\nname2: value2\n");
+        Config.get("main", "name1");
+        assertEquals("size of cache after reading a value",
+                1, Config.cache.size());
+        Config.clearCache();
+        assertEquals("size of cache after clearing",
+                0, Config.cache.size());
+    }
+
     public void test_get() {
         Config.init(".");
         TestUtil.writeFile("main.yaml",

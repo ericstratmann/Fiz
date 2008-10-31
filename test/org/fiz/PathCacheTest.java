@@ -12,6 +12,29 @@ public class PathCacheTest extends junit.framework.TestCase {
                 StringUtil.join(p.path, "; "));
     }
 
+    public void test_clearCache() {
+        (new File("_test1_/child")).mkdirs();
+        TestUtil.writeFile("_test1_/child/sample", "test data");
+        PathCache p = new PathCache("_bogus_", "_test1_", "test1_/child");
+        p.find("child/sample");
+        TestUtil.deleteTree("_test1_");
+        p.clearCache();
+        boolean gotException = false;
+        try {
+            // This should fail, since the file has been deleted and
+            // the cache has been flushed.
+            p.find("child/sample");
+        }
+        catch (FileNotFoundError e) {
+            assertEquals("exception message",
+                    "couldn't find file \"child/sample\" in path " +
+                    "(\"_bogus_\", \"_test1_\", \"test1_/child\")",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+
     public void test_find_searchThroughPath() {
         (new File("_test1_/child")).mkdirs();
         TestUtil.writeFile("_test1_/child/sample", "test data");
@@ -42,29 +65,6 @@ public class PathCacheTest extends junit.framework.TestCase {
             assertEquals("exception message",
                     "couldn't find file \"xyz\" in path (\"_bogus_\", " +
                     "\"_test1_\", \"test1_/child\")",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-
-    public void test_clear() {
-        (new File("_test1_/child")).mkdirs();
-        TestUtil.writeFile("_test1_/child/sample", "test data");
-        PathCache p = new PathCache("_bogus_", "_test1_", "test1_/child");
-        p.find("child/sample");
-        TestUtil.deleteTree("_test1_");
-        p.flush();
-        boolean gotException = false;
-        try {
-            // This should fail, since the file has been deleted and
-            // the cache has been flushed.
-            p.find("child/sample");
-        }
-        catch (FileNotFoundError e) {
-            assertEquals("exception message",
-                    "couldn't find file \"child/sample\" in path " +
-                    "(\"_bogus_\", \"_test1_\", \"test1_/child\")",
                     e.getMessage());
             gotException = true;
         }

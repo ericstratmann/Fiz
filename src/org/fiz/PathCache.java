@@ -34,6 +34,15 @@ public class PathCache {
     }
 
     /**
+     * Discard all cached information, so that it will be refetched from
+     * disk the next time is needed.  Typically invoked during debugging
+     * sessions to flush caches on every request.
+     */
+    public void clearCache() {
+        lookupCache.clear();
+    }
+
+    /**
      * Locate a file by  searching through all of the entries in the path,
      * stopping as soon as an existing file is found.  If this file has
      * already been looked up successfully in the past, the previous result
@@ -72,13 +81,5 @@ public class PathCache {
 
         // File not found; generate an error.
         throw FileNotFoundError.newPathInstance(name, null, path);
-    }
-
-    /**
-     * Flush all of the cached mapping information; the lookup cache
-     * will be refilled during future calls to {@code find}.
-     */
-    public void flush() {
-        lookupCache.clear();
     }
 }

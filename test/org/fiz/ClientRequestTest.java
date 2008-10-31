@@ -287,6 +287,23 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals(newResponse, cr.getServletResponse());
     }
 
+    public void test_includeJavascript_ajax() {
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        cr.setAjax(true);
+        cr.includeJavascript("var x = \"test\";");
+        assertEquals("response",
+                "var actions = [{type: \"eval\", " +
+                "javascript: \"var x = \\\"test\\\";\"}",
+                out.toString());
+    }
+    public void test_includeJavascript_html() {
+        cr.includeJavascript("var x = \"test\";");
+        assertEquals("accumulated Javascript",
+                "var x = \"test\";",
+                 cr.getHtml().jsCode.toString());
+    }
+
     // isAjax is tested by the tests for setAjax.
 
     public void test_registerDataRequest_withName() {
