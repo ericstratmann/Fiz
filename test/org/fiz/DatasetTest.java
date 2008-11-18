@@ -232,6 +232,17 @@ public class DatasetTest extends junit.framework.TestCase {
         TestUtil.deleteTree("_test1_");
     }
 
+    public void test_newSerializedInstance() {
+        Dataset d = new Dataset("name", "Alice", "age", "64",
+                "child", new Dataset("name", "Bob"));
+        String s = d.serialize();
+        Dataset out = Dataset.newSerializedInstance(s);
+        assertEquals("dataset contents", "age:  64\n" +
+                "child:\n" +
+                "    name: Bob\n" +
+                "name: Alice\n", out.toString());
+    }
+
     public void test_addChild() {
         Dataset d = new Dataset("first", "12345", "child", "Fred");
         Dataset d2 = new Dataset("name", "Alice");
@@ -249,6 +260,117 @@ public class DatasetTest extends junit.framework.TestCase {
                 "first: 12345\n" +
                 "wife:\n" +
                 "    name: Donna\n", d.toString());
+    }
+
+    public void test_addSerializedData_missingOpenParen() {
+        boolean gotException = false;
+        try {
+            Dataset out = new Dataset();
+            out.addSerializedData("xyz", 0);
+        }
+        catch (Dataset.SyntaxError e) {
+            assertEquals("exception message",
+                    "syntax error in dataset: serialized dataset didn't " +
+                    "start with \"(\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_addSerializedData_pastEndOfString() {
+        boolean gotException = false;
+        try {
+            Dataset out = new Dataset();
+            out.addSerializedData("(((", 3);
+        }
+        catch (Dataset.SyntaxError e) {
+            assertEquals("exception message",
+                    "syntax error in dataset: serialized dataset didn't " +
+                    "start with \"(\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_addSerializedData_emptyInput() {
+        Dataset out = new Dataset("weight", "125");
+        assertEquals("return value", 2, out.addSerializedData("()", 0));
+        assertEquals("contents of dataset", "weight: 125\n", out.toString());
+    }
+    public void test_addSerializedData_missingValue() {
+        boolean gotException = false;
+        try {
+            Dataset out = new Dataset();
+            out.addSerializedData("(4.name", 0);
+        }
+        catch (Dataset.SyntaxError e) {
+            assertEquals("exception message",
+                    "syntax error in dataset: no value for element " +
+                    "\"name\" in serialized dataset",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_addSerializedData_singleNestedDataset() {
+        String source = "(3.age2.24\n" +
+                "5.child(4.name5.Alice\n" +
+                "3.age3.100)\n" +
+                "9.eye color5.brown)";
+        Dataset out = new Dataset();
+        out.addSerializedData(source, 0);
+        assertEquals("contents of dataset",
+                "age:       24\n" +
+                "child:\n" +
+                "    age:  100\n" +
+                "    name: Alice\n" +
+                "eye color: brown\n", out.toString());
+    }
+    public void test_addSerializedData_parensInValue() {
+        String source = "(3.age2.24\n" +
+                "5.child16.(4.name5.Alice\n" +
+                "))";
+        Dataset out = new Dataset();
+        out.addSerializedData(source, 0);
+        assertEquals("contents of dataset",
+                "age:   24\n" +
+                "child: \"(4.name5.Alice\\n)\"\n", out.toString());
+    }
+    public void test_addSerializedData_dataEndsInChildren() {
+        boolean gotException = false;
+        try {
+            Dataset out = new Dataset();
+            out.addSerializedData("(5.child(1.a2.xx)", 0);
+        }
+        catch (Dataset.SyntaxError e) {
+            assertEquals("exception message",
+                    "syntax error in dataset: serialized dataset not " +
+                    "terminated by \")\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_addSerializedData_missingCloseParen() {
+        boolean gotException = false;
+        try {
+            Dataset out = new Dataset();
+            out.addSerializedData("(4.name5.Alice", 0);
+        }
+        catch (Dataset.SyntaxError e) {
+            assertEquals("exception message",
+                    "syntax error in dataset: serialized dataset not " +
+                    "terminated by \")\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+
+    public void test_addSerializedData_noStartArgument() {
+        Dataset out = new Dataset("weight", "125");
+        out.addSerializedData("()");
+        assertEquals("contents of dataset", "weight: 125\n", out.toString());
     }
 
     public void test_check() {
@@ -616,6 +738,19 @@ public class DatasetTest extends junit.framework.TestCase {
                 StringUtil.join(out, ", "));
     }
 
+    public void test_serialize_withOut() {
+        StringBuilder out = new StringBuilder("abc");
+        Dataset d = new Dataset("first", "12345");
+        d.serialize(out);
+        assertEquals("result", "abc(5.first5.12345)", out.toString());
+    }
+
+    public void test_serialize_noArgs() {
+        Dataset d = new Dataset("first", "12345", "second", "x");
+        assertEquals("result", "(6.second1.x\n" +
+                "5.first5.12345)", d.serialize());
+    }
+
     public void test_set() {
         Dataset d = new Dataset("first", "12345");
         d.set("second", "66");
@@ -818,6 +953,59 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("dataset contents", "child:\n" +
                 "    id: 9924\n" +
                 "wife: Alice\n", d.toString());
+    }
+
+    public void test_getEncodedString_missingDot() {
+        boolean gotException = false;
+        try {
+            IntBox end = new IntBox();
+            Dataset.getEncodedString("x.144", 2, end);
+        }
+        catch (Dataset.SyntaxError e) {
+            assertEquals("exception message",
+                    "syntax error in dataset: missing \".\" in " +
+                    "serialized dataset",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_getEncodedString_computeLength() {
+        IntBox end = new IntBox();
+        String s = Dataset.getEncodedString("23.aaaaabbbbbcccccdddddeeeeefffff",
+                0, end);
+        assertEquals("end index", 26, end.value);
+        assertEquals("string value", "aaaaabbbbbcccccdddddeee", s);
+    }
+    public void test_getEncodedString_negativeLength() {
+        boolean gotException = false;
+        try {
+            IntBox result = new IntBox();
+            Dataset.getEncodedString("19999999999.", 0, result);
+        }
+        catch (Dataset.SyntaxError e) {
+            assertEquals("exception message",
+                    "syntax error in dataset: serialized dataset has " +
+                    "improper length \"19999999999\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_getEncodedString_lengthTooBig() {
+        boolean gotException = false;
+        try {
+            IntBox end = new IntBox();
+            Dataset.getEncodedString("6.12345", 0, end);
+        }
+        catch (Dataset.SyntaxError e) {
+            assertEquals("exception message",
+                    "syntax error in dataset: unexpected end of " +
+                    "serialized dataset",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
     }
 
     public void test_javascriptForSubtree_emptyDataset() {
@@ -1038,5 +1226,26 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("result is null", null,
                 d.lookupPathHelper("level1.bogus", 0, d.map,
                 Dataset.DesiredType.ANY, Dataset.Quantity.ALL, null));
+    }
+
+    public void test_serializeSubtree_basics() {
+        Dataset d = new Dataset("name", "Alice", "age", "36",
+                "child", new Dataset("name", "Bill"));
+        assertEquals("serialized result", "(5.child(4.name4.Bill)\n" +
+                "3.age2.36\n" +
+                "4.name5.Alice)", d.serialize());
+    }
+    public void test_serializeSubtree_listOfChildren() {
+        Dataset d = new Dataset("child", new Dataset("name", "Bill"));
+        d.addChild("child", new Dataset("name", "Carol"));
+        d.addChild("child", new Dataset("name", "David"));
+        assertEquals("serialized result",
+                "(5.child(4.name4.Bill)(4.name5.Carol)(4.name5.David))",
+                d.serialize());
+    }
+    public void test_serializeSubtree_emptyDataset() {
+        Dataset d = new Dataset();
+        assertEquals("serialized result", "()",
+                d.serialize());
     }
 }

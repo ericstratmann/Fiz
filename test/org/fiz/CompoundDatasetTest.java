@@ -43,6 +43,20 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
                 StringUtil.join(c.components, ", "));
     }
 
+    public void test_addSerializedData() {
+        boolean gotException = false;
+        try {
+            compound.addSerializedData("x", 0);
+        }
+        catch (InternalError e) {
+            assertEquals("exception message",
+                    "addSerializedData invoked on a CompoundDataset",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+
     public void test_addChild() {
         boolean gotException = false;
         try {
@@ -297,6 +311,35 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
         assertEquals("return value null", null, compound.lookupPath(
                 "nested.bogus", Dataset.DesiredType.STRING,
                 Dataset.Quantity.FIRST_ONLY, new ArrayList<Object>()));
+    }
+
+    public void test_serialize_withStringBuilder() {
+        boolean gotException = false;
+        try {
+            StringBuilder out = new StringBuilder();
+            compound.serialize(out);
+        }
+        catch (InternalError e) {
+            assertEquals("exception message",
+                    "serialize invoked on a CompoundDataset",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+
+    public void test_serialize() {
+        boolean gotException = false;
+        try {
+            compound.serialize();
+        }
+        catch (InternalError e) {
+            assertEquals("exception message",
+                    "serialize invoked on a CompoundDataset",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
     }
 
     public void test_set() {

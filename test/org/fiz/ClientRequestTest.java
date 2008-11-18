@@ -1,5 +1,7 @@
 package org.fiz;
+
 import java.io.*;
+import javax.crypto.*;
 
 /**
  * Junit tests for the ClientRequest class.
@@ -202,13 +204,30 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 out.toString());
     }
 
+    public void test_getMac() {
+        // Make sure that (a) the Mac object can be used to create
+        // signatures and (b) the same Mac object is returned in
+        // future calls for the same session.
+        Mac mac = cr.getMac();
+        byte[] input = ("123456789a123456789b").getBytes();
+        byte[] result = mac.doFinal(input);
+        Mac mac2 = cr.getMac();
+        byte[] result2 = mac.doFinal(input);
+        assertEquals("size of results", result.length,
+                result2.length);
+        for (int i = 0; i < result.length; i++) {
+            assertEquals("byte " + i + " of signature", result[i],
+                    result2[i]);
+        }
+    }
+
     public void test_getMainDataset_ajaxDataOnly() {
         cr.setAjax(true);
         cr.mainDataset = null;          // Discard default info from fixture.
         servletRequest.setParameters();
         servletRequest.contentType = "text/plain";
         servletRequest.inputReader = new BufferedReader(new StringReader(
-                "2.p2(1.a3.999\n1.b2.88\n)\n4.name5.Alice\n"));
+                "(2.p2(1.a3.999\n1.b2.88)\n4.name5.Alice)"));
         assertEquals("main dataset contents", "name: Alice\n" +
                 "p2:\n" +
                 "    a: 999\n" +
@@ -220,7 +239,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
         servletRequest.setParameters();
         servletRequest.contentType = "bogus";
         servletRequest.inputReader = new BufferedReader(new StringReader(
-                "2.p2(1.a3.999\n1.b2.88\n)\n4.name5.Alice\n"));
+                "(2.p2(1.a3.999\n1.b2.88)\n4.name5.Alice)"));
         assertEquals("main dataset contents", "",
                 cr.getMainDataset().toString());
     }
@@ -251,7 +270,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
         cr.mainDataset = null;          // Discard default info from fixture.
         servletRequest.contentType = "text/plain";
         servletRequest.inputReader = new BufferedReader(new StringReader(
-                "2.p2(1.a3.999\n1.b2.88\n)\n4.name5.Alice\n"));
+                "(2.p2(1.a3.999\n1.b2.88)\n4.name5.Alice)"));
         assertEquals("main dataset contents", "name: Alice\n" +
                 "p1:   param_value1\n" +
                 "p2:   param_value2\n", cr.getMainDataset().toString());

@@ -202,8 +202,9 @@ Fiz.Ajax.prototype.error = function(properties, addInfoPrefix) {
 }
 
 /**
- * Translate a dataset-like object into a string suitable for transport to
- * Fiz.  See Ajax.java for details on the syntax of this format.
+ * Translate a dataset-like object into the form of a serialized dataset,
+ * which can then be sent to Fiz.  See the {@code to serialize} method
+  * in Dataset.java for details on the syntax of this format.
  * @param object                   Object consisting of a hierarchical
  *                                 collection of scalar properties, nested
  *                                 objects, and arrays of nested objects.
@@ -213,7 +214,8 @@ Fiz.Ajax.serialize = function(object) {
     // Iterate over all of the values in the object.  Each value can be
     // either an array of nested objects, a single nested object, or a
     // scalar value.
-    var result = "";
+    var result = "(";
+    var prefix = "";
     for (var name in object) {
         var value = object[name];
         if (value instanceof Array) {
@@ -221,21 +223,22 @@ Fiz.Ajax.serialize = function(object) {
 
             // Don't emit anything for empty arrays of nested datasets.
             if (length > 0) {
-                result += name.length + "." + name;
+                result += prefix + name.length + "." + name;
                 for (var i = 0; i < length; i++) {
-                    result += "(" + Fiz.Ajax.serialize(value[i]) + ")";
+                    result += Fiz.Ajax.serialize(value[i]);
                 }
-                result += "\n";
             }
         } else if ((typeof value) == "object") {
-            result += name.length + "." + name +
-                    "(" + Fiz.Ajax.serialize(value) + ")\n";
+            result += prefix + name.length + "." + name +
+                    Fiz.Ajax.serialize(value);
         } else {
             // Simple scalar value.
             value = value.toString();
-            result += name.length + "." + name +
-                    value.length + "." + value + "\n";
+            result += prefix + name.length + "." + name +
+                    value.length + "." + value;
         }
+        prefix = "\n";
     }
+    result += ")";
     return result;
 }

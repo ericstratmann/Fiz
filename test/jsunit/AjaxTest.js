@@ -12,7 +12,7 @@ test("Ajax_sendRequest_urlParameterOnly", function() {
     assertEqual("open(method: POST, url: /a/b, async: undefined)\n" +
             "setRequestHeader(name: Content-type, value: text/plain; " +
             "charset=utf-8)\n" +
-            "send(message: )\n",
+            "send(message: ())\n",
             jsunit.log, "jsunit.log");
 });
 test("Ajax_sendRequest_propertiesParameter", function() {
@@ -33,9 +33,8 @@ test("Ajax_sendRequest", function() {
     assertEqual("open(method: POST, url: /a/b, async: undefined)\n" +
             "setRequestHeader(name: Content-type, value: text/plain; " +
             "charset=utf-8)\n" +
-            "send(message: 3.age2.28\n" +
-            "4.name5.Alice\n" +
-            ")\n",
+            "send(message: (3.age2.28\n" +
+            "4.name5.Alice))\n",
             jsunit.log, "jsunit.log");
 });
 test("Ajax_setOnChangeHandler", function() {
@@ -198,18 +197,14 @@ test("serialize", function() {
             array: [{name: "Bill"}, {name: "Carol"}, {name: "David"}],
             empty: [],
             last: 1234.56});
-    assertEqual("5.array(4.name4.Bill\n" +
-            ")(4.name5.Carol\n" +
-            ")(4.name5.David\n" +
-            ")\n" +
+    assertEqual("(5.array(4.name4.Bill)(4.name5.Carol)(4.name5.David)\n" +
             "4.last7.1234.56\n" +
             "6.object(3.age2.44\n" +
-            "4.name5.Alice\n" +
-            ")\n" +
+            "4.name5.Alice)\n" +
             "1.a2.14\n" +
-            "1.b11.test string\n", result);
+            "1.b11.test string)", result);
 });
 test("serialize_undefinedObject", function() {
     var result = Fiz.Ajax.serialize(undefined);
-    assertEqual("", result);
+    assertEqual("()", result);
 });

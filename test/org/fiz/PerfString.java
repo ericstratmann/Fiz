@@ -1,6 +1,7 @@
 package org.fiz;
 
 import java.io.*;
+import java.lang.management.*;
 import java.security.*;
 import java.util.*;
 import javax.crypto.*;
@@ -16,25 +17,44 @@ public class PerfString {
     public static void main(String[] argv)
             throws IOException, NoSuchAlgorithmException,
             InvalidKeyException {
-        int count = 100000;
-        Dataset d = null;
+        int count = 10000;
         int value = 0;
         ArrayList<String> list = new ArrayList<String>();
         long sum = 0;
         Dataset response = null;
+        Dataset d = null;
         String s = "3";
         Config.init("test/testData/WEB-INF/config");
+        ClientRequest cr = new ClientRequestFixture();
+        StringBuilder out = new StringBuilder();
+        List<GarbageCollectorMXBean> beans =
+                ManagementFactory.getGarbageCollectorMXBeans();
+        long startNs = System.nanoTime();
+        long startGcTime = 0;
+        for (GarbageCollectorMXBean bean: beans) {
+            startGcTime += bean.getCollectionTime();
+        }
 
         for (int i = 0; i < 10; i++) {
             long start = System.nanoTime();
+            s = "";
             for (int j= 0; j < count; j++) {
-                value = getInt(s);
+                s = s + ".";
             }
             long finish = System.nanoTime();
             System.out.printf("%.4f us per iteration%n",
                     (finish - start)/(1000.0*count));
         }
-        System.out.printf("Value: %d\n", value);
+        System.out.printf("String length: %d\n", s.length());
+
+        long stopNs = System.nanoTime();
+        long stopGcTime = 0;
+        for (GarbageCollectorMXBean bean: beans) {
+            stopGcTime += bean.getCollectionTime();
+        }
+        long gcTime = stopGcTime - startGcTime;
+        System.out.printf("Garbage collection time: %dms (%.1f%%)\n",
+                gcTime, 100.0*(gcTime*1000000.0)/(stopNs - startNs));
     }
 
     protected static int inc(int i) {

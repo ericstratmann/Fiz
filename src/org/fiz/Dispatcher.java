@@ -43,15 +43,8 @@ public class Dispatcher extends HttpServlet {
                                    // The Interactor object to which "method"
                                    // belongs.  We invoke method on this
                                    // object to service incoming requests.
-        public int invocations;    // Number of times an incoming request
-                                   // invoked this method.
-        public double totalNs;     // Total time spent executing requests
-                                   // for this method, and nanoseconds.
-        public double totalSquaredNs;
-                                   // The sum across all requests for this
-                                   // method of the squares of the execution
-                                   // times.  Used to compute standard
-                                   // deviations.
+        public Timer timer;        // Records processing time for URLs that
+                                   // mapped to this method.
 
         public InteractorMethod(Method method, Interactor interactor) {
            this.method = method;
@@ -101,6 +94,10 @@ public class Dispatcher extends HttpServlet {
     protected InteractorMethod unsupportedURL =
             new InteractorMethod(null, null);
 
+    // The following timer records performance statistics for requests
+    // that cannot be mapped to an Interactor method.
+    protected Timer unknownURLTimer = Timer.getNamedTimer("unknown URL");
+
     // If the following variable is true, we flush all of our internal
     // caches on every request.  This variable mirrors the "clearCaches"
     // entry in the main configuration dataset.  If the dataset value
@@ -115,6 +112,7 @@ public class Dispatcher extends HttpServlet {
      */
     @Override
     public void init(ServletConfig config) throws ServletException {
+        Timer.measureNoopTime();
         super.init(config);
         if (testMode) {
             // Reduce the level of logging while running tests.
@@ -151,19 +149,6 @@ public class Dispatcher extends HttpServlet {
     }
 
     /**
-     * Resets all of the statistics about Interactor execution time.
-     */
-    public void clearInteractorStatistics() {
-        for (String methodName : methodMap.keySet()) {
-            InteractorMethod method = methodMap.get(methodName);
-            method.invocations = 0;
-            method.totalNs = method.totalSquaredNs = 0.0;
-        }
-        unsupportedURL.invocations = 0;
-        unsupportedURL.totalNs = unsupportedURL.totalSquaredNs = 0.0;
-    }
-
-    /**
      * This method is invoked by the servlet container when the servlet
      * is about to be unloaded.  Provides us with an opportunity to do
      * internal cleanup.
@@ -186,34 +171,6 @@ public class Dispatcher extends HttpServlet {
     }
 
     /**
-     * Generates a dataset containing usage statistics for all of the
-     * Interactor methods that have been invoked.
-     * @return                     The return value is a collection containing
-     * one Dataset for each Interactor method that has been invoked so far,
-     * plus an extra child with the name "unsupportedURL", which records
-     * information about URLs that could not be mapped to a method.  Each
-     * dataset contains the following elements:
-     *   averageMs:                Average execution time (total, including
-     *                             dispatch overhead) for each invocation
-     *                             of this method, in milliseconds (float).
-     *   invocations:              Number of times this method has been
-     *                             invoked.
-     *   name:                     Name of the Interactor method (class/name).
-     *   standardDeviationMs:      The standard deviation of the execution
-     *                             time for this method, in milliseconds
-     *                             float).
-     */
-    public ArrayList<Dataset> getInteractorStatistics() {
-        ArrayList<Dataset> result = new ArrayList<Dataset>();
-        for (String methodName : methodMap.keySet()) {
-            InteractorMethod method = methodMap.get(methodName);
-            addStatistics(methodName, method, result);
-        }
-        addStatistics("unsupportedURL", unsupportedURL, result);
-        return result;
-    }
-
-    /**
      * This method is invoked for each incoming HTTP request whose URL
      * matches this application.  PathInfo (the portion of the URL
      * "owned" by this servlet) must have the form {@code /class/method/...},
@@ -227,8 +184,8 @@ public class Dispatcher extends HttpServlet {
     public void service (HttpServletRequest request,
         HttpServletResponse response) {
         long startTime = System.nanoTime();
-//        Perf.resetIntervals();
         InteractorMethod method = null;
+        String methodName = null;
         ClientRequest cr = null;
         boolean isAjax = false;
         try {
@@ -271,8 +228,8 @@ public class Dispatcher extends HttpServlet {
                         + "name");
             }
             isAjax = pathInfo.startsWith("ajax", endOfClass+1);
-            method = findMethod(pathInfo.substring(1, endOfMethod),
-                    endOfClass-1, request);
+            methodName = pathInfo.substring(1, endOfMethod);
+            method = findMethod(methodName, endOfClass-1, request);
 
             // At this point we have located the method to service this
             // request.  Package up relevant information into a ClientRequest
@@ -356,40 +313,19 @@ public class Dispatcher extends HttpServlet {
             }
             cr.finish();
         }
-//        Perf.markInterval("end");
-//        logger.warn("Time intervals:\n" + Perf.intervalInfo("  "));
-        if (method == null) {
-            method = unsupportedURL;
+        // Record how long this URL took to process.
+        Timer timer;
+        if (method != null) {
+            timer = method.timer;
+            if (timer == null) {
+                timer = Timer.getNamedTimer(methodName);
+                method.timer = timer;
+            }
+        } else {
+            timer = unknownURLTimer;
         }
-        long endTime = System.nanoTime();
-        double elapsed = endTime - startTime;
-        method.invocations++;
-        method.totalNs += elapsed;
-        method.totalSquaredNs += elapsed*elapsed;
-    }
-
-    /**
-     * This method does most of the work of {@code getInteractorStatistics}:
-     * it adds information for one method to the result Dataset being
-     * assembled.
-     * @param methodName           Name of the method.
-     * @param method               Record containing statistics about the
-     *                             method.
-     * @param result               A new dataset, containing the information
-     *                             for {@code method}, is appended here..
-     */
-    protected static void addStatistics(String methodName,
-            InteractorMethod method, ArrayList<Dataset> result) {
-        if (method.invocations == 0) {
-            return;
-        }
-        double average = method.totalNs/method.invocations;
-        double deviation = Math.sqrt(method.totalSquaredNs/method.invocations
-                - average*average);
-        result.add(new Dataset("name", methodName,
-                "invocations", Integer.toString(method.invocations),
-                "averageMs", String.format("%.3f", average/1.0e6),
-                "standardDeviationMs", String.format("%.3f", deviation/1.0e6)));
+        timer.start(startTime);
+        timer.stop();
     }
 
     /**

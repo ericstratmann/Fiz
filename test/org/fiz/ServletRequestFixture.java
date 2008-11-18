@@ -28,6 +28,11 @@ public class ServletRequestFixture implements HttpServletRequest {
     public String contentType = "contentType";
     public BufferedReader inputReader = null;
 
+    // A single session is shared across all ServletRequestsFixture
+    // objects for all time (tests can nullify this variable to
+    // force a new section to be created).
+    protected static HttpSession session = null;
+
     public ServletRequestFixture() {
         parameterMap = new Hashtable<String,String>();
         parameterMap.put("p1", "param_value1");
@@ -81,12 +86,16 @@ public class ServletRequestFixture implements HttpServletRequest {
     public StringBuffer getRequestURL() {return new StringBuffer("requestURL");}
     public String getServletPath() {return servletPath;}
     public HttpSession getSession() {
-        lastMethod = "getSession";
-        return null;
+        if (session == null) {
+            session = new SessionFixture();
+        }
+        return session;
     }
     public HttpSession getSession(boolean create) {
-        lastMethod = "getSession(" + create + ")";
-        return null;
+        if ((session == null) && create) {
+            session = new SessionFixture();
+        }
+        return session;
     }
     public java.security.Principal getUserPrincipal() {
         lastMethod = "getUserPrincipal";

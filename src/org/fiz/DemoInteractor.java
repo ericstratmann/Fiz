@@ -235,17 +235,15 @@ public class DemoInteractor extends Interactor {
     }
 
     /**
-     * Displays a page containing statistics about Interactor invocations.
-     * class.
+     * Displays a page containing statistics from all the performance timers.
      * @param cr                   Overall information about the client
      *                             request being serviced.
      */
     public void stats(ClientRequest cr) {
         Html html = cr.getHtml();
-        html.setTitle("Interactor Statistics");
-        ArrayList<Dataset> stats = ((Dispatcher) cr.getServlet()).
-                getInteractorStatistics();
-        Collections.sort(stats, new DatasetComparator("averageMs",
+        html.setTitle("Timer Statistics");
+        ArrayList<Dataset> stats = Timer.getStatistics(1.0e06, "%.3f");
+        Collections.sort(stats, new DatasetComparator("average",
                 DatasetComparator.Type.FLOAT,
                 DatasetComparator.Order.DECREASING));
         Dataset statsDataset = new Dataset();
@@ -253,14 +251,16 @@ public class DemoInteractor extends Interactor {
             statsDataset.addChild("record", d);
         }
         cr.showSections(
-                new TemplateSection("<h1>Interactor Statistics</h1>\n"),
+                new TemplateSection("<h1>Timer Statistics</h1>\n"),
                 new TableSection(
                     RawDataManager.setRequest(new Dataset(), "request",
                             statsDataset),
-                    new Column("Class/Method", "@name"),
-                    new Column("# Invocations", "@invocations"),
-                    new Column("Average (ms)", "@averageMs"),
-                    new Column("Std Dev. (ms)", "@standardDeviationMs"))
+                    new Column("Timer", "@name"),
+                    new Column("Count", "@intervals"),
+                    new Column("Avg (ms)", "@average"),
+                    new Column("Min (ms)", "@minimum"),
+                    new Column("Max (ms)", "@maximum"),
+                    new Column("Std Dev. (ms)", "@standardDeviation"))
         );
         StringBuilder body = html.getBody();
         Link link = new Link(new Dataset("text", "Clear statistics",
@@ -305,7 +305,8 @@ public class DemoInteractor extends Interactor {
     }
 
     public void ajaxClearStats(ClientRequest cr) {
-        ((Dispatcher) cr.getServlet()).clearInteractorStatistics();
+        Timer.resetAll();
+        Timer.measureNoopTime();
         cr.ajaxRedirectAction("stats");
     }
 

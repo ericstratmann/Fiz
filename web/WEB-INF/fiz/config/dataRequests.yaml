@@ -50,6 +50,11 @@ demo:
         request: read
         file:    demo
         dataset: person
+    getStudents:
+        manager: demo
+        request: read
+        file:    demo
+        dataset: students
     noData:
         manager: demo
         request: read

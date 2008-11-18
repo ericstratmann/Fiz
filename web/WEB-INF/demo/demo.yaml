@@ -99,6 +99,34 @@ shoppingCart:
         - item:  Total
           price: $14.06
 
+students:
+    record:
+      - first:       Alice
+        last:        Anderson
+        id:          2149821
+        grad:        2009
+        gpa:         3.6
+      - first:       Bob
+        last:        Benson
+        id:          2147322
+        grad:        2010
+        gpa:         2.9
+      - first:       Carol
+        last:        Collins
+        id:          3990714
+        grad:        2012
+        gpa:         3.2
+      - first:       David
+        last:        Dawson
+        id:          4027333
+        grad:        2009
+        gpa:         3.8
+      - first:       Ellen
+        last:        Evans
+        id:          4019329
+        grad:        2012
+        gpa:         3.7
+
 treeTopLevel:
     record:
         - text:       Alice

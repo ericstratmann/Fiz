@@ -26,7 +26,7 @@
     vertical-align: middle;
 }
 
-/* The div's containing nested TreeSection tables need to be indented
+/* The divs containing nested TreeSection tables need to be indented
  * slightly for better appearance.
  */
 .nested {

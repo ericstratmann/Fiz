@@ -61,6 +61,16 @@ public class CompoundDataset extends Dataset {
 
     /**
      * Not implemented for CompoundDatasets; always throws InternalError.
+     * @param source               Ignored.
+     * @param start                Ignored.
+     */
+    @Override
+    public int addSerializedData(CharSequence source, int start) {
+        throw new InternalError("addSerializedData invoked on a CompoundDataset");
+    }
+
+    /**
+     * Not implemented for CompoundDatasets; always throws InternalError.
      * @param key                  Ignored.
      * @param child                Ignored.
      */
@@ -369,6 +379,23 @@ public class CompoundDataset extends Dataset {
             }
         }
         return (foundAny) ? out : null;
+    }
+
+    /**
+     * Not implemented for CompoundDatasets; always throws InternalError.
+     * @param out                  Ignored.
+     */
+    @Override
+    public void serialize(StringBuilder out) {
+        throw new InternalError("serialize invoked on a CompoundDataset");
+    }
+
+    /**
+     * Not implemented for CompoundDatasets; always throws InternalError.
+     */
+    @Override
+    public String serialize() {
+        throw new InternalError("serialize invoked on a CompoundDataset");
     }
 
     /**

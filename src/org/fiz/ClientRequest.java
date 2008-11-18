@@ -1,7 +1,9 @@
 package org.fiz;
 
 import java.io.*;
+import java.security.*;
 import java.util.*;
+import javax.crypto.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import org.apache.log4j.*;
@@ -321,6 +323,40 @@ public class ClientRequest {
     }
 
     /**
+     * Returns a Mac object specific to the session for this request,
+     * which can be used to cryptographically sign data to prevent
+     * tampering.
+     * TODO: since the session is shared, need synchronization here.
+     * @return                     An HMAC-MD5 Mac object.
+     */
+    public Mac getMac() {
+        HttpSession session = servletRequest.getSession(true);
+        Object o = session.getAttribute("fiz.mac");
+        if (o != null) {
+            return (Mac) o;
+        }
+
+        // This is the first time we have needed a Mac object in this
+        // session, so we have to create a new one.  First generate a
+        // secret key for HMAC-MD5.
+        try {
+            KeyGenerator kg = KeyGenerator.getInstance("HmacSHA256");
+            SecretKey sk = kg.generateKey();
+
+            // Create a Mac object implementing HMAC-MD5, and
+            // initialize it with the above secret key.
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(sk);
+            session.setAttribute("fiz.mac", mac);
+            return mac;
+        } catch (Exception e) {
+            throw new InternalError(
+                    "ClientRequest.getMac couldn't create a new Mac: "
+                    + e.getMessage());
+        }
+    }
+
+    /**
      * Returns the main dataset for this request.  Initially the dataset
      * contains all of the data that arrived with the request, including
      * query values from the URL and POST data (either URL-encoded or in
@@ -363,7 +399,7 @@ public class ClientRequest {
                     throw new IOError("error reading Ajax data: " +
                             e.getMessage());
                 }
-                Ajax.readInputData(postData, mainDataset);
+                mainDataset.addSerializedData(postData);
             }
         }
 
