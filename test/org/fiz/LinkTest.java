@@ -123,8 +123,8 @@ public class LinkTest extends junit.framework.TestCase {
                 "ajaxUrl", "/ajaxUrl?age=24&name=@name&weight=@weight"));
         link.html(cr, data, out);
         assertEquals("HTML for link", "<a href=\"#\" onclick=\"void new " +
-                "Fiz.Ajax(&quot;/ajaxUrl?age=24&amp;name=Alice&amp;" +
-                "weight=%22110%22&quot;); return false;\">Alice</a>",
+                "Fiz.Ajax({url: &quot;/ajaxUrl?age=24&amp;name=Alice" +
+                "&amp;weight=%22110%22&quot;}); return false;\">Alice</a>",
                 out.toString());
         TestUtil.assertXHTML(out.toString());
     }

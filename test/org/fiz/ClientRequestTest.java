@@ -20,7 +20,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     protected ServletRequestFixture servletRequest;
-    protected ClientRequest cr;
+    protected ClientRequestFixture cr;
     protected StringWriter out;
 
     public void setUp() {
@@ -167,6 +167,22 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "Original text", cr.getHtml().getBody().toString());
     }
 
+    public void test_checkReminder() {
+        cr.clearData();                 // Discard default info from fixture.
+        servletRequest.setParameters();
+        servletRequest.contentType = "text/fiz";
+        Reminder reminder = new Reminder("id44", "name16", "name", "first",
+                "id", "66");
+        StringBuilder data = new StringBuilder("reminder.");
+        data.append(reminder.get(cr));
+        servletRequest.inputReader = new BufferedReader(new StringReader(
+                data.toString()));
+        assertEquals("reminder exists", "id:   66\n" +
+                "name: first\n", cr.checkReminder("name16").toString());
+        assertEquals("reminder doesn't exist", null,
+                cr.checkReminder("bogus"));
+    }
+
     public void test_finish_ajax() throws IOException {
         StringWriter out = ((ServletResponseFixture)
                 cr.getServletResponse()).out;
@@ -223,11 +239,11 @@ public class ClientRequestTest extends junit.framework.TestCase {
 
     public void test_getMainDataset_ajaxDataOnly() {
         cr.setAjax(true);
-        cr.mainDataset = null;          // Discard default info from fixture.
+        cr.clearData();                 // Discard default info from fixture.
         servletRequest.setParameters();
-        servletRequest.contentType = "text/plain";
+        servletRequest.contentType = "text/fiz";
         servletRequest.inputReader = new BufferedReader(new StringReader(
-                "(2.p2(1.a3.999\n1.b2.88)\n4.name5.Alice)"));
+                "main.(2.p2(1.a3.999\n1.b2.88)\n4.name5.Alice)"));
         assertEquals("main dataset contents", "name: Alice\n" +
                 "p2:\n" +
                 "    a: 999\n" +
@@ -235,18 +251,18 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
     public void test_getMainDataset_ajaxButWrongContentType() {
         cr.setAjax(true);
-        cr.mainDataset = null;          // Discard default info from fixture.
+        cr.clearData();                 // Discard default info from fixture.
         servletRequest.setParameters();
         servletRequest.contentType = "bogus";
         servletRequest.inputReader = new BufferedReader(new StringReader(
-                "(2.p2(1.a3.999\n1.b2.88)\n4.name5.Alice)"));
+                "main.(2.p2(1.a3.999\n1.b2.88)\n4.name5.Alice)"));
         assertEquals("main dataset contents", "",
                 cr.getMainDataset().toString());
     }
     public void test_getMainDataset_exceptionReadingAjaxData() {
         cr.setAjax(true);
-        cr.mainDataset = null;          // Discard default info from fixture.
-        servletRequest.contentType = "text/plain";
+        cr.clearData();                 // Discard default info from fixture.
+        servletRequest.contentType = "text/fiz";
         servletRequest.inputReader = new ExceptionReader(
                 new StringReader("2.p2.88\n"));
         boolean gotException = false;
@@ -255,7 +271,8 @@ public class ClientRequestTest extends junit.framework.TestCase {
         }
         catch (IOError e) {
             assertEquals("exception message",
-                    "error reading Ajax data: simulated error", e.getMessage());
+                    "I/O error in ClientRequest.readFizData: simulated error",
+                    e.getMessage());
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
@@ -267,19 +284,48 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
     public void test_getMainDataset_queryDataAndAjax() {
         cr.setAjax(true);
-        cr.mainDataset = null;          // Discard default info from fixture.
-        servletRequest.contentType = "text/plain";
+        cr.clearData();                 // Discard default info from fixture.
+        servletRequest.contentType = "text/fiz";
         servletRequest.inputReader = new BufferedReader(new StringReader(
-                "(2.p2(1.a3.999\n1.b2.88)\n4.name5.Alice)"));
+                "main.(2.p2(1.a3.999\n1.b2.88)\n4.name5.Alice)"));
         assertEquals("main dataset contents", "name: Alice\n" +
                 "p1:   param_value1\n" +
                 "p2:   param_value2\n", cr.getMainDataset().toString());
     }
     public void test_getMainDataset_noDataAtAll() {
-        cr.mainDataset = null;          // Discard default info from fixture.
+        cr.clearData();                 // Discard default info from fixture.
         servletRequest.setParameters();
         assertEquals("main dataset contents", "",
                 cr.getMainDataset().toString());
+    }
+
+    public void test_getReminder_noSuchReminder() {
+        cr.clearData();                 // Discard default info from fixture.
+        cr.fizDataProcessed = true;
+        boolean gotException = false;
+        try {
+            cr.getReminder("bogus");
+        }
+        catch (InternalError e) {
+            assertEquals("exception message",
+                    "couldn't find reminder \"bogus\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_getReminder_exists() {
+        cr.clearData();                 // Discard default info from fixture.
+        servletRequest.setParameters();
+        servletRequest.contentType = "text/fiz";
+        Reminder reminder = new Reminder("id22","name16", "name", "first",
+                "id", "66");
+        StringBuilder data = new StringBuilder("reminder.");
+        data.append(reminder.get(cr));
+        servletRequest.inputReader = new BufferedReader(new StringReader(
+                data.toString()));
+        assertEquals("reminder data", "id:   66\n" +
+                "name: first\n", cr.getReminder("name16").toString());
     }
 
     public void test_getRequestNames() {
@@ -492,6 +538,129 @@ public class ClientRequestTest extends junit.framework.TestCase {
         catch (IOError e) {
             assertEquals("exception message",
                     "getWriter failed", e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+
+    public void test_readFizData_basics() {
+        cr.clearData();                 // Discard default info from fixture.
+        servletRequest.setParameters();
+        servletRequest.contentType = "text/fiz";
+        servletRequest.inputReader = new BufferedReader(new StringReader(
+                "main.(2.p2(1.a3.999\n1.b2.88)\n4.name5.Alice)"));
+        cr.readFizData();
+        assertEquals("main dataset contents", "name: Alice\n" +
+                "p2:\n" +
+                "    a: 999\n" +
+                "    b: 88\n", cr.getMainDataset().toString());
+    }
+    public void test_readFizData_fizDataProcessed() {
+        cr.clearData();                 // Discard default info from fixture.
+        cr.fizDataProcessed = true;
+        servletRequest.setParameters();
+        servletRequest.contentType = "text/fiz";
+        servletRequest.inputReader = new BufferedReader(new StringReader(
+                "main.(4.name5.Alice)"));
+        cr.readFizData();
+        assertEquals("main dataset", null, cr.mainDataset);
+    }
+    public void test_readFizData_noMimeType() {
+        cr.clearData();                 // Discard default info from fixture.
+        servletRequest.setParameters();
+        servletRequest.contentType = null;
+        servletRequest.inputReader = new BufferedReader(new StringReader(
+                "main.(4.name5.Alice)"));
+        cr.readFizData();
+        assertEquals("main dataset", null, cr.mainDataset);
+    }
+    public void test_readFizData_wrongMimeType() {
+        cr.clearData();                 // Discard default info from fixture.
+        servletRequest.setParameters();
+        servletRequest.contentType = "text/plain";
+        servletRequest.inputReader = new BufferedReader(new StringReader(
+                "main.(4.name5.Alice)"));
+        cr.readFizData();
+        assertEquals("main dataset", null, cr.mainDataset);
+    }
+    public void test_readFizData_exceptionReadingAjaxData() {
+        cr.clearData();                 // Discard default info from fixture.
+        servletRequest.contentType = "text/fiz";
+        servletRequest.inputReader = new ExceptionReader(
+                new StringReader("foobar"));
+        boolean gotException = false;
+        try {
+            cr.readFizData();
+        }
+        catch (IOError e) {
+            assertEquals("exception message",
+                    "I/O error in ClientRequest.readFizData: simulated error",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_readFizData_multipleBlocks() {
+        cr.clearData();                 // Discard default info from fixture.
+        servletRequest.setParameters();
+        servletRequest.contentType = "text/fiz";
+        servletRequest.inputReader = new BufferedReader(new StringReader(
+                "main.(4.name5.Alice)main.(3.age2.24)"));
+        cr.readFizData();
+        assertEquals("main dataset contents", "age:  24\n" +
+                "name: Alice\n", cr.getMainDataset().toString());
+    }
+    public void test_readFizData_missingDotAfterType() {
+        cr.clearData();                 // Discard default info from fixture.
+        servletRequest.contentType = "text/fiz";
+        servletRequest.inputReader = new BufferedReader(new StringReader(
+                "main.()foobar"));
+        boolean gotException = false;
+        try {
+            cr.readFizData();
+        }
+        catch (SyntaxError e) {
+            assertEquals("exception message",
+                    "missing \".\" after type \"foobar\" in Fiz browser data",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_readFizData_reminders() {
+        cr.clearData();                 // Discard default info from fixture.
+        servletRequest.setParameters();
+        servletRequest.contentType = "text/fiz";
+        Reminder reminder = new Reminder("id22","first", "name", "first",
+                "id", "66");
+        StringBuilder data = new StringBuilder("reminder.");
+        data.append(reminder.get(cr));
+        reminder = new Reminder("id33", "second", "name", "second",
+                "id", "88");
+        data.append("reminder.");
+        data.append(reminder.get(cr));
+        servletRequest.inputReader = new BufferedReader(new StringReader(
+                data.toString()));
+        cr.readFizData();
+        assertEquals("number of reminders", 2, cr.reminders.size());
+        assertEquals("contents of first reminder", "id:   66\n" +
+                "name: first\n", cr.reminders.get("first").toString());
+        assertEquals("contents of second reminder", "id:   88\n" +
+                "name: second\n", cr.reminders.get("second").toString());
+    }
+    public void test_readFizData_unknownType() {
+        cr.clearData();                 // Discard default info from fixture.
+        servletRequest.contentType = "text/fiz";
+        servletRequest.inputReader = new BufferedReader(new StringReader(
+                "bogus.()foobar"));
+        boolean gotException = false;
+        try {
+            cr.readFizData();
+        }
+        catch (SyntaxError e) {
+            assertEquals("exception message",
+                    "unknown type \"bogus\" in Fiz browser data",
+                    e.getMessage());
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);

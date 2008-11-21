@@ -17,7 +17,7 @@ public class PerfString {
     public static void main(String[] argv)
             throws IOException, NoSuchAlgorithmException,
             InvalidKeyException {
-        int count = 10000;
+        int count = 1000;
         int value = 0;
         ArrayList<String> list = new ArrayList<String>();
         long sum = 0;
@@ -34,16 +34,27 @@ public class PerfString {
         for (GarbageCollectorMXBean bean: beans) {
             startGcTime += bean.getCollectionTime();
         }
+        String reminder = new Reminder("first", "name", "first",
+                "id", "66").get(cr);
+        IntBox end = new IntBox();
+        Timer timer = new Timer();
 
         for (int i = 0; i < 10; i++) {
             long start = System.nanoTime();
-            s = "";
             for (int j= 0; j < count; j++) {
-                s = s + ".";
+                timer.start();
+                Reminder.decode(cr, reminder, 0, new Dataset(), end);
+                timer.stop();
             }
             long finish = System.nanoTime();
             System.out.printf("%.4f us per iteration%n",
                     (finish - start)/(1000.0*count));
+            System.out.printf("Avg: %.1fus, min: %.1fus, max: %.1fus, " +
+                    "dev: %.1fus\n", timer.getAverage()/1000.0,
+                    timer.getShortestInterval()/1000.0,
+                    timer.getLongestInterval()/1000.0,
+                    timer.getStdDeviation()/1000.0);
+            timer.reset();
         }
         System.out.printf("String length: %d\n", s.length());
 

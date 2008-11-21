@@ -27,4 +27,10 @@ public class ClientRequestFixture extends ClientRequest {
         main.set("height", "66");
         main.set("state", "California");
     }
+
+    public void clearData() {
+        mainDataset = null;
+        reminders = null;
+        fizDataProcessed = false;
+    }
 }

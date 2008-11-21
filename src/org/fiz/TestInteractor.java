@@ -115,7 +115,6 @@ public class TestInteractor extends Interactor {
                 (endTime - startTime)/(count*1000000.0)));
     }
 
-
     public void ajaxUpdateTime(ClientRequest cr) throws IOException {
         cr.ajaxUpdateAction("updateMe", (new Date()).toString());
     }
@@ -155,6 +154,17 @@ public class TestInteractor extends Interactor {
                 "alert(\"Her name is @name, favorite saying @saying\");"));
         link2.html(cr, globalData, body);
         body.append("</p>\n");
+        Reminder r1 = new Reminder("r1", "text", "name", "Alice",
+                "age", "28", "sibling", new Dataset("name", "Bob"),
+                "sibling", new Dataset("name", "Carol"));
+        r1.flush(cr);
+        Reminder r2 = new Reminder("r2", "binary", "data", "\u1234\u0200");
+        r2.flush(cr);
+        body.append("<p>The following link returns 2 reminders to the " +
+                "server, where they are logged: ");
+        Template.expand("<a href=\"#\" onclick =\"@1; return false;\">" +
+                "Click me</a>\n", body,
+                Ajax.invoke(cr, "ajaxReminders", null, r1, r2));
         Link link3 = new Link(new Dataset("text", "Click here",
                 "ajaxUrl", "/fiz/test/ajaxUpdateTime"));
         body.append("<p>");
@@ -170,6 +180,15 @@ public class TestInteractor extends Interactor {
         Button.html(cr, new Dataset("text", "Click", "ajaxUrl", "ajaxPerf"),
                 new Dataset(), body);
         body.append("<span id=\"perf\"></span>\n");
+    }
+
+    public void ajaxReminders(ClientRequest cr) throws IOException {
+        Dataset d1 = cr.getReminder("text");
+        Dataset d2 = cr.getReminder("binary");
+        logger.info("First reminder:\n" + d1.toString());
+        String data = d2.get("data");
+        logger.info(String.format("Data from second reminder: 0x%x 0x%x",
+                data.codePointAt(0), data.codePointAt(1)));
     }
 
     static class TestFilter extends FilterOutputStream {

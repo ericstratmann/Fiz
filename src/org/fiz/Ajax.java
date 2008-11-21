@@ -37,12 +37,14 @@ public class Ajax {
      * @param data                 Data to use while expanding urlTemplate.
      *                             May be null if there are no substitutions
      *                             in the template.
+     * @param reminders            Any number of Reminders to include in the
+     *                             Ajax requests.
      * @param out                  Javascript code gets appended here; when
      *                             executed, it will invoke the Ajax request
      *                             using the class Fiz.Ajax.
      */
-    public static void invoke(ClientRequest cr,
-            CharSequence urlTemplate, Dataset data, StringBuilder out) {
+    public static void invoke(ClientRequest cr, CharSequence urlTemplate,
+            Dataset data, StringBuilder out, Reminder... reminders) {
         cr.getHtml().includeJsFile("fizlib/Ajax.js");
 
         // Quoting is tricky:
@@ -51,10 +53,21 @@ public class Ajax {
         //     will be passed in a Javascript string) but we can skip this
         //     because URL quoting has already quoted all the characters
         //     that are special in strings.
-        out.append("void new Fiz.Ajax(\"");
+        out.append("void new Fiz.Ajax({url: \"");
         Template.expand(urlTemplate, data, out,
                 Template.SpecialChars.URL);
-        out.append("\");");
+        out.append("\"");
+        if (reminders.length > 0) {
+            out.append(", reminders: [");
+            String separator = "";
+            for (Reminder reminder : reminders) {
+                out.append(separator);
+                out.append(reminder.getJsReference());
+                separator = ", ";
+            }
+            out.append("]");
+        }
+        out.append("});");
     }
 
     /**
@@ -67,14 +80,16 @@ public class Ajax {
      * @param data                 Data to use while expanding urlTemplate.
      *                             May be null if there are no substitutions
      *                             in the template.
+     * @param reminders            Any number of Reminders to include in the
+     *                             Ajax requests.
      * @return                     Javascript code that will invoke the Ajax
      *                             request using the class Fiz.Ajax.
      */
     public static StringBuilder invoke(ClientRequest cr,
-            CharSequence urlTemplate, Dataset data) {
+            CharSequence urlTemplate, Dataset data, Reminder... reminders) {
         StringBuilder javascript = new StringBuilder(urlTemplate.length()
                 + 40);
-        invoke(cr, urlTemplate, data, javascript);
+        invoke(cr, urlTemplate, data, javascript, reminders);
         return javascript;
     }
 }

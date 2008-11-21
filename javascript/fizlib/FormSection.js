@@ -65,7 +65,7 @@ Fiz.FormSection.prototype.post = function() {
         }
     }
 
-    new Fiz.Ajax(this.postUrl, data);
+    new Fiz.Ajax({url: this.postUrl, data: data});
 }
 
 /**

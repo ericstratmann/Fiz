@@ -17,5 +17,5 @@ searchPackages: "org.fiz"
 # caches will be cleared before each request.  This is useful in debug
 # configurations so that file changes take effect immediately without
 # restarting the application.
-clearCaches: false
+clearCaches: true
 

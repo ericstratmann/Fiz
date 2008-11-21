@@ -10,9 +10,9 @@ window.XMLHttpRequest = true;
 test("Ajax_sendRequest_urlParameterOnly", function() {
     new Fiz.Ajax("/a/b");
     assertEqual("open(method: POST, url: /a/b, async: undefined)\n" +
-            "setRequestHeader(name: Content-type, value: text/plain; " +
+            "setRequestHeader(name: Content-type, value: text/fiz; " +
             "charset=utf-8)\n" +
-            "send(message: ())\n",
+            "send(message: )\n",
             jsunit.log, "jsunit.log");
 });
 test("Ajax_sendRequest_propertiesParameter", function() {
@@ -28,13 +28,31 @@ test("Ajax_cantFindXmlHttp", function() {
             jsunit.log, "jsunit.log");
 });
 window.XMLHttpRequest = true;
-test("Ajax_sendRequest", function() {
-    new Fiz.Ajax({url: "/a/b"}, {name: "Alice", age: 28});
+test("Ajax_sendRequestWithData", function() {
+    new Fiz.Ajax({url: "/a/b", data: {name: "Alice", age: 28}});
     assertEqual("open(method: POST, url: /a/b, async: undefined)\n" +
-            "setRequestHeader(name: Content-type, value: text/plain; " +
+            "setRequestHeader(name: Content-type, value: text/fiz; " +
             "charset=utf-8)\n" +
-            "send(message: (3.age2.28\n" +
+            "send(message: main.(3.age2.28\n" +
             "4.name5.Alice))\n",
+            jsunit.log, "jsunit.log");
+});
+test("Ajax_sendRequestWithReminder", function() {
+    new Fiz.Ajax({url: "/a/b", reminders: "first reminder"});
+    assertEqual("open(method: POST, url: /a/b, async: undefined)\n" +
+            "setRequestHeader(name: Content-type, value: text/fiz; " +
+            "charset=utf-8)\n" +
+            "send(message: reminder.first reminder)\n",
+            jsunit.log, "jsunit.log");
+});
+test("Ajax_multipleReminders", function() {
+    new Fiz.Ajax({url: "/a/b", reminders: ["reminder #1", "reminder #2",
+            "reminder #3"]});
+    assertEqual("open(method: POST, url: /a/b, async: undefined)\n" +
+            "setRequestHeader(name: Content-type, value: text/fiz; " +
+            "charset=utf-8)\n" +
+            "send(message: reminder.reminder #1reminder.reminder #2" +
+            "reminder.reminder #3)\n",
             jsunit.log, "jsunit.log");
 });
 test("Ajax_setOnChangeHandler", function() {

@@ -6,11 +6,11 @@ include("fizlib/Fiz.js");
 include("fizlib/FormSection.js");
 
 // Following is a replacement for the Ajax constructor; it just logs
-// information about its arguments.
+// information about some of its arguments.
 
-Fiz.Ajax = function(url, data) {
-    jsunit.log += "Fiz.Ajax url: " + url + ", data:\n" +
-            printDataset(data, "    ");
+Fiz.Ajax = function(properties) {
+    jsunit.log += "Fiz.Ajax url: " + properties.url + ", data:\n" +
+            printDataset(properties.data, "    ");
 }
 
 test("FormSection_post", function() {

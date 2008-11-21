@@ -47,6 +47,12 @@
  * described in the response will be executed.  The following values are
  * supported in {@code properties}:
  *   url:                          (required) Send the request to this URL.
+ *   data:                         (optional) Object whose contents will be
+ *                                 sent in the request as parameters.  May
+ *                                 contain nested objects and arrays of
+ *                                 objects in addition to string values.
+ *                                 Each top-level value becomes an entry
+ *                                 in the main dataset on the server.
  *   errorHandler:                 (optional) If an error occurs the
  *                                 {@code ajaxError} method will be invoked
  *                                 on this object, with a single parameter
@@ -57,28 +63,27 @@
  *                                 a pop-up dialog.  The error method may be
  *                                 invoked before this function returns, for
  *                                 some kinds of errors.
+ *   reminders:                    (optional) Either a single string or
+ *                                 an array of strings, each of which contains
+ *                                 a reminder to be sent to the server with
+ *                                 this request.  The reminder(s) will be
+ *                                 visible on the server under the names
+ *                                 specified in the reminders themselves.
  * @param properties               Object whose properties describe the
  *                                 request.  See above for supported values.
  *                                 Or, this parameter can be a string
  *                                 whose value is the {@code url} property,
  *                                 in which case all other properties are
  *                                 considered to be unspecified.
- * @param data                     (optional) Object whose contents will be
- *                                 sent in the request as parameters.  May
- *                                 contain nested objects and arrays of
- *                                 objects in addition to string values.
- *                                 This turns into a Dataset on the Fiz side.
- *                                 If this argument is omitted then an empty
- *                                 message is sent, producing an empty
- *                                 dataset in the server.
  */
-Fiz.Ajax = function(properties, data) {
+Fiz.Ajax = function(properties) {
     if ((typeof properties) == "string") {
         this.url = properties;
-        this.errorHandler = undefined;
     } else {
         this.url = properties.url;
+        this.data = properties.data;
         this.errorHandler = properties.errorHandler;
+        this.reminders = properties.reminders;
     }
     this.xmlhttp = null;           // XMLHTTP object for controlling the
                                    // request.
@@ -111,9 +116,24 @@ Fiz.Ajax = function(properties, data) {
 
     // Send out the request.
     this.xmlhttp.open("POST", this.url);
-    this.xmlhttp.setRequestHeader("Content-type",
-            "text/plain; charset=utf-8");
-    this.xmlhttp.send(Fiz.Ajax.serialize(data));
+    this.xmlhttp.setRequestHeader("Content-type", "text/fiz; charset=utf-8");
+    var postData = "";
+    if (this.data) {
+        postData += "main.";
+        postData += Fiz.Ajax.serialize(this.data);
+    }
+    if (this.reminders) {
+        if ((typeof this.reminders) == "string") {
+            postData += "reminder.";
+            postData += this.reminders;
+        } else {
+            for (var i = 0; i < this.reminders.length; i++) {
+                postData += "reminder.";
+                postData += this.reminders[i];
+            }
+        }
+    }
+    this.xmlhttp.send(postData);
 }
 
 /**

@@ -17,8 +17,8 @@ public class ButtonTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder();
         button.html(cr, new Dataset("name", "Alice"), out);
         assertEquals("HTML for Button",
-                "<button onclick=\"void new Fiz.Ajax(" +
-                "&quot;/fiz/form/clear&quot;); return false;\">" +
+                "<button onclick=\"void new Fiz.Ajax({url: " +
+                "&quot;/fiz/form/clear&quot;}); return false;\">" +
                 "Clear Alice</button>",
                 out.toString());
     }
@@ -31,7 +31,8 @@ public class ButtonTest extends junit.framework.TestCase {
         Button.html(cr, properties, data, out);
         assertEquals("HTML for Button",
                 "<button class=\"class123\" onclick=\"void new Fiz.Ajax(" +
-                "&quot;/fiz/a/b?user=%22Alice%22&quot;); return false;\">" +
+                "{url: &quot;/fiz/a/b?user=%22Alice%22&quot;}); " +
+                "return false;\">" +
                 "special: &lt;&gt;</button>",
                 out.toString());
     }

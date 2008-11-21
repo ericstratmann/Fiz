@@ -50,9 +50,19 @@ public class ClientRequest {
     // HTML output.
     protected Html html = null;
 
-    // Top-level dataset for this request.  See getRequest documentation for
-    // details.
+    // Top-level dataset containing global information for this request,
+    // such as query values and POST data.
     protected Dataset mainDataset = null;
+
+    // The following variable keeps track of all of the reminders that
+    // have been read from the POST data for the request.  Null means
+    // either the data has not been processed yet, or it contained
+    // no reminders.
+    protected HashMap<String,Dataset> reminders = null;
+
+    // Indicates whether or not we have already attempted to process
+    // Ajax POST data for this request.  If true, don't try again.
+    protected boolean fizDataProcessed = false;
 
     // Hash table that maps from the {@code name} argument passed to
     // {@code registerDataRequest} to the DataRequest that was returned
@@ -273,6 +283,25 @@ public class ClientRequest {
     }
 
     /**
+     * Return the contents of a given reminder if it exists, or null if
+     * it doesn't.
+     * @param name                 Name of the desired reminder.
+     * @return                     The dataset whose contents represent the
+     *                             value of the reminder named {@code name}.
+     *                             If there is no such reminder in the current
+     *                             request null is returned.
+     */
+    public Dataset checkReminder(String name) {
+        if (!fizDataProcessed) {
+            readFizData();
+        }
+        if (reminders == null) {
+            return null;
+        }
+        return reminders.get(name);
+    }
+
+    /**
      * This method is invoked by the Dispatcher at the end of a request
      * to complete the transmission of the response back to the client.
      */
@@ -378,38 +407,38 @@ public class ClientRequest {
         // need to build it.  First, if this is an Ajax request read in the
         // POST data for the request, extract the Ajax data from it, and
         // add that to the main dataset.
-        mainDataset = new Dataset();
-        if (ajaxRequest) {
-            String contentType = (servletRequest.getContentType());
-            if ((contentType != null)
-                    && (contentType.startsWith("text/plain"))) {
-                // First, read the data into a string.
-                StringBuilder postData = new StringBuilder();
-                try {
-                    BufferedReader reader = servletRequest.getReader();
-                    while (true) {
-                        int c = reader.read();
-                        if (c == -1) {
-                            break;
-                        }
-                        postData.append((char) c);
-                    }
-                }
-                catch (IOException e) {
-                    throw new IOError("error reading Ajax data: " +
-                            e.getMessage());
-                }
-                mainDataset.addSerializedData(postData);
-            }
+        if (!fizDataProcessed) {
+            readFizData();
         }
 
         // Next, load any query data provided to the request.
+        if (mainDataset == null) {
+            mainDataset = new Dataset();
+        }
         Enumeration params = servletRequest.getParameterNames();
         while (params.hasMoreElements()) {
             String name = (String) params.nextElement();
             mainDataset.set(name, servletRequest.getParameter(name));
         }
         return mainDataset;
+    }
+
+    /**
+     * Return the contents of a given reminder if it exists, or generate
+     * an exception if it doesn't.
+     * @param name                 Name of the desired reminder.
+     * @return                     The dataset whose contents represent the
+     *                             value of the reminder named {@code name}.
+     * @throws InternalError       No such reminder is available in the
+     *                             current request.
+     */
+    public Dataset getReminder(String name) throws InternalError {
+        Dataset result = checkReminder(name);
+        if (result == null) {
+            throw new InternalError("couldn't find reminder \"" +
+                    name + "\"");
+        }
+        return result;
     }
 
     /**
@@ -679,5 +708,94 @@ public class ClientRequest {
         writer.append(type);
         writer.append("\"");
         return writer;
+    }
+
+    /**
+     * This method reads data in the special format used to transmit
+     * information from the browser to the server during Ajax requests,
+     * populating various internal data structures with the results.
+     * If this method has already been called for the current request,
+     * or if there is no data in the expected format, than this method
+     * does nothing.
+     */
+    protected void readFizData () {
+        if (fizDataProcessed) {
+            // We have already processed the data once; no need to
+            // do it again.
+            return;
+        }
+        fizDataProcessed = true;
+
+        // Make sure that the incoming data has the right MIME type.
+        String contentType = (servletRequest.getContentType());
+        if ((contentType == null)
+                || !contentType.startsWith("text/fiz")) {
+            return;
+        }
+
+        // Read in all of the posted data.
+        StringBuilder postData = new StringBuilder();
+        try {
+            BufferedReader reader = servletRequest.getReader();
+            while (true) {
+                int c = reader.read();
+                if (c == -1) {
+                    break;
+                }
+                postData.append((char) c);
+            }
+        }
+        catch (IOException e) {
+            throw new IOError("I/O error in ClientRequest.readFizData: " +
+                    e.getMessage());
+        }
+
+        // The posted data has the form <type>.<data><type>.<data>...
+        // where <type> (a string delimited by ".") indicates the
+        // kind of information that follows.  The format of each
+        // <data> block depends on its type.
+        //
+        // Each iteration of the following loop processes one block.
+
+        int current = 0;
+        int length = postData.length();
+        IntBox end = new IntBox();
+        while (current < length) {
+            // Extract the next <type> field.
+            int start = current;
+            while (true) {
+                if (current >= length) {
+                    throw new SyntaxError("missing \".\" after type \"" +
+                            postData.substring(start, current) +
+                            "\" in Fiz browser data");
+                }
+                if (postData.charAt(current) == '.')  {
+                    break;
+                }
+                current++;
+            }
+            String type = postData.substring(start, current);
+            current++;
+
+            // Check against the known types and handle appropriately.
+            if (type.equals("main")) {
+                if (mainDataset == null) {
+                    mainDataset = new Dataset();
+                }
+                current = mainDataset.addSerializedData(postData, current);
+            } else if (type.equals("reminder")) {
+                Dataset d = new Dataset();
+                String reminderName = Reminder.decode(this, postData,
+                        current, d, end);
+                if (reminders == null) {
+                    reminders = new HashMap<String,Dataset>();
+                }
+                reminders.put(reminderName, d);
+                current = end.value;
+            } else {
+                throw new SyntaxError("unknown type \"" + type +
+                        "\" in Fiz browser data");
+            }
+        }
     }
 }

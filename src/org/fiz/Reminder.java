@@ -43,7 +43,8 @@ public class Reminder {
         }
     }
 
-    // Name for this Reminder:
+    // Arguments passed to the constructor:
+    protected String id;
     protected String name;
 
     // Used to accumulate the serialized representation for the Reminder,
@@ -58,18 +59,30 @@ public class Reminder {
 
     // If the following variable is true it means that no data has
     // been added to this reminder yet.
-    boolean outEmpty = true;
+    protected boolean outEmpty = true;
+
+    // The following variable is set to true during some tests; this
+    // causes the normal signature generation and checking algorithms to
+    // be bypassed, using instead a single fixed signature (so that
+    // tests don't have toworry about the signature being different
+    // every round).
+    protected static boolean testMode = false;
 
     /**
      * Construct a Reminder with a given name.
-     *
-     * @param name                 Name for this Reminder; must be unique among
-     *                             all Reminders for the Web page.  This can
-     *                             be achieved by using the {@code id} of the
-     *                             Reminder's associated content as the name
-     *                             for the reminder.
+     * @param id                   Identifier for this Reminder, used as a
+     *                             name for the reminder in the browser.
+     *                             Must be unique among all Reminders for
+     *                             the Web page; typically this is achieved by
+     *                             using the id of a related HTML element as
+     *                             the id of the Reminder.
+     * @param name                 When the Reminder is returned to the
+     *                             server, it will be available under this
+     *                             name, which typically reflects how the
+     *                             Reminder will be used.
      */
-    public Reminder(String name) {
+    public Reminder(String id, String name) {
+        this.id = id;
         this.name = name;
         this.out.append(name.length());
         this.out.append('.');
@@ -79,12 +92,16 @@ public class Reminder {
 
     /**
      * Construct a Reminder with a given name and an initial set of values.
-     *
-     * @param name                 Name for this Reminder; must be unique among
-     *                             all Reminders for the Web page.  This can
-     *                             be achieved by using the {@code id} of the
-     *                             Reminder's associated content as the name
-     *                             for the reminder.
+     * @param id                   Identifier for this Reminder, used as a
+     *                             name for the reminder in the browser.
+     *                             Must be unique among all Reminders for
+     *                             the Web page; typically this is achieved by
+     *                             using the id of a related HTML element as
+     *                             the id of the Reminder.
+     * @param name                 When the Reminder is returned to the
+     *                             server, it will be available under this
+     *                             name, which typically reflects how the
+     *                             Reminder will be used.
      * @param namesAndValues       An array of strings, where the first
      *                             element is the name for a Reminder entry,
      *                             the second element is the value of that
@@ -92,8 +109,8 @@ public class Reminder {
      *                             third element is the name for another
      *                             Reminder entry, and so on.
      */
-    public Reminder(String name, Object ... namesAndValues) {
-        this(name);
+    public Reminder(String id, String name, Object ... namesAndValues) {
+        this(id, name);
         add(namesAndValues);
     }
 
@@ -164,8 +181,14 @@ public class Reminder {
         Mac mac = cr.getMac();
         byte[] macBytes;
         try {
-            macBytes = mac.doFinal(input.subSequence(reminderStart,
-                    reminderStart + reminderLength).toString().getBytes("UTF-8"));
+            if (testMode) {
+                // Special mode for some tests: generate a fixed signature.
+                macBytes = "**fake signature**".getBytes("UTF-8");
+            } else {
+                macBytes = mac.doFinal(input.subSequence(reminderStart,
+                        reminderStart + reminderLength).toString().getBytes(
+                        "UTF-8"));
+            }
         } catch (UnsupportedEncodingException e) {
             throw new InternalError(
                     "Reminder.decode couldn't convert to UTF-8");
@@ -202,12 +225,13 @@ public class Reminder {
      *                             to record the Reminder in the browser.
      */
     public void flush(ClientRequest cr) {
+        cr.getHtml().includeJsFile("fizlib/Reminder.js");
         out.append(')');
         StringBuilder header = new StringBuilder(50);
         appendHeader(cr, header);
         StringBuilder javascript = new StringBuilder(out.length() + 60);
         Template.expand("Fiz.Reminder.reminders[\"@1\"] = \"@2@3\";",
-                javascript, Template.SpecialChars.JAVASCRIPT, name,
+                javascript, Template.SpecialChars.JAVASCRIPT, id,
                 header, out);
         cr.includeJavascript(javascript);
 
@@ -240,6 +264,15 @@ public class Reminder {
     }
 
     /**
+     * Returns a Javascript expression that, when executed in the browser,
+     * will evaluate to the contents of this reminder.
+     * @return                     See above.
+     */
+    public String getJsReference() {
+        return Template.expand("Fiz.Reminder.reminders[\"@1\"]", id);
+    }
+
+    /**
      * This method generates all of the header information for this
      * reminder (everything except the serialized dataset containing
      * the reminder data) and appends it to a StringBuilder.  Note:
@@ -253,15 +286,17 @@ public class Reminder {
      */
     protected void appendHeader(ClientRequest cr,
             StringBuilder header) {
-
-        // Create a cryptographic checksum for the reminder.  This allows
-        // us to prevent the browser from tampering with the contents of the
-        // reminder.
-
+        // Create a cryptographic checksum for the reminder.  This prevents
+        // the browser from tampering with the contents of the reminder.
         Mac mac = cr.getMac();
         byte[] macBytes;
         try {
-            macBytes = mac.doFinal(out.toString().getBytes("UTF-8"));
+            if (testMode) {
+                // Special mode for some tests: generate a fixed signature.
+                macBytes = "**fake signature**".getBytes("UTF-8");
+            } else {
+                macBytes = mac.doFinal(out.toString().getBytes("UTF-8"));
+            }
         } catch (UnsupportedEncodingException e) {
             throw new InternalError(
                     "Reminder.flush couldn't convert to UTF-8");
@@ -275,7 +310,13 @@ public class Reminder {
         header.append(macBytes.length);
         header.append('.');
         for (byte value : macBytes) {
-            header.append((char) value);
+            // Generate one Unicode character for each byte of the signature,
+            // ensuring that the high-order 8 bits of each character are zeros.
+            // Bytes are signed, so if we don't zero the high-order bits
+            // some of the Unicode characters will be negative, and IE
+            // doesn't like Unicode characters such as -4 and -11: it converts
+            // them to 65533 (the Unicode "replacement" character).
+            header.append((char) (((int) value) & 0xff));
         }
         header.append(out.length());
         header.append('.');

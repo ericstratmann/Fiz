@@ -12,19 +12,19 @@ public class ReminderTest extends junit.framework.TestCase {
     }
 
     public void test_constructor() {
-        Reminder reminder = new Reminder("name44");
+        Reminder reminder = new Reminder("id11", "name44");
         assertEquals("reminder name", "name44", reminder.name);
     }
 
     public void test_constructor_withValues() {
-        Reminder reminder = new Reminder("xyzzy", "name", "Alice",
+        Reminder reminder = new Reminder("id11", "xyzzy", "name", "Alice",
                 "age", "18");
         assertEquals("reminder contents", "5.xyzzy(4.name5.Alice\n" +
                 "3.age2.18", reminder.out.toString());
     }
 
     public void test_add_stringValues() {
-        Reminder reminder = new Reminder("xyz");
+        Reminder reminder = new Reminder("id11", "xyz");
         reminder.add("first", "12345", "second", "999", "noValue");
         assertEquals("after first call",
                 "3.xyz(5.first5.12345\n" +
@@ -38,7 +38,7 @@ public class ReminderTest extends junit.framework.TestCase {
                 reminder.out.toString());
     }
     public void test_add_stringsAndDatasets() {
-        Reminder reminder = new Reminder("xyz");
+        Reminder reminder = new Reminder("id11", "xyz");
         reminder.add("first", "12345", "child", new Dataset("name", "Alice"),
                 "second", "xxx", "child", new Dataset("age", "36"));
         assertEquals("Reminder.out",
@@ -60,7 +60,7 @@ public class ReminderTest extends junit.framework.TestCase {
                 d.toString());
     }
     public void test_add_bogusValueType() {
-        Reminder reminder = new Reminder("xyz");
+        Reminder reminder = new Reminder("id11", "xyz");
         reminder.add("first", "12345");
         boolean gotException = false;
         try {
@@ -76,7 +76,7 @@ public class ReminderTest extends junit.framework.TestCase {
     }
 
     public void test_decode_basics() {
-        Reminder reminder = new Reminder("name1");
+        Reminder reminder = new Reminder("id11", "name1");
         reminder.add("name", "value\000\"", "state", "California");
         reminder.out.append(")");
         StringBuilder out = new StringBuilder("xyz");
@@ -107,7 +107,7 @@ public class ReminderTest extends junit.framework.TestCase {
     }
     public void test_decode_macCorrupted() {
         // Create a reminder, then corrupt it.
-        Reminder reminder = new Reminder("name1");
+        Reminder reminder = new Reminder("id11", "name1");
         reminder.add("name", "value\000\"", "state", "California");
         reminder.out.append(")");
         StringBuilder out = new StringBuilder();
@@ -131,7 +131,7 @@ public class ReminderTest extends junit.framework.TestCase {
     }
     public void test_decode_reminderCorrupted() {
         // Create a reminder, then corrupt it.
-        Reminder reminder = new Reminder("name1");
+        Reminder reminder = new Reminder("id11", "name1");
         reminder.add("name", "value\000\"", "state", "California");
         reminder.out.append(")");
         StringBuilder out = new StringBuilder();
@@ -156,7 +156,7 @@ public class ReminderTest extends junit.framework.TestCase {
     }
 
     public void test_flush() {
-        Reminder reminder = new Reminder("xyz\"abc");
+        Reminder reminder = new Reminder("id\00211", "xyz\"abc");
         reminder.add("name", "value\000\"");
         reminder.flush(cr);
 
@@ -165,8 +165,8 @@ public class ReminderTest extends junit.framework.TestCase {
         String javascript = cr.getHtml().jsCode.toString().replaceFirst(
                 "32\\..*26\\.7\\.xyz", "32.--MAC skipped--26.7.xyz");
         assertEquals("generated Javascript",
-                "Fiz.Reminder.reminders[\"xyz\\\"abc\"] = \"32.--MAC skipped--" +
-                "26.7.xyz\\\"abc(4.name7.value\\x00\\\")\";",
+                "Fiz.Reminder.reminders[\"id\\x0211\"] = \"32." +
+                "--MAC skipped--26.7.xyz\\\"abc(4.name7.value\\x00\\\")\";",
                 javascript);
 
         // Make sure the method erased the closing parenthesis.
@@ -175,7 +175,7 @@ public class ReminderTest extends junit.framework.TestCase {
     }
 
     public void test_get() {
-        Reminder reminder = new Reminder("xyz\"abc");
+        Reminder reminder = new Reminder("id11", "xyz\"abc");
         reminder.add("name", "value\000\"");
         String value = reminder.get(cr);
 
@@ -192,8 +192,15 @@ public class ReminderTest extends junit.framework.TestCase {
                 reminder.out.substring(reminder.out.length() - 1));
     }
 
+    public void test_getJsReference() {
+        Reminder reminder = new Reminder("id11", "xyz\"abc");
+        assertEquals("Javascript expression",
+                "Fiz.Reminder.reminders[\"id11\"]",
+                reminder.getJsReference());
+    }
+
     public void test_appendHeader() {
-        Reminder reminder = new Reminder("xyz\"abc");
+        Reminder reminder = new Reminder("id11", "xyz\"abc");
         reminder.add("name", "value\000\"");
         reminder.out.append(")");
         StringBuilder out = new StringBuilder("xyz");

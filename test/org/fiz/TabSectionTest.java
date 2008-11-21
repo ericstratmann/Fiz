@@ -29,7 +29,7 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "id: 2\n",
                 StringUtil.join(section.tabs, "--------\n"));
     }
-    
+
     public void test_clearCache() {
         TabSection.setTemplate("xyzzy");
         assertEquals("template before clearCache", "xyzzy",
@@ -218,7 +218,7 @@ public class TabSectionTest extends junit.framework.TestCase {
         TestUtil.assertSubstring("onclick handler",
                 "<a href=\"#\" onclick=\"Fiz.TabSection.selectTab" +
                 "(&quot;section12.first&quot;); " +
-                "void new Fiz.Ajax(&quot;a/b/Alice&quot;);;",
+                "void new Fiz.Ajax({url: &quot;a/b/Alice&quot;});;",
                 cr.getHtml().getBody().toString());
     }
 
