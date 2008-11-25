@@ -74,6 +74,20 @@ public class ReminderTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
+    public void test_addFromDataset() {
+        Dataset d = new Dataset("name", "Alice", "age", "34",
+                "child", new Dataset("name", "Bob", "age", "6"),
+                "child", new Dataset("name", "Carol", "age", "3"));
+        Reminder reminder = new Reminder("id11", "xyz");
+        reminder.addFromDataset(d, "child", "name");
+        assertEquals("reminder contents",
+                "3.xyz(5.child(3.age1.6\n" +
+                "4.name3.Bob)\n" +
+                "5.child(3.age1.3\n" +
+                "4.name5.Carol)\n" +
+                "4.name5.Alice",
+                reminder.out.toString());
+    }
 
     public void test_decode_basics() {
         Reminder reminder = new Reminder("id11", "name1");
@@ -163,10 +177,10 @@ public class ReminderTest extends junit.framework.TestCase {
         // Replace the signature with a fixed value, so we don't need to
         // worry about the particular MAC algorithm.
         String javascript = cr.getHtml().jsCode.toString().replaceFirst(
-                "32\\..*26\\.7\\.xyz", "32.--MAC skipped--26.7.xyz");
+                "43\\..*26\\.7\\.xyz", "43.--MAC skipped--26.7.xyz");
         assertEquals("generated Javascript",
-                "Fiz.Reminder.reminders[\"id\\x0211\"] = \"32." +
-                "--MAC skipped--26.7.xyz\\\"abc(4.name7.value\\x00\\\")\";",
+                "Fiz.Reminder.reminders[\"id\\x0211\"] = \"43." +
+                "--MAC skipped--26.7.xyz\\\"abc(4.name7.value\\x00\\\")\";\n",
                 javascript);
 
         // Make sure the method erased the closing parenthesis.
@@ -182,9 +196,9 @@ public class ReminderTest extends junit.framework.TestCase {
         // Replace the signature with a fixed value, so we don't need to
         // worry about the particular MAC algorithm.
         String s = value.substring(0,3) + "--MAC skipped--" +
-                value.substring(35);
+                value.substring(46);
         assertEquals("reminder contents",
-                "32.--MAC skipped--26.7.xyz\"abc(4.name7.value\u0000\")",
+                "43.--MAC skipped--26.7.xyz\"abc(4.name7.value\u0000\")",
                 s);
 
         // Make sure the method erased the closing parenthesis.
@@ -193,10 +207,9 @@ public class ReminderTest extends junit.framework.TestCase {
     }
 
     public void test_getJsReference() {
-        Reminder reminder = new Reminder("id11", "xyz\"abc");
         assertEquals("Javascript expression",
-                "Fiz.Reminder.reminders[\"id11\"]",
-                reminder.getJsReference());
+                "Fiz.Reminder.reminders[\"xyzzy\"]",
+                Reminder.getJsReference("xyzzy"));
     }
 
     public void test_appendHeader() {
@@ -205,7 +218,7 @@ public class ReminderTest extends junit.framework.TestCase {
         reminder.out.append(")");
         StringBuilder out = new StringBuilder("xyz");
         reminder.appendHeader(cr, out);
-        assertEquals("first part of header", "xyz32.",
+        assertEquals("first part of header", "xyz43.",
                 out.substring(0, 6));
         assertEquals("last part of header", "26.",
                 out.substring(out.length() -3));

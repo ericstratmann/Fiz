@@ -98,6 +98,12 @@ public class Dispatcher extends HttpServlet {
     // that cannot be mapped to an Interactor method.
     protected Timer unknownURLTimer = Timer.getNamedTimer("unknown URL");
 
+    // Overhead time (in dispatcher, before calling interactor):
+    protected Timer dispatcherTimer = Timer.getNamedTimer("dispatcher");
+
+    // Time spent after interactor returns (cr.finish, etc.):
+    protected Timer finishTimer = Timer.getNamedTimer("finish");
+
     // If the following variable is true, we flush all of our internal
     // caches on every request.  This variable mirrors the "clearCaches"
     // entry in the main configuration dataset.  If the dataset value
@@ -239,13 +245,18 @@ public class Dispatcher extends HttpServlet {
             if (isAjax) {
                 cr.setAjax(true);
             }
+            dispatcherTimer.start(startTime);
+            dispatcherTimer.stop();
             method.method.invoke(method.interactor, cr);
+            finishTimer.start();
 
             // The service method has completed successfully.  Output the
             // response that was generated.
             cr.finish();
         }
         catch (Throwable e) {
+            finishTimer.start();
+
             // If the exception happened in the Interactor method, the
             // real information we want is encapsulated inside e.
             Throwable cause =  e.getCause();
@@ -324,8 +335,10 @@ public class Dispatcher extends HttpServlet {
         } else {
             timer = unknownURLTimer;
         }
+        long endTime = System.nanoTime();
         timer.start(startTime);
-        timer.stop();
+        timer.stop(endTime);
+        finishTimer.stop(endTime);
     }
 
     /**

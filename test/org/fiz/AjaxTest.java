@@ -26,11 +26,8 @@ public class AjaxTest extends junit.framework.TestCase {
     }
     public void test_invoke_withReminders() {
         ClientRequest cr = new ClientRequestFixture();
-        Reminder r1 = new Reminder("r1", "state", "name", "California",
-                "capital", "Sacramento");
-        Reminder r2 = new Reminder("r2", "city", "name", "San Francisco");
         StringBuilder out = new StringBuilder();
-        Ajax.invoke(cr, "/fiz/a/b", null, out, r1, r2);
+        Ajax.invoke(cr, "/fiz/a/b", null, out, "r1", "r2");
         assertEquals("generated HTML",
                 "void new Fiz.Ajax({url: \"/fiz/a/b\", reminders: " +
                 "[Fiz.Reminder.reminders[\"r1\"], " +

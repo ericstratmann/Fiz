@@ -9,17 +9,16 @@ import java.util.*;
  * support the following constructor properties:
  *   class:          (optional) Used as the {@code class} attribute for
  *                   the HTML element that contains the TreeSection.  Defaults
- *                   two {@code TreeSection}.
+ *                   to {@code TreeSection}.
  *   edgeStyle:      (optional) Determines how to display the lines along
  *                   the left edge of the tree, which connect parents to their
  *                   children.  The value forms the base name for a family
  *                   of images.  If the value is {@code x}, then there
- *                   must exist images {@code x-line.gif}, {@code x-last.gif},
- *                   {@code x-plus.gif}, {@code x-minus.gif}, and
- *                   {@code x-leaf.gif}.  See the images themselves and
- *                   the generated HTML for details on how the images are
- *                   used.  Fiz has built-in support for styles
- *                   {@code treeSolid}, {@code treeDotted}, and
+ *                   must exist images {@code x-line.gif}, {@code x-leaf.gif},
+ *                   {@code x-plus.gif}, and {@code x-minus.gif}.  See the
+ *                   images themselves and the generated HTML for details
+ *                   on how the images are used.  Fiz has built-in support
+ *                   for styles {@code treeSolid}, {@code treeDotted}, and
  *                   {@code treeNoLines}, but applications can define
  *                   additional styles.  Defaults to {@code treeSolid}.
  *   id:             (required) Used as the {@code id} attribute for the
@@ -76,16 +75,18 @@ public class TreeSection implements Section {
      *                             contents of that element.
      */
     public void expandElement(ClientRequest cr) {
+        // Retrieve state information about the row and the overall section.
+        Dataset rowInfo = cr.getReminder("TreeSection.row");
+        Dataset sectionInfo = cr.getReminder("TreeSection");
+
         // Invoke a data request to fetch information about the children of
         // the element being expanded, then generate a <table> that will
         // display the children.
         registerRequests(cr);
 
-        ArrayList<Dataset> children = dataRequest.getResponseOrAbort().
-                getChildren("record");
         StringBuilder html = new StringBuilder();
-        String id = cr.getMainDataset().get("id");
-        String edgeStyle = properties.check("edgeStyle");
+        String id = rowInfo.get("id");
+        String edgeStyle = sectionInfo.check("edgeStyle");
         if (edgeStyle == null) {
             edgeStyle = "treeSolid";
         }
@@ -117,6 +118,11 @@ public class TreeSection implements Section {
     public void html(ClientRequest cr) {
         Html html = cr.getHtml();
         StringBuilder out = html.getBody();
+        String id = properties.get("id");
+        Reminder reminder = new Reminder(id, "TreeSection");
+        reminder.addFromDataset(properties, "edgeStyle", "id", "leafStyle",
+                "nodeStyle", "request");
+        reminder.flush(cr);
         String edgeStyle = properties.check("edgeStyle");
         if (edgeStyle == null) {
             edgeStyle = "treeSolid";
@@ -169,10 +175,14 @@ public class TreeSection implements Section {
      */
     protected void childrenHtml(ClientRequest cr, ArrayList<Dataset> children,
             String baseId, String edgeStyle, StringBuilder out) {
+        // The following variable is used to generate an alternate (expanded)
+        // style for each row.  It is declared here so that it can be reused
+        // for each of the rows (minimize garbage collection).
         StringBuilder expandedRow = new StringBuilder();
         for (int i = 0; i < children.size(); i++) {
             Dataset child = children.get(i);
             Boolean lastElement = (i == (children.size()-1));
+            String rowId = baseId + "_" + i;
 
             // Is this child a node (expandable) or a leaf?
             Boolean expandable = false;
@@ -193,11 +203,10 @@ public class TreeSection implements Section {
 
             // Each child is drawn as a table row with two cells.  The
             // left cell contains lines connecting all of the children
-            // together (if desired) and a box displaying plus or minus
-            // for nodes.  The right cell displays icons and name for this
-            // child (or whatever is specified by the template for
-            // this child's style).
-            String rowId = baseId + "_" + i;
+            // together vertically (if desired) and a box displaying plus
+            // or minus for nodes (initially plus).  The right cell displays
+            // the icon(s) and name for this child (or whatever is specified
+            // by the template for this child's style).
             int rowStart = out.length();
             Template.expand("  <tr id=\"@1\">\n", out, rowId);
             String repeat = "repeat-y";
@@ -217,8 +226,8 @@ public class TreeSection implements Section {
             // leaf node.
             Template.expand(" onclick=\"@1\"><img src=" +
                     "\"/fizlib/images/@2-@3.gif\"></td>\n",
-                    out, Ajax.invoke(cr, "ajaxTreeExpand?id=" + rowId +
-                    "&name=@name",child), edgeStyle,
+                    out, Ajax.invoke(cr, "ajaxTreeExpand", null,
+                    properties.get("id"), rowId), edgeStyle,
                     (expandable ? "plus": "leaf"));
 
             // Render the cell on the right, using a template selected by
@@ -231,10 +240,14 @@ public class TreeSection implements Section {
 
             // If this element is expandable then do some additional things
             // to support expansion and unexpansion of this element.
-            //  to 2 more things:
-
             if (expandable) {
-                // First, create a Javascript object holding two copies of
+                // Create a reminder with information we will need during Ajax
+                // requests to expand this child.
+                Reminder reminder = new Reminder(rowId, "TreeSection.row",
+                        "id", rowId, "name", child.get("name"));
+                reminder.flush(cr);
+
+                // Next, create a Javascript object holding two copies of
                 // the HTML for the table row: the one we just rendered (used
                 // when the element is unexpanded), and an alternate version
                 // to use when the element is expanded.
@@ -253,7 +266,7 @@ public class TreeSection implements Section {
                         Template.SpecialChars.JAVASCRIPT, rowId,
                         out.substring(rowStart), expandedRow));
 
-                // Second, add an additional row to the table we are
+                // Finally, add an additional row to the table we are
                 // generating, which will hold the children of this element
                 // if/when the element is expanded.  For now, this row is
                 // invisible.  We add this row now because we have information

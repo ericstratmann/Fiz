@@ -17,12 +17,16 @@ public class PerfString {
     public static void main(String[] argv)
             throws IOException, NoSuchAlgorithmException,
             InvalidKeyException {
-        int count = 1000;
+        int count = 10000;
         int value = 0;
         ArrayList<String> list = new ArrayList<String>();
         long sum = 0;
         Dataset response = null;
         Dataset d = null;
+        Dataset properties = new Dataset("name", "Alice", "id", "id44");
+        String rowId = "tree14_1";
+        String edgeStyle = "solid";
+        boolean expandable = true;
         String s = "3";
         Config.init("test/testData/WEB-INF/config");
         ClientRequest cr = new ClientRequestFixture();
@@ -34,29 +38,31 @@ public class PerfString {
         for (GarbageCollectorMXBean bean: beans) {
             startGcTime += bean.getCollectionTime();
         }
-        String reminder = new Reminder("first", "name", "first",
-                "id", "66").get(cr);
-        IntBox end = new IntBox();
         Timer timer = new Timer();
 
         for (int i = 0; i < 10; i++) {
             long start = System.nanoTime();
             for (int j= 0; j < count; j++) {
+                out.setLength(0);
+                StringBuilder ajax = Ajax.invoke(cr, "ajaxTreeExpand", null,
+                        properties.get("id"), rowId);
                 timer.start();
-                Reminder.decode(cr, reminder, 0, new Dataset(), end);
+                Template.expand(" onclick=\"@1\"><img src=" +
+                        "\"/fizlib/images/@2-@3.gif\"></td>\n",
+                        out, ajax, edgeStyle,
+                        (expandable ? "plus": "leaf"));
                 timer.stop();
             }
             long finish = System.nanoTime();
             System.out.printf("%.4f us per iteration%n",
                     (finish - start)/(1000.0*count));
-            System.out.printf("Avg: %.1fus, min: %.1fus, max: %.1fus, " +
-                    "dev: %.1fus\n", timer.getAverage()/1000.0,
-                    timer.getShortestInterval()/1000.0,
-                    timer.getLongestInterval()/1000.0,
-                    timer.getStdDeviation()/1000.0);
+            printTimer(timer, "Template.expand");
             timer.reset();
+            Timer t2 = Timer.getNamedTimer ("expandAtSign");
+            printTimer(t2, "expandAtSign");
+            t2.reset();
         }
-        System.out.printf("String length: %d\n", s.length());
+        System.out.printf("String length: %d\n", out.length());
 
         long stopNs = System.nanoTime();
         long stopGcTime = 0;
@@ -66,6 +72,17 @@ public class PerfString {
         long gcTime = stopGcTime - startGcTime;
         System.out.printf("Garbage collection time: %dms (%.1f%%)\n",
                 gcTime, 100.0*(gcTime*1000000.0)/(stopNs - startNs));
+    }
+
+    protected static void printTimer(Timer timer, String name) {
+        String prefix = (name != null) ? name : "unknown";
+            System.out.printf("%s timer avg: %.1fus, min: %.1fus, " +
+                    "max: %.1fus, dev: %.1fus\n",
+                    prefix,
+                    timer.getAverage()/1000.0,
+                    timer.getShortestInterval()/1000.0,
+                    timer.getLongestInterval()/1000.0,
+                    timer.getStdDeviation()/1000.0);
     }
 
     protected static int inc(int i) {

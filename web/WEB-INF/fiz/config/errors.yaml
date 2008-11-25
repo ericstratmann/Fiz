@@ -33,7 +33,7 @@ templateSection: >
 # code for an HTML request.
 uncaughtHtml: |
     <div class="uncaughtException">An internal error (uncaught exception)
-    occurred while generating this page: @message.</div>
+    occurred while generating this page{{: @message}}.</div>
 
 # The following value is used in conjunction with uncaughtHtml:  if
 # this value is "true", then when an uncaught exception occurs Fiz will

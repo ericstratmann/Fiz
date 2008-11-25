@@ -27,6 +27,43 @@ public class StringUtilTest extends junit.framework.TestCase {
                 StringUtil.addExtension("C:/code/foo.xx/bar", ".yml"));
     }
 
+    public void test_decode4to3_basics() {
+        byte[] bytes = StringUtil.decode4to3("abc!$0 ____", 3, 8);
+        StringBuilder out = new StringBuilder();
+        String separator = "";
+        for (byte b: bytes) {
+            out.append(separator);
+            out.append(String.format("0x%02x", ((int) b) & 0xff));
+            separator = ", ";
+        }
+        assertEquals("output bytes", "0x01, 0x01, 0x01, 0xff, 0xff, 0xff",
+                out.toString());
+    }
+    public void test_decode4to3_trailingGroupOf3() {
+        byte[] bytes = StringUtil.decode4to3("____!&(", 0, 7);
+        StringBuilder out = new StringBuilder();
+        String separator = "";
+        for (byte b: bytes) {
+            out.append(separator);
+            out.append(String.format("0x%02x", ((int) b) & 0xff));
+            separator = ", ";
+        }
+        assertEquals("output bytes", "0xff, 0xff, 0xff, 0x81, 0x81",
+                out.toString());
+    }
+    public void test_decode4to3_trailingGroupOf2() {
+        byte[] bytes = StringUtil.decode4to3("____!\"", 0, 6);
+        StringBuilder out = new StringBuilder();
+        String separator = "";
+        for (byte b: bytes) {
+            out.append(separator);
+            out.append(String.format("0x%02x", ((int) b) & 0xff));
+            separator = ", ";
+        }
+        assertEquals("output bytes", "0xff, 0xff, 0xff, 0x81",
+                out.toString());
+    }
+
     public void test_detailedErrorMessage_basics() {
         String message = StringUtil.detailedErrorMessage(
                 new Dataset("message", "access violation",
@@ -82,6 +119,28 @@ public class StringUtilTest extends junit.framework.TestCase {
         assertEquals("error message", "access violation:\n" +
                 "  details:     xyzzy",
                 message);
+    }
+
+    public void test_encode3to4_basics() {
+        byte[] bytes = {1, 1, 1, -1, -1, -1};
+        StringBuilder out = new StringBuilder("abc");
+        StringUtil.encode3to4(bytes, out);
+        assertEquals("output StringBuilder", "abc!$0 ____",
+                out.toString());
+    }
+    public void test_encode3to4_trailingGroupOf2() {
+        byte[] bytes = {(byte) 0x81, (byte) 0x81};
+        StringBuilder out = new StringBuilder();
+        StringUtil.encode3to4(bytes, out);
+        assertEquals("output StringBuilder", "!&(",
+                out.toString());
+    }
+    public void test_encode3to4_trailingGroupOf1() {
+        byte[] bytes = {1, 1, 1, (byte) 0x81};
+        StringBuilder out = new StringBuilder();
+        StringUtil.encode3to4(bytes, out);
+        assertEquals("output StringBuilder", "!$0 !\"",
+                out.toString());
     }
 
     public void test_errorMessage_oneErrorWithMessage() {
@@ -229,6 +288,22 @@ public class StringUtilTest extends junit.framework.TestCase {
         assertEquals("already lowercase", "aBCD", StringUtil.lcFirst("aBCD"));
         assertEquals("must convert", "john", StringUtil.lcFirst("John"));
         assertEquals("single character", "x", StringUtil.lcFirst("X"));
+    }
+
+    public void test_lengthDecoded4to3() {
+        assertEquals("input length 0", 0, StringUtil.lengthDecoded4to3(0));
+        assertEquals("input length 8", 6, StringUtil.lengthDecoded4to3(8));
+        assertEquals("input length 10", 7, StringUtil.lengthDecoded4to3(10));
+        assertEquals("input length 11", 8, StringUtil.lengthDecoded4to3(11));
+        assertEquals("input length 12", 9, StringUtil.lengthDecoded4to3(12));
+    }
+
+    public void test_lengthEncoded3to4() {
+        assertEquals("input length 0", 0, StringUtil.lengthEncoded3to4(0));
+        assertEquals("input length 6", 8, StringUtil.lengthEncoded3to4(6));
+        assertEquals("input length 7", 10, StringUtil.lengthEncoded3to4(7));
+        assertEquals("input length 8", 11, StringUtil.lengthEncoded3to4(8));
+        assertEquals("input length 9", 12, StringUtil.lengthEncoded3to4(9));
     }
 
     public void test_newCharArray() {

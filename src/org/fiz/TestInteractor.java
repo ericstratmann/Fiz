@@ -164,7 +164,7 @@ public class TestInteractor extends Interactor {
                 "server, where they are logged: ");
         Template.expand("<a href=\"#\" onclick =\"@1; return false;\">" +
                 "Click me</a>\n", body,
-                Ajax.invoke(cr, "ajaxReminders", null, r1, r2));
+                Ajax.invoke(cr, "ajaxReminders", null, "r1", "r2"));
         Link link3 = new Link(new Dataset("text", "Click here",
                 "ajaxUrl", "/fiz/test/ajaxUpdateTime"));
         body.append("<p>");

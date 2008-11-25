@@ -1,9 +1,8 @@
 package org.fiz;
 
-import java.security.*;
 import java.io.*;
+import java.util.*;
 import javax.crypto.*;
-import javax.servlet.http.*;
 
 /**
  * A Reminder is a dataset whose contents are transmitted to the
@@ -71,11 +70,13 @@ public class Reminder {
     /**
      * Construct a Reminder with a given name.
      * @param id                   Identifier for this Reminder, used as a
-     *                             name for the reminder in the browser.
-     *                             Must be unique among all Reminders for
-     *                             the Web page; typically this is achieved by
-     *                             using the id of a related HTML element as
-     *                             the id of the Reminder.
+     *                             name for the reminder in the browser and
+     *                             also used to identify the reminder in the
+     *                             getJsReference method.  Must be unique
+     *                             among all Reminders for the Web page;
+     *                             typically this is achieved by using the
+     *                             id of a related HTML element as the id of
+     *                             the Reminder.
      * @param name                 When the Reminder is returned to the
      *                             server, it will be available under this
      *                             name, which typically reflects how the
@@ -148,6 +149,31 @@ public class Reminder {
     }
 
     /**
+     * Add one or more top-level values from an existing dataset to
+     * this reminder.
+     * @param d                    Dataset containing values to be added
+     *                             to the reminder.
+     * @param names                Any number of names of top-level values
+     *                             in the dataset (not paths).  Each name
+     *                             and its corresponding value is added to the
+     *                             reminder.  Each value can be either a
+     *                             string or nested dataset(s).
+     */
+    @SuppressWarnings("unchecked")
+    public void addFromDataset(Dataset d, String ... names) {
+        for (String name: names) {
+            ArrayList<Object> values = (ArrayList<Object>) d.lookup(name,
+                    Dataset.DesiredType.ANY, Dataset.Quantity.ALL);
+            if (values == null) {
+                continue;
+            }
+            for (Object value: values) {
+                add(name, value);
+            }
+        }
+    }
+
+    /**
      * Parse a signed reminder from an input source, making sure that the
      * reminder has been signed by the current session.
      * @param cr                   Overall information about the client
@@ -172,8 +198,9 @@ public class Reminder {
         int i = start;
         int inputLength = input.length();
         int macLength = parseLength(input, i, end);
-        int macStart = end.value;
-        i = macStart + macLength;
+        byte[] incomingMac = StringUtil.decode4to3(input, end.value,
+                macLength);
+        i = end.value + macLength;
         int reminderLength = parseLength(input, i, end);
         int reminderStart = end.value;
 
@@ -193,12 +220,11 @@ public class Reminder {
             throw new InternalError(
                     "Reminder.decode couldn't convert to UTF-8");
         }
-        if (macBytes.length != macLength) {
+        if (macBytes.length != incomingMac.length) {
             throw new SignatureError();
         }
         for (int j = 0; j < macBytes.length; j++) {
-            byte c = (byte) input.charAt(macStart+j);
-            if (macBytes[j] != c) {
+            if (macBytes[j] != incomingMac[j]) {
                 throw new SignatureError();
             }
         }
@@ -230,7 +256,7 @@ public class Reminder {
         StringBuilder header = new StringBuilder(50);
         appendHeader(cr, header);
         StringBuilder javascript = new StringBuilder(out.length() + 60);
-        Template.expand("Fiz.Reminder.reminders[\"@1\"] = \"@2@3\";",
+        Template.expand("Fiz.Reminder.reminders[\"@1\"] = \"@2@3\";\n",
                 javascript, Template.SpecialChars.JAVASCRIPT, id,
                 header, out);
         cr.includeJavascript(javascript);
@@ -264,11 +290,14 @@ public class Reminder {
     }
 
     /**
-     * Returns a Javascript expression that, when executed in the browser,
-     * will evaluate to the contents of this reminder.
+     * Given the id for a reminder, returns a Javascript expression that,
+     * when executed in the browser, will evaluate to the contents of
+     * this reminder.
+     * @param id                   Identifier that was used to create the
+     *                             reminder.
      * @return                     See above.
      */
-    public String getJsReference() {
+    public static String getJsReference(String id) {
         return Template.expand("Fiz.Reminder.reminders[\"@1\"]", id);
     }
 
@@ -303,21 +332,15 @@ public class Reminder {
         }
 
         // The reminder has the form
-        //     <macLength>.<mac><reminderLength>.<reminder>
+        //     <macLength>.<encodedMac><reminderLength>.<reminder>
         // where <macLength> is a decimal integer giving the number of
-        // characters in the MAC and <reminderLength> is a decimal integer
-        // giving the number of characters in the reminder itself.
-        header.append(macBytes.length);
+        // encoded characters in the MAC and <reminderLength> is a decimal
+        // integer giving the number of characters in the reminder itself.
+        // The MAC is encoded in an ASCII format to allow it to pass safely
+        // into and out of the browser.
+        header.append(StringUtil.lengthEncoded3to4(macBytes.length));
         header.append('.');
-        for (byte value : macBytes) {
-            // Generate one Unicode character for each byte of the signature,
-            // ensuring that the high-order 8 bits of each character are zeros.
-            // Bytes are signed, so if we don't zero the high-order bits
-            // some of the Unicode characters will be negative, and IE
-            // doesn't like Unicode characters such as -4 and -11: it converts
-            // them to 65533 (the Unicode "replacement" character).
-            header.append((char) (((int) value) & 0xff));
-        }
+        StringUtil.encode3to4(macBytes, header);
         header.append(out.length());
         header.append('.');
     }

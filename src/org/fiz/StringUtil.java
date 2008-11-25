@@ -49,6 +49,56 @@ public final class StringUtil {
     }
 
     /**
+     * Given a sequence of bytes encoded by {@code encode3to4},
+     * extract the original bytes.
+     * @param in                   Contains the encoded form of the bytes.
+     * @param first                Index within {@code in} of the first
+     *                             character of encoded data.
+     * @param numChars             Number of input characters to read
+     *                             from {@code in} (the number of
+     *                             bytes returned will be less than this).
+     *                             The caller must ensure that there are
+     *                             this many characters in {@code in}.
+     * @return                     A byte array containing the decoded
+     *                             data.
+     */
+    public static byte[] decode4to3(CharSequence in, int first,
+            int numChars ) {
+        // See encode3to4 for a description of the encoded data format.
+        byte[] out = new byte[lengthDecoded4to3(numChars)];
+        int current = first;
+        int outIndex = 0;
+
+        // Process as many "full groups" of 4 characters as possible.
+        while (numChars >= 4) {
+            int group = (in.charAt(current) - 0x20) +
+                    ((in.charAt(current+1) - 0x20) << 6) +
+                    ((in.charAt(current+2) - 0x20) << 12) +
+                    ((in.charAt(current+3) - 0x20) << 18);
+            out[outIndex] = (byte) (group & 0xff);
+            out[outIndex+1] = (byte) ((group >> 8) & 0xff);
+            out[outIndex+2] = (byte) ((group >> 16) & 0xff);
+            current += 4;
+            numChars -= 4;
+            outIndex += 3;
+        }
+
+        // Handle a smaller final group, if there is one.
+        if (numChars == 3) {
+            int group = (in.charAt(current) - 0x20) +
+                    ((in.charAt(current+1) - 0x20) << 6) +
+                    ((in.charAt(current+2) - 0x20) << 12);
+            out[outIndex] = (byte) (group & 0xff);
+            out[outIndex+1] = (byte) ((group >> 8) & 0xff);
+        } else if (numChars == 2) {
+            int group = (in.charAt(current) - 0x20) +
+                    ((in.charAt(current+1) - 0x20) << 6);
+            out[outIndex] = (byte) (group & 0xff);
+        }
+        return out;
+    }
+
+    /**
      * Returns a message containing all of the information available
      * for one were errors; intended for logs or for examination by
      * developers to track down problems.  Use {@code errorMessage}
@@ -106,6 +156,66 @@ public final class StringUtil {
             }
         }
         return result.toString();
+    }
+
+    /**
+     * Encode 8-bit binary data as a series of printable ASCII characters,
+     * where 3 bytes of binary inputare encoded as 4 characters.  This
+     * method is used along with {@code decode4to3} to pass binary
+     * information through systems that don't respect 8-bit values.  For
+     * example, in Javascript character values of 0 in strings are
+     * sometimes interpreted as the end of the string so following characters
+     * are lost, and IE (as of 11/2008) seems to translate character values
+     * of 127 to 63.
+     * @param in                   Input data.
+     * @param out                  Encoded information is appended here.
+     */
+    public static void encode3to4(byte[] in, StringBuilder out) {
+        // Three consecutive bytes ABC are encoded into 4 ASCII characters
+        // 0123 as follows:
+        // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        // |       C       |       B       |       A       |
+        // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        // |     3     |     2     |    1      |     0     |
+        // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        // Each ASCII character consists of a 6-bit binary value added to
+        // 0x20 (32), so that all of the character values are legitimate
+        // ASCII characters. If the source of data is not an even multiple
+        // of 3 in length, then the end of the encoded data may consist of
+        // 2 characters (for 1 input byte) or 3 characters (for 2 input
+        // bytes).
+
+        int bytesLeft = in.length;
+        int current = 0;
+        int group;
+
+        // Handle groups of 3 bytes as long as possible.
+        while (bytesLeft >= 3) {
+            // Be sure to convert the signed byte values to unsigned
+            // integers before combining.
+            group = (((int) in[current]) & 0xff) +
+                    ((((int) in[current+1]) & 0xff) << 8) +
+                    ((((int) in[current+2]) & 0xff) << 16);
+            out.append((char) (0x20 + (group & 0x3f)));
+            out.append((char) (0x20 + ((group >> 6) & 0x3f)));
+            out.append((char) (0x20 + ((group >> 12) & 0x3f)));
+            out.append((char) (0x20 + ((group >> 18) & 0x3f)));
+            bytesLeft -= 3;
+            current += 3;
+        }
+
+        // Handle a smaller group at the end, if there is one.
+        if (bytesLeft == 2) {
+            group = (((int) in[current]) & 0xff) +
+                    ((((int) in[current+1]) & 0xff) << 8);
+            out.append((char) (0x20 + (group & 0x3f)));
+            out.append((char) (0x20 + ((group >> 6) & 0x3f)));
+            out.append((char) (0x20 + ((group >> 12) & 0xf)));
+        } else if (bytesLeft == 1) {
+            group = (((int) in[current]) & 0xff);
+            out.append((char) (0x20 + (group & 0x3f)));
+            out.append((char) (0x20 + ((group >> 6) & 0x3)));
+        }
     }
 
     /**
@@ -455,6 +565,40 @@ public final class StringUtil {
             return s;
         }
         return Character.toLowerCase(first) + s.substring(1);
+    }
+
+    /**
+     * Given a count of encoded characters passed to {@code decode4t03},
+     * this method indicates the number of decoded bytes that would be
+     * produced by {@code decode4to3} for those characters.
+     * @param encodedLength        Number of encoded characters.
+     * @return                     Number of decoded bytes corresponding
+     *                             to {@code encodedLength}.
+     */
+    public static int lengthDecoded4to3(int encodedLength) {
+        int extra = (encodedLength & 3);
+        if (extra != 0) {
+            return 3*(encodedLength/4) + extra - 1;
+        } else {
+            return 3*(encodedLength/4);
+        }
+    }
+
+    /**
+     * Given a count of bytes passed to {@code encode3to4}, this
+     * method indicates the number of encoded characters that would be
+     * produced by {@code encode3to4} for those bytes.
+     * @param decodedLength        Number of decoded bytes.
+     * @return                     Number of encoded characters corresponding
+     *                             to {@code decodedLength}.
+     */
+    public static int lengthEncoded3to4(int decodedLength) {
+        int extra = (decodedLength % 3);
+        if (extra != 0) {
+            return 4*(decodedLength/3) + extra + 1;
+        } else {
+            return 4*(decodedLength/3);
+        }
     }
 
     /**

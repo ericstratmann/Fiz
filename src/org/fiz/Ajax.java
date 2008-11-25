@@ -37,14 +37,15 @@ public class Ajax {
      * @param data                 Data to use while expanding urlTemplate.
      *                             May be null if there are no substitutions
      *                             in the template.
-     * @param reminders            Any number of Reminders to include in the
-     *                             Ajax requests.
+     * @param reminderIds          One or more ids for Reminders; each of
+     *                             these Reminders will be included in the
+     *                             Ajax request.
      * @param out                  Javascript code gets appended here; when
      *                             executed, it will invoke the Ajax request
      *                             using the class Fiz.Ajax.
      */
     public static void invoke(ClientRequest cr, CharSequence urlTemplate,
-            Dataset data, StringBuilder out, Reminder... reminders) {
+            Dataset data, StringBuilder out, String ... reminderIds) {
         cr.getHtml().includeJsFile("fizlib/Ajax.js");
 
         // Quoting is tricky:
@@ -57,12 +58,12 @@ public class Ajax {
         Template.expand(urlTemplate, data, out,
                 Template.SpecialChars.URL);
         out.append("\"");
-        if (reminders.length > 0) {
+        if (reminderIds.length > 0) {
             out.append(", reminders: [");
             String separator = "";
-            for (Reminder reminder : reminders) {
+            for (String id : reminderIds) {
                 out.append(separator);
-                out.append(reminder.getJsReference());
+                out.append(Reminder.getJsReference(id));
                 separator = ", ";
             }
             out.append("]");
@@ -80,16 +81,17 @@ public class Ajax {
      * @param data                 Data to use while expanding urlTemplate.
      *                             May be null if there are no substitutions
      *                             in the template.
-     * @param reminders            Any number of Reminders to include in the
-     *                             Ajax requests.
+     * @param reminderIds          One or more ids for Reminders; each of
+     *                             these Reminders will be included in the
+     *                             Ajax request.
      * @return                     Javascript code that will invoke the Ajax
      *                             request using the class Fiz.Ajax.
      */
     public static StringBuilder invoke(ClientRequest cr,
-            CharSequence urlTemplate, Dataset data, Reminder... reminders) {
+            CharSequence urlTemplate, Dataset data, String... reminderIds) {
         StringBuilder javascript = new StringBuilder(urlTemplate.length()
                 + 40);
-        invoke(cr, urlTemplate, data, javascript, reminders);
+        invoke(cr, urlTemplate, data, javascript, reminderIds);
         return javascript;
     }
 }

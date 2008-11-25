@@ -42,6 +42,7 @@ for the Fiz framework.
         <mkdir dir="${distdir}/web/fizlib"/>
         <copy todir="${distdir}/web/fizlib">
             <fileset dir="javascript/fizlib"/>
+            <fileset dir="web/fizlib"/>
         </copy>
         <mkdir dir="${distdir}/web/WEB-INF/demo"/>
         <copy todir="${distdir}/web/WEB-INF/demo">
