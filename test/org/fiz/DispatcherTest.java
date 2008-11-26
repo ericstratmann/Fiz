@@ -1,6 +1,6 @@
 package org.fiz;
-import java.util.*;
 import javax.servlet.*;
+import java.util.*;
 
 /**
  * Junit tests for the Dispatcher class.
@@ -232,7 +232,7 @@ public class DispatcherTest extends junit.framework.TestCase {
 
     public void test_findMethod_basics() {
         DispatcherTest1Interactor.initCount = 0;
-        Dispatcher.InteractorMethod method = dispatcher.findMethod(
+        Dispatcher.UrlMethod method = dispatcher.findMethod(
                 "dispatcherTest1/incCount", 15,
                 new ServletRequestFixture("/dispatcherTest1/incCount"));
         assertEquals("init invoked during first call", 1,
@@ -267,7 +267,7 @@ public class DispatcherTest extends junit.framework.TestCase {
         dispatcher.findMethod("dispatcherTest1/incCount", 15,
                 new ServletRequestFixture("/dispatcherTest1/incCount/extra"));
         assertEquals("DispatcherTest1Interactor",
-                StringUtil.join(dispatcher.classMap.keySet(), ", "));
+                StringUtil.join(dispatcher.interactorMap.keySet(), ", "));
     }
     public void test_findMethod_invokeInit() {
         DispatcherTest1Interactor.count = 0;
@@ -284,11 +284,13 @@ public class DispatcherTest extends junit.framework.TestCase {
     public void test_findMethod_scanMethods() {
         dispatcher.findMethod("dispatcherTest1/incCount", 15,
                 new ServletRequestFixture("/dispatcherTest1/incCount/extra"));
-        assertEquals("dispatcherTest1/incCount, " +
-                "dispatcherTest1/ajaxIncCount, " +
-                "dispatcherTest1/handledError, " +
-                "dispatcherTest1/resetCount, dispatcherTest1/error",
-                StringUtil.join(dispatcher.methodMap.keySet(), ", "));
+        ArrayList<String> names = new ArrayList<String>();
+        names.addAll(dispatcher.methodMap.keySet());
+        Collections.sort(names);
+        assertEquals("dispatcherTest1/ajaxIncCount, dispatcherTest1/error, " +
+                "dispatcherTest1/handledError, dispatcherTest1/incCount, " +
+                "dispatcherTest1/resetCount",
+                StringUtil.join(names, ", "));
     }
     public void test_findMethod_methodNotFound() {
         Class<?> cl = dispatcher.findClass("org.fiz.Interactor", null);
@@ -307,6 +309,137 @@ public class DispatcherTest extends junit.framework.TestCase {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
+    }
+
+    public void test_findDirectMethod_basics() {
+        String name = "DispatcherTest3/ajaxRequest";
+        Dispatcher.UrlMethod method = dispatcher.findDirectMethod(
+                name, name.indexOf("/"),
+                new ServletRequestFixture());
+        assertEquals("method name", "ajaxRequest", method.method.getName());
+        assertEquals("DispatcherTest3/ajaxRequest",
+                StringUtil.join(dispatcher.methodMap.keySet(), ", "));
+    }
+    public void test_findDirectMethod_methodNameDoesntStartWithAjax() {
+        boolean gotException = false;
+        try {
+            String name = "DispatcherTest3/bogus";
+            Dispatcher.UrlMethod method = dispatcher.findDirectMethod(
+                    name, name.indexOf("/"),
+                    new ServletRequestFixture());
+            }
+        catch (Dispatcher.UnsupportedUrlError e) {
+            assertEquals("exception message",
+                    "unsupported URL \"/x/y/z\": method name must start " +
+                    "with \"ajax\"", e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_findDirectMethod_badClassName() {
+        boolean gotException = false;
+        try {
+            String name = "Bogus/ajaxRequest";
+            Dispatcher.UrlMethod method = dispatcher.findDirectMethod(
+                    name, name.indexOf("/"),
+                    new ServletRequestFixture());
+            }
+        catch (Dispatcher.UnsupportedUrlError e) {
+            assertEquals("exception message",
+                    "unsupported URL \"/x/y/z\": can't find " +
+                    "class \"Bogus\"", e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_findDirectMethod_classDoesntImplementDirectAjax() {
+        boolean gotException = false;
+        try {
+            String name = "IOError/ajaxRequest";
+            Dispatcher.UrlMethod method = dispatcher.findDirectMethod(
+                    name, name.indexOf("/"),
+                    new ServletRequestFixture());
+            }
+        catch (Dispatcher.UnsupportedUrlError e) {
+            assertEquals("exception message",
+                    "unsupported URL \"/x/y/z\": class IOError doesn't " +
+                    "implement DirectAjax interface", e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_findDirectMethod_noSuchMethod() {
+        boolean gotException = false;
+        try {
+            String name = "DispatcherTest3/ajaxBogus";
+            Dispatcher.UrlMethod method = dispatcher.findDirectMethod(
+                    name, name.indexOf("/"),
+                    new ServletRequestFixture());
+            }
+        catch (Dispatcher.UnsupportedUrlError e) {
+            assertEquals("exception message",
+                    "unsupported URL \"/x/y/z\": couldn't find " +
+                    "method \"ajaxBogus\" with proper signature in class " +
+                    "DispatcherTest3", e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_findDirectMethod_badMethodSignature() {
+        boolean gotException = false;
+        try {
+            String name = "DispatcherTest3/ajaxExtraArgument";
+            Dispatcher.UrlMethod method = dispatcher.findDirectMethod(
+                    name, name.indexOf("/"),
+                    new ServletRequestFixture());
+            }
+        catch (Dispatcher.UnsupportedUrlError e) {
+            assertEquals("exception message",
+                    "unsupported URL \"/x/y/z\": couldn't find " +
+                    "method \"ajaxExtraArgument\" with proper signature " +
+                    "in class DispatcherTest3", e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_findDirectMethod_badMethodSignature2() {
+        boolean gotException = false;
+        try {
+            String name = "DispatcherTest3/ajaxBadSignature";
+            Dispatcher.UrlMethod method = dispatcher.findDirectMethod(
+                    name, name.indexOf("/"),
+                    new ServletRequestFixture());
+            }
+        catch (Dispatcher.UnsupportedUrlError e) {
+            assertEquals("exception message",
+                    "unsupported URL \"/x/y/z\": couldn't find " +
+                    "method \"ajaxBadSignature\" with proper signature " +
+                    "in class DispatcherTest3", e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_findDirectMethod_methodNotStatic() {
+        boolean gotException = false;
+        try {
+            String name = "DispatcherTest3/ajaxNotStatic";
+            Dispatcher.UrlMethod method = dispatcher.findDirectMethod(
+                    name, name.indexOf("/"),
+                    new ServletRequestFixture());
+            }
+        catch (Dispatcher.UnsupportedUrlError e) {
+            assertEquals("exception message",
+                    "unsupported URL \"/x/y/z\": method \"ajaxNotStatic\" " +
+                    "in class DispatcherTest3 isn't static", e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_findDirectMethod_invokeMethod() {
+        dispatcher.service(new ServletRequestFixture(
+                "/DispatcherTest3/ajaxRequest"), new ServletResponseFixture());
+        assertEquals("DispatcherTest3 log", "Invoked ajaxRequest",
+                DispatcherTest3.log);
     }
 
     public void test_initMainConfigDataset_compound() {

@@ -1,7 +1,7 @@
 package org.fiz;
 import java.lang.management.*;
 import java.util.*;
-import javax.servlet.http.*;
+
 import org.apache.log4j.*;
 
 /**
@@ -320,13 +320,6 @@ public class DemoInteractor extends Interactor {
                     new Dataset("id", "tree1", "request", "demo.treeTopLevel",
                             "edgeStyle", edgeStyle))
         );
-    }
-
-    public void ajaxTreeExpand(ClientRequest cr) {
-        TreeSection section = new TreeSection(
-                new Dataset("id", "tree1", "request", "demo.treeTopLevel",
-                "edgeStyle", "treeSolid"));
-        section.expandElement(cr);
     }
 
     public void ajaxClearStats(ClientRequest cr) {

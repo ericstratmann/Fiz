@@ -1,5 +1,5 @@
 # This file provides a dummy version of errors.yaml for use during unit
 # tests.
 
-uncaughtAjax: uncaughtAjax: @message
-bulletin: bulletin: @message
+uncaughtAjax: "uncaughtAjax{{: @message}}"
+bulletin: "bulletin{{: @message}}"

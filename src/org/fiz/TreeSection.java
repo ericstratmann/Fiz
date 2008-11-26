@@ -43,7 +43,7 @@ import java.util.*;
  *                   (a name of "" refers to the root node of the tree).
  *                   TODO: document values expected in the result.
  */
-public class TreeSection implements Section {
+public class TreeSection implements DirectAjax, Section {
     // The following variables are copies of constructor arguments.  See
     // the constructor documentation for details.
     protected Dataset properties;
@@ -64,7 +64,7 @@ public class TreeSection implements Section {
     }
 
     /**
-     * This method is invoked during Ajax requests to expand an element
+     * This method is an Ajax entry point, invoked to expand an element
      * in a TreeSection.
      * @param cr                   Overall information about the client
      *                             request being serviced;  there must
@@ -74,7 +74,7 @@ public class TreeSection implements Section {
      *                             and the data manager's name for the
      *                             contents of that element.
      */
-    public void expandElement(ClientRequest cr) {
+    public static void ajaxExpand(ClientRequest cr) {
         // Retrieve state information about the row and the overall section.
         Dataset rowInfo = cr.getReminder("TreeSection.row");
         Dataset sectionInfo = cr.getReminder("TreeSection");
@@ -82,20 +82,16 @@ public class TreeSection implements Section {
         // Invoke a data request to fetch information about the children of
         // the element being expanded, then generate a <table> that will
         // display the children.
-        registerRequests(cr);
+        DataRequest request = cr.registerDataRequest(sectionInfo, "request");
 
         StringBuilder html = new StringBuilder();
         String id = rowInfo.get("id");
-        String edgeStyle = sectionInfo.check("edgeStyle");
-        if (edgeStyle == null) {
-            edgeStyle = "treeSolid";
-        }
         Template.expand("<table cellspacing=\"0\" " +
                 "class=\"@class?{TreeSection}\" " +
-                "id=\"@1\">\n", properties, html, id);
-        childrenHtml(cr,
-                dataRequest.getResponseOrAbort().getChildren("record"),
-                id, edgeStyle, html);
+                "id=\"@1\">\n", sectionInfo, html, id);
+        childrenHtml(cr, sectionInfo,
+                request.getResponseOrAbort().getChildren("record"),
+                id, html);
         html.append("</table>\n");
 
         // Generate a Javascript method invocation for the browser to
@@ -120,13 +116,9 @@ public class TreeSection implements Section {
         StringBuilder out = html.getBody();
         String id = properties.get("id");
         Reminder reminder = new Reminder(id, "TreeSection");
-        reminder.addFromDataset(properties, "edgeStyle", "id", "leafStyle",
-                "nodeStyle", "request");
+        reminder.addFromDataset(properties, "class", "edgeStyle", "id",
+                "leafStyle", "nodeStyle", "request");
         reminder.flush(cr);
-        String edgeStyle = properties.check("edgeStyle");
-        if (edgeStyle == null) {
-            edgeStyle = "treeSolid";
-        }
         if (!properties.containsKey("class")) {
             html.includeCssFile("TreeSection.css");
         }
@@ -134,9 +126,9 @@ public class TreeSection implements Section {
         Template.expand("\n<!-- Start TreeSection @id -->\n" +
                 "<table cellspacing=\"0\" class=\"@class?{TreeSection}\" " +
                 "id=\"@id\">\n", properties, out);
-        childrenHtml(cr,
+        childrenHtml(cr, properties,
                 dataRequest.getResponseOrAbort().getChildren("record"),
-                properties.get("id"), edgeStyle, out);
+                properties.get("id"), out);
         out.append("</table>\n" +
                 "<!-- End TreeSection @id -->\n");
     }
@@ -155,30 +147,36 @@ public class TreeSection implements Section {
 
     /**
      * This method generates rows for an HTML table that will display all
-     * of the children of a particular node.
+     * of the children of a particular node.  It is invoked both from the
+     * {@code html} method and from {@code ajaxExpand}, which is a static
+     * method.
      * @param cr                   Overall information about the client
      *                             request being serviced; HTML will be
      *                             appended to {@code cr.getHtml()}.
+     * @param properties           Dataset containing configuration
+     *                             information for this section.
      * @param children             Contains one dataset for each child
      *                             to display, in the order they should be
      *                             displayed.
      * @param baseId               Used to generate ids for the rows of
      *                             the table; rows will have ids
      *                             {@code baseId.0}, {@code baseId.1}, etc.
-     * @param edgeStyle            Used to select a family of images for
-     *                             displaying the lines along the left
-     *                             edge of the tree.
      * @param out                  Generated HTML is appended here.  Only
      *                             {@code <tr>} elements are generated here;
      *                             the {@code <table>} and {@code </table>}
      *                             elements must be generated by the caller.
      */
-    protected void childrenHtml(ClientRequest cr, ArrayList<Dataset> children,
-            String baseId, String edgeStyle, StringBuilder out) {
+    protected static void childrenHtml(ClientRequest cr, Dataset properties,
+            ArrayList<Dataset> children, String baseId, StringBuilder out) {
         // The following variable is used to generate an alternate (expanded)
         // style for each row.  It is declared here so that it can be reused
         // for each of the rows (minimize garbage collection).
         StringBuilder expandedRow = new StringBuilder();
+
+        String edgeStyle = properties.check("edgeStyle");
+        if (edgeStyle == null) {
+            edgeStyle = "treeSolid";
+        }
         for (int i = 0; i < children.size(); i++) {
             Dataset child = children.get(i);
             Boolean lastElement = (i == (children.size()-1));
@@ -226,7 +224,7 @@ public class TreeSection implements Section {
             // leaf node.
             Template.expand(" onclick=\"@1\"><img src=" +
                     "\"/fizlib/images/@2-@3.gif\"></td>\n",
-                    out, Ajax.invoke(cr, "ajaxTreeExpand", null,
+                    out, Ajax.invoke(cr, "/fiz/TreeSection/ajaxExpand", null,
                     properties.get("id"), rowId), edgeStyle,
                     (expandable ? "plus": "leaf"));
 

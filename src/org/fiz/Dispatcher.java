@@ -36,41 +36,44 @@ public class Dispatcher extends HttpServlet {
     // There exists one object of the following type for each method we
     // have discovered that can service an incoming request.
 
-    protected static class InteractorMethod {
+    protected static class UrlMethod {
         public Method method;      // Java reflection info about the method;
                                    // used to invoke it.
         public Interactor interactor;
                                    // The Interactor object to which "method"
-                                   // belongs.  We invoke method on this
+                                   // belongs.  We invoke methods on this
                                    // object to service incoming requests.
+                                   // Null means this URL is serviced by a
+                                   // DirectAjax class, which means it invokes
+                                   // a static method so no class instance
+                                   // is needed.
         public Timer timer;        // Records processing time for URLs that
                                    // mapped to this method.
 
-        public InteractorMethod(Method method, Interactor interactor) {
+        public UrlMethod(Method method, Interactor interactor) {
            this.method = method;
            this.interactor = interactor;
        }
     }
 
-    // The following table keeps track of all the Interactor classes we have
-    // encountered.  Keys in the table are class names and each value is
-    // an object of the Key's class, which we used to invoke methods on
-    // the class.
+    // The following table keeps track of all the Interactor classes to which
+    // we have attempted to dispatch a URL.  Keys in the table are class names
+    // and each value is an object of the Key's class, which we use to invoke
+    // methods on the class.
     //
     // Note: this table may be accessed and updated concurrently by
     // requests running in parallel.
-    // TODO: change from Hashtable to HashMap?
 
-    protected Hashtable<String,Interactor> classMap
-            = new Hashtable<String,Interactor>();
+    protected HashMap<String,Interactor> interactorMap
+            = new HashMap<String,Interactor>();
 
     // The following table maps from strings of the form "class/method"
     // to an InteractorMethod object that allows us to invoke the method.
     //
     // Note: this table may be accessed and updated concurrently by
     // requests running in parallel.
-    protected Hashtable<String, InteractorMethod> methodMap
-            = new Hashtable<String, InteractorMethod>();
+    protected HashMap<String, UrlMethod> methodMap
+            = new HashMap<String, UrlMethod>();
 
     // The following variable is used for log4j-based logging.
     protected Logger logger = Logger.getLogger("org.fiz.Dispatcher");
@@ -91,8 +94,8 @@ public class Dispatcher extends HttpServlet {
     // The following object is used to gather performance statistics
     // for requests that cannot be mapped to an Interactor method
     // (i.e., all of the requests that don't get logged in methodMap).
-    protected InteractorMethod unsupportedURL =
-            new InteractorMethod(null, null);
+    protected UrlMethod unsupportedURL =
+            new UrlMethod(null, null);
 
     // The following timer records performance statistics for requests
     // that cannot be mapped to an Interactor method.
@@ -165,12 +168,12 @@ public class Dispatcher extends HttpServlet {
 
         // Invoke destroy methods in all of the Interactors that have been
         // loaded, so that they can clean themselves up.
-        for (Interactor interactor : classMap.values()) {
+        for (Interactor interactor : interactorMap.values()) {
             logger.info("destroying Interactor "
                     + interactor.getClass().getName());
             interactor.destroy();
         }
-        classMap.clear();
+        interactorMap.clear();
 
         // Clean up all of the other Fiz modules.
         DataManager.destroyAll();
@@ -190,7 +193,7 @@ public class Dispatcher extends HttpServlet {
     public void service (HttpServletRequest request,
         HttpServletResponse response) {
         long startTime = System.nanoTime();
-        InteractorMethod method = null;
+        UrlMethod method = null;
         String methodName = null;
         ClientRequest cr = null;
         boolean isAjax = false;
@@ -240,8 +243,11 @@ public class Dispatcher extends HttpServlet {
             // At this point we have located the method to service this
             // request.  Package up relevant information into a ClientRequest
             // object and invoke the method.
-            cr = method.interactor.getRequest(this,
-                    request, response);
+            if (method.interactor != null) {
+                cr = method.interactor.getRequest(this, request, response);
+            } else {
+                cr = new ClientRequest(this, request, response);
+            }
             if (isAjax) {
                 cr.setAjax(true);
             }
@@ -363,21 +369,20 @@ public class Dispatcher extends HttpServlet {
     /**
      * Find the method that will handle a request.  If needed, information
      * is added to our cache of known methods.
-     * @param classPlusMethod      Portion of the URL identifies the method
-     *                             to handle the request. Has the form
+     * @param classPlusMethod      Portion of the URL that identifies the
+     *                             method to handle the request. Has the form
      *                             {@code class/method}.
      * @param slashIndex           Index within {@code classPlusMethod} of
      *                             the letter slash that separates the class
      *                             and method.
      * @param request              Information about the HTTP request (used
      *                             for generating error messages).
-     * @return                     An InteractorMethod object describing
-     *                             the method corresponding to
-     *                             {@code classPlusMethod}.
+     * @return                     An UrlMethod object describing the method
+     *                             corresponding to {@code classPlusMethod}.
      */
-    protected synchronized InteractorMethod findMethod(String classPlusMethod,
+    protected synchronized UrlMethod findMethod(String classPlusMethod,
             int slashIndex, HttpServletRequest request) {
-        InteractorMethod method = methodMap.get(classPlusMethod);
+        UrlMethod method = methodMap.get(classPlusMethod);
         if (method != null) {
             return method;
         }
@@ -386,18 +391,26 @@ public class Dispatcher extends HttpServlet {
         // If we haven't already done so, scan the class specified
         // in the URL and update our tables with information about it.
         // First, see if we already know about this class.  The class
-        // name is computed by upper-casing the first character of the
-        // class in the URL and appending "Interactor".
+        // name can have one of two forms:
+        // * If it starts with a lower-case letter, e.g. "foo", it refers
+        //   to an Interactor, whose name is computed by upper-casing the
+        //   first character of the class in the URL and appending
+        //   "Interactor", e.g. "FooInteractor".
+        // * If the class in the URL starts with an upper-case letter, e.g.
+        //   "TreeSection" then call findDirectMethod to handle it.
+        if (Character.isUpperCase(classPlusMethod.charAt(0))) {
+            return findDirectMethod(classPlusMethod, slashIndex, request);
+        }
         String className = StringUtil.ucFirst(classPlusMethod.substring(0,
                 slashIndex)) + "Interactor";
         String methodName = classPlusMethod.substring(slashIndex+1);
-        Interactor interactor = classMap.get(className);
+        Interactor interactor = interactorMap.get(className);
         if (interactor == null) {
             // The class name is not already known; load the class
             // and create an instance of it.
             interactor = (Interactor) Util.newInstance(className,
                     "org.fiz.Interactor");
-            classMap.put(className, interactor);
+            interactorMap.put(className, interactor);
             interactor.init();
             logger.info("loaded Interactor " +
                     interactor.getClass().getName());
@@ -416,7 +429,7 @@ public class Dispatcher extends HttpServlet {
                 }
                 String key = classPlusMethod.substring(0, slashIndex+1)
                         + m.getName();
-                methodMap.put(key, new InteractorMethod(m, interactor));
+                methodMap.put(key, new UrlMethod(m, interactor));
             }
 
             // Try one more time to find the method we need.
@@ -427,9 +440,80 @@ public class Dispatcher extends HttpServlet {
         }
 
         throw new UnsupportedUrlError(request.getRequestURI(),
-                "couldn't find method \"" + methodName
-                + "\" with proper signature in class " + className);
+                "couldn't find method \"" + methodName +
+                "\" with proper signature in class " + className);
 
+    }
+
+    /**
+     * Find a method that will handle a "direct" request (one that is
+     * dispatched to a static method of a class implementing the DirectAjax
+     * interface).  If the method is found its added to the cache of known
+     * methods.
+     * @param classPlusMethod      Portion of the URL that identifies the
+     *                             method to handle the request. Has the form
+     *                             {@code class/method}.
+     * @param slashIndex           Index within {@code classPlusMethod} of
+     *                             the letter slash that separates the class
+     *                             and method.
+     * @param request              Information about the HTTP request (used
+     *                             for generating error messages).
+     * @return                     An UrlMethod object describing the method
+     *                             corresponding to {@code classPlusMethod}.
+     */
+    protected synchronized UrlMethod findDirectMethod(String classPlusMethod,
+            int slashIndex, HttpServletRequest request) {
+        String className = classPlusMethod.substring(0, slashIndex);
+        String methodName = classPlusMethod.substring(slashIndex+1);
+
+        // Make sure the method name starts with "ajax".
+        if (!methodName.startsWith("ajax")) {
+            throw new UnsupportedUrlError(request.getRequestURI(),
+                    "method name must start with \"ajax\"");
+        }
+
+        // Lookup the method and verify the following:
+        // * The class must exist and must implement the DirectAjax
+        //   interface.
+        // * The method must exist, must be static, and must take a single
+        //   argument of type ClientRequest.
+        Class<?> handlerClass = Util.findClass(className);
+        if (handlerClass == null) {
+            throw new UnsupportedUrlError(request.getRequestURI(),
+                    "can't find class \"" + className + "\"");
+        }
+        Class<?> directAjaxInterface = findClass("org.fiz.DirectAjax",
+                request);
+        checkInterface: {
+            for (Class<?> iface : handlerClass.getInterfaces()) {
+                if (iface == directAjaxInterface) {
+                    break checkInterface;
+                }
+            }
+            throw new UnsupportedUrlError(request.getRequestURI(),
+                    "class " + className + " doesn't implement DirectAjax " +
+                    "interface");
+        }
+        Method method;
+        Class<?> clientRequestClass = findClass("org.fiz.ClientRequest",
+                request);
+        try {
+            method = handlerClass.getMethod(methodName,
+                    clientRequestClass);
+        }
+        catch (NoSuchMethodException e) {
+            throw new UnsupportedUrlError(request.getRequestURI(),
+                    "couldn't find method \"" + methodName +
+                    "\" with proper signature in class " + className);
+        }
+        if (!Modifier.isStatic(method.getModifiers())) {
+            throw new UnsupportedUrlError(request.getRequestURI(),
+                    "method \"" + methodName + "\" in class " + className +
+                    " isn't static");
+        }
+        UrlMethod urlMethod = new UrlMethod(method, null);
+        methodMap.put(classPlusMethod, urlMethod);
+        return urlMethod;
     }
 
     /**

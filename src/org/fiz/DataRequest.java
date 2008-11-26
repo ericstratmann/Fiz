@@ -41,9 +41,9 @@ import java.util.*;
  *     be used in the DataRequest.
  * The template approach has several advantages:
  *   - Detailed information about the parameters required for each request
- *    is separated from the code and kept in a template dataset;  the
- *    code that invokes a request can refer to the request by a single
- *    string identifier.
+ *     is separated from the code and kept in a template dataset;  the
+ *     code that invokes a request can refer to the request by a single
+ *     string identifier.
  *   - If a request is invoked in multiple places, its detailed
  *     specification still exists only once, in the template dataset.
  *   - It may be possible to generate the template dataset automatically
