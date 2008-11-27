@@ -9,59 +9,59 @@ demo:
         manager: demo
         request: read
         file:    demo
-        dataset: bogus.nonexistent
+        name:    bogus.nonexistent
     formError1:
         manager: demo
         request: error
         file:    demo
-        dataset: error1
+        name:    error1
     formError2:
         manager: demo
         request: error
         file:    demo
-        dataset: error2
+        name:    error2
     formError3:
         manager: demo
         request: error
         file:    demo
-        dataset: error3
+        name:    error3
     getCart:
         manager: demo
         request: read
         file:    demo
-        dataset: shoppingCart
+        name:    shoppingCart
     getFormData:
         manager: demo
         request: read
         file:    demo
-        dataset: formData
+        name:    formData
     getFruits:
         manager: demo
         request: read
         file:    demo
-        dataset: fruits
+        name:    fruits
     getPeople:
         manager: demo
         request: read
         file:    demo
-        dataset: people
+        name:    people
     getPerson:
         manager: demo
         request: read
         file:    demo
-        dataset: person
+        name:    person
     getStudents:
         manager: demo
         request: read
         file:    demo
-        dataset: students
+        name:    students
     noData:
         manager: demo
         request: read
         file:    demo
-        dataset: empty
-    treeTopLevel:
+        name:    empty
+    tree:
         manager: demo
         request: read
         file:    demo
-        dataset: treeTopLevel
+        name:    tree.top

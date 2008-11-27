@@ -22,7 +22,7 @@ import java.util.*;
  *   request:  (required) Specifies the operation to be performed; must be
  *             one of the following:
  *             create:   Create a new dataset at the location specified
- *                       by {@code file} and {@code dataset}, overwriting
+ *                       by {@code file} and {@code name}, overwriting
  *                       any previously existing dataset, if there was one.
  *                       Returns nothing.
  *             read:     Returns the target dataset.
@@ -44,7 +44,7 @@ import java.util.*;
  *             dataset in a supported format.  The file name is looked up
  *             using the search path of directories defined by the
  *             {@code path} entry in the configuration dataset.
- *   dataset:  (optional) Specifies the path of the target dataset within
+ *   name:     (optional) Specifies the path of the target dataset within
  *             the file.  If omitted, the request will operate on the
  *             top-level dataset (i.e., the entire file).
  *   values:   For {@code create} and {@code update} requests this
@@ -162,7 +162,7 @@ public class FileDataManager extends DataManager {
     protected void createOperation(DataRequest request, Dataset parameters) {
         Dataset root = loadDataset(parameters.get("file"));
         Dataset target = root;
-        String path = parameters.check("dataset");
+        String path = parameters.check("name");
         if (path != null) {
             target = root.createChildPath(path);
         }
@@ -181,7 +181,7 @@ public class FileDataManager extends DataManager {
     protected void errorOperation(DataRequest request, Dataset parameters) {
         Dataset d = loadDataset(parameters.get("file"));
 
-        String path = parameters.check("dataset");
+        String path = parameters.check("name");
         if ((path == null) || (path.length() == 0)) {
             request.setError(d);
             return;
@@ -189,7 +189,7 @@ public class FileDataManager extends DataManager {
         ArrayList<Dataset> errors = d.getChildrenPath(path);
         if (errors.size() == 0) {
             request.setError (new Dataset("message", "nested dataset \"" +
-                    path + "\" doesn't exist", "culprit", "dataset"));
+                    path + "\" doesn't exist", "culprit", "name"));
             throw new RequestAbortedError();
         }
         request.setError(errors);
@@ -203,7 +203,7 @@ public class FileDataManager extends DataManager {
      */
     protected void readOperation(DataRequest request, Dataset parameters) {
         Dataset d = loadDataset(parameters.get("file"));
-        Dataset target = findNestedDataset(d, parameters.check("dataset"),
+        Dataset target = findNestedDataset(d, parameters.check("name"),
                 request);
         request.setComplete(target);
     }
@@ -216,7 +216,7 @@ public class FileDataManager extends DataManager {
      */
     protected void updateOperation(DataRequest request, Dataset parameters) {
         Dataset root = loadDataset(parameters.get("file"));
-        Dataset target = findNestedDataset(root, parameters.check("dataset"),
+        Dataset target = findNestedDataset(root, parameters.check("name"),
                 request);
         target.copyFrom(parameters.getChild("values"));
         root.writeFile(root.getFileName(), null);
@@ -231,7 +231,7 @@ public class FileDataManager extends DataManager {
      */
     protected void deleteOperation(DataRequest request, Dataset parameters) {
         Dataset d = loadDataset(parameters.get("file"));
-        String path = parameters.check("dataset");
+        String path = parameters.check("name");
         if (path != null) {
             d.deletePath(path);
         } else {
@@ -280,7 +280,7 @@ public class FileDataManager extends DataManager {
         }
         catch (Dataset.MissingValueError e) {
             request.setError (new Dataset("message", "nested dataset \"" +
-                    path + "\" doesn't exist", "culprit", "dataset"));
+                    path + "\" doesn't exist", "culprit", "name"));
             throw new RequestAbortedError();
         }
     }

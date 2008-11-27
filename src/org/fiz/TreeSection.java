@@ -27,21 +27,36 @@ import java.util.*;
  *   leafStyle:      (optional) Style to use for displaying leaves of the
  *                   tree (which cannot be expanded); overridden by a
  *                   {@code style} value in records returned by
- *                   {@code requests}.  Defaults to {@code leaf}.
+ *                   {@code request}.  Defaults to {@code leaf}.
  *   nodeStyle:      (optional) Style to use for displaying nodes that
  *                   have children and hence can be expanded; overridden
  *                   by a {@code style} value in records returned by
- *                   {@code requests}.  Defaults to {@code node}.
+ *                   {@code request}.  Defaults to {@code node}.
  *   request:        (required) Specifies a DataRequest that will return
- *                   information about the children of a node in the tree.
- *                   The constructor value can be either the name of a
- *                   request in the {@code dataRequests} configuration
- *                   dataset or a nested dataset containing the request's
- *                   arguments directly.  Before invoking the request,
- *                   this class will add an additional argument {@code name}
- *                   containing the name of the node whose children are needed
- *                   (a name of "" refers to the root node of the tree).
- *                   TODO: document values expected in the result.
+ *                   information about the tree.  The constructor value
+ *                   can be either the name of a template in the
+ *                   {@code dataRequests} configuration dataset or a nested
+ *                   dataset containing the request's arguments directly.
+ *                   The values expected in the request's response are
+ *                   described below.  This request will be used as-is to
+ *                   fetch the top level of the tree, which is displayed
+ *                   initially.  When a node in the tree is expanded, the same
+ *                   request is used to fetch the children of the node, except
+ *                   that the {@code name} parameter in the request is set to
+ *                   the {@code name} value for the node.
+ *
+ * The response to {@code request} consists of a dataset with a {@code record}
+ * child for each node at the current level.  The TreeSection will use the
+ * following elements, if they are present in a record:
+ *   expandable      A value of 1 means this node can be expanded (it has
+ *                   children).  If this value is absent, or has any value
+ *                   other than 1, then this is a leaf node.
+ *   name            Must be provided if the node is expandable; this value
+ *                   is used with the {@code request} constructor property
+ *                   to fetch the node's children.
+ *   style           If present, specifies the style(s) to use for displaying
+ *                   this node.  See below for more information on styles.
+ * TODO: describe how styles are used.
  */
 public class TreeSection implements DirectAjax, Section {
     // The following variables are copies of constructor arguments.  See
@@ -83,6 +98,7 @@ public class TreeSection implements DirectAjax, Section {
         // the element being expanded, then generate a <table> that will
         // display the children.
         DataRequest request = cr.registerDataRequest(sectionInfo, "request");
+        request.addParameter("name", rowInfo.get("name"));
 
         StringBuilder html = new StringBuilder();
         String id = rowInfo.get("id");

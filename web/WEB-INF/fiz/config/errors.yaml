@@ -39,7 +39,7 @@ uncaughtHtml: |
 # this value is "true", then when an uncaught exception occurs Fiz will
 # clear any partially-generated HTML before displaying the error message;
 # otherwise the partial page will be retained, with the error message
-# displayed at the end (this choice shows estate of page generation when the
+# displayed at the end (this choice shows the state of page generation when the
 # error occurred, but it may cause the error message to appear in the middle
 # of a partially rendered HTML construct).
 clearOnUncaught: true

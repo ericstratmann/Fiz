@@ -57,7 +57,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "manager: test\n" +
                 "request: create\n" +
                 "file: test\n" +
-                "dataset: child2\n" +
+                "name: child2\n" +
                 "values:\n" +
                 "  age: 36\n" +
                 "  height: 65\n"));
@@ -86,7 +86,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         DataRequest request1 = new DataRequest(new Dataset("manager", "test",
                 "request", "read", "file", "test"));
         DataRequest request2 = new DataRequest(new Dataset("manager", "test",
-                "request", "read", "file", "test", "dataset", "level1"));
+                "request", "read", "file", "test", "name", "level1"));
         ArrayList<DataRequest> requests = new ArrayList<DataRequest>();
         requests.add(request1);
         requests.add(request2);
@@ -133,7 +133,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "manager: test\n" +
                 "request: delete\n" +
                 "file: test\n" +
-                "dataset: child.grandchild\n"));
+                "name: child.grandchild\n"));
         assertEquals("response", "", request.getResponseData().toString());
         assertEquals("error dataset", null, request.getErrorData());
         assertEquals("dataset file",
@@ -153,7 +153,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         DataRequest request1 = new DataRequest(new Dataset("manager", "test",
                 "request", "error", "file", "test"));
         DataRequest request2 = new DataRequest(new Dataset("manager", "test",
-                "request", "error", "file", "test", "dataset", "error1"));
+                "request", "error", "file", "test", "name", "error1"));
         ArrayList<DataRequest> requests = new ArrayList<DataRequest>();
         requests.add(request1);
         requests.add(request2);
@@ -207,7 +207,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
     }
     public void test_startRequests_unknownError() {
         DataRequest request = new DataRequest(new Dataset("manager", "test",
-                "request", "read", "file", "test", "dataset", "a/b/c"));
+                "request", "read", "file", "test", "name", "a/b/c"));
         ArrayList<DataRequest> requests = new ArrayList<DataRequest>();
         requests.add(request);
         manager.startRequests(requests);
@@ -243,7 +243,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "third: ghi\n");
         Dataset parameters = YamlDataset.newStringInstance(
                 "file: test\n" +
-                "dataset: level1.level2\n" +
+                "name: level1.level2\n" +
                 "values:\n" +
                 "  first: 123\n" +
                 "  new: 456\n");
@@ -271,7 +271,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "third: ghi\n");
         DataRequest request = new DataRequest(new Dataset("manager", "test"));
         manager.errorOperation(request, new Dataset("file", "test",
-                "dataset", "error1"));
+                "name", "error1"));
         assertEquals("response", "culprit: name\n" +
                 "message: Name not in database\n",
                 request.getErrorData()[0].toString());
@@ -284,7 +284,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "second: def\n");
         DataRequest request = new DataRequest(new Dataset("manager", "test"));
         manager.errorOperation(request, new Dataset("file", "test",
-                "dataset", ""));
+                "name", ""));
         assertEquals("response", "message: error33\n" +
                 "second:  def\n",
                 request.getErrorData()[0].toString());
@@ -301,14 +301,14 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         boolean gotException = false;
         try {
             manager.errorOperation(request, new Dataset("file", "test",
-                    "dataset", "first.second"));
+                    "name", "first.second"));
         }
         catch (FileDataManager.RequestAbortedError e) {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
         assertEquals("error dataset",
-                "culprit: dataset\n" +
+                "culprit: name\n" +
                 "message: nested dataset \"first.second\" doesn't exist\n",
                 request.getErrorData()[0].toString());
     }
@@ -355,7 +355,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "  age: 21\n");
         Dataset parameters = YamlDataset.newStringInstance(
                 "file: test\n" +
-                "dataset: child\n" +
+                "name: child\n" +
                 "values:\n" +
                 "  age: 36\n" +
                 "  height: 65\n");
@@ -377,7 +377,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "manager: test\n" +
                 "request: update\n" +
                 "file: test\n" +
-                "dataset: child.grandchild\n" +
+                "name: child.grandchild\n" +
                 "values:\n" +
                 "  age: 36\n" +
                 "  height: 65\n"));
@@ -386,7 +386,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         manager.startRequests(requests);
         assertEquals("response", null, request.getResponseData());
         assertEquals("error dataset",
-                "culprit: dataset\n" +
+                "culprit: name\n" +
                 "message: nested dataset \"child.grandchild\" doesn't exist\n",
                 request.getErrorData()[0].toString());
         assertEquals("dataset file not modified",
@@ -417,7 +417,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "country: USA");
         Dataset parameters = YamlDataset.newStringInstance(
                 "file: test\n" +
-                "dataset: child\n");
+                "name: child\n");
         DataRequest request = new DataRequest(new Dataset());
         manager.deleteOperation(request, parameters);
         assertEquals("response", "", request.getResponseData().toString());
@@ -477,7 +477,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
         assertEquals("error dataset",
-                "culprit: dataset\n" +
+                "culprit: name\n" +
                 "message: nested dataset \"level1.level2\" doesn't exist\n",
                 request.getErrorData()[0].toString());
     }

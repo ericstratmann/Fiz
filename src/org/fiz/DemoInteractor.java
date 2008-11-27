@@ -317,7 +317,7 @@ public class DemoInteractor extends Interactor {
                         "<a href=\"tree?edgeStyle=treeNoLines\">Change " +
                         "edge style to treeNoLines</a></p>\n"),
                 new TreeSection(
-                    new Dataset("id", "tree1", "request", "demo.treeTopLevel",
+                    new Dataset("id", "tree1", "request", "demo.tree",
                             "edgeStyle", edgeStyle))
         );
     }

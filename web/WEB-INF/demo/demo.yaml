@@ -127,15 +127,34 @@ students:
         grad:        2012
         gpa:         3.7
 
-treeTopLevel:
-    record:
-        - text:       Alice
-          name:       alice
-        - text:       Bill
-          name:       bill
-          expandable: 1
-        - text:       Carol
-          name:       carol
-          expandable: 1
-        - text:       David
-          name:       david
+# Data for the demo of TreeSection (demo/tree):
+tree:
+    top:
+        record:
+            - text:       Alice
+            - text:       Bill
+              name:       tree.bill
+              expandable: 1
+            - text:       Carol
+              name:       tree.carol
+              expandable: 1
+            - text:       David
+    bill:
+        record:
+            - text:       Ellen
+              name:       tree.ellen
+              expandable: 1
+            - text:       Frank
+            - text:       Grace
+    carol:
+        record:
+            - text:       Harry
+            - text:       Ian
+            - text:       Juliet
+    ellen:
+        record:
+            - text:       Kurt
+            - text:       Leslie
+            - text:       Michael
+              name:       tree.top
+              expandable: 1

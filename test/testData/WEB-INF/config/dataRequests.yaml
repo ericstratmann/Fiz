@@ -4,7 +4,7 @@ error:
   manager:  file
   request:  error
   file:     fileData.yaml
-  dataset:  error
+  name:     error
 fixture1:
   manager:  fixture
   id:       fixture1
@@ -16,24 +16,24 @@ getFruits:
   manager:  file
   request:  read
   file:     fileData.yaml
-  dataset:  fruits
+  name:     fruits
 getNothing:
   manager:  file
   request:  read
   file:     fileData.yaml
-  dataset:  empty
+  name:     empty
 getPeople:
   manager:  file
   request:  read
   file:     fileData.yaml
-  dataset:  people
+  name:     people
 getPerson:
   manager:  file
   request:  read
   file:     fileData.yaml
-  dataset:  person
+  name:     person
 getState:
   manager:  file
   request:  read
   file:     fileData.yaml
-  dataset:  state
+  name:     state

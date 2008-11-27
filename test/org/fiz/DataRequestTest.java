@@ -59,6 +59,7 @@ public class DataRequestTest extends junit.framework.TestCase {
                 "manager: testManager\n" +
                 "name:    Bob\n",
                 request.request.toString());
+        assertEquals("extraParams dataset", null, request.extraParams);
     }
 
     public void test_constructor_withAuxDataset() {
@@ -69,6 +70,8 @@ public class DataRequestTest extends junit.framework.TestCase {
                 "name:     Bob\n" +
                 "nickname: \"@fluffy\"\n",
                 request.request.toString());
+        assertEquals("extraParams dataset", request.request,
+                request.extraParams);
     }
 
     public void test_constructor_withAuxDatasetAndManager() {
@@ -87,6 +90,31 @@ public class DataRequestTest extends junit.framework.TestCase {
                 "manager:  testManager\n" +
                 "name:     Bob\n" +
                 "nickname: \"@fluffy\"\n",
+                request.request.toString());
+    }
+
+    public void test_addParameter_convertToCompound() {
+        DataRequest request = new DataRequest(new Dataset(
+                "name", "Alice", "age", "26"));
+        request.addParameter("name", "Bob");
+        request.addParameter("state", "California");
+        assertEquals("request dataset", "Component #0:\n" +
+                "  name:  Bob\n" +
+                "  state: California\n" +
+                "Component #1:\n" +
+                "  age:  26\n" +
+                "  name: Alice\n",
+                request.request.toString());
+        assertEquals("value of \"name\"", "Bob",
+                request.request.get("name"));
+    }
+    public void test_addParameter_reuseOriginalRequest() {
+        DataRequest request = new DataRequest("request2", null);
+        request.addParameter("name", "Alice");
+        request.addParameter("id", "xyzzy");
+        assertEquals("request dataset", "id:      xyzzy\n" +
+                "manager: testManager\n" +
+                "name:    Alice\n",
                 request.request.toString());
     }
 

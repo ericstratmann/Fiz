@@ -19,5 +19,5 @@ searchPackages: "org.fiz"
 # restarting the application.  Of course, it will make Fiz run *much*
 # more slowly, so it shouldn't be used in production or when measuring
 # performance.
-clearCaches: false
+clearCaches: true
 
