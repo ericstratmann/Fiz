@@ -17,6 +17,11 @@ function Document() {
     // createElement function.
     this.createdElements = [];
 
+    // If a test places one or more Elements in the following array,
+    // then they are used as the return value(s) from the next call(s)
+    // to document.createElement().
+    this.newElements = [];
+
     // Create a few sample Elements.
     this.ids.element1 = new Element({innerHTML: "text1"});
     this.ids.element2 = new Element({innerHTML: "text2"});
@@ -51,7 +56,15 @@ Document.prototype.getElementById = function(id) {
 }
 
 Document.prototype.createElement = function(tagName) {
-    var element = new Element({tagName: tagName});
+    var element;
+    if (this.newElements.length > 0) {
+        // Return a pre-created element provided by the test.
+        jsunit.log += "document.createElement(" + tagName + ")\n";
+        element = this.newElements.shift();
+    } else {
+        // Create a new Element.
+        element = new Element({tagName: tagName});
+    }
     this.createdElements.push(element);
     return element;
 }

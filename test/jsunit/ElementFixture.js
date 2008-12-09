@@ -110,6 +110,27 @@ Element.prototype.insertBefore = function(element, successor) {
     element.nextSibling = successor;
 }
 
+Element.prototype.replaceChild = function(newChild, oldChild) {
+    for (var child = this.firstChild; child != null;
+            child = child.nextSibling) {
+        if (child == oldChild) {
+            newChild.previousSibling = child.previousSibling;
+            if (child.previousSibling == null) {
+                this.firstChild = newChild;
+            } else {
+                child.previousSibling.nextSibling = newChild;
+            }
+            newChild.nextSibling = child.nextSibling;
+            if (child.nextSibling == null) {
+                this.lastChild = newChild;
+            } else {
+                child.nextSibling.previousSibling = newChild;
+            }
+            return;
+        }
+    }
+}
+
 Element.prototype.scrollIntoView = function() {
     jsunit.log += this.getId() + ".scrollIntoView()\n";
 }

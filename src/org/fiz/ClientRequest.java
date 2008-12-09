@@ -163,7 +163,7 @@ public class ClientRequest {
      */
     public void addErrorsToBulletin(Dataset... errors) {
         for (Dataset error : errors) {
-            addMessageToBulletin(Config.get("errors", "bulletin"), error,
+            addMessageToBulletin(Config.get("styles", "bulletin"), error,
                     "bulletinError");
         }
     }
@@ -177,6 +177,7 @@ public class ClientRequest {
      *                             {@code message} element.
      */
     public void ajaxErrorAction(Dataset properties) {
+        // TODO: buffer Ajax actions just like HTML?
         PrintWriter writer = ajaxActionHeader("error");
         writer.append(", properties: ");
         properties.toJavascript(writer);
@@ -607,13 +608,31 @@ public class ClientRequest {
     }
 
     /**
+     * Set the value of a reminder explicitly, overriding the normal
+     * mechanism for processing incoming data.  This method is intended
+     * primarily for used in unit tests.
+     * @param name                 Name of a reminder.
+     * @param contents             Value for the reminder.
+     */
+    public void setReminder(String name, Dataset contents) {
+        if (reminders == null) {
+            reminders = new HashMap<String,Dataset>();
+        }
+        reminders.put(name, contents);
+        fizDataProcessed = true;
+    }
+
+    /**
      * This method is invoked to display appropriate information after an
      * error has occurred.  {@code style} and {@code defaultStyle} are used
-     * to select a template from the {@code errors} dataset, which is
-     * expanded in the context of {@code errorData} plus the main dataset.
-     * The result is appended to the HTML being generated for the page,
-     * unless the style starts with "bulletin", in which case the HTML is
-     * displayed in the bulletin for the page.
+     * to select a template from the {@code styles} dataset.  If there exists
+     * such a template, it is expanded in the context of {@code errorData}
+     * plus the main dataset and the result is appended to the HTML for the
+     * page.  Then {@code -bulletin} is appended to the style name; if
+     * the {@code styles} configuration dataset contains a template by this
+     * name, it is expanded and the result is appended to the bulletin for
+     * the page.  If neither of the templates exists, then an error is
+     * generated.
      * @param style                Name of a value in the {@code errors}
      *                             dataset, which is a template for generating
      *                             HTML to describe the error.  May be null.
@@ -631,13 +650,26 @@ public class ClientRequest {
             if (style == null) {
                 style = defaultStyle;
             }
-            if (style.startsWith("bulletin")) {
+            boolean foundTemplate = false;
+            Dataset styles = Config.getDataset("styles");
+            String template = (String) styles.lookupPath(style,
+                    Dataset.DesiredType.STRING, Dataset.Quantity.FIRST_ONLY);
+            if (template != null) {
+                foundTemplate = true;
+                Template.expand(template, compound, getHtml().getBody());
+            }
+            template = (String) styles.lookupPath(style + "-bulletin",
+                    Dataset.DesiredType.STRING, Dataset.Quantity.FIRST_ONLY);
+            if (template != null) {
+                foundTemplate = true;
                 getHtml().includeJavascript("Fiz.addBulletinMessage(\"@html\");",
-                        new Dataset("html", Template.expand(Config.get("errors",
-                        style), compound)));
-            } else {
-                Template.expand(Config.get("errors", style), compound,
-                        getHtml().getBody());
+                        new Dataset("html", Template.expand(template,
+                        compound)));
+            }
+            if (!foundTemplate) {
+                throw new InternalError("showErrorInfo found no \"" +
+                        style + "\" template " +
+                        "for displaying error information");
             }
         }
     }

@@ -23,11 +23,12 @@ Fiz.TreeRow = function(id, unexpandedHtml, expandedHtml){
 
 /**
  * Replace the contents of the row for this element so that it is displayed
- * in the "expanded" style.  This method also fills in the body of a XXX
+ * in the "expanded" style.  This method also fills in the body of an
+ * additional table row containing the children of this node.
  * @param html                     HTML for all of the children of this row.
  */
 Fiz.TreeRow.prototype.expand = function(html) {
-    var row = this.replace(this.expandedHtml);
+    this.replace(this.expandedHtml);
 
     // Find the <div> that must contain all the child information, and
     // replace its body with the HTML given to us.

@@ -4,11 +4,12 @@ package org.fiz;
  * A FormSection displays a collection of text entries and/or other controls
  * that allow the user to input data and then submit the result.  FormSections
  * support the following constructor properties:
+ *
  *   buttonStyle:    (optional) The name of a style for the form's submit
  *                   button: the value is the name of a template in the
- *                   {@code formButtons} configuration dataset.  Defaults to
- *                   {@code standard}; use the value {@code none} if you
- *                   don't want a submit button to appear.
+ *                   {@code styles} configuration dataset.  Defaults to
+ *                   {@code FormSection.button}; use an empty
+ *                   string if you don't want a submit button to appear.
  *   class:          (optional) Used as the {@code class} attribute for
  *                   the HTML table that displays the FormSection.
  *                   Defaults to {@code FormSection}.
@@ -16,18 +17,19 @@ package org.fiz;
  *                   (optional) When the {@code post} method encounters an
  *                   error in its data request and is displaying an error
  *                   message next to the culprit form element, this value
- *                   specifies a template in the {@code errors} dataset,
+ *                   specifies a template in the {@code styles} dataset,
  *                   which is expanded with the terror data and the main
  *                   dataset to produce the HTML to display.  Defaults to
- *                   "formElement".
+ *                   "FormSection.elementError".
  *   errorStyle:     (optional) If an error occurs in {@code request} then
  *                   this property contains the name of a template in the
- *                   {@code errors} dataset, which is expanded with the
+ *                   {@code styles} dataset, which is expanded with the
  *                   error data and the main dataset.  The resulting HTML
- *                   is displayed in place of the FormSection unless
- *                   {@code errorStyle} starts with "bulletin", in which
- *                   case the resulting HTML is displayed in the bulletin.
- *                   Defaults to "formSection".
+ *                   is displayed in place of the FormSection.  In addition,
+ *                   if there exists a template in the {@code styles} dataset
+ *                   with the same name followed by "-bulletin", it is expanded
+ *                   and the resulting HTML is displayed in the bulletin.
+ *                   Defaults to "FormSection.error".
  *   id:             (required) Used as the {@code id} attribute for the
  *                   HTML form element that displays the FormSection and
  *                   for various other purposes.  Must be unique among all
@@ -101,7 +103,7 @@ public class FormSection implements Section {
     // can request additional data on their own.
     protected DataRequest dataRequest = null;
 
-    // Style to use for the form's buttons; read from the "buttons"
+    // Style to use for the form's buttons; read from the "buttonStyle"
     // property.
     protected String buttonStyle;
 
@@ -142,7 +144,7 @@ public class FormSection implements Section {
         this.elements = elements;
         buttonStyle = properties.check("buttonStyle");
         if (buttonStyle == null) {
-            buttonStyle = "standard";
+            buttonStyle = "FormSection.button";
         }
         helpConfig = Config.getDataset("help");
         nestedHelp = helpConfig.checkChild(properties.get("id"));
@@ -212,9 +214,9 @@ public class FormSection implements Section {
         String templateName = properties.check(
                 "elementErrorStyle");
         if (templateName == null) {
-            templateName = "formElement";
+            templateName = "FormSection.elementError";
         }
-        Template.expand(Config.get("errors", templateName),
+        Template.expand(Config.getPath("styles", templateName),
                 new CompoundDataset(errorData, cr.getMainDataset()), html);
 
         // Display a bulletin message indicating that there are problems,
@@ -260,7 +262,7 @@ public class FormSection implements Section {
                 Template.expand("\n<!-- Start FormSection @id -->\n",
                         properties, out);
                 cr.showErrorInfo(properties.check("errorStyle"),
-                        "formSection", dataRequest.getErrorData());
+                        "FormSection.error", dataRequest.getErrorData());
                 Template.expand("\n<!-- End FormSection @id -->\n",
                         properties, out);
                 return;
@@ -450,14 +452,13 @@ public class FormSection implements Section {
         }
 
         // Add the submit button if desired, and finish up the form.
-        String buttonTemplate = Config.getDataset("formButtons").get(
-                buttonStyle);
-        if (buttonTemplate.length() > 0) {
+        if (buttonStyle.length() > 0) {
             Template.expand("    <tr>\n      <td class=\"submit\" " +
                     "{{colspan=\"@1\"}}>", out,
                     (vertical ? null : "2"));
-            Template.expand(buttonTemplate, new CompoundDataset(
-                    properties, cr.getMainDataset()), out);
+            Template.expand(Config.getPath("styles", buttonStyle),
+                    new CompoundDataset(properties, cr.getMainDataset()),
+                    out);
             out.append("</td>\n    </tr>\n");
         }
         out.append("  </table>\n");

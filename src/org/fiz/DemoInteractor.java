@@ -172,18 +172,18 @@ public class DemoInteractor extends Interactor {
         cr.showSections(
                 new TemplateSection("<h1>Sample TabSection</h1>\n"),
                 new TabSection(new Dataset("id", "tabs", "selector", "tab"),
-                        new Dataset("id", "t1", "text", "First",
+                        new Dataset("id", "t1", "text", "Inventory",
                                 "url", "tabSection?tab=t1"),
-                        new Dataset("id", "t2", "text", "Second",
+                        new Dataset("id", "t2", "text", "Orders",
                                 "url", "tabSection?tab=t2"),
-                        new Dataset("id", "t3", "text", "Third",
+                        new Dataset("id", "t3", "text", "Accounts",
                                 "ajaxUrl", "ajaxTab?tab=t3"),
-                        new Dataset("id", "t4", "text", "Fourth",
+                        new Dataset("id", "t4", "text", "Shippers",
                                 "javascript",
                                 "document.getElementById(\"text\").innerHTML " +
                                 "= 'You clicked on tab \"t4\", which caused " +
                                 "this text to be updated by Javascript.'"),
-                        new Dataset("id", "t5", "text", "Last One",
+                        new Dataset("id", "t5", "text", "Suppliers",
                                 "url", "tabSection?tab=t5")),
                 new TemplateSection("<p id=\"text\">The currently selected " +
                         "tab has id \"@tab?{??}\"</p>\n"));
@@ -303,22 +303,22 @@ public class DemoInteractor extends Interactor {
         html.clear();
         html.setTitle("TreeSection Demo");
         Dataset main = cr.getMainDataset();
-        String edgeStyle = main.check("edgeStyle");
-        if (edgeStyle == null) {
-            edgeStyle = "treeSolid";
+        String edgeFamily = main.check("edgeFamily");
+        if (edgeFamily == null) {
+            edgeFamily = "treeSolid";
         }
         cr.showSections(
                 new TemplateSection("<h1>TreeSection Demo</h1>\n" +
                         "<div id=\"p1\"><p>Current edge style: @edgeStyle?{treeSolid}</p></div>\n" +
-                        "<p><a href=\"tree?edgeStyle=treeSolid\">Change " +
+                        "<p><a href=\"tree?edgeFamily=treeSolid\">Change " +
                         "edge style to treeSolid</a><br />\n" +
-                        "<a href=\"tree?edgeStyle=treeDotted\">Change " +
+                        "<a href=\"tree?edgeFamily=treeDotted\">Change " +
                         "edge style to treeDotted</a><br />\n" +
-                        "<a href=\"tree?edgeStyle=treeNoLines\">Change " +
+                        "<a href=\"tree?edgeFamily=treeNoLines\">Change " +
                         "edge style to treeNoLines</a></p>\n"),
                 new TreeSection(
                     new Dataset("id", "tree1", "request", "demo.tree",
-                            "edgeStyle", edgeStyle))
+                            "edgeFamily", edgeFamily))
         );
     }
 

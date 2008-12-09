@@ -40,7 +40,7 @@ public class TemplateSectionTest extends junit.framework.TestCase {
     }
 
     public void test_html_errorInRequest() {
-        Config.setDataset("errors", new Dataset("test111",
+        Config.setDataset("styles", new Dataset("test111",
                 "error for @name: @message"));
         cr.showSections(new TemplateSection(new Dataset(
                 "request", "error",
@@ -51,8 +51,8 @@ public class TemplateSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
     }
     public void test_html_errorInRequest_defaultHandler() {
-        Config.setDataset("errors", new Dataset("templateSection",
-                "error: @message"));
+        Config.setDataset("styles", new Dataset("TemplateSection",
+                new Dataset("error", "error: @message")));
         cr.showSections(new TemplateSection("error",
                 "name: @name, height: @height"));
         assertEquals("generated HTML", "error: sample &lt;error&gt;",

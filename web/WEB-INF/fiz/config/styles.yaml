@@ -1,0 +1,66 @@
+# styles.yaml -
+#
+# This dataset defines various built-in styles used by Fiz for a variety
+# of purposes.  A style is a template used to render various pieces of
+# information.  For example, a style might be used when an error occurs
+# in a particular situation; the style might be expanded using the error
+# dataset and produce HTML describing the error to display for the user.
+# Styles are referred to in the configuration properties for Sections and
+# other components, using their path names in this dataset.
+#
+# The styles in this file are grouped hierarchically in nested datasets.
+# If a nested dataset starts with a capital letter, such as "TreeSection",
+# it corresponds to a class: the styles in that nested dataset are used
+# by the particular class; see the class for documentation on how the style
+# is used.  If a nested dataset starts with a lowercase letter, such as
+# "uncaught" it corresponds to a general concept rather than a particular
+# class.
+
+FormSection:
+    button:            >
+                       <div class="buttons"><input type="submit" name="action"
+                       value="Submit" accesskey="s" title="Press Alt+Shift+s
+                       to submit." /></div>
+    error:             <div class="sectionError">Can't display this form: @message</div>
+    elementError:      <span class="error">@message</span>
+
+TableSection:
+    error:             Can't display this table: @message
+
+TemplateSection:
+    error:             <div class="sectionError">Can't display this section: @message</div>
+
+TreeSection:
+    leaf:              <span class="label">@text</span>
+    node:              <img src="/fizlib/images/folder.gif" /><span class="label">@text</span>
+    node-expanded:     <img src="/fizlib/images/folder-open.gif" /><span class="label">@text</span>
+
+# The following styles are used to handle uncaught exceptions that
+# escape all the way out to the Fiz dispatcher.
+uncaught:
+    # Used when there is an uncaught exception or error in the page generation
+    # code for an AJAX request.  This template is a text template, not an HTML
+    # template: it creates a text message that is returned to the browser.
+    ajax: >
+        An internal error (uncaught exception) occurred on the server
+        while handling an AJAX request: @message.  This page may not
+        function correctly without a refresh.
+
+    # Used for uncaught exceptions in the page generation code for an HTML
+    # request.
+    html:             |
+        <div class="uncaughtException">An internal error (uncaught exception)
+        occurred while generating this page{{: @message}}.</div>
+
+    # The following value is not a style, but is used in conjunction with html:
+    # if this value is "true", then when an uncaught exception occurs Fiz will
+    # clear any partially-generated HTML before displaying the error message;
+    # otherwise the partial page will be retained, with the error message
+    # displayed at the end (this choice shows the state of page generation
+    # the point of the error, but it may cause the error message to appear
+    # in the middle of a partially rendered HTML construct).
+    clearHtml: true
+
+# The following style is used by ClientRequest.addErrorsToBulletin.
+bulletin:              @message
+

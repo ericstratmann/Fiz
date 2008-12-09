@@ -617,6 +617,61 @@ public class Dataset implements Cloneable {
     }
 
     /**
+     * Treat the current dataset as a template and create a new dataset
+     * by expanding the current dataset in the context of an auxiliary
+     * dataset containing values.  The template data set is expanded as
+     * follows.  For each <i>name</i>,<i>value</i> pair in the current
+     * dataset (and its nested children), an identical
+     * <i>name</i>,<i>value</i> pair is created in the result dataset
+     * except for the following special cases:
+     *   - If <i>value</i> starts with {@code @} then the remainder of
+     *     the value is used as the path name of an entry in the auxiliary
+     *     dataset; the value from the auxiliary dataset is used for the
+     *     result dataset in place of <i>value</i>.
+     *   - If <i>value</i> starts with {@code @@} then it is not treated as
+     *     the name of an auxiliary value; <i>value</i> is passed through
+     *     to the request dataset, except that the two {@code @} characters
+     *     are collapsed into a single {@code @}.
+     * @param aux                  Values from this dataset are used to
+     *                             handle "@" references in the current
+     *                             dataset.
+     * @return                     A new dataset created from the current
+     *                             dataset with substitutions from
+     *                             {@code aux}.
+     */
+    public Dataset expand(Dataset aux) {
+        Dataset result = new Dataset();
+        for (String key : keySet()) {
+            String value = check(key);
+            if (value != null) {
+                // This entry is a string value.  Perform substitution on it.
+                if ((value.length() < 1) || (value.charAt(0) != '@')) {
+                    // Choice #1: template value doesn't start with '@'; copy
+                    // the template name and value through to the result.
+                    result.set(key, value);
+                } else if ((value.length() >= 2) && (value.charAt(1) == '@')) {
+                    // Choice #2: template value starts with '@@'; convert
+                    // the '@@' to '@' and copy through to the result.
+                    result.set(key, value.substring(1));
+                } else {
+                    // Choice #3: template value starts with '@': use the
+                    // value (excluding the '@') as the name of a value in
+                    // {@code aux} and copy that through to the request
+                    // dataset.
+                    result.set(key, aux.getPath(value.substring(1)));
+                }
+            } else {
+                // This entry consists of one or more nested datasets;
+                // expand each of the nested dataset.
+                for (Dataset child : getChildren(key)) {
+                    result.addChild(key, child.expand(aux));
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Given a key, returns the value associated with that key.  This is
      * a single-level lookup: the key must be defined in the top level of
      * the dataset.

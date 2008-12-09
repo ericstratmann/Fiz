@@ -4,14 +4,16 @@ package org.fiz;
  * A TemplateSection is a simple form of Section that generates HTML from
  * a single template.  TemplateSections support the following constructor
  * properties:
- *   errorStyle:     (optional) If an error occurs in {@code request} then
+ *
+ * :     (optional) If an error occurs in {@code request} then
  *                   this property contains the name of a template in the
- *                   {@code errors} dataset, which is expanded with the
+ *                   {@code styles} dataset, which is expanded with the
  *                   error data and the main dataset.  The resulting HTML
- *                   is displayed in place of the TemplateSection unless
- *                   {@code errorStyle} starts with "bulletin", in which
- *                   case the resulting HTML is displayed in the bulletin.
- *                   Defaults to "section".
+ *                   is displayed in place of the TemplateSection.  In addition,
+ *                   if there exists a template in the {@code styles} dataset
+ *                   with the same name followed by "-bulletin", it is expanded
+ *                   and the resulting HTML is displayed in the bulletin.
+ *                   Defaults to "TemplateSection.error".
  *   file:           (optional) The name of a file in the {@code WEB-INF}
  *                   directory that contains the template for the section.
  *                   If this property has specified that it takes precedence
@@ -90,7 +92,8 @@ public class TemplateSection implements Section {
                 // There was an error fetching our data; display
                 // appropriate error information.
                 Dataset[] errors = dataRequest.getErrorData();
-                cr.showErrorInfo(errorStyle, "templateSection", errors[0]);
+                cr.showErrorInfo(errorStyle, "TemplateSection.error",
+                        errors[0]);
                 return;
             }
             data = new CompoundDataset(response, cr.getMainDataset());

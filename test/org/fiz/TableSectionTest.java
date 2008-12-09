@@ -158,8 +158,9 @@ public class TableSectionTest extends junit.framework.TestCase {
     public void test_html_errorInRequest() {
         // The error template requests data from both the error report and
         // the main dataset, to make sure that both are available.
-        Config.setDataset("errors", new Dataset("tableSection",
-                "Error in @sectionType for @name: @message"));
+        Config.setDataset("styles", new Dataset("TableSection",
+                new Dataset("error",
+                "Error in @sectionType for @name: @message")));
         TableSection table = new TableSection(
                 new Dataset("request", "error"),
                 new Column("Name", "@name"),

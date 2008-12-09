@@ -400,13 +400,39 @@ function printSubtree(node, firstPrefix, otherPrefix) {
 }
 
 /**
+ * Returns a string containing the names and values of all properties in
+ * {@code o}, sorted alphabetically by property name.
+ * @param o                        Object whose properties should be printed.
+ * @return                         String description of {@code o}.
+ */
+function printObject(o) {
+    var nameList = names(o);
+    var result = "";
+    var prefix = "";
+    for (var i = 0; i < nameList.length; i++) {
+        var name = nameList[i];
+        var value = o[name];
+        if (((typeof value) == "function") || ((typeof value) == "object")) {
+            continue;
+        }
+        if (value === "") {
+            value = "\"\"";
+        }
+        result += prefix;
+        result += name + ": " + value;
+        prefix = ", ";
+    }
+    return result;
+}
+
+/**
  * Returns an array containing the names of all of the properties of an
  * object, sorted alphabetically.
  * @param value                    Object whose property names are desired.
  * @return                         See above.
  */
 function names(value) {
-    names = [];
+    var names = [];
     for (var name in value) {
         names.push(name);
     }

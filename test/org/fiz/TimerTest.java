@@ -96,6 +96,7 @@ public class TimerTest extends junit.framework.TestCase {
     }
 
     public void test_getNamedTimer() {
+        Timer.forgetNamedTimers();
         Timer timer1 = Timer.getNamedTimer("first");
         Timer timer2 = Timer.getNamedTimer("second");
         Timer timer3 = Timer.getNamedTimer("first");

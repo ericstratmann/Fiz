@@ -297,7 +297,8 @@ public class Dispatcher extends HttpServlet {
             // via the AJAX protocol.
             if (cr.isAjax()) {
                 cr.ajaxErrorAction(new Dataset("message",
-                        Template.expand(Config.get("errors", "uncaughtAjax"),
+                        Template.expand(Config.getPath("styles",
+                                "uncaught.ajax"),
                         new Dataset("message", basicMessage),
                         Template.SpecialChars.NONE)));
                 cr.finish();
@@ -305,14 +306,15 @@ public class Dispatcher extends HttpServlet {
             }
 
             // This is a normal HTML request; use a template from the
-            // "errors" configuration dataset to generate HTML describing
+            // "styles" configuration dataset to generate HTML describing
             // the error.
             Html html = cr.getHtml();
             try {
-                if (Config.get("errors", "clearOnUncaught").equals("true")) {
+                if (Config.getPath("styles", "uncaught.clearHtml").equals(
+                        "true")) {
                     html.clear();
                 }
-                Template.expand(Config.get("errors", "uncaughtHtml"),
+                Template.expand(Config.getPath("styles", "uncaught.html"),
                         new Dataset("message", basicMessage), html.getBody());
             }
             catch (Throwable t) {

@@ -73,23 +73,19 @@ public class DataRequestTest extends junit.framework.TestCase {
         assertEquals("extraParams dataset", request.request,
                 request.extraParams);
     }
-
-    public void test_constructor_withAuxDatasetAndManager() {
-        DataRequest request = new DataRequest("request1",
-                new Dataset("name", "Bob"), "t2");
-        assertEquals("request dataset", "id:       44\n" +
-                "manager:  t2\n" +
-                "name:     Bob\n" +
-                "nickname: \"@fluffy\"\n",
-                request.request.toString());
-    }
-    public void test_constructor_withAuxDatasetAndManager_managerNull() {
-        DataRequest request = new DataRequest("request1",
-                new Dataset("name", "Bob"), null);
-        assertEquals("request dataset", "id:       44\n" +
-                "manager:  testManager\n" +
-                "name:     Bob\n" +
-                "nickname: \"@fluffy\"\n",
+    public void test_constructor_withAuxDataset_findTemplateUsingPath() {
+        Config.setDataset("dataRequests", YamlDataset.newStringInstance(
+                "demo:\n" +
+                "  read:\n" +
+                "    manager: testManager\n" +
+                "    id: read\n" +
+                "  write:\n" +
+                "    manager: testManager\n" +
+                "    id: write\n"));
+        DataRequest request = new DataRequest("demo.read",
+                new Dataset());
+        assertEquals("request dataset", "id:      read\n" +
+                "manager: testManager\n",
                 request.request.toString());
     }
 
@@ -445,61 +441,5 @@ public class DataRequestTest extends junit.framework.TestCase {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
-    }
-
-    public void test_makeRequest_findTemplateUsingPath() {
-        Config.setDataset("dataRequests", YamlDataset.newStringInstance(
-                "demo:\n" +
-                "  read:\n" +
-                "    manager: testManager\n" +
-                "    id: read\n" +
-                "  write:\n" +
-                "    manager: testManager\n" +
-                "    id: write\n"));
-        DataRequest request = new DataRequest("demo.read",
-                new Dataset());
-        assertEquals("request dataset", "id:      read\n" +
-                "manager: testManager\n",
-                request.request.toString());
-    }
-    public void test_makeRequest_simpleValues() {
-        Config.setDataset("dataRequests", YamlDataset.newStringInstance(
-                "request1:\n" +
-                "  manager: testManager\n" +
-                "  first: first\n" +
-                "  second: ouster@electric-cloud\n" +
-                "  third: third@@\n"));
-        DataRequest request = new DataRequest("request1",
-                new Dataset("name", "Bob"));
-        assertEquals("request dataset", "first:   first\n" +
-                "manager: testManager\n" +
-                "second:  \"ouster@electric-cloud\"\n" +
-                "third:   \"third@@\"\n",
-                request.request.toString());
-    }
-    public void test_makeRequest_doubleAtSign() {
-        Config.setDataset("dataRequests", YamlDataset.newStringInstance(
-                "request1:\n" +
-                "  manager: testManager\n" +
-                "  first: @@x1\n" +
-                "  second: @@first\n"));
-        DataRequest request = new DataRequest("request1", new Dataset());
-        assertEquals("request dataset", "first:   \"@x1\"\n" +
-                "manager: testManager\n" +
-                "second:  \"@first\"\n",
-                request.request.toString());
-    }
-    public void test_makeRequest_atSignSubstitution() {
-        Config.setDataset("dataRequests", YamlDataset.newStringInstance(
-                "request1:\n" +
-                "  manager: testManager\n" +
-                "  first: @x1\n" +
-                "  second: @first\n"));
-        DataRequest request = new DataRequest("request1",
-                new Dataset("x1", "999", "first", "Alice"));
-        assertEquals("request dataset", "first:   999\n" +
-                "manager: testManager\n" +
-                "second:  Alice\n",
-                request.request.toString());
     }
 }

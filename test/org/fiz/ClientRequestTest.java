@@ -64,7 +64,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_addErrorsToBulletin() {
-        Config.setDataset("errors", new Dataset("bulletin",
+        Config.setDataset("styles", new Dataset("bulletin",
                 "error: @message"));
         cr.addErrorsToBulletin(
                 new Dataset("message", "first"),
@@ -433,42 +433,17 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("set to false", false, cr.isAjax());
     }
 
-    public void test_showErrorInfo_bulletin() {
-        Config.setDataset("errors", new Dataset("bulletin123",
-                "Bulletin: @message (from @name)"));
-        cr.showErrorInfo("bulletin123", "sample",
-                new Dataset("message", "sample <error>"));
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
-        assertEquals("Javascript code",
-                "Fiz.addBulletinMessage(\"Bulletin: sample &lt;error&gt; " +
-                "(from Alice)\");",
-                cr.getHtml().jsCode.toString());
+    public void test_setReminder() {
+        cr.setReminder("first", new Dataset("name", "Alice"));
+        cr.setReminder("second", new Dataset("name", "Bob"));
+        assertEquals("contents of first reminder", "name: Alice\n",
+                cr.getReminder("first").toString());
+        assertEquals("contents of second reminder", "name: Bob\n",
+                cr.getReminder("second").toString());
     }
-    public void test_showErrorInfo_defaultStyle() {
-        Config.setDataset("errors", new Dataset("bulletin123",
-                "Bulletin: @message"));
-        cr.showErrorInfo(null, "bulletin123",
-                new Dataset("message", "sample <error>"));
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
-        assertEquals("Javascript code",
-                "Fiz.addBulletinMessage(\"Bulletin: sample &lt;error&gt;\");",
-                cr.getHtml().jsCode.toString());
-    }
-    public void test_showErrorInfo_notBulletin() {
-        Config.setDataset("errors", new Dataset("style",
-                "<div class=\"error\">@message (from @name)</div>"));
-        cr.showErrorInfo("style", null,
-                new Dataset("message", "sample <error>"));
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
-        assertEquals("generated HTML",
-                "<div class=\"error\">sample &lt;error&gt; (from Alice)</div>",
-                cr.getHtml().getBody().toString());
-    }
+
     public void test_showErrorInfo_multipleDatasets() {
-        Config.setDataset("errors", new Dataset("style",
+        Config.setDataset("styles", new Dataset("style",
                 "error: @message\n"));
         cr.showErrorInfo("style", null,
                 new Dataset("message", "error 1"),
@@ -481,6 +456,58 @@ public class ClientRequestTest extends junit.framework.TestCase {
                         "error: error 2\n" +
                         "error: error 3\n",
                 cr.getHtml().getBody().toString());
+    }
+    public void test_showErrorInfo_defaultStyle() {
+        Config.setDataset("styles", new Dataset("123-bulletin",
+                "Bulletin: @message"));
+        cr.showErrorInfo(null, "123",
+                new Dataset("message", "sample <error>"));
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        assertEquals("Javascript code",
+                "Fiz.addBulletinMessage(\"Bulletin: sample &lt;error&gt;\");",
+                cr.getHtml().jsCode.toString());
+    }
+
+    public void test_showErrorInfo_html() {
+        Config.setDataset("styles", new Dataset("test", new Dataset(
+                "style",
+                "<div class=\"error\">@message (from @name)</div>")));
+        cr.showErrorInfo("test.style", null,
+                new Dataset("message", "sample <error>"));
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        assertEquals("generated HTML",
+                "<div class=\"error\">sample &lt;error&gt; (from Alice)</div>",
+                cr.getHtml().getBody().toString());
+    }
+    public void test_showErrorInfo_bulletin() {
+        Config.setDataset("styles", new Dataset("test", new Dataset(
+                "123-bulletin", "Bulletin: @message (from @name)")));
+        cr.showErrorInfo("test.123", "sample",
+                new Dataset("message", "sample <error>"));
+        StringWriter out = ((ServletResponseFixture)
+                cr.getServletResponse()).out;
+        assertEquals("Javascript code",
+                "Fiz.addBulletinMessage(\"Bulletin: sample &lt;error&gt; " +
+                "(from Alice)\");",
+                cr.getHtml().jsCode.toString());
+    }
+    public void test_showErrorInfo_noTemplates() {
+        Config.setDataset("styles", new Dataset("test", "abc"));
+        cr.setAjax(true);
+        boolean gotException = false;
+        try {
+            cr.showErrorInfo("bogus", "sample",
+                    new Dataset("message", "sample <error>"));
+        }
+        catch (InternalError e) {
+            assertEquals("exception message",
+                    "showErrorInfo found no \"bogus\" template for " +
+                    "displaying error information", e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
     }
 
     public void test_showSections() {

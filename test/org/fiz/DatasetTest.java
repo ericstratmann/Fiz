@@ -559,6 +559,50 @@ public class DatasetTest extends junit.framework.TestCase {
                 "        second: 2\n", d.toString());
     }
 
+    public void test_expand_simpleValues() {
+        Dataset input = new Dataset("first", "first",
+                "second", "ouster@electric-cloud",
+                "third", "third@@");
+        Dataset result = input.expand(new Dataset("name", "Alice"));
+        assertEquals("result dataset", "first:  first\n" +
+                "second: \"ouster@electric-cloud\"\n" +
+                "third:  \"third@@\"\n",
+                result.toString());
+    }
+    public void test_expand_doubleAtSign() {
+        Dataset input = new Dataset("first", "@@x1",
+                "second", "@@first");
+        Dataset result = input.expand(new Dataset("name", "Alice"));
+        assertEquals("result dataset", "first:  \"@x1\"\n" +
+                "second: \"@first\"\n",
+                result.toString());
+    }
+    public void test_expand_atSignSubstitution() {
+        Dataset input = new Dataset("first", "@name",
+                "second", "@sibling.age");
+        Dataset result = input.expand(new Dataset("name", "Alice",
+                "sibling", new Dataset("age", "18")));
+        assertEquals("result dataset", "first:  Alice\n" +
+                "second: 18\n",
+                result.toString());
+    }
+    public void test_expand_nestedDatasets() {
+        Dataset input = YamlDataset.newStringInstance(
+                "children:\n" +
+                "  - name: @name\n" +
+                "    age:  22\n" +
+                "  - name: Bill\n" +
+                "    age:  @age\n");
+        Dataset result = input.expand(new Dataset("name", "Alice",
+                "age", "18"));
+        assertEquals("result dataset", "children:\n" +
+                "  - age:  22\n" +
+                "    name: Alice\n" +
+                "  - age:  18\n" +
+                "    name: Bill\n",
+                result.toString());
+    }
+
     public void test_get_basics() {
         Dataset d = new Dataset("a", "a_value", "b", "b_value");
         assertEquals("first value", "b_value", d.get("b"));

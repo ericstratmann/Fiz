@@ -35,7 +35,8 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("properties", "id:      form1\n" +
                 "request: getPerson\n", form.properties.toString());
         assertEquals("number of elements", 2, form.elements.length);
-        assertEquals("buttonStyle", "standard", form.buttonStyle);
+        assertEquals("buttonStyle", "FormSection.button",
+                form.buttonStyle);
     }
     public void test_constructor_explicitButtonStyle() {
         FormSection form = new FormSection(
@@ -113,7 +114,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         cr.setAjax(true);
         // Make sure that the template references data in the main dataset,
         // to verify that it is available.
-        Config.setDataset("errors", new Dataset(
+        Config.setDataset("styles", new Dataset(
                 "style22", "error for @name: @message",
                 "bulletin", "bulletin: @message"));
         DataManagerFixture.setErrorData(new Dataset("message", "<failure>",
@@ -145,7 +146,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         cr.setAjax(true);
         // Make sure that the template references data in the main dataset,
         // to verify that it is available.
-        Config.setDataset("errors", new Dataset(
+        Config.setDataset("styles", new Dataset(
                 "style22", "error for @name: @message",
                 "bulletin", "bulletin: @message"));
         DataManagerFixture.setErrorData(new Dataset("message", "<failure>",
@@ -170,8 +171,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new EntryFormElement("age", "Age:"));
         form.anyElementErrors = true;
         cr.setAjax(true);
-        Config.setDataset("errors", new Dataset(
-                "formElement", "default style: @message"));
+        Config.setDataset("styles", new Dataset("FormSection",
+                new Dataset("elementError", "default style: @message")));
         form.elementError(cr, new Dataset("message", "<failure>",
                 "culprit", "age"), "id11");
         StringWriter out = ((ServletResponseFixture)
@@ -184,8 +185,8 @@ public class FormSectionTest extends junit.framework.TestCase {
     }
 
     public void test_html_requestErrorDefaultStyle() {
-        Config.setDataset("errors", new Dataset(
-                "formSection", "error from @name: @message"));
+        Config.setDataset("styles", new Dataset("FormSection",
+                new Dataset("error", "error from @name: @message")));
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "error"));
         form.registerRequests(cr);
@@ -197,7 +198,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
     }
     public void test_html_requestErrorExplicitStyle() {
-        Config.setDataset("errors", new Dataset(
+        Config.setDataset("styles", new Dataset(
                 "custom", "custom message: @message"));
         FormSection form = new FormSection(new Dataset(
                 "id", "form1", "request", "error", "errorStyle", "custom"));
@@ -273,7 +274,7 @@ public class FormSectionTest extends junit.framework.TestCase {
     public void test_html_javascript() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", "none"),
+                "buttonStyle", ""),
                 new EntryFormElement("name", "Name:"));
         cr.showSections(form);
         assertEquals("Javascript code",
@@ -311,8 +312,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
         cr.setAjax(true);
-        Config.setDataset("errors", new Dataset(
-                "formElement", "element: @message",
+        Config.setDataset("styles", new Dataset("FormSection",
+                new Dataset("elementError", "element: @message"),
                 "bulletin", "bulletin: @message"));
         DataManagerFixture.setErrorData(new Dataset("message", "<failure>",
                 "culprit", "age"), new Dataset("message", "error33",
@@ -494,7 +495,7 @@ public class FormSectionTest extends junit.framework.TestCase {
     public void test_innerHtml_noSubmitButton() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", "none"), new TemplateFormElement(
+                "buttonStyle", ""), new TemplateFormElement(
                 new Dataset("id", "id11", "template", "xyz")));
         cr.showSections(form);
         assertEquals("generated HTML", "\n" +
@@ -545,7 +546,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "id2", "template", "element 2 html"));
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", "none"), element1, element2);
+                "buttonStyle", ""), element1, element2);
         cr.showSections(form);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start FormSection form1 -->\n" +
@@ -577,7 +578,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "id2", "template", "element 2 html"));
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", "none"), element1, element2);
+                "buttonStyle", ""), element1, element2);
         cr.showSections(form);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start FormSection form1 -->\n" +
@@ -605,7 +606,7 @@ public class FormSectionTest extends junit.framework.TestCase {
     public void test_sideBySideElement_elements() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
-                        "buttonStyle", "none"),
+                        "buttonStyle", ""),
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
         cr.showSections(form);
@@ -646,7 +647,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "label", "sample"));
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", "none", "layout", "vertical"),
+                "buttonStyle", "", "layout", "vertical"),
                 element1, element2);
         cr.showSections(form);
         assertEquals("generated HTML", "\n" +
@@ -675,7 +676,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "id2", "template", "element 2 html"));
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", "none", "layout", "vertical"),
+                "buttonStyle", "", "layout", "vertical"),
                 element1, element2);
         cr.showSections(form);
         assertEquals("generated HTML", "\n" +
@@ -699,7 +700,7 @@ public class FormSectionTest extends junit.framework.TestCase {
     public void test_verticalElement_elements() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", "none", "layout", "vertical"),
+                "buttonStyle", "", "layout", "vertical"),
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
         cr.showSections(form);

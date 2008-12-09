@@ -170,9 +170,9 @@ public class DispatcherTest extends junit.framework.TestCase {
                 response.out.toString());
     }
     public void test_service_exception_htmlResponseClearFirst() {
-        Config.setDataset("errors", new Dataset(
-                "uncaughtHtml", "test: @message",
-                "clearOnUncaught", "true"));
+        Config.setDataset("styles", new Dataset("uncaught",
+                new Dataset("html", "test: @message",
+                "clearHtml", "true")));
         ServletResponseFixture response = new ServletResponseFixture();
         dispatcher.service(new ServletRequestFixture("/dispatcherTest2/x"),
                 response);
@@ -183,9 +183,9 @@ public class DispatcherTest extends junit.framework.TestCase {
                 response.out.toString());
     }
     public void test_service_exception_htmlResponseDontClear() {
-        Config.setDataset("errors", new Dataset(
-                "uncaughtHtml", "test: @message",
-                "clearOnUncaught", "false"));
+        Config.setDataset("styles", new Dataset("uncaught",
+                new Dataset("html", "test: @message",
+                "clearHtml", "false")));
         ServletResponseFixture response = new ServletResponseFixture();
         dispatcher.service(new ServletRequestFixture("/dispatcherTest2/x"),
                 response);
@@ -197,9 +197,9 @@ public class DispatcherTest extends junit.framework.TestCase {
                 response.out.toString());
     }
     public void test_service_exception_multipleErrors() {
-        Config.setDataset("errors", new Dataset(
-                "uncaughtHtml", "test: @message @bogus",
-                "clearOnUncaught", "true"));
+        Config.setDataset("styles", new Dataset("uncaught",
+                new Dataset("html", "test: @message @bogus",
+                "clearHtml", "true")));
         ServletResponseFixture response = new ServletResponseFixture();
         dispatcher.service(new ServletRequestFixture("/dispatcherTest2/x"),
                 response);

@@ -10,7 +10,7 @@ import java.util.*;
  *   class:          (optional) Used as the {@code class} attribute for
  *                   the HTML element that contains the TreeSection.  Defaults
  *                   to {@code TreeSection}.
- *   edgeStyle:      (optional) Determines how to display the lines along
+ *   edgeFamily:     (optional) Determines how to display the lines along
  *                   the left edge of the tree, which connect parents to their
  *                   children.  The value forms the base name for a family
  *                   of images.  If the value is {@code x}, then there
@@ -18,20 +18,20 @@ import java.util.*;
  *                   {@code x-plus.gif}, and {@code x-minus.gif}.  See the
  *                   images themselves and the generated HTML for details
  *                   on how the images are used.  Fiz has built-in support
- *                   for styles {@code treeSolid}, {@code treeDotted}, and
+ *                   for families {@code treeSolid}, {@code treeDotted}, and
  *                   {@code treeNoLines}, but applications can define
- *                   additional styles.  Defaults to {@code treeSolid}.
+ *                   additional families.  Defaults to {@code treeSolid}.
  *   id:             (required) Used as the {@code id} attribute for the
  *                   HTML element that contains the section.  Must be
- *                   unique among all id's for the page.
+ *                   unique among all ids for the page.
  *   leafStyle:      (optional) Style to use for displaying leaves of the
  *                   tree (which cannot be expanded); overridden by a
  *                   {@code style} value in records returned by
- *                   {@code request}.  Defaults to {@code leaf}.
+ *                   {@code request}.  Defaults to {@code TreeSection.leaf}.
  *   nodeStyle:      (optional) Style to use for displaying nodes that
  *                   have children and hence can be expanded; overridden
  *                   by a {@code style} value in records returned by
- *                   {@code request}.  Defaults to {@code node}.
+ *                   {@code request}.  Defaults to {@code TreeSection.node}.
  *   request:        (required) Specifies a DataRequest that will return
  *                   information about the tree.  The constructor value
  *                   can be either the name of a template in the
@@ -45,9 +45,10 @@ import java.util.*;
  *                   that the {@code name} parameter in the request is set to
  *                   the {@code name} value for the node.
  *
- * The response to {@code request} consists of a dataset with a {@code record}
- * child for each node at the current level.  The TreeSection will use the
- * following elements, if they are present in a record:
+ * The response to {@code request} consists of a dataset with one
+ * {@code record} child for each node at the current level.  The
+ * TreeSection will use the following elements, if they are present
+ * in a record:
  *   expandable      A value of 1 means this node can be expanded (it has
  *                   children).  If this value is absent, or has any value
  *                   other than 1, then this is a leaf node.
@@ -56,7 +57,23 @@ import java.util.*;
  *                   to fetch the node's children.
  *   style           If present, specifies the style(s) to use for displaying
  *                   this node.  See below for more information on styles.
- * TODO: describe how styles are used.
+ *
+ * Styles are used to customize the display of tree elements in a multi-step
+ * process.  The style touse for a given tree element is determined by the
+ * {@code style} value in the record for that tree element, if there is one.
+ * If there is not an explicit {@code style} for the particular element, then
+ * the {@code nodeStyle} configuration property for the TreeSection is used
+ * if the element is expandable; otherwise the {@code leafStyle} configuration
+ * property is used.  The resulting style is used as the path name of an entry
+ * in the {@code styles} configuration dataset; the value of this entry is
+ * a template, which is expanded with the record for the element to produce
+ * HTML for the element.
+ *
+ * For elements that have children, the element can be rendered differently
+ * when it is expanded (its children are visible) from when it is unexpanded.
+ * When the element is expanded, "-expanded" is appended to its style name,
+ * so that it will select a different entry in the {@code styles}
+ * configuration dataset.
  */
 public class TreeSection implements DirectAjax, Section {
     // The following variables are copies of constructor arguments.  See
@@ -73,9 +90,6 @@ public class TreeSection implements DirectAjax, Section {
      */
     public TreeSection(Dataset properties) {
         this.properties = properties;
-
-        // Generate an error if there is no {@code request} property.
-        properties.get("request");
     }
 
     /**
@@ -132,7 +146,7 @@ public class TreeSection implements DirectAjax, Section {
         StringBuilder out = html.getBody();
         String id = properties.get("id");
         Reminder reminder = new Reminder(id, "TreeSection");
-        reminder.addFromDataset(properties, "class", "edgeStyle", "id",
+        reminder.addFromDataset(properties, "class", "edgeFamily", "id",
                 "leafStyle", "nodeStyle", "request");
         reminder.flush(cr);
         if (!properties.containsKey("class")) {
@@ -144,7 +158,7 @@ public class TreeSection implements DirectAjax, Section {
                 "id=\"@id\">\n", properties, out);
         childrenHtml(cr, properties,
                 dataRequest.getResponseOrAbort().getChildren("record"),
-                properties.get("id"), out);
+                id, out);
         out.append("</table>\n" +
                 "<!-- End TreeSection @id -->\n");
     }
@@ -189,10 +203,19 @@ public class TreeSection implements DirectAjax, Section {
         // for each of the rows (minimize garbage collection).
         StringBuilder expandedRow = new StringBuilder();
 
-        String edgeStyle = properties.check("edgeStyle");
-        if (edgeStyle == null) {
-            edgeStyle = "treeSolid";
+        String edgeFamily = properties.check("edgeFamily");
+        if (edgeFamily == null) {
+            edgeFamily = "treeSolid";
         }
+        String leafStyle = properties.check("leafStyle");
+        if (leafStyle == null) {
+            leafStyle = "TreeSection.leaf";
+        }
+        String nodeStyle = properties.check("nodeStyle");
+        if (nodeStyle == null) {
+            nodeStyle = "TreeSection.node";
+        }
+        Dataset styles = Config.getDataset("styles");
         for (int i = 0; i < children.size(); i++) {
             Dataset child = children.get(i);
             Boolean lastElement = (i == (children.size()-1));
@@ -208,11 +231,7 @@ public class TreeSection implements DirectAjax, Section {
             // Compute the style to use for this child.
             String style = child.check("style");
             if (style == null) {
-                style = (expandable ? properties.check("leafStyle")
-                        : properties.check("nodeStyle"));
-                if (style == null) {
-                    style = expandable ? "node" : "leaf";
-                }
+                style = (expandable ? nodeStyle : leafStyle);
             }
 
             // Each child is drawn as a table row with two cells.  The
@@ -232,24 +251,28 @@ public class TreeSection implements DirectAjax, Section {
             Template.expand("    <td class=\"left\" " +
                     "style=\"background-image: url(/fizlib/images/" +
                     "@1-line.gif); background-repeat: @2;\"",
-                    out, edgeStyle, repeat);
+                    out, edgeFamily, repeat);
             int midPoint = out.length();
+
+            // If the element is expandable, generate an onclick handler
+            // for the left cell (which will contain a "+" box).
+            if (expandable) {
+                Template.expand(" onclick=\"@1\"", out,
+                    Ajax.invoke(cr, "/fiz/TreeSection/ajaxExpand", null,
+                    properties.get("id"), rowId));
+            }
 
             // Now display one of 2 images in the left cell: a plus if the
             // element is expandable, or a horizontal line if this is a
             // leaf node.
-            Template.expand(" onclick=\"@1\"><img src=" +
-                    "\"/fizlib/images/@2-@3.gif\"></td>\n",
-                    out, Ajax.invoke(cr, "/fiz/TreeSection/ajaxExpand", null,
-                    properties.get("id"), rowId), edgeStyle,
-                    (expandable ? "plus": "leaf"));
+            Template.expand("><img src=\"/fizlib/images/@1-@2.gif\"></td>\n",
+                    out, edgeFamily, (expandable ? "plus": "leaf"));
 
             // Render the cell on the right, using a template selected by
             // the style.
-            // TODO: figure out consistent naming scheme for configuration files: use class names verbatim?
             out.append("    <td class=\"right\">");
-            Template.expand(Config.get("treeSection", style), child, out);
-            out.append("    </td>\n");
+            Template.expand(styles.getPath(style), child, out);
+            out.append("</td>\n");
             out.append("  </tr>\n");
 
             // If this element is expandable then do some additional things
@@ -269,11 +292,11 @@ public class TreeSection implements DirectAjax, Section {
                 expandedRow.append(out.substring(rowStart, midPoint));
                 Template.expand(" onclick=\"Fiz.ids['@1'].unexpand();\">" +
                         "<img src=\"/fizlib/images/@2-minus.gif\"></td>\n",
-                        expandedRow, rowId, edgeStyle);
+                        expandedRow, rowId, edgeFamily);
                 expandedRow.append("    <td class=\"right\">");
-                Template.expand(Config.get("treeSection", style + "-expanded"),
+                Template.expand(styles.getPath(style + "-expanded"),
                         child, expandedRow);
-                expandedRow.append("    </td>\n");
+                expandedRow.append("</td>\n");
                 expandedRow.append("  </tr>\n");
                 cr.includeJavascript(Template.expand("Fiz.ids[\"@1\"] = " +
                         "new Fiz.TreeRow(\"@1\", \"@2\", \"@3\");\n",
@@ -293,7 +316,7 @@ public class TreeSection implements DirectAjax, Section {
                     Template.expand("    <td style=\"background-image: " +
                             "url(/fizlib/images/@1-line.gif); " +
                             "background-repeat: repeat-y;\">",
-                            out, edgeStyle);
+                            out, edgeFamily);
                 } else {
                     out.append("    <td>");
                 }

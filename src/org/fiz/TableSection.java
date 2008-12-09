@@ -16,12 +16,13 @@ import java.util.*;
  *                   empty.
  *   errorStyle:     (optional) If {@code request} returns an error then
  *                   this property contains the name of a template in the
- *                   {@code errors} dataset, which is expanded with the
+ *                   {@code styles} dataset, which is expanded with the
  *                   error data and the main dataset.  The resulting HTML
- *                   is displayed as the body of the table unless
- *                   {@code errorHandling} starts with "bulletin", in which
- *                   case the resulting HTML is displayed in the bulletin
- *                   and the table is empty. Defaults to "tableSection".
+ *                   is displayed as the body of the table.  In addition,
+ *                   if there exists a template in the {@code styles} dataset
+ *                   with the same name followed by "-bulletin", it is expanded
+ *                   and the resulting HTML is displayed in the bulletin.
+ *                   Defaults to "TableSection.error".
  *   id:             (optional) Used as the {@code id} attribute for the
  *                   HTML table that displays the TableSection.
  *   lastRowClass:   (optional) If this property is defined, its value will
@@ -144,7 +145,7 @@ public class TableSection implements Section {
             Dataset[] errors = dataRequest.getErrorData();
             errors[0].set("sectionType", "table");
             cr.showErrorInfo(properties.check("errorStyle"),
-                    "tableSection", errors[0]);
+                    "TableSection.error", errors[0]);
             out.append("</td>\n  </tr>\n");
         } else {
             ArrayList<Dataset> rows = response.getChildren("record");

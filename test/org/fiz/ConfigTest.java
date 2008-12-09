@@ -42,6 +42,14 @@ public class ConfigTest extends junit.framework.TestCase {
         TestUtil.deleteTree("main.yaml");
     }
 
+    public void test_getPath() {
+        Config.init(".");
+        TestUtil.writeFile("main.yaml",
+                "child:\n  name: Alice\n  age: 24\n");
+        assertEquals("Alice", Config.getPath("main", "child.name"));
+        TestUtil.deleteTree("main.yaml");
+    }
+
     public void test_getDataset() {
         (new File("_test1_")).mkdir();
         (new File("_test1_/child")).mkdir();

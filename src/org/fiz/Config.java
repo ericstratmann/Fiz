@@ -63,6 +63,20 @@ public class Config {
     }
 
     /**
+     * Retrieve a value from a configuration dataset; generate an error
+     * if either the dataset or the value doesn't exist.
+     * @param datasetName          Name of the desired dataset.
+     * @param path                 Name of the desired value (a hierarchical
+     *                             path in the dataset).
+     * @return                     Value of the option named {@code name}
+     *                             in the configuration data set named
+     *                             {@code datasetName}.
+     */
+    public static String getPath(String datasetName, String path) {
+        return getDataset(datasetName).getPath(path);
+    }
+
+    /**
      * Given the name for a configuration dataset, this method finds the
      * file containing that dataset, loads it, and returns the corresponding
      * Dataset object.  Once loaded, datasets are cached to allow faster

@@ -1,0 +1,6 @@
+# This file provides a dummy version of styles.yaml for use during unit
+# tests.
+
+bulletin: "bulletin{{: @message}}"
+uncaught:
+    ajax: "uncaughtAjax{{: @message}}"
