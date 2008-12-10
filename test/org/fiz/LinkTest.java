@@ -69,6 +69,16 @@ public class LinkTest extends junit.framework.TestCase {
         TestUtil.assertXHTML(out.toString());
     }
 
+    public void test_constructor_withTextAndUrl () {
+        StringBuilder out = new StringBuilder();
+        Link link = new Link("name: @name", "/a/b?id=@id");
+        link.html(cr, new Dataset("name", "Alice", "id", "1234"), out);
+        assertEquals("HTML for link",
+                "<a href=\"/a/b?id=1234\">name: Alice</a>",
+                out.toString());
+        TestUtil.assertXHTML(out.toString());
+    }
+
     public void test_html_setDisplayText() {
         StringBuilder out = new StringBuilder("123");
         Link link = new Link(new Dataset("url", "http://foo",

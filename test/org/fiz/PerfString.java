@@ -43,26 +43,15 @@ public class PerfString {
         for (int i = 0; i < 10; i++) {
             long start = System.nanoTime();
             for (int j= 0; j < count; j++) {
-                out.setLength(0);
-                StringBuilder ajax = Ajax.invoke(cr, "ajaxTreeExpand", null,
-                        properties.get("id"), rowId);
-                timer.start();
-                Template.expand(" onclick=\"@1\"><img src=" +
-                        "\"/fizlib/images/@2-@3.gif\"></td>\n",
-                        out, ajax, edgeStyle,
-                        (expandable ? "plus": "leaf"));
-                timer.stop();
+                for (int k = 0; k < rowId.length(); k++) {
+                    value = rowId.charAt(k);
+                }
             }
             long finish = System.nanoTime();
             System.out.printf("%.4f us per iteration%n",
                     (finish - start)/(1000.0*count));
-            printTimer(timer, "Template.expand");
-            timer.reset();
-            Timer t2 = Timer.getNamedTimer ("expandAtSign");
-            printTimer(t2, "expandAtSign");
-            t2.reset();
         }
-        System.out.printf("String length: %d\n", out.length());
+        System.out.printf("Value: %d\n", value);
 
         long stopNs = System.nanoTime();
         long stopGcTime = 0;

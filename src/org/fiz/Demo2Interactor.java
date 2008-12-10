@@ -31,9 +31,8 @@ public class Demo2Interactor extends Interactor {
                 new TemplateSection("<h2>Current Students</h2>\n"),
                 new TableSection(
                     new Dataset("request", "demo.getStudents"),
-                    new Column("Name", new Link(new Dataset(
-                            "text", "@last, @first",
-                            "url", "student?id=@id"))),
+                    new Column("Name",
+                            new Link("@last, @first", "student?id=@id")),
                     new Column("Student Id", "@id"),
                     new Column("Graduation Year", "@grad"),
                     new Column("GPA", "@gpa")),

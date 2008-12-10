@@ -115,6 +115,18 @@ public class Link implements Formatter {
     }
 
     /**
+     * Construct a Link given values for the {@code text} and {@code url}
+     * properties.  All other properties take default values.
+     * @param text                 Value for the {@code text} property.
+     * @param url                  Value for the {@code url} property.
+     */
+    public Link(String text, String url) {
+        this.text = text;
+        this.url = url;
+        this.displayForm = DisplayForm.TEXT;
+    }
+
+    /**
      * Generates HTML for a Link, using properties passed to the Link
      * constructor and data passed into this method.
      * @param cr                   Overall information about the client
