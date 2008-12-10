@@ -407,17 +407,19 @@ public class DocTranslatorTest extends junit.framework.TestCase {
     public void test_handledPre_basics() {
         DocTranslator translator = new DocTranslator(
                 "  <pre> \n" +
-                "line\n" +
+                "    line 1<b>&amp;</b>\n" +
+                " line 2\n" +
                 "    </pre> \n" +
                 "    stop here\n");
         translator.classify(0);
         translator.handlePre();
-        assertEquals("output buffer", "  <pre> \n" +
-                "line\n" +
-                "    </pre> \n",
+        assertEquals("output buffer", "<pre> \n" +
+                "  line 1&lt;b&gt;&amp;amp;&lt;/b&gt;\n" +
+                "line 2\n" +
+                "</pre> \n",
                 translator.output.toString());
         assertEquals("info about current line",
-                "lineStart: 26, type: NORMAL, term: \"\", " +
+                "lineStart: 52, type: NORMAL, term: \"\", " +
                 "bulletIndent: 4, text: \"stop here\", endLength: 1",
                 lineInfo(translator));
     }
@@ -427,7 +429,7 @@ public class DocTranslatorTest extends junit.framework.TestCase {
                 "line\n");
         translator.classify(0);
         translator.handlePre();
-        assertEquals("output buffer", "  <pre> \n" +
+        assertEquals("output buffer", "<pre> \n" +
                 "line\n",
                 translator.output.toString());
         assertEquals("info about current line",

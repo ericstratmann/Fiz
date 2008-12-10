@@ -7,14 +7,14 @@ import java.util.*;
  * looks good in Javadoc.  Here are examples of what you can do:
  *  - You can use asterisks or hyphens to generate bulleted lists,
  *    like this:
- *      <pre>
+ *    <pre>
  *      - First point goes here.
  *        More text for the first point.
  *      - Second point, just one line.
  *      * Asterisks and hyphens are interchangeable.
- *      </pre>
+ *    </pre>
  *  - You can generate definition lists, like this:
- *      <pre>
+ *    <pre>
  *      term1:     definition for term1, which
  *                 can have multiple lines
  *      term2 -    hyphens work just as well as colons
@@ -22,11 +22,14 @@ import java.util.*;
  *                 there must be at least two consecutive
  *                 spaces between the term and its
  *                 definition.
- *      </pre>
- * - If you have a {@code </pre>} block, where the {@code </pre>} and
+ *    </pre>
+ * - If you have a {@code <pre>} block, where the {@code <pre>} and
  *   {@code </pre>} are on lines by themselves, then the lines in between,
- *   as well as the {@code </pre>} and {@code </pre>} lines, are passed
- *   along verbatim without modification by this doclet.
+ *   as well as the {@code <pre>} and {@code </pre>} lines, are passed
+ *   along verbatim without modification by this doclet, except that HTML
+ *   special characters within the {@code <pre>} are automatically quoted.
+ *   This means you can include HTML in the block and have it appear verbatim
+ *   in the output.
  * - Blank lines get turned into paragraph breaks with {@code <p>}.
  */
 
@@ -90,7 +93,7 @@ public class DocTranslator {
                                    // line of the first character of the
                                    // bullet or term.  Otherwise it is the
                                    // same as textIndent.  -1 means we have
-                                   // reach the end of the input.
+                                   // reached the end of the input.
     int textIndent;                // Index within the current line of the
                                    // first character of text (ignoring
                                    // bullet or definition term)
@@ -379,21 +382,48 @@ public class DocTranslator {
      * This method is invoked when we encounter a line containing
      * {@literal <pre>}.  This method processes all of the lines up until
      * the next {@literal </pre>} line, passing them through to "output"
-     * with no translations.  When this method returns, the current line
-     * is the first line after the end of the definition list, which has
-     * not yet been translated.
+     * with no translations except converting HTML special characters to
+     * entities.  When this method returns, the current line is the first
+     * line after the end of the definition list, which has not yet been
+     * translated.
      */
     protected void handlePre() {
-        output.append(input, lineStart, nextLine);
-        while (type != LineType.END_PRE) {
+        int indent = textIndent;
+        output.append(input, lineStart+indent, nextLine);
+        while (true) {
             classify(nextLine);
+            if (type == LineType.END_PRE) {
+                break;
+            }
             if (type == LineType.EOF) {
                 // No </pre> before the end of the comment block; this is
                 // bogus, but there's not much we can do.
                 return;
             }
-            output.append(input, lineStart, nextLine);
+
+            // In addition to quoting HTML special characters, remove
+            // leading spaces up to the level of the <pre> tag.
+
+            int thisIndent = indent;
+            if (bulletIndent < thisIndent) {
+                thisIndent = bulletIndent;
+            }
+            for (int i = lineStart+thisIndent; i < nextLine; i++) {
+                // Convert HTML special characters to entities so that
+                // they appear verbatim in the output.
+                char c = input.charAt(i);
+                if (c == '<') {
+                    output.append("&lt;");
+                } else if (c == '>') {
+                    output.append("&gt;");
+                } else if (c == '&') {
+                    output.append("&amp;");
+                } else {
+                    output.append(c);
+                }
+            }
         }
+        output.append(input, lineStart+textIndent, nextLine);
         classify(nextLine);
     }
 
