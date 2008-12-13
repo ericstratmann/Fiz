@@ -1,6 +1,7 @@
 package org.fiz;
 
 import java.io.*;
+import java.util.*;
 import javax.crypto.*;
 
 /**
@@ -21,7 +22,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
 
     protected ServletRequestFixture servletRequest;
     protected ClientRequestFixture cr;
-    protected StringWriter out;
 
     public void setUp() {
         cr = new ClientRequestFixture();
@@ -34,14 +34,14 @@ public class ClientRequestTest extends junit.framework.TestCase {
         // The first call should clear the existing bulletin.
         cr.addMessageToBulletin("name: @name", new Dataset("name", "<Alice>"),
                 "xyzzy");
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         assertEquals("ajax response after first add",
                 "var actions = [{type: \"eval\", javascript: " +
                 "\"Fiz.clearBulletin(); " +
                 "Fiz.addBulletinMessage(\\\"xyzzy\\\", " +
                 "\\\"name: &lt;Alice&gt;\\\");\"}",
-                out.toString());
+                response.toString());
 
         // The second call should add on without clearing the bulletin again.
         cr.addMessageToBulletin("message #2", null, "class2");
@@ -52,7 +52,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "\\\"name: &lt;Alice&gt;\\\");\"}, " +
                 "{type: \"eval\", javascript: \"Fiz.addBulletinMessage(" +
                 "\\\"class2\\\", \\\"message #2\\\");\"}",
-                out.toString());
+                response.toString());
     }
     public void test_addMessageToBulletin_html() {
         cr.addMessageToBulletin("name: @name", new Dataset("name", "<Alice>"),
@@ -81,8 +81,8 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_ajaxErrorAction() {
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         cr.setAjax(true);
         Dataset properties = new Dataset("message", "catastrophe",
                 "value", "92");
@@ -90,12 +90,12 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("response",
                 "var actions = [{type: \"error\", properties: " +
                 "{message: \"catastrophe\", value: \"92\"}}",
-                out.toString());
+                response.toString());
     }
 
     public void test_ajaxEvalAction() {
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         cr.setAjax(true);
         cr.ajaxEvalAction("var x = \"test\";");
         cr.ajaxEvalAction("var y = 101;");
@@ -103,35 +103,35 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "var actions = [{type: \"eval\", " +
                 "javascript: \"var x = \\\"test\\\";\"}, " +
                 "{type: \"eval\", javascript: \"var y = 101;\"}",
-                out.toString());
+                response.toString());
     }
 
     public void test_ajaxEvalAction_template() {
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         cr.setAjax(true);
         Dataset d = new Dataset("value", "<&\n\t>");
         cr.ajaxEvalAction("var x = \"@value\";", d);
         assertEquals("response",
                 "var actions = [{type: \"eval\", javascript: " +
                 "\"var x = \\\"<&\\\\n\\\\t>\\\";\"}",
-                out.toString());
+                response.toString());
     }
 
     public void test_ajaxRedirectAction() {
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         cr.setAjax(true);
         cr.ajaxRedirectAction("/x/y/z?x=45&name=Alice");
         assertEquals("response",
                 "var actions = [{type: \"redirect\", url: " +
                 "\"/x/y/z?x=45&name=Alice\"}",
-                out.toString());
+                response.toString());
     }
 
     public void test_ajaxUpdateAction() {
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         cr.setAjax(true);
         cr.ajaxUpdateAction("id44", "Alice");
         cr.ajaxUpdateAction("id55", "Special: <\">");
@@ -139,7 +139,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "var actions = [{type: \"update\", id: \"id44\", " +
                 "html: \"Alice\"}, {type: \"update\", id: \"id55\", " +
                 "html: \"Special: <\\\">\"}",
-                out.toString());
+                response.toString());
     }
 
     public void test_ajaxUpdateSections() {
@@ -154,15 +154,15 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "result", new Dataset("capital", "Sacramento"))
         ));
         cr.getHtml().getBody().append("Original text");
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         cr.setAjax(true);
         cr.ajaxUpdateSections("id44", section1, "id55", section2);
         assertEquals("response",
                 "var actions = [{type: \"update\", id: \"id44\", html: " +
                 "\"state: California\"}, {type: \"update\", id: \"id55\", " +
                 "html: \"capital: Sacramento\"}",
-                out.toString());
+                response.toString());
         assertEquals("don't leave permanent modifications in HTML body",
                 "Original text", cr.getHtml().getBody().toString());
     }
@@ -183,30 +183,75 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 cr.checkReminder("bogus"));
     }
 
+    public void test_finish_returnFile_text() {
+        cr.getHtml().getBody().append("<html>Some text</html>");
+        byte b[] = "lorem ipsum".getBytes();
+        ByteArrayInputStream is = new ByteArrayInputStream(b);
+        cr.returnFile("somefile.xyz", is);
+        cr.finish();
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
+        assertTrue("response", Arrays.equals(b, response.getBytes()));
+    }
+    public void test_finish_returnFile_textNoName() {
+        byte b[] = "lorem ipsum".getBytes();
+        ByteArrayInputStream is = new ByteArrayInputStream(b);
+        cr.returnFile(null, is);
+        cr.finish();
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
+        assertTrue("response", Arrays.equals(b, response.getBytes()));
+        assertEquals("MIME type", "application/octet-stream",
+                response.contentType);
+    }
+    public void test_finish_returnFile_binary() throws IOException {
+        // Read file into a byte array.
+        byte b[] = {1, 2, -128, 0, -1, -2};
+        ByteArrayInputStream is = new ByteArrayInputStream(b);
+        cr.returnFile("test.xls", is);
+        cr.finish();
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
+        assertTrue("response", Arrays.equals(b, response.getBytes()));
+        assertEquals("MIME type", "application/vnd.ms-excel",
+                response.contentType);
+        assertEquals("response headers", "attachment; filename=\"test.xls\"",
+                response.headers);
+    }
+    public void test_finish_returnFile_ignoreAjax() {
+        byte b[] = "lorem ipsum".getBytes();
+        ByteArrayInputStream is = new ByteArrayInputStream(b);
+        cr.setAjax(true);
+        cr.returnFile("somefile.xyz", is);
+        cr.finish();
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
+        assertEquals("response", "lorem ipsum", response.toString());
+    }
     public void test_finish_ajax() throws IOException {
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         cr.setAjax(true);
         cr.ajaxUpdateAction("id44", "Alice");
         cr.finish();
         assertEquals("response",
                 "var actions = [{type: \"update\", id: \"id44\", " +
                 "html: \"Alice\"}];",
-                out.toString());
+                response.toString());
     }
     public void test_finish_ajax_noActions() throws IOException {
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         cr.setAjax(true);
         cr.finish();
         assertEquals("response",
                 "var actions = [];",
-                out.toString());
+                response.toString());
     }
     public void test_finish_html() throws IOException {
         PrintWriter writer = cr.getServletResponse().getWriter();
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         cr.getHtml().getBody().append("page body");
         cr.finish();
         TestUtil.assertSubstring("response",
@@ -217,7 +262,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "</script>\n" +
                 "page body</body>\n" +
                 "</html>",
-                out.toString());
+                response.toString());
     }
 
     public void test_getMac() {
@@ -353,20 +398,28 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_includeJavascript_ajax() {
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         cr.setAjax(true);
         cr.includeJavascript("var x = \"test\";");
         assertEquals("response",
                 "var actions = [{type: \"eval\", " +
                 "javascript: \"var x = \\\"test\\\";\"}",
-                out.toString());
+                response.toString());
     }
     public void test_includeJavascript_html() {
         cr.includeJavascript("var x = \"test\";");
         assertEquals("accumulated Javascript",
                 "var x = \"test\";",
                  cr.getHtml().jsCode.toString());
+    }
+
+    @SuppressWarnings("deprecation")
+    public void test_returnFile() {
+        InputStream is = new StringBufferInputStream("sample text");
+        cr.returnFile("abcdef", is);
+        assertEquals("fileName", "abcdef", cr.fileName);
+        assertEquals("fileSource", is, cr.fileSource);
     }
 
     // isAjax is tested by the tests for setAjax.
@@ -449,8 +502,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 new Dataset("message", "error 1"),
                 new Dataset("message", "error 2"),
                 new Dataset("message", "error 3"));
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
         assertEquals("generated HTML",
                 "error: error 1\n" +
                         "error: error 2\n" +
@@ -462,21 +513,16 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "Bulletin: @message"));
         cr.showErrorInfo(null, "123",
                 new Dataset("message", "sample <error>"));
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
         assertEquals("Javascript code",
                 "Fiz.addBulletinMessage(\"Bulletin: sample &lt;error&gt;\");",
                 cr.getHtml().jsCode.toString());
     }
-
     public void test_showErrorInfo_html() {
         Config.setDataset("styles", new Dataset("test", new Dataset(
                 "style",
                 "<div class=\"error\">@message (from @name)</div>")));
         cr.showErrorInfo("test.style", null,
                 new Dataset("message", "sample <error>"));
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
         assertEquals("generated HTML",
                 "<div class=\"error\">sample &lt;error&gt; (from Alice)</div>",
                 cr.getHtml().getBody().toString());
@@ -486,8 +532,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "123-bulletin", "Bulletin: @message (from @name)")));
         cr.showErrorInfo("test.123", "sample",
                 new Dataset("message", "sample <error>"));
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
         assertEquals("Javascript code",
                 "Fiz.addBulletinMessage(\"Bulletin: sample &lt;error&gt; " +
                 "(from Alice)\");",
@@ -542,17 +586,17 @@ public class ClientRequestTest extends junit.framework.TestCase {
 
     public void test_ajaxActionHeader() throws IOException {
         PrintWriter writer = cr.getServletResponse().getWriter();
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         cr.setAjax(true);
-        assertEquals("initial response", "", out.toString());
+        assertEquals("initial response", "", response.toString());
         assertEquals("return value", writer, cr.ajaxActionHeader("first"));
         assertEquals("response after first header",
-                "var actions = [{type: \"first\"", out.toString());
+                "var actions = [{type: \"first\"", response.toString());
         cr.ajaxActionHeader("second");
         assertEquals("response after second header",
                 "var actions = [{type: \"first\", {type: \"second\"",
-                out.toString());
+                response.toString());
     }
     public void test_printWriter_exception() {
         ((ServletResponseFixture)

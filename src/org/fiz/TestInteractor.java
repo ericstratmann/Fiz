@@ -119,6 +119,17 @@ public class TestInteractor extends Interactor {
         cr.ajaxUpdateAction("updateMe", (new Date()).toString());
     }
 
+    // Return the contents of a file, specified with the "name"
+    // query value.
+    public void file(ClientRequest cr) throws IOException {
+        String name = cr.getMainDataset().check("name");
+        if (name == null) {
+            name = "src/src/org/fiz/Dataset.java";
+        }
+        cr.returnFile(name, new  FileInputStream("C:/Documents and " +
+                "Settings/John Ousterhout/My Documents/Fiz/" + name));
+    }
+
     // The following entry point generates 2 different pages (based on
     // the "current" query value) each of which references the other with
     // a link.

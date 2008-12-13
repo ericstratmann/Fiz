@@ -139,7 +139,7 @@ public class DispatcherTest extends junit.framework.TestCase {
                 "properties: {message: \"uncaughtAjax: unsupported URL " +
                 "\\\"/x/y/z\\\": couldn't find method \\\"ajaxBogus\\\" with " +
                 "proper signature in class DispatcherTest2Interactor\"}}];",
-                response.out.toString());
+                response.toString());
     }
     public void test_service_exception_HandledError() {
         dispatcher.service(new ServletRequestFixture(
@@ -167,7 +167,7 @@ public class DispatcherTest extends junit.framework.TestCase {
                 "properties: {message: \"uncaughtAjax: unsupported URL " +
                 "\\\"/x/y/z\\\": couldn't find method \\\"ajaxBogus\\\" with " +
                 "proper signature in class DispatcherTest2Interactor\"}}];",
-                response.out.toString());
+                response.toString());
     }
     public void test_service_exception_htmlResponseClearFirst() {
         Config.setDataset("styles", new Dataset("uncaught",
@@ -180,7 +180,7 @@ public class DispatcherTest extends junit.framework.TestCase {
                 "<script type=\"text/javascript\" src=\"/context" +
                 "/cpath/fizlib/Fiz.js\"></script>\n" +
                 "test: error in DispatcherTest2.x</body>\n",
-                response.out.toString());
+                response.toString());
     }
     public void test_service_exception_htmlResponseDontClear() {
         Config.setDataset("styles", new Dataset("uncaught",
@@ -194,7 +194,7 @@ public class DispatcherTest extends junit.framework.TestCase {
                 "cpath/fizlib/Fiz.js\"></script>\n" +
                 "<p>Sample text.</p>\n" +
                 "test: error in DispatcherTest2.x</body>\n",
-                response.out.toString());
+                response.toString());
     }
     public void test_service_exception_multipleErrors() {
         Config.setDataset("styles", new Dataset("uncaught",
@@ -209,7 +209,7 @@ public class DispatcherTest extends junit.framework.TestCase {
                 "<div class=\"uncaughtException\">Multiple internal errors in " +
                 "the server!  Details are in the server's log</div>.\n" +
                 "</body>\n",
-                response.out.toString());
+                response.toString());
     }
 
     public void test_findClass() {

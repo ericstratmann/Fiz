@@ -129,6 +129,19 @@ public class Dispatcher extends HttpServlet {
         }
         String contextRoot = config.getServletContext().getRealPath("");
         logger.info("Fiz initializing with context root " + contextRoot);
+
+        // Log all of the initialization parameters, if any.
+        StringBuilder message = new StringBuilder();
+        for (Enumeration paramNames = config.getInitParameterNames();
+               paramNames.hasMoreElements() ;) {
+            String name = (String) paramNames.nextElement();
+            message.append(String.format("\n    %s: %s", name,
+                    config.getInitParameter(name)));
+        }
+        if (message.length() != 0) {
+            logger.info("initialization parameters:" + message);
+        }
+
         Config.init(contextRoot + "/WEB-INF/config",
                 contextRoot + "/WEB-INF/fiz/config");
         initMainConfigDataset(contextRoot);

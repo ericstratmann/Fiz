@@ -245,7 +245,7 @@ public class UtilTest extends junit.framework.TestCase {
         Util.respondWithFile(new File("test.html"), response);
         assertEquals("content length", 15, response.contentLength);
         assertEquals("returned data", "0123456789abcde",
-                response.out.toString());
+                response.toString());
         TestUtil.deleteTree("test.html");
     }
 }

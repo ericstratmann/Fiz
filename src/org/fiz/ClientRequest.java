@@ -1,7 +1,6 @@
 package org.fiz;
 
 import java.io.*;
-import java.security.*;
 import java.util.*;
 import javax.crypto.*;
 import javax.servlet.*;
@@ -89,6 +88,11 @@ public class ClientRequest {
     // to the bulletin during this request (it's used to clear the bulletin
     // before the first message is added).
     protected boolean anyBulletinMessages = false;
+
+    // If returnFile has been invoked, the following variables record
+    // information about the file to be returned at the end of the request.
+    protected String fileName = null;
+    protected InputStream fileSource = null;
 
     // The following variable is used for log4j-based logging.
     protected static Logger logger = Logger.getLogger("org.fiz.ClientRequest");
@@ -307,6 +311,61 @@ public class ClientRequest {
      * to complete the transmission of the response back to the client.
      */
     public void finish() {
+        if (fileSource != null) {
+            // This is a file download request.
+            ServletOutputStream out;
+            try {
+                out = servletResponse.getOutputStream();
+            }
+            catch (IOException e) {
+                logger.error("I/O error retrieving response output stream in " +
+                        "ClientRequest.finish: " +
+                        StringUtil.lcFirst(e.getMessage()));
+                return;
+            }
+            // Get the correct MIME type for this file.
+            String mimeType = null;
+            if (fileName != null) {
+                // Set the file name if one was specified.
+                servletResponse.setHeader("Content-Disposition",
+                        "filename=\"" + fileName + "\"");
+                mimeType = getServletContext().getMimeType(fileName);
+            }
+            if (mimeType == null) {
+                mimeType = "application/octet-stream";
+            }
+            servletResponse.setContentType(mimeType);
+            try {
+                // Write the contents of fileSource into the servlet response
+                // stream.
+                int length;
+                byte[] buf = new byte[4096];
+                while ((length = fileSource.read(buf)) != -1) {
+                    out.write(buf, 0, length);
+                }
+            } catch (IOException e) {
+                logger.error("I/O error sending response in " +
+                    "ClientRequest.finish");
+            }
+            try {
+                // Close the input stream.
+                fileSource.close();
+            } catch (IOException e) {
+                logger.warn("I/O error closing file input stream in " +
+                        "ClientRequest.finish", e);
+            }
+            try {
+                // Flush the output stream so we find out about any errors
+                // right now.
+                out.flush();
+            } catch (IOException e) {
+                logger.error("I/O error flushing output stream in " +
+                        "ClientRequest.finish", e);
+            }
+            return;
+        }
+
+        // This is a "normal" HTML or Ajax response.
         PrintWriter out;
         try {
             out = servletResponse.getWriter();
@@ -593,6 +652,28 @@ public class ClientRequest {
         DataRequest request = new DataRequest((Dataset) value);
         unnamedRequests.add(request);
         return request;
+    }
+
+    /**
+     * Arrange for the response to this request to consist of the contents
+     * of a file, rather than HTML or Ajax actions.  Any other response
+     * information, such as HTML, will be ignored once this method has been
+     * invoked.
+     *
+     * @param fileName              The name of the file to send to the
+     *                              browser; used to compute an appropriate
+     *                              MIME tie for the response.
+     * @param fileSource            An {@code InputStream} that contains
+     *                              the file contents. This input stream will
+     *                              be closed by the ClientRequest object in
+     *                              its {@code finish} method.  Null means
+     *                              cancel any previous call to this method,
+     *                              restoring the normal HTML or Ajax
+     *                              response.
+     */
+    public void returnFile(String fileName, InputStream fileSource) {
+        this.fileName = fileName;
+        this.fileSource = fileSource;
     }
 
     /**

@@ -47,8 +47,8 @@ public class TreeSectionTest extends junit.framework.TestCase {
         cr.setReminder("TreeSection", new Dataset("id", "tree1",
                 "request", "treeInfo"));
         TreeSection.ajaxExpand(cr);
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         assertEquals("Ajax javascript action",
                 "var actions = [{type: \"eval\", " +
                 "javascript: \"Fiz.ids[\\\"tree1_2\\\"].expand(\\\"<table " +
@@ -62,7 +62,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "class=\\\\\\\"right\\\\\\\">leaf: child1" +
                 "</td>\\\\n  </tr>\\\\n" +
                 "</table>\\\\n\\\");\"}",
-                out.toString());
+                response.toString());
     }
 
     public void test_html_basics() {

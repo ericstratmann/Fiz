@@ -1,7 +1,5 @@
 package org.fiz;
 
-import java.io.*;
-
 /**
  * Junit tests for the FormSection class.
  */
@@ -89,8 +87,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 StringUtil.join(e.getErrorData(), "\n"));
         }
         assertEquals("exception happened", true, gotException);
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
                 "\"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
@@ -103,7 +101,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "error</span>\\\");\"}, {type: \"eval\", javascript: " +
                 "\"Fiz.ids.form1.elementError(\\\"age\\\", \\\"<span " +
                 "class=\\\\\\\"error\\\\\\\">age error</span>\\\");\"}",
-                out.toString());
+                response.toString());
     }
 
     public void test_elementError_basics() {
@@ -124,8 +122,8 @@ public class FormSectionTest extends junit.framework.TestCase {
         main.set("age", "21");
         form.elementError(cr, new Dataset("message", "<failure>",
                 "culprit", "age"), "id11");
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
                 "\"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
@@ -135,7 +133,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "\"Fiz.ids.form1.clearElementErrors();\"}, " +
                 "{type: \"eval\", javascript: \"Fiz.ids.form1.elementError(" +
                 "\\\"id11\\\", \\\"error for Alice: &lt;failure&gt;\\\");\"}",
-                out.toString());
+                response.toString());
     }
     public void test_elementError_notFirstError() {
         FormSection form = new FormSection(
@@ -156,13 +154,13 @@ public class FormSectionTest extends junit.framework.TestCase {
         main.set("age", "21");
         form.elementError(cr, new Dataset("message", "<failure>",
                 "culprit", "age"), "id11");
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
                 "\"Fiz.ids.form1.elementError(\\\"id11\\\", \\\"error for Alice: " +
                 "&lt;failure&gt;\\\");\"}",
-                out.toString());
+                response.toString());
     }
     public void test_elementError_defaultStyle() {
         FormSection form = new FormSection(
@@ -175,13 +173,13 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("elementError", "default style: @message")));
         form.elementError(cr, new Dataset("message", "<failure>",
                 "culprit", "age"), "id11");
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
                 "\"Fiz.ids.form1.elementError(\\\"id11\\\", \\\"default style: " +
                 "&lt;failure&gt;\\\");\"}",
-                out.toString());
+                response.toString());
     }
 
     public void test_html_requestErrorDefaultStyle() {
@@ -329,8 +327,8 @@ public class FormSectionTest extends junit.framework.TestCase {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
                 "\"Fiz.ids.form1.clearElementErrors();\"}, {type: \"eval\", " +
@@ -342,7 +340,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "\\\"element: &lt;failure&gt;\\\");\"}, {type: \"eval\", " +
                 "javascript: \"Fiz.ids.form1.elementError(\\\"name\\\", " +
                 "\\\"element: error33\\\");\"}",
-                out.toString());
+                response.toString());
     }
     public void test_post_errorButCulpritNotFound() {
         FormSection form = new FormSection(
@@ -360,15 +358,15 @@ public class FormSectionTest extends junit.framework.TestCase {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
                 "\"Fiz.ids.form1.clearElementErrors();\"}, {type: \"eval\", " +
                 "javascript: \"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
                 "\\\"bulletinError\\\", \\\"bulletin: " +
                 "&lt;failure&gt;\\\");\"}",
-                out.toString());
+                response.toString());
     }
     public void test_post_errorWithNoCulpritValue() {
         FormSection form = new FormSection(
@@ -388,15 +386,15 @@ public class FormSectionTest extends junit.framework.TestCase {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
                 "\"Fiz.ids.form1.clearElementErrors();\"}, {type: \"eval\", " +
                 "javascript: \"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
                 "\\\"bulletinError\\\", \\\"bulletin: " +
                 "&lt;failure&gt;\\\");\"}",
-                out.toString());
+                response.toString());
     }
 
     public void test_registerRequests() {
@@ -443,12 +441,12 @@ public class FormSectionTest extends junit.framework.TestCase {
         form.oldElementErrorsCleared = false;
         cr.setAjax(true);
         form.clearOldElementErrors(cr);
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", " +
                 "javascript: \"Fiz.ids.form1.clearElementErrors();\"}",
-                out.toString());
+                response.toString());
         assertEquals("oldElementErrorsCleared value", true,
                 form.oldElementErrorsCleared);
     }
@@ -458,9 +456,9 @@ public class FormSectionTest extends junit.framework.TestCase {
         form.oldElementErrorsCleared = true;
         cr.setAjax(true);
         form.clearOldElementErrors(cr);
-        StringWriter out = ((ServletResponseFixture)
-                cr.getServletResponse()).out;
-        assertEquals("response Javascript for Ajax", "", out.toString());
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
+        assertEquals("response Javascript for Ajax", "", response.toString());
     }
 
     public void test_getHelpText() {

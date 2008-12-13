@@ -49,7 +49,12 @@ public class ServletContextFixture implements ServletContext {
         return -1;
     }
     public String getMimeType(String file) {
-        return "getMimeType: " + file;
+        if (file.endsWith(".xls")) {
+            return "application/vnd.ms-excel";
+        } else if (file.endsWith(".html")) {
+            return "text/html";
+        }
+        return null;
     }
     public int getMinorVersion() {
         return -2;

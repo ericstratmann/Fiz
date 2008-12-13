@@ -6,90 +6,108 @@
 package org.fiz;
 
 import java.io.*;
+import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
-import java.util.Vector;
-import java.util.Locale;
 
 @SuppressWarnings("deprecation")
 public class ServletResponseFixture implements HttpServletResponse{
-    // Some methods just set the following variable to indicate that they
+    // Some methods just append to the following variable to indicate that they
     // were called.  This is used in situations where the method can't easily
     // synthesize an appropriate return type (such as getOutputStream).
-    public String lastMethod = null;
+    public StringBuilder log = new StringBuilder();
 
-    public String contentType;
-    public StringWriter out = new StringWriter();
-    public PrintWriter writer = new PrintWriter(out);
+    // The underlying stream for this ServletResponse object.
+    protected ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+    protected ServletOutputStreamFixture stream =
+            new ServletOutputStreamFixture(out);
+    protected PrintWriter writer = new PrintWriter(out);
+
+    public String contentType = null;
+
+    public String headers = null;
+
     public int contentLength = 0;
+
+    // Only one of getWriter() or getOutputStream() may be called during a
+    // single request, else an IllegalStateException is thrown.
+    boolean getWriterInvoked = false;
+    boolean getOutputStreamInvoked = false;
 
     // The following variables determine the output from certain methods.
     String uri = "uriString";
     String queryString = "?a=b&c=d";
+    boolean getOutputStreamException = false;
     boolean getWriterException = false;
 
     // HttpServletResponse methods:
 
     public void addCookie(Cookie cookie) {
-        lastMethod = "addCookie(\"" + cookie.getName() + "\")";
+        appendToLog("addCookie(\"" + cookie.getName() + "\")");
     }
     public void addDateHeader(String name, long date) {
-        lastMethod = "addDateHeader(\"" + name + "\", " + date + ")";
+        appendToLog("addDateHeader(\"" + name + "\", " + date + ")");
     }
     public void addHeader(String name, String value) {
-        lastMethod = "addHeader(\"" + name + "\", \"" + value + "\")";
+        appendToLog("addHeader(\"" + name + "\", \"" + value + "\")");
     }
     public void addIntHeader(String name, int value) {
-        lastMethod = "addIntHeader(\"" + name + "\", " + value + ")";
+        appendToLog("addIntHeader(\"" + name + "\", " + value + ")");
     }
     public boolean containsHeader(String name) {
-        lastMethod = "containsHeader(\"" + name + "\")";
+        appendToLog("containsHeader(\"" + name + "\")");
         return true;
     }
     public String encodeRedirectUrl(String url) {
         return "encodeRedirectUrl";
     }
     public String encodeRedirectURL(String url) {
-        lastMethod = "encodeRedirectURL(\"" + url + "\")";
+        appendToLog("encodeRedirectURL(\"" + url + "\")");
         return "encodeRedirectURL";
     }
     public String encodeUrl(String url) {
-        lastMethod = "encodeUrl(\"" + url + "\")";
+        appendToLog("encodeUrl(\"" + url + "\")");
         return "encodeUrl";
     }
     public String encodeURL(String url) {
-        lastMethod = "encodeURL(\"" + url + "\")";
+        appendToLog("encodeURL(\"" + url + "\")");
         return "encodeURL";
     }
     public void sendError(int status) {
-        lastMethod = "sendError(" + status + ")";
+        appendToLog("sendError(" + status + ")");
     }
     public void sendError(int status, String message) throws IOException {
-        lastMethod = "sendError(" + status + ", \"" + message + "\")";
+        appendToLog("sendError(" + status + ", \"" + message + "\")");
     }
     public void sendRedirect(String location) throws IOException {
-        lastMethod = "sendRedirect(\"" + location + "\")";
+        appendToLog("sendRedirect(\"" + location + "\")");
     }
     public void setDateHeader(String name, long date) {
-        lastMethod = "setDateHeader(\"" + name + "\", " + date + ")";
+        appendToLog("setDateHeader(\"" + name + "\", " + date + ")");
     }
     public void setHeader(String name, String value) {
-        lastMethod = "setHeader(\"" + name + "\", \"" + value + "\")";
+        if (headers != null) {
+            headers = headers + " " + value;
+        } else {
+            headers = value;
+        }
+        appendToLog("setHeader(\"" + name + "\", \"" + value + "\")");
     }
     public void setIntHeader(String name, int value) {
-        lastMethod = "setIntHeader(\"" + name + "\", " + value + ")";
+        appendToLog("setIntHeader(\"" + name + "\", " + value + ")");
     }
     public void setStatus(int status) {
-        lastMethod = "setStatus(" + status + ")";
+        appendToLog("setStatus(" + status + ")");
     }
     public void setStatus(int status, String message) {
-        lastMethod = "setStatus(" + status + ", \"" + message + "\")";
+        appendToLog("setStatus(" + status + ", \"" + message + "\")");
     }
 
     // Methods from ServletResponse.
 
     public void flushBuffer() {
-        lastMethod = "flushBuffer";
+        appendToLog("flushBuffer");
     }
     public int getBufferSize() {
         return 4096;
@@ -101,45 +119,83 @@ public class ServletResponseFixture implements HttpServletResponse{
         return "contentType";
     }
     public Locale getLocale() {
-        lastMethod = "getResponseLocale";
+        appendToLog("getResponseLocale");
         return null;
     }
-    public ServletOutputStream getOutputStream() {
-        lastMethod = "getOutputStream";
-        return null;
+    public ServletOutputStream getOutputStream() throws IOException {
+        appendToLog("getOutputStream");
+        if (getOutputStreamInvoked) {
+            throw new IllegalStateException("getWriter() has already " +
+                    "been invoked");
+        }
+        getOutputStreamInvoked = true;
+        if (getOutputStreamException) {
+            throw new IOException("getOutputStream failed");
+        }
+        return stream;
     }
     public PrintWriter getWriter() throws IOException {
-        lastMethod = "getWriter";
+        appendToLog("getWriter");
+        if (getOutputStreamInvoked) {
+            throw new IllegalStateException("getOutputStream() has already " +
+                    "been invoked");
+        }
+        getWriterInvoked = true;
         if (getWriterException) {
             throw new IOException("getWriter failed");
         }
         return writer;
     }
     public boolean isCommitted() {
-        lastMethod = "isCommitted";
+        appendToLog("isCommitted");
         return true;
     }
     public void reset() {
-        lastMethod = "reset";
+        appendToLog("reset");
     }
     public void resetBuffer() {
-        lastMethod = "resetBuffer";
+        appendToLog("resetBuffer");
     }
     public void setBufferSize(int size) {
-        lastMethod = "setBufferSize(" + size + ")";
+        appendToLog("setBufferSize(" + size + ")");
     }
     public void setCharacterEncoding(String charset) {
-        lastMethod = "setCharacterEncoding(\"" + charset + "\")";
+        appendToLog("setCharacterEncoding(\"" + charset + "\")");
     }
     public void setContentLength(int length) {
         contentLength = length;
-        lastMethod = "setContentLength(" + length + ")";
+        appendToLog("setContentLength(" + length + ")");
     }
     public void setContentType(String type) {
         contentType = type;
-        lastMethod = "setContentType(\"" + type + "\")";
+        appendToLog("setContentType(\"" + type + "\")");
     }
     public void setLocale(Locale locale) {
-        lastMethod = "setLocale";
+        appendToLog("setLocale");
+    }
+
+    // Methods used to get access to the contents of the underlying
+    // output stream.
+
+    public String toString() {
+        writer.flush();
+        return new String(out.toByteArray());
+    }
+
+    public byte[] getBytes() {
+        return out.toByteArray();
+    }
+
+    public String getLog() {
+        return log.toString();
+    }
+
+    // Internal methods:
+
+    protected void appendToLog(String message) {
+        if (log.length() != 0) {
+            log.append("; ");
+        }
+        log.append(message);
     }
 }

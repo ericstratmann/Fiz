@@ -4,7 +4,7 @@
 This is the controlling file used by Ant to manage builds and tests
 for the Fiz framework.
 -->
-<project default="javadoc" basedir=".">
+<project name="fiz" default="javadoc" basedir=".">
 
     <target name="clean" description="Remove all generated files">
         <delete dir="out"/>
