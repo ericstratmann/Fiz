@@ -1,12 +1,14 @@
 package org.fiz;
 
+import java.util.*;
+
 /**
  * A CompoundSection is a Section that contains one or more other Sections.
  * CompoundSections support the following constructor properties:
  *   background:     (optional) Specifies a background color to use for
  *                   the interior of this section (everything inside the
  *                   border).  Defaults to transparent.
- *   borderBase:     (optional) Specifies the base name for a collection of
+ *   borderFamily:   (optional) Specifies the base name for a family of
  *                   images that will be used to display a border around this
  *                   section.  If this option has the value {@code x}, then
  *                   there must exist images named {@code x-nw.gif},
@@ -29,6 +31,11 @@ public class CompoundSection implements Section {
     protected Dataset properties;
     protected Section[] children;
 
+    // If the {@code add} method has been called, the following variable
+    // keeps track of all of the additional children (not including
+    // those already referred to by the {@code children} variable).
+    protected ArrayList<Section> extraChildren = null;
+
     /**
      * Construct a CompoundSection.
      * @param properties           Contains configuration information for
@@ -39,6 +46,20 @@ public class CompoundSection implements Section {
     public CompoundSection(Dataset properties, Section ... children) {
         this.properties = properties;
         this.children = children;
+    }
+
+    /**
+     * Add one or more additional children to an existing compound section.
+     * The new children go at the end of the list.
+     * @param children             One or more additional children.
+     */
+    public void add(Section ... children) {
+        if (extraChildren == null) {
+            extraChildren = new ArrayList<Section>();
+        }
+        for (Section child: children) {
+            extraChildren.add(child);
+        }
     }
 
     /**
@@ -60,22 +81,24 @@ public class CompoundSection implements Section {
         StringBuilder out = cr.getHtml().getBody();
         Template.expand("\n<!-- Start CompoundSection {{@id}} -->\n",
                 properties, out);
-        String borderBase = properties.check("borderBase");
-        if (borderBase != null) {
+        String borderFamily = properties.check("borderFamily");
+        if (borderFamily != null) {
             Template.expand("<table {{id=\"@id\"}} {{class=\"@class\"}} " +
                     "cellspacing=\"0\">\n" +
                     "  <tr style=\"line-height: 0px;\">\n" +
-                    "    <td><img src=\"@borderBase-nw.gif\" alt=\"\" />" +
+                    "    <td><img src=\"@borderFamily-nw.gif\" alt=\"\" />" +
                     "</td>\n" +
                     "    <td style=\"background-image: " +
-                    "url(@borderBase-n.gif); background-repeat: repeat-x;\">" +
+                    "url(@borderFamily-n.gif); " +
+                    "background-repeat: repeat-x;\">" +
                     "</td>\n" +
-                    "    <td><img src=\"@borderBase-ne.gif\" alt=\"\" />" +
+                    "    <td><img src=\"@borderFamily-ne.gif\" alt=\"\" />" +
                     "</td>\n" +
                     "  </tr>\n" +
                     "  <tr>\n" +
                     "    <td style=\"background-image: " +
-                    "url(@borderBase-w.gif); background-repeat: repeat-y;\">" +
+                    "url(@borderFamily-w.gif); " +
+                    "background-repeat: repeat-y;\">" +
                     "</td>\n" +
                     "    <td class=\"compoundBody\" " +
                     "{{style=\"background: @background;\"}}>\n",
@@ -90,21 +113,28 @@ public class CompoundSection implements Section {
         for (Section child: children) {
             child.html(cr);
         }
+        if (extraChildren != null) {
+            for (Section child: extraChildren) {
+                child.html(cr);
+            }
+        }
 
         // Render the portion of the container that comes after the children.
-        if (borderBase != null) {
+        if (borderFamily != null) {
             Template.expand("    </td>\n" +
                     "    <td style=\"background-image: " +
-                    "url(@borderBase-e.gif); background-repeat: repeat-y;\">" +
+                    "url(@borderFamily-e.gif); " +
+                    "background-repeat: repeat-y;\">" +
                     "</td>\n" +
                     "  </tr>\n" +
                     "  <tr style=\"line-height: 0px;\">\n" +
-                    "    <td><img src=\"@borderBase-sw.gif\" alt=\"\" />" +
+                    "    <td><img src=\"@borderFamily-sw.gif\" alt=\"\" />" +
                     "</td>\n" +
                     "    <td style=\"background-image: " +
-                    "url(@borderBase-s.gif); background-repeat: repeat-x;\">" +
+                    "url(@borderFamily-s.gif); " +
+                    "background-repeat: repeat-x;\">" +
                     "</td>\n" +
-                    "    <td><img src=\"@borderBase-se.gif\" alt=\"\" />" +
+                    "    <td><img src=\"@borderFamily-se.gif\" alt=\"\" />" +
                     "</td>\n" +
                     "  </tr>\n" +
                     "</table>\n", properties, out);
@@ -128,6 +158,11 @@ public class CompoundSection implements Section {
         // of our children a chance to register its requests.
         for (Section child: children) {
             child.registerRequests(cr);
+        }
+        if (extraChildren != null) {
+            for (Section child: extraChildren) {
+                child.registerRequests(cr);
+            }
         }
     }
 }
