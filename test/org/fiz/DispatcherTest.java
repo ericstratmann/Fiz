@@ -33,6 +33,8 @@ public class DispatcherTest extends junit.framework.TestCase {
                 Config.getSearchPath()[0]);
         assertEquals("Css path", "test/testData/WEB-INF/css",
                 Css.getSearchPath()[0]);
+        assertEquals("clearCaches variable", false,
+                dispatcher.clearCaches);
     }
 
     // Node tests for clearCaches: it is already exercised elsewhere.
@@ -59,21 +61,18 @@ public class DispatcherTest extends junit.framework.TestCase {
     public void test_service_clearCaches() {
         dispatcher.clearCaches = true;
         Config.setDataset("test", new Dataset());
-        Config.setDataset("main", new Dataset("clearCaches", "true"));
+        Config.setDataset("main", new Dataset());
         dispatcher.service(new ServletRequestFixture(
                 "/dispatcherTest1/incCount"), new ServletResponseFixture());
         assertEquals("Config cache size (caches cleared)", 1,
                 Config.cache.size());
-        assertEquals("clearCaches variable true", true,
-                dispatcher.clearCaches);
+        dispatcher.clearCaches = false;
         Config.setDataset("test", new Dataset());
-        Config.setDataset("main", new Dataset("clearCaches", "not true"));
+        Config.setDataset("main", new Dataset());
         dispatcher.service(new ServletRequestFixture(
                 "/dispatcherTest1/incCount"), new ServletResponseFixture());
         assertEquals("Config cache size (caches no longer cleared)", 2,
                 Config.cache.size());
-        assertEquals("clearCaches variable false", false,
-                dispatcher.clearCaches);
     }
     public void test_service_parseMethodEndingInSlash() {
         dispatcher.service(new ServletRequestFixture(

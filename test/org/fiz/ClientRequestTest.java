@@ -215,7 +215,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertTrue("response", Arrays.equals(b, response.getBytes()));
         assertEquals("MIME type", "application/vnd.ms-excel",
                 response.contentType);
-        assertEquals("response headers", "attachment; filename=\"test.xls\"",
+        assertEquals("response headers", "filename=\"test.xls\"",
                 response.headers);
     }
     public void test_finish_returnFile_ignoreAjax() {

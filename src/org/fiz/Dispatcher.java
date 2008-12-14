@@ -145,6 +145,9 @@ public class Dispatcher extends HttpServlet {
         Config.init(contextRoot + "/WEB-INF/config",
                 contextRoot + "/WEB-INF/fiz/config");
         initMainConfigDataset(contextRoot);
+        String debug = Config.getDataset("main").check("debug");
+        clearCaches = (debug != null) && (debug.equals("1"));
+
         logger.info("main configuration dataset:\n    " +
                 Config.getDataset("main").toString().trim().replace(
                 "\n", "\n    "));
@@ -218,13 +221,8 @@ public class Dispatcher extends HttpServlet {
             // See if we are in a debugging mode where we should flush caches
             // before every request.
             if (clearCaches) {
-                String clear = Config.get("main", "clearCaches");
-                if ((clear != null) && (!clear.equals("true"))) {
-                    clearCaches = false;
-                } else {
-                    clearCaches();
-                    initMainConfigDataset(getServletContext().getRealPath(""));
-                }
+                clearCaches();
+                initMainConfigDataset(getServletContext().getRealPath(""));
             }
 
             // Use UTF-8 as the default encoding for all responses.
@@ -235,7 +233,6 @@ public class Dispatcher extends HttpServlet {
             // "class/method" part and lookup the method.
 
             String pathInfo = request.getPathInfo();
-            String classAndMethod;
             int endOfMethod = -1;
             int endOfClass = pathInfo.indexOf('/', 1);
             if (endOfClass >= 1) {
@@ -534,16 +531,19 @@ public class Dispatcher extends HttpServlet {
     /**
      * Load the main configuration data set and add a "home" entry to
      * it that refers to our context root (the directory that contains
-     * the WEB-INF directory).
+     * the WEB-INF directory).  This method also sets a "debug" entry
+     * if the "FIZ_DEBUG" environment variable is set.
      * @param home                 Root directory for this application.
      */
     protected static void initMainConfigDataset(String home) {
         Dataset main = Config.getDataset("main");
         if (main instanceof CompoundDataset) {
-            Dataset[] components = ((CompoundDataset) main).getComponents();
-            components[0].set("home", home);
-        } else {
-            main.set("home", home);
+            main = ((CompoundDataset) main).getComponents()[0];
+        }
+        main.set("home", home);
+        String debug = System.getenv("FIZ_DEBUG");
+        if (debug != null) {
+            main.set("debug", debug);
         }
     }
 }

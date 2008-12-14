@@ -13,11 +13,14 @@ home: TBD
 # names in the following (comma-separated) list:
 searchPackages: "org.fiz"
 
-# If the following value is set to "true" then all of Fiz's internal
-# caches will be cleared before each request.  This is useful in debug
-# configurations so that file changes take effect immediately without
-# restarting the application.  Of course, it will make Fiz run *much*
-# more slowly, so it shouldn't be used in production or when measuring
-# performance.
-clearCaches: false
+# If the line below is uncommented it means that Fiz is running in
+# debug mode.  Debug mode has the following impact:
+#   * All of Fiz's internal caches will be cleared at the start of each
+#     request.  This is useful so that file modifications become visible
+#     immediately without restarting the application.  Of course, it will
+#     make Fiz run *much* more slowly, so it shouldn't be used in production
+#     or when measuring performance.
+# By the way, if there is a FIZ_DEBUG environment variable its value
+# overrides any value specified below.
+# debug: 1
 
