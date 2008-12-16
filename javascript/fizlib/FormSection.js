@@ -7,7 +7,8 @@
  * error messages.
  */
 
-// The following line is used by Fiz to manage Javascript dependencies.
+// The following lines are used by Fiz to manage Javascript dependencies.
+// Fiz:include fizlib/Fiz.js
 // Fiz:include fizlib/Ajax.js
 
 /**

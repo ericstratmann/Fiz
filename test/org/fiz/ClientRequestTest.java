@@ -257,9 +257,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
         TestUtil.assertSubstring("response",
                 "</head>\n" +
                 "<body>\n" +
-                "<script type=\"text/javascript\" " +
-                "src=\"/servlet/fizlib/Fiz.js\">" +
-                "</script>\n" +
                 "page body</body>\n" +
                 "</html>",
                 response.toString());

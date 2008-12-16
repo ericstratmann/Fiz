@@ -176,8 +176,6 @@ public class DispatcherTest extends junit.framework.TestCase {
         dispatcher.service(new ServletRequestFixture("/dispatcherTest2/x"),
                 response);
         TestUtil.assertSubstring("HTML body", "<body>\n" +
-                "<script type=\"text/javascript\" src=\"/context" +
-                "/cpath/fizlib/Fiz.js\"></script>\n" +
                 "test: error in DispatcherTest2.x</body>\n",
                 response.toString());
     }
@@ -189,8 +187,6 @@ public class DispatcherTest extends junit.framework.TestCase {
         dispatcher.service(new ServletRequestFixture("/dispatcherTest2/x"),
                 response);
         TestUtil.assertSubstring("HTML body", "<body>\n" +
-                "<script type=\"text/javascript\" src=\"/context/" +
-                "cpath/fizlib/Fiz.js\"></script>\n" +
                 "<p>Sample text.</p>\n" +
                 "test: error in DispatcherTest2.x</body>\n",
                 response.toString());
@@ -203,8 +199,6 @@ public class DispatcherTest extends junit.framework.TestCase {
         dispatcher.service(new ServletRequestFixture("/dispatcherTest2/x"),
                 response);
         TestUtil.assertSubstring("HTML body", "<body>\n" +
-                "<script type=\"text/javascript\" src=\"/context/cpath" +
-                "/fizlib/Fiz.js\"></script>\n" +
                 "<div class=\"uncaughtException\">Multiple internal errors in " +
                 "the server!  Details are in the server's log</div>.\n" +
                 "</body>\n",

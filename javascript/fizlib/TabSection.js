@@ -4,6 +4,9 @@
  * TabSection class.
  */
 
+// The following line is used by Fiz to manage Javascript dependencies.
+// Fiz:include fizlib/Fiz.js
+
 Fiz.TabSection = new Object();
 
 /**

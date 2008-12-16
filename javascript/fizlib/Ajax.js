@@ -40,6 +40,9 @@
  *       response.  The initiating code has control only over error handling.
  */
 
+// The following line is used by Fiz to manage Javascript dependencies.
+// Fiz:include fizlib/Fiz.js
+
 /**
  * Create an Ajax object and initiate a server request.  This function
  * returns when the request has been initiated, but before it has been

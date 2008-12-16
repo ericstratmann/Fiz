@@ -23,14 +23,12 @@ public class Html {
 
     // The following field keeps track of all of the stylesheet files that
     // have already been included in the HTML document.
-    // TODO: this and other fields should be null unless actually used,
-    // TODO: to reduce allocation/garbage collection overhead.
     protected HashSet<String> cssFiles = new HashSet<String>();
 
     // The following field accumulates CSS information as the document
     // is being generated (includes everything requested via
     // includeCss and includeCssFile).
-    protected StringBuilder css = new StringBuilder(1000);
+    protected StringBuilder css = new StringBuilder();
 
     // Directory containing Javascript files, ending in "/".
     protected String jsDirectory;
@@ -79,7 +77,6 @@ public class Html {
             contextPath = "/servlet";
             jsDirectory = "javascript/";
         }
-        includeJsFile("fizlib/Fiz.js");
     }
 
     /**
@@ -94,8 +91,6 @@ public class Html {
         jsFiles.clear();
         jsFileHtml.setLength(0);
         jsCode.setLength(0);
-
-        includeJsFile("fizlib/Fiz.js");
     }
 
     /**
