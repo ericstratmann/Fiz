@@ -5,7 +5,7 @@ package org.fiz;
  * a single template.  TemplateSections support the following constructor
  * properties:
  *
- * :     (optional) If an error occurs in {@code request} then
+ * errorStyle:       (optional) If an error occurs in {@code request} then
  *                   this property contains the name of a template in the
  *                   {@code styles} dataset, which is expanded with the
  *                   error data and the main dataset.  The resulting HTML
@@ -30,16 +30,10 @@ package org.fiz;
  *                   to that request plus the main dataset; otherwise the
  *                   template is expanded in the context of the main dataset.
  */
-public class TemplateSection implements Section {
+public class TemplateSection extends Section {
     // The following variables hold values for the properties that define
     // the section; see above for definitions.
-    protected Dataset properties = null;
-    protected String errorStyle = null;
-    protected String request = null;
     protected String template;
-
-    // Source of data for the section:
-    protected DataRequest dataRequest = null;
 
     /**
      * Construct a TemplateSection from a dataset containing properties.
@@ -48,7 +42,6 @@ public class TemplateSection implements Section {
      */
     public TemplateSection(Dataset properties) {
         template = properties.check("template");
-        errorStyle = properties.check("errorStyle");
         this.properties = properties;
     }
 
@@ -71,7 +64,7 @@ public class TemplateSection implements Section {
      *                             the section.
      */
     public TemplateSection(String request, String template) {
-        this.request = request;
+        this.properties = new Dataset("request", request);
         this.template = template;
     }
 
@@ -92,6 +85,8 @@ public class TemplateSection implements Section {
                 // There was an error fetching our data; display
                 // appropriate error information.
                 Dataset[] errors = dataRequest.getErrorData();
+                String errorStyle = (properties == null) ? null :
+                        properties.check("errorStyle");
                 cr.showErrorInfo(errorStyle, "TemplateSection.error",
                         errors[0]);
                 return;
@@ -114,21 +109,5 @@ public class TemplateSection implements Section {
             }
         }
         Template.expand(template, data, cr.getHtml().getBody());
-    }
-
-    /**
-     * This method is invoked during the first phase of rendering a page;
-     * it calls {@code cr.registerDataRequest} for the
-     * DataRequest needed by this section (if any).
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     */
-    @Override
-    public void registerRequests(ClientRequest cr) {
-        if (properties != null) {
-            dataRequest = cr.registerDataRequest(properties, "request");
-        } else if (request != null) {
-            dataRequest = cr.registerDataRequest(request);
-        }
     }
 }

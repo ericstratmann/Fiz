@@ -221,30 +221,7 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "void new Fiz.Ajax({url: &quot;a/b/Alice&quot;});;",
                 cr.getHtml().getBody().toString());
     }
-
-    public void test_registerRequests() {
-        TabSection section = new TabSection(YamlDataset.newStringInstance(
-                "id:      section12\n" +
-                "request:\n" +
-                "  manager: raw\n" +
-                "  result:\n" +
-                "    age: 44\n"),
-                new Dataset("id", "first", "text", "Name: @name, age: @age",
-                "url", "/a/b"));
-        section.registerRequests(cr);
-        assertEquals("request information",
-                "manager: raw\n" +
-                        "result:\n" +
-                        "    age: 44\n",
-                section.dataRequest.getRequestData().toString());
-    }
-    public void test_registerRequests_noRequest() {
-        TabSection section = new TabSection(new Dataset("id", "section12"),
-                new Dataset("id", "first", "text", "First",
-                "ajaxUrl", "a/b/@name"));
-        section.registerRequests(cr);
-        assertEquals("request pointer", null, section.dataRequest);
-    }
+    
     public void test_getTemplate_usedCachedCopy() {
         TabSection.setTemplate("cached TabSection template");
         assertEquals("getTemplate result", "cached TabSection template",

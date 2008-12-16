@@ -39,12 +39,19 @@ public class PerfString {
             startGcTime += bean.getCollectionTime();
         }
         Timer timer = new Timer();
+        String[] candidates = {"bcd0", "bcd1", "bcd2", "bcd3", "bcd4",
+            "bcd5", "bcd6", "bcd7", "bcd8", "bcd9"};
+        HashMap<String,Integer> table = new HashMap<String,Integer>(20);
+        for (int i = 0; i < candidates.length; i++) {
+            table.put("a" + candidates[i], i);
+        }
 
         for (int i = 0; i < 10; i++) {
             long start = System.nanoTime();
-            for (int j= 0; j < count; j++) {
-                for (int k = 0; k < rowId.length(); k++) {
-                    value = rowId.charAt(k);
+            for (int j = 0; j < count; j++) {
+                value = 0;
+                for (int k = 0; k < candidates.length; k++) {
+                    value += ("a" + candidates[k]).length();
                 }
             }
             long finish = System.nanoTime();

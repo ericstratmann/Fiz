@@ -83,26 +83,4 @@ public class TemplateSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
         TestUtil.deleteTree("_testData_");
     }
-
-    public void test_registerRequests() {
-        TemplateSection section = new TemplateSection("abc");
-        section.registerRequests(cr);
-        assertEquals("registered requests", "",
-                cr.getRequestNames());
-
-        section = new TemplateSection("getState", "abc");
-        section.registerRequests(cr);
-        assertEquals("registered requests", "getState",
-                cr.getRequestNames());
-
-        section = new TemplateSection(YamlDataset.newStringInstance(
-                "template: abcdef\n" +
-                "request:\n" +
-                "  first: 16\n" +
-                "  second: 99\n"));
-        section.registerRequests(cr);
-        assertEquals("request arguments", "first:  16\n" +
-                "second: 99\n",
-                section.dataRequest.getRequestData().toString());
-    }
 }

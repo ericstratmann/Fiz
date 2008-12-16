@@ -42,14 +42,10 @@ import java.util.*;
  *                   contain one {@code record} child for each row of
  *                   the table.
  */
-public class TableSection implements Section {
+public class TableSection extends Section {
     // The following variables are copies of constructor arguments.  See
     // the constructor documentation for details.
-    protected Dataset properties;
     protected Formatter[] columns;
-
-    // Source of data for the rows of the table:
-    protected DataRequest dataRequest;
 
     /**
      * Construct a TableSection.
@@ -73,6 +69,9 @@ public class TableSection implements Section {
     public TableSection(Dataset properties, Formatter ... columns) {
         this.properties = properties;
         this.columns = columns;
+
+        // Make sure a request has been specified.
+        properties.get("request");
     }
 
     /**

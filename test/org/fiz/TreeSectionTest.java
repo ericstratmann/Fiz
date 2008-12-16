@@ -131,15 +131,6 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
     }
 
-    public void test_registerRequests() {
-        TreeSection tree = new TreeSection(new Dataset("id", "tree1",
-                "request", "treeInfo"));
-        tree.registerRequests(cr);
-        tree.html(cr);
-        assertEquals("registered requests", "treeInfo",
-                cr.getRequestNames());
-    }
-
     public void test_childrenHtml_propertyDefaults() {
         StringBuilder out = new StringBuilder();
         ArrayList<Dataset> children = new ArrayList<Dataset>();

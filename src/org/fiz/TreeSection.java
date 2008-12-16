@@ -75,14 +75,7 @@ import java.util.*;
  * so that it will select a different entry in the {@code styles}
  * configuration dataset.
  */
-public class TreeSection implements DirectAjax, Section {
-    // The following variables are copies of constructor arguments.  See
-    // the constructor documentation for details.
-    protected Dataset properties;
-
-    // Source of initial information to display in the section.
-    protected DataRequest dataRequest = null;
-
+public class TreeSection extends Section implements DirectAjax {
     /**
      * Construct a TreeSection.
      * @param properties           Contains configuration information
@@ -161,18 +154,6 @@ public class TreeSection implements DirectAjax, Section {
                 id, out);
         out.append("</table>\n" +
                 "<!-- End TreeSection @id -->\n");
-    }
-
-    /**
-     * This method is invoked during the first phase of rendering a page;
-     * it calls {@code cr.registerDataRequest} for each of the
-     * DataRequests needed by this section to gather data to be displayed.
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     */
-    @Override
-    public void registerRequests(ClientRequest cr) {
-        dataRequest = cr.registerDataRequest(properties, "request");
     }
 
     /**

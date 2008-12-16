@@ -52,17 +52,13 @@ package org.fiz;
  *                   the tab is clicked. This property is ignored if
  *                   {@code url} or {@code ajaxUrl} is specified.
  */
-public class TabSection implements Section{
+public class TabSection extends Section{
     // The following variables are copies of constructor arguments.  See
     // the constructor documentation for details.
-    protected Dataset properties;
     protected Dataset[] tabs;
 
     // Cached copy of TabSection.css.
     static protected String cssTemplate = null;
-
-    // DataRequest for this section, if there is one.
-    protected DataRequest dataRequest = null;
 
     /**
      * Construct a TabSection.
@@ -222,18 +218,6 @@ public class TabSection implements Section{
                 "</table>\n" +
                 "<!-- End TabSection @id -->\n",
                 properties, out);
-    }
-
-    /**
-     * This method is invoked during the first phase of rendering a page;
-     * it calls {@code cr.registerDataRequest} for each of the
-     * DataRequests needed by this section to gather data to be displayed.
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     */
-    @Override
-    public void registerRequests(ClientRequest cr) {
-        dataRequest = cr.registerDataRequest(properties, "request");
     }
 
     /**

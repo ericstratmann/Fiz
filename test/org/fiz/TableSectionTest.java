@@ -11,6 +11,20 @@ public class TableSectionTest extends junit.framework.TestCase {
         cr = new ClientRequestFixture();
     }
 
+    public void test_constructor_noRequest() {
+        boolean gotException = false;
+        try {
+            TableSection table = new TableSection(new Dataset());
+        }
+        catch (Dataset.MissingValueError e) {
+            assertEquals("exception message",
+                    "couldn't find dataset element \"request\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+
     public void test_html_basics() {
         TableSection table = new TableSection(
                 new Dataset("request", "getPeople"),
@@ -253,14 +267,6 @@ public class TableSectionTest extends junit.framework.TestCase {
                 "<!-- End TableSection id.44 -->\n",
                 cr.getHtml().getBody().toString());
         TestUtil.assertXHTML(cr.getHtml().toString());
-    }
-
-    public void test_registerRequests() {
-        TableSection table = new TableSection(new Dataset(
-                "request", "getPeople"));
-        table.registerRequests(cr);
-        assertEquals("names of registered requests", "getPeople",
-                cr.getRequestNames());
     }
 
     public void test_printTd() {

@@ -61,7 +61,7 @@ package org.fiz;
  *                   If this property is omitted the form will initially be
  *                   empty.
  */
-public class FormSection implements Section {
+public class FormSection extends Section {
     /**
      * PostError is thrown when the {@code post} method detects an error
      * in its DataRequest.
@@ -95,13 +95,7 @@ public class FormSection implements Section {
 
     // The following variables are copies of constructor arguments.  See
     // the constructor documentation for details.
-    protected Dataset properties;
     protected FormElement[] elements;
-
-    // Source of initial values to display in the form, or null if the form
-    // is to be empty initially.  Note that individual elements of the form
-    // can request additional data on their own.
-    protected DataRequest dataRequest = null;
 
     // Style to use for the form's buttons; read from the "buttonStyle"
     // property.

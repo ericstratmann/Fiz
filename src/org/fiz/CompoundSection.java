@@ -25,10 +25,9 @@ import java.util.*;
  *                   visible or invisible.  Must be unique among all id's
  *                   for the page.
  */
-public class CompoundSection implements Section {
+public class CompoundSection extends Section {
     // The following variables are copies of the constructor arguments by
     // the same names.  See the constructor documentation for details.
-    protected Dataset properties;
     protected Section[] children;
 
     // If the {@code add} method has been called, the following variable
