@@ -414,34 +414,39 @@ public class ClientRequest {
     /**
      * Returns a Mac object specific to the session for this request,
      * which can be used to cryptographically sign data to prevent
-     * tampering.
-     * TODO: since the session is shared, need synchronization here.
-     * @return                     An HMAC-MD5 Mac object.
+     * tampering by this session and replay in other sessions.
+     * @return                     An HMAC-SHA256 Mac object.
      */
     public Mac getMac() {
         HttpSession session = servletRequest.getSession(true);
-        Object o = session.getAttribute("fiz.mac");
-        if (o != null) {
-            return (Mac) o;
-        }
 
-        // This is the first time we have needed a Mac object in this
-        // session, so we have to create a new one.  First generate a
-        // secret key for HMAC-MD5.
-        try {
-            KeyGenerator kg = KeyGenerator.getInstance("HmacSHA256");
-            SecretKey sk = kg.generateKey();
+        // There could potentially be multiple requests for the same
+        // session running concurrently, so synchronization is needed
+        // here.
+        synchronized(session) {
+            Object o = session.getAttribute("fiz.mac");
+            if (o != null) {
+                return (Mac) o;
+            }
 
-            // Create a Mac object implementing HMAC-MD5, and
-            // initialize it with the above secret key.
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(sk);
-            session.setAttribute("fiz.mac", mac);
-            return mac;
-        } catch (Exception e) {
-            throw new InternalError(
-                    "ClientRequest.getMac couldn't create a new Mac: "
-                    + e.getMessage());
+            // This is the first time we have needed a Mac object in this
+            // session, so we have to create a new one.  First generate a
+            // secret key for HMAC-MD5.
+            try {
+                KeyGenerator kg = KeyGenerator.getInstance("HmacSHA256");
+                SecretKey sk = kg.generateKey();
+
+                // Create a Mac object implementing HMAC-MD5, and
+                // initialize it with the above secret key.
+                Mac mac = Mac.getInstance("HmacSHA256");
+                mac.init(sk);
+                session.setAttribute("fiz.mac", mac);
+                return mac;
+            } catch (Exception e) {
+                throw new InternalError(
+                        "ClientRequest.getMac couldn't create a new Mac: "
+                        + e.getMessage());
+            }
         }
     }
 
