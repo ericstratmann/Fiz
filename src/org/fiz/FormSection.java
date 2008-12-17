@@ -110,9 +110,9 @@ public class FormSection extends Section {
     protected Dataset nestedHelp;
 
     // Used to generate a <div> into which error information for an element
-    // can be injected later; @1 is the element's id.
+    // can be injected later; @1 is the form's id, @2 is the element's id.
     protected static final String diagnosticTemplate =
-            "<div id=\"@1.diagnostic\" class=\"diagnostic\" " +
+            "<div id=\"@(1)_@(2)_diagnostic\" class=\"diagnostic\" " +
             "style=\"display:none\"></div>";
 
     // The following variable is used to identify the first error in
@@ -125,6 +125,9 @@ public class FormSection extends Section {
     // errors get cleared no more than once during each indication of the
     // {@code post} method.
     protected boolean oldElementErrorsCleared;
+
+    // The {@code id} property for the form, copy from {@code properties}.
+    protected String id;
 
     /**
      * Construct a FormSection.
@@ -142,6 +145,7 @@ public class FormSection extends Section {
         }
         helpConfig = Config.getDataset("help");
         nestedHelp = helpConfig.checkChild(properties.get("id"));
+        id = properties.get("id");
     }
 
     /**
@@ -197,12 +201,13 @@ public class FormSection extends Section {
      *                             request being serviced.
      * @param errorData            Dataset containing information about the
      *                             error.
-     * @param id                   Identifier for the form element
+     * @param elementId            Identifier for the form element
      *                             responsible for the error; typically the
      *                             same as the {@code culprit} value in
      *                             {@code errorData}.
      */
-    public void elementError(ClientRequest cr, Dataset errorData, String id) {
+    public void elementError(ClientRequest cr, Dataset errorData,
+            String elementId) {
         // Generate  HTML for the error message.
         StringBuilder html = new StringBuilder(100);
         String templateName = properties.check(
@@ -226,10 +231,9 @@ public class FormSection extends Section {
 
         // Invoke a Javascript method, passing it information about
         // the form element plus the HTML.
-        cr.ajaxEvalAction("Fiz.ids.@formId.elementError(" +
-                "\"@elementId\", \"@html\");",
-                new Dataset("formId", properties.get("id"),
-                "elementId", id, "html", html.toString()));
+        cr.ajaxEvalAction(Template.expand("Fiz.ids.@1.elementError(" +
+                "\"@(1)_@2\", \"@3\");", Template.SpecialChars.JAVASCRIPT,
+                id, elementId, html));
     }
 
     /**
@@ -471,8 +475,9 @@ public class FormSection extends Section {
      */
     protected void sideBySideElement(ClientRequest cr, FormElement element,
             Dataset data, StringBuilder out) {
-        Template.expand("    <tr {{title=\"@1\"}}>\n", out,
-                getHelpText(element));
+        String elementId = element.getId();
+        Template.expand("    <tr id=\"@(1)_@2\" {{title=\"@3\"}}>\n", out,
+                id, elementId, getHelpText(element));
         int startingLength = out.length();
         out.append("      <td class=\"label\">");
         if (!element.labelHtml(cr, data, out)) {
@@ -490,14 +495,15 @@ public class FormSection extends Section {
 
         // Create an extra <div> underneath the control for displaying
         // error messages pertaining to this form element.
-        Template.expand(diagnosticTemplate, out, element.getId());
+        Template.expand(diagnosticTemplate, out, id, elementId);
         out.append("</td>\n    </tr>\n");
 
     }
 
     /**
      * Generate HTML for a single FormElement, consisting of a table
-     * row for the label followed by a table row for the control.
+     * row separate divs for the label, the control, and diagnostic
+     * information.
      * @param cr                   Overall information about the client
      *                             request being serviced.
      * @param element              The form element to be rendered.
@@ -508,23 +514,26 @@ public class FormSection extends Section {
      */
     protected void verticalElement(ClientRequest cr, FormElement element,
             Dataset data, StringBuilder out) {
+        String elementId = element.getId();
+        Template.expand("    <tr id=\"@(1)_@2\" {{title=\"@3\"}}><td>\n", out,
+                id, elementId, getHelpText(element));
         int rowStart = out.length();
-        out.append("    <tr><td class=\"label\">");
+        out.append("      <div class=\"label\">");
         int labelStart = out.length();
         if (!element.labelHtml(cr, data, out)
                 || (labelStart == out.length())) {
             // No label for this element; discard the entire row.
             out.setLength(rowStart);
         } else {
-            out.append("</td></tr>\n");
+            out.append("</div>\n");
         }
-        Template.expand("    <tr {{title=\"@1\"}}><td class=\"control\">",
-                out, getHelpText(element));
+        out.append("      <div class=\"control\">");
         element.html(cr, data, out);
+        out.append("</div>\n      ");
 
         // Create an extra <div> underneath the control for displaying
         // error messages pertaining to this form element.
-        Template.expand(diagnosticTemplate, out, element.getId());
-        out.append("</td></tr>\n");
+        Template.expand(diagnosticTemplate, out, id, elementId);
+        out.append("\n    </td></tr>\n");
     }
 }

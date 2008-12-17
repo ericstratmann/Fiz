@@ -22,9 +22,9 @@ Fiz.FormSection = function(id, postUrl) {
     this.id = id;
     this.postUrl = postUrl;
 
-    // The following property stores references to all the <div> elements
-    // that currently display a diagnostic message.
-    this.visibleDiagnostics = new Array();
+    // The following property stores ids for all of the form elements that
+    // have been modified to display error information.
+    this.errorElements = new Array();
 }
 
 /**
@@ -71,26 +71,35 @@ Fiz.FormSection.prototype.post = function() {
 
 /**
  * This function is invoked as an Ajax response to display an error message
- * in the diagnostic row for the form element whose id is {@code id}.
+ * in the diagnostic row for the form element whose id is {@code id}, and
+ * also to add class "formError" to the main row for the element.
  * @param id                       Identifies a particular form element; used
  *                                 as the base of various HTML element ids.
  * @param html                     HTML to use as the body of the diagnostic
  *                                 {@code <div>} for the form element.
  */
 Fiz.FormSection.prototype.elementError = function(id, html) {
-    var div = document.getElementById(id + ".diagnostic");
+    this.errorElements.push(id);
+    var div = document.getElementById(id + "_diagnostic");
     div.style.display = "";
     div.innerHTML = html;
-    this.visibleDiagnostics.push(div);
+    var row = document.getElementById(id);
+    row.className = "formError";
 }
 
 /**
- * If there is an element-specific error message displayed in this
- * form, undisplay it.
+ * If there are any element-specific error messages displayed in this
+ * form, undisplay them.
  */
 Fiz.FormSection.prototype.clearElementErrors = function() {
-    for (var i = 0, length = this.visibleDiagnostics.length; i < length; i++) {
-        this.visibleDiagnostics[i].style.display = "none";
+    for (var i = 0, length = this.errorElements.length; i < length; i++) {
+        var id = this.errorElements[i];
+        var div = document.getElementById(id + "_diagnostic");
+        div.style.display = "none";
+
+        // Also, remove the "formError" class from the main row.
+        var row = document.getElementById(id);
+        row.className = "";
     }
-    this.visibleDiagnostics.length = 0;
+    this.errorElements.length = 0;
 }

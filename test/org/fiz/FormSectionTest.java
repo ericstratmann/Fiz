@@ -97,9 +97,9 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "{type: \"eval\", javascript: " +
                 "\"Fiz.ids.form1.clearElementErrors();\"}, " +
                 "{type: \"eval\", javascript: \"Fiz.ids.form1.elementError(" +
-                "\\\"name\\\", \\\"<span class=\\\\\\\"error\\\\\\\">name " +
-                "error</span>\\\");\"}, {type: \"eval\", javascript: " +
-                "\"Fiz.ids.form1.elementError(\\\"age\\\", \\\"<span " +
+                "\\\"form1_name\\\", \\\"<span class=\\\\\\\"error\\\\\\\">" +
+                "name error</span>\\\");\"}, {type: \"eval\", javascript: " +
+                "\"Fiz.ids.form1.elementError(\\\"form1_age\\\", \\\"<span " +
                 "class=\\\\\\\"error\\\\\\\">age error</span>\\\");\"}",
                 response.toString());
     }
@@ -132,7 +132,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "{type: \"eval\", javascript: " +
                 "\"Fiz.ids.form1.clearElementErrors();\"}, " +
                 "{type: \"eval\", javascript: \"Fiz.ids.form1.elementError(" +
-                "\\\"id11\\\", \\\"error for Alice: &lt;failure&gt;\\\");\"}",
+                "\\\"form1_id11\\\", \\\"error for Alice: " +
+                "&lt;failure&gt;\\\");\"}",
                 response.toString());
     }
     public void test_elementError_notFirstError() {
@@ -158,8 +159,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 ((ServletResponseFixture)cr.getServletResponse());
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
-                "\"Fiz.ids.form1.elementError(\\\"id11\\\", \\\"error for Alice: " +
-                "&lt;failure&gt;\\\");\"}",
+                "\"Fiz.ids.form1.elementError(\\\"form1_id11\\\", " +
+                "\\\"error for Alice: &lt;failure&gt;\\\");\"}",
                 response.toString());
     }
     public void test_elementError_defaultStyle() {
@@ -177,8 +178,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 ((ServletResponseFixture)cr.getServletResponse());
         assertEquals("response Javascript for Ajax",
                 "var actions = [{type: \"eval\", javascript: " +
-                "\"Fiz.ids.form1.elementError(\\\"id11\\\", \\\"default style: " +
-                "&lt;failure&gt;\\\");\"}",
+                "\"Fiz.ids.form1.elementError(\\\"form1_id11\\\", " +
+                "\\\"default style: &lt;failure&gt;\\\");\"}",
                 response.toString());
     }
 
@@ -336,9 +337,9 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "\\\"bulletinError\\\", \\\"bulletin: One or more of the " +
                 "input fields are invalid; see details below.\\\");\"}, " +
                 "{type: \"eval\", " +
-                "javascript: \"Fiz.ids.form1.elementError(\\\"age\\\", " +
+                "javascript: \"Fiz.ids.form1.elementError(\\\"form1_age\\\", " +
                 "\\\"element: &lt;failure&gt;\\\");\"}, {type: \"eval\", " +
-                "javascript: \"Fiz.ids.form1.elementError(\\\"name\\\", " +
+                "javascript: \"Fiz.ids.form1.elementError(\\\"form1_name\\\", " +
                 "\\\"element: error33\\\");\"}",
                 response.toString());
     }
@@ -502,10 +503,11 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "action=\"javascript: Fiz.ids.form1.post();\" " +
                 "method=\"post\">\n" +
                 "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
-                "    <tr>\n" +
+                "    <tr id=\"form1_id11\">\n" +
                 "      <td class=\"label\"></td>\n" +
-                "      <td class=\"control\">xyz<div id=\"id11.diagnostic\" " +
-                "class=\"diagnostic\" style=\"display:none\"></div></td>\n" +
+                "      <td class=\"control\">xyz<div " +
+                "id=\"form1_id11_diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
                 "  </table>\n" +
                 "</form>\n" +
@@ -551,15 +553,15 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "<form id=\"form1\" class=\"FormSection\" action=" +
                 "\"javascript: Fiz.ids.form1.post();\" method=\"post\">\n" +
                 "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
-                "    <tr>\n" +
+                "    <tr id=\"form1_id1\">\n" +
                 "      <td class=\"control\" colspan=\"2\">element 1 html" +
-                "<div id=\"id1.diagnostic\" class=\"diagnostic\" " +
+                "<div id=\"form1_id1_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
-                "    <tr>\n" +
+                "    <tr id=\"form1_id2\">\n" +
                 "      <td class=\"label\"></td>\n" +
                 "      <td class=\"control\">element 2 html" +
-                "<div id=\"id2.diagnostic\" class=\"diagnostic\" " +
+                "<div id=\"form1_id2_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
                 "  </table>\n" +
@@ -583,16 +585,16 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "<form id=\"form1\" class=\"FormSection\" action=" +
                 "\"javascript: Fiz.ids.form1.post();\" method=\"post\">\n" +
                 "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
-                "    <tr title=\"Sample help text\">\n" +
+                "    <tr id=\"form1_id1\" title=\"Sample help text\">\n" +
                 "      <td class=\"label\"></td>\n" +
                 "      <td class=\"control\">element 1 html" +
-                "<div id=\"id1.diagnostic\" class=\"diagnostic\" " +
+                "<div id=\"form1_id1_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
-                "    <tr>\n" +
+                "    <tr id=\"form1_id2\">\n" +
                 "      <td class=\"label\"></td>\n" +
                 "      <td class=\"control\">element 2 html" +
-                "<div id=\"id2.diagnostic\" class=\"diagnostic\" " +
+                "<div id=\"form1_id2_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
                 "  </table>\n" +
@@ -614,19 +616,19 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "action=\"javascript: Fiz.ids.form1.post();\" " +
                 "method=\"post\">\n" +
                 "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
-                "    <tr>\n" +
+                "    <tr id=\"form1_name\">\n" +
                 "      <td class=\"label\">Name:</td>\n" +
                 "      <td class=\"control\"><input type=\"text\" " +
                 "name=\"name\" class=\"EntryFormElement\" " +
                 "value=\"David\" />" +
-                "<div id=\"name.diagnostic\" class=\"diagnostic\" " +
+                "<div id=\"form1_name_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
-                "    <tr>\n" +
+                "    <tr id=\"form1_age\">\n" +
                 "      <td class=\"label\">Age:</td>\n" +
                 "      <td class=\"control\"><input type=\"text\" " +
                 "name=\"age\" class=\"EntryFormElement\" " +
-                "value=\"66\" /><div id=\"age.diagnostic\" " +
+                "value=\"66\" /><div id=\"form1_age_diagnostic\" " +
                 "class=\"diagnostic\" style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
                 "  </table>\n" +
@@ -653,13 +655,17 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "<form id=\"form1\" class=\"FormSection\" action=" +
                 "\"javascript: Fiz.ids.form1.post();\" method=\"post\">\n" +
                 "  <table cellspacing=\"0\" class=\"vertical\">\n" +
-                "    <tr><td class=\"control\">element 1 html" +
-                "<div id=\"id1.diagnostic\" class=\"diagnostic\" " +
-                "style=\"display:none\"></div></td></tr>\n" +
-                "    <tr><td class=\"label\">sample</td></tr>\n" +
-                "    <tr><td class=\"control\">element 2 html" +
-                "<div id=\"id2.diagnostic\" class=\"diagnostic\" " +
-                "style=\"display:none\"></div></td></tr>\n" +
+                "    <tr id=\"form1_id1\"><td>\n" +
+                "      <div class=\"control\">element 1 html</div>\n" +
+                "      <div id=\"form1_id1_diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div>\n" +
+                "    </td></tr>\n" +
+                "    <tr id=\"form1_id2\"><td>\n" +
+                "      <div class=\"label\">sample</div>\n" +
+                "      <div class=\"control\">element 2 html</div>\n" +
+                "      <div id=\"form1_id2_diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div>\n" +
+                "    </td></tr>\n" +
                 "  </table>\n" +
                 "</form>\n" +
                 "<!-- End FormSection form1 -->\n",
@@ -682,13 +688,16 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "<form id=\"form1\" class=\"FormSection\" action=" +
                 "\"javascript: Fiz.ids.form1.post();\" method=\"post\">\n" +
                 "  <table cellspacing=\"0\" class=\"vertical\">\n" +
-                "    <tr title=\"Sample help text\">" +
-                "<td class=\"control\">element 1 html" +
-                "<div id=\"id1.diagnostic\" class=\"diagnostic\" " +
-                "style=\"display:none\"></div></td></tr>\n" +
-                "    <tr><td class=\"control\">element 2 html" +
-                "<div id=\"id2.diagnostic\" class=\"diagnostic\" " +
-                "style=\"display:none\"></div></td></tr>\n" +
+                "    <tr id=\"form1_id1\" title=\"Sample help text\"><td>\n" +
+                "      <div class=\"control\">element 1 html</div>\n" +
+                "      <div id=\"form1_id1_diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div>\n" +
+                "    </td></tr>\n" +
+                "    <tr id=\"form1_id2\"><td>\n" +
+                "      <div class=\"control\">element 2 html</div>\n" +
+                "      <div id=\"form1_id2_diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div>\n" +
+                "    </td></tr>\n" +
                 "  </table>\n" +
                 "</form>\n" +
                 "<!-- End FormSection form1 -->\n",
@@ -708,18 +717,22 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "action=\"javascript: Fiz.ids.form1.post();\" " +
                 "method=\"post\">\n" +
                 "  <table cellspacing=\"0\" class=\"vertical\">\n" +
-                "    <tr><td class=\"label\">Name:</td></tr>\n" +
-                "    <tr><td class=\"control\"><input type=\"text\" " +
+                "    <tr id=\"form1_name\"><td>\n" +
+                "      <div class=\"label\">Name:</div>\n" +
+                "      <div class=\"control\"><input type=\"text\" " +
                 "name=\"name\" class=\"EntryFormElement\" " +
-                "value=\"David\" />" +
-                "<div id=\"name.diagnostic\" class=\"diagnostic\" " +
-                "style=\"display:none\"></div></td></tr>\n" +
-                "    <tr><td class=\"label\">Age:</td></tr>\n" +
-                "    <tr><td class=\"control\"><input type=\"text\" " +
+                "value=\"David\" /></div>\n" +
+                "      <div id=\"form1_name_diagnostic\" " +
+                "class=\"diagnostic\" style=\"display:none\"></div>\n" +
+                "    </td></tr>\n" +
+                "    <tr id=\"form1_age\"><td>\n" +
+                "      <div class=\"label\">Age:</div>\n" +
+                "      <div class=\"control\"><input type=\"text\" " +
                 "name=\"age\" class=\"EntryFormElement\" " +
-                "value=\"66\" /><div id=\"age.diagnostic\" " +
-                "class=\"diagnostic\" style=\"display:none\">" +
-                "</div></td></tr>\n" +
+                "value=\"66\" /></div>\n" +
+                "      <div id=\"form1_age_diagnostic\" " +
+                "class=\"diagnostic\" style=\"display:none\"></div>\n" +
+                "    </td></tr>\n" +
                 "  </table>\n" +
                 "</form>\n" +
                 "<!-- End FormSection form1 -->\n",
