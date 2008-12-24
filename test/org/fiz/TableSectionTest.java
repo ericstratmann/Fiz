@@ -16,9 +16,10 @@ public class TableSectionTest extends junit.framework.TestCase {
         try {
             TableSection table = new TableSection(new Dataset());
         }
-        catch (Dataset.MissingValueError e) {
+        catch (InternalError e) {
             assertEquals("exception message",
-                    "couldn't find dataset element \"request\"",
+                    "TableSection constructor invoked without a " +
+                    "\"request\" property",
                     e.getMessage());
             gotException = true;
         }

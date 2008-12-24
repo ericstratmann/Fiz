@@ -28,17 +28,17 @@
 
 #@id td.left {
     padding-left: @sidePadding;
-    background-image: url(@imageBase-leftBg.gif);
+    background-image: url(@imageFamily-leftBg.gif);
     border-bottom: @border;
 }
 #@id td.mid {
-    background-image: url(@imageBase-midBg.gif);
+    background-image: url(@imageFamily-midBg.gif);
     background-repeat: repeat-x;
     border-bottom: @border;
 }
 #@id td.right {
     padding-left: @sidePadding;
-    background-image: url(@imageBase-rightBg.gif);
+    background-image: url(@imageFamily-rightBg.gif);
     border-bottom: @border;
 }
 
@@ -46,16 +46,16 @@
 
 #@id td.leftSelected {
     padding-left: @selectedSidePadding;
-    background-image: url(@imageBase-leftBgSelected.gif);
+    background-image: url(@imageFamily-leftBg-selected.gif);
 }
 #@id td.midSelected {
-    background-image: url(@imageBase-midBgSelected.gif);
+    background-image: url(@imageFamily-midBg-selected.gif);
     background-repeat: repeat-x;
     font-weight: bold;
 }
 #@id td.rightSelected {
     padding-left: @selectedSidePadding;
-    background-image: url(@imageBase-rightBgSelected.gif);
+    background-image: url(@imageFamily-rightBg-selected.gif);
 }
 
 /* Style information for the spacer element to the left of each tab: */

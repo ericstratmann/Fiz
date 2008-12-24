@@ -63,40 +63,38 @@ test("FormSection_post", function() {
 
 test("FormSection_elementError", function() {
     document = new Document();
-    var div1 = document.addElementWithId("div1.diagnostic",
+    var row1 = document.addElementWithId("div1", {className: "undefined"});
+    var div1 = document.addElementWithId("div1_diagnostic",
         {style: {display: "none"}, innerHTML: "xxx"});
-    var div2 = document.addElementWithId("div2.diagnostic",
+    var row2 = document.addElementWithId("div2", {className: "undefined"});
+    var div2 = document.addElementWithId("div2_diagnostic",
             {style: {display: "none"}, innerHTML: "yyy"});
     var form = new Fiz.FormSection("form16", "/a/b/c");
 
     form.elementError("div1", "error1");
-    assertEqual("error1", div1.innerHTML,
-            "div1.innerHTML after first call");
+    assertEqual("div1", form.errorElements.join(", "),
+            "form.errorElements after first call");
     assertEqual("", div1.style.display,
             "div1.style.display after first call");
-    assertEqual("1", form.visibleDiagnostics.length,
-            "form.visibleDiagnostics length");
-    assertEqual("div1.diagnostic", form.visibleDiagnostics[0].id,
-            "form.visibleDiagnostics[0] after first call");
+    assertEqual("error1", div1.innerHTML,
+            "div1.innerHTML after first call");
+    assertEqual("formError", row1.className,
+            "row.className after first call");
 
     // Make a second call on a different element, and make sure that
-    // visibleDiagnostics records both elements.
+    // errorElements records both elements.
     form.elementError("div2", "error2");
-    assertEqual("error1",div1.innerHTML,
-            "div1.innerHTML after second call");
-    assertEqual("2", form.visibleDiagnostics.length,
-            "form.visibleDiagnostics length");
-    assertEqual("div1.diagnostic", form.visibleDiagnostics[0].id,
-            "form.visibleDiagnostics[0] after first call");
-    assertEqual("div2.diagnostic", form.visibleDiagnostics[1].id,
-            "form.visibleDiagnostics[1] after first call");
+    assertEqual("div1, div2", form.errorElements.join(", "),
+            "form.errorElements after second call");
 });
 
 test("FormSection_clearElementErrors", function() {
     document = new Document();
-    var div1 = document.addElementWithId("div1.diagnostic",
+    var row1 = document.addElementWithId("div1", {className: "undefined"});
+    var div1 = document.addElementWithId("div1_diagnostic",
         {style: {display: "none"}, innerHTML: "xxx"});
-    var div2 = document.addElementWithId("div2.diagnostic",
+    var row2 = document.addElementWithId("div2", {className: "undefined"});
+    var div2 = document.addElementWithId("div2_diagnostic",
             {style: {display: "none"}, innerHTML: "yyy"});
     var form = new Fiz.FormSection("form16", "/a/b/c");
 
@@ -105,8 +103,10 @@ test("FormSection_clearElementErrors", function() {
     form.clearElementErrors();
     assertEqual("none", div1.style.display,
             "div1.style.display after call");
+    assertEqual("", row1.className, "row1.className after call");
     assertEqual("none", div2.style.display,
             "div2.style.display after call");
-    assertEqual("0", form.visibleDiagnostics.length,
-            "form.visibleDiagnostics.length after call");
+    assertEqual("", row2.className, "row2.className after call");
+    assertEqual("", form.errorElements.join(", "),
+            "form.errorElements after call");
 });

@@ -510,6 +510,12 @@ public class Template {
      *                             {@code @foo}.
      * @param data                 Provides data to be substituted into the
      *                             template.
+     * @param sqlParameters        For each substitution in {@code template},
+     *                             the value for the substitution is appended
+     *                             to this ArrayList and "?" is appended to
+     *                             the result string.  The caller will pass
+     *                             {@code sqlParameters} to JDBC when it
+     *                             invokes the SQL statement.
      * @return                     The result produced by expanding the
      *                             template.
      * @throws MissingValueError   A required data value couldn't be found.

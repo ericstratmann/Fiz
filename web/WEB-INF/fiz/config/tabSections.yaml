@@ -32,8 +32,8 @@
 #                         without the background image will be visible).
 # selectedSidePadding:    Additional space for the side strips of the selected
 #                         tab.
-# imageBase:              The base name for a collection of background images
-#                         used for the tabs.  If {@code imageBase} is "x",
+# imageFamily:            The base name for a family of background images
+#                         used for the tabs.  If {@code imageFamily} is "x",
 #                         then the following images must exist:
 #     x-leftBg.gif:            Background image for the left strip of
 #                              unselected tabs.
@@ -42,15 +42,15 @@
 #                              needed.
 #     x-rightBg.gif:           Background image for the right strip of
 #                              unselected tabs.
-#     x-leftBgSelected.gif:    Background image for the left strip of the
+#     x-leftBg-selected.gif:   Background image for the left strip of the
 #                              selected tab.
-#     x-midBgSelected.gif:     Background image for the central portion of the
+#     x-midBg-selected.gif:    Background image for the central portion of the
 #                              selected tab; repeats horizontally as needed.
-#     x-rightBgSelected.gif:   Background image for the right strip of the
+#     x-rightBg-selected.gif:  Background image for the right strip of the
 #                              selected tab.
 
 tabGray:
   border:               1px solid #cccccc
   sidePadding:          2px
   selectedSidePadding:  2px
-  imageBase:            /fizlib/images/tabGray
+  imageFamily:          /fizlib/images/tabGray

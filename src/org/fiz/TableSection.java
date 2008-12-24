@@ -69,9 +69,10 @@ public class TableSection extends Section {
     public TableSection(Dataset properties, Formatter ... columns) {
         this.properties = properties;
         this.columns = columns;
-
-        // Make sure a request has been specified.
-        properties.get("request");
+        if (!properties.containsKey("request")) {
+            throw new InternalError("TableSection constructor invoked " +
+                    "without a \"request\" property");
+        }
     }
 
     /**
