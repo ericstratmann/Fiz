@@ -17,6 +17,8 @@ import java.util.*;
  *                   and {@code x-w.gif}; {@code x-nw.gif} displays the
  *                   upper left corner of the border, {@code x-n.gif} will be
  *                   stretched to cover the top of the border, and so on.
+ *   layout:         (optional) Specifies a table layout for laying out child
+ *                   sections. See {@link TableLayout} for details.
  *   class:          (optional) Used as the {@code class} attribute for
  *                   the HTML table or div that contains the CompoundSection.
  *   id:             (optional)  Used as the {@code id} attribute for the
@@ -25,7 +27,7 @@ import java.util.*;
  *                   visible or invisible.  Must be unique among all id's
  *                   for the page.
  */
-public class CompoundSection extends Section {
+public class CompoundSection extends Section implements TableLayoutContainer {
     // The following variables are copies of the constructor arguments by
     // the same names.  See the constructor documentation for details.
     protected Section[] children;
@@ -81,6 +83,7 @@ public class CompoundSection extends Section {
         Template.expand("\n<!-- Start CompoundSection {{@id}} -->\n",
                 properties, out);
         String borderFamily = properties.check("borderFamily");
+        String layout = properties.check("layout");
         if (borderFamily != null) {
             Template.expand("<table {{id=\"@id\"}} {{class=\"@class\"}} " +
                     "cellspacing=\"0\">\n" +
@@ -102,19 +105,40 @@ public class CompoundSection extends Section {
                     "    <td class=\"compoundBody\" " +
                     "{{style=\"background: @background;\"}}>\n",
                     properties, out);
+            if (layout != null) {
+                // If a table layout was specified, expand it using the
+                // TableLayout class.
+
+                // First copy over the configuration properties relevant to the
+                // TableLayout.html() method.
+                Dataset layoutProperties = new Dataset("layout", layout);
+                TableLayout.html(layoutProperties, this, cr);
+            }
+        } else if (layout != null) {
+            // If a table layout was specified, expand it using the
+            // TableLayout class.
+
+            // First copy over the configuration properties relevant to the
+            // TableLayout.html() method.
+            Dataset layoutProperties = new Dataset("layout", layout,
+                    "id", properties.check("id"),
+                    "class", properties.check("class"));
+            TableLayout.html(layoutProperties, this, cr);
         } else {
             Template.expand("<div {{id=\"@id\"}} {{class=\"@class\"}} " +
                     "{{style=\"background: @background;\"}}>\n",
                     properties, out);
         }
 
-        // Give the children a chance to render themselves.
-        for (Section child: children) {
-            child.html(cr);
-        }
-        if (extraChildren != null) {
-            for (Section child: extraChildren) {
+        if (layout == null) {
+            // Give the children a chance to render themselves.
+            for (Section child: children) {
                 child.html(cr);
+            }
+            if (extraChildren != null) {
+                for (Section child: extraChildren) {
+                    child.html(cr);
+                }
             }
         }
 
@@ -137,7 +161,7 @@ public class CompoundSection extends Section {
                     "</td>\n" +
                     "  </tr>\n" +
                     "</table>\n", properties, out);
-        } else {
+        } else if (layout == null) {
             out.append("</div>\n");
         }
         Template.expand("<!-- End CompoundSection {{@id}} -->\n",
@@ -161,6 +185,39 @@ public class CompoundSection extends Section {
         if (extraChildren != null) {
             for (Section child: extraChildren) {
                 child.registerRequests(cr);
+            }
+        }
+    }
+
+    /**
+     * Generate HTML for a child element of this container and append it to
+     * the Html object associated with {@code cr}. If a child element
+     * named {@code id} does not exist, this method just returns without
+     * modifying {@code cr}.
+     *
+     * @param id The id of the child element.
+     * @param cr Overall information about the client
+     *           request being serviced; HTML should get appended to
+     *           {@code cr.getHtml()}.
+     */
+    public void childHtml(String id, ClientRequest cr) {
+        // Search for a child Section whose id is "id".
+        for (Section child : children) {
+            String childId = child.checkId();
+            if (childId != null && childId.equals(id)) {
+                // Found a child section with a matching id, generate Html
+                // and return.
+                child.html(cr);
+                return;
+            }
+        }
+        if (extraChildren != null) {
+            for (Section child : extraChildren) {
+                String childId = child.checkId();
+                if (childId != null && childId.equals(id)) {
+                    child.html(cr);
+                    return;
+                }
             }
         }
     }

@@ -108,6 +108,74 @@ public class CompoundSectionTest extends junit.framework.TestCase {
                 "<td class=\"compoundBody\" style=\"background: #ff0000;\">",
                 html);
     }
+    public void test_html_layout() {
+        String layout = "+-------+\n" +
+                        "| first |\n" +
+                        "+-------+";        
+        CompoundSection section = new CompoundSection(
+                new Dataset("id", "test44", "layout", layout),
+                new TemplateSection(new Dataset("id", "first",
+                        "template", "<h1>First section</h1>\n")));
+        section.html(cr);
+        String html = cr.getHtml().getBody().toString();
+        TestUtil.assertXHTML(html);
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start CompoundSection test44 -->\n" +
+                "<table id=\"test44\" cellspacing=\"0\" >\n" +
+                "  <tr>\n" +
+                "    <td colspan=\"1\" rowspan=\"1\">\n" +
+                "<h1>First section</h1>\n" +
+                "    </td>\n" +
+                "  </tr>\n" +
+                "</table>\n" +
+                "<!-- End CompoundSection test44 -->\n", html);
+    }
+    public void test_html_borderFamilyAndLayout() {
+        String layout = "+-------+\n" +
+                        "| first |\n" +
+                        "+-------+";
+        CompoundSection section = new CompoundSection(
+                new Dataset("id", "test44",
+                        "borderFamily", "a/b/c",
+                        "layout", layout),
+                new TemplateSection(new Dataset("id", "first",
+                        "template", "<h1>First section</h1>\n")));
+        section.html(cr);
+        String html = cr.getHtml().getBody().toString();
+        TestUtil.assertXHTML(html);
+        assertEquals("generated HTML", "\n" +
+                "<!-- Start CompoundSection test44 -->\n" +
+                "<table id=\"test44\" cellspacing=\"0\">\n" +
+                "  <tr style=\"line-height: 0px;\">\n" +
+                "    <td><img src=\"a/b/c-nw.gif\" alt=\"\" /></td>\n" +
+                "    <td style=\"background-image: url(a/b/c-n.gif); " +
+                "background-repeat: repeat-x;\"></td>\n" +
+                "    <td><img src=\"a/b/c-ne.gif\" alt=\"\" /></td>\n" +
+                "  </tr>\n" +
+                "  <tr>\n" +
+                "    <td style=\"background-image: url(a/b/c-w.gif); " +
+                "background-repeat: repeat-y;\"></td>\n" +
+                "    <td class=\"compoundBody\">\n" +
+                "<table cellspacing=\"0\" >\n" +
+                "  <tr>\n" +
+                "    <td colspan=\"1\" rowspan=\"1\">\n" +
+                "<h1>First section</h1>\n" +
+                "    </td>\n" +
+                "  </tr>\n" +
+                "</table>\n" +
+                "    </td>\n" +
+                "    <td style=\"background-image: url(a/b/c-e.gif); " +
+                "background-repeat: repeat-y;\"></td>\n" +
+                "  </tr>\n" +
+                "  <tr style=\"line-height: 0px;\">\n" +
+                "    <td><img src=\"a/b/c-sw.gif\" alt=\"\" /></td>\n" +
+                "    <td style=\"background-image: url(a/b/c-s.gif); " +
+                "background-repeat: repeat-x;\"></td>\n" +
+                "    <td><img src=\"a/b/c-se.gif\" alt=\"\" /></td>\n" +
+                "  </tr>\n" +
+                "</table>\n" +
+                "<!-- End CompoundSection test44 -->\n", html);
+    }
     public void test_html_divSimple() {
         CompoundSection section = new CompoundSection(
                 new Dataset(),
@@ -170,5 +238,17 @@ public class CompoundSectionTest extends junit.framework.TestCase {
         section.registerRequests(cr);
         assertEquals("registered requests", "getPeople, getPerson, getState",
                 cr.getRequestNames());
+    }
+
+    public void test_childHtml() {
+        CompoundSection section = new CompoundSection(
+                new Dataset("id", "test44", "class", "class22",
+                        "background", "#ff0000"),
+                new TemplateSection(new Dataset("id", "first",
+                        "template", "<h1>First section</h1>\n")));
+        section.childHtml("first", cr);
+        String html = cr.getHtml().getBody().toString();
+        TestUtil.assertXHTML(html);
+        assertEquals("generated HTML", "<h1>First section</h1>\n", html);
     }
 }

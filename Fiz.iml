@@ -4,6 +4,7 @@
     <facet type="web" name="Web">
       <configuration>
         <descriptors>
+          <deploymentDescriptor name="web.xml" url="file://$MODULE_DIR$/web/WEB-INF/web.xml" optional="false" version="2.5" />
           <deploymentDescriptor url="file://$MODULE_DIR$/src/log4j.properties">
             <option name="DEFAULT_DIR" value="WEB-INF/classes" />
           </deploymentDescriptor>
@@ -35,7 +36,7 @@
             <attribute name="method" value="0" />
             <attribute name="URI" value="/WEB-INF/lib" />
           </containerElement>
-          <containerElement type="library" name="Misc. libraries" level="project">
+          <containerElement type="library" name="external" level="project">
             <attribute name="method" value="1" />
             <attribute name="URI" value="/WEB-INF/lib" />
           </containerElement>
@@ -43,6 +44,10 @@
             <attribute name="method" value="0" />
             <attribute name="URI" value="&lt;N/A&gt;" />
             <url>jar://$APPLICATION_HOME_DIR$/lib/javaee.jar!/</url>
+          </containerElement>
+          <containerElement type="library" name="Misc. libraries" level="project">
+            <attribute name="method" value="1" />
+            <attribute name="URI" value="/WEB-INF/lib" />
           </containerElement>
         </packaging>
       </configuration>
@@ -70,14 +75,15 @@
     <orderEntry type="module-library">
       <library name="Java tools">
         <CLASSES>
-          <root url="file://$MODULE_DIR$/../../../../../cygwin/usr/local/tools/i686_win32/jdk1.6.0_01/lib" />
+          <root url="file:///usr/lib/jvm/java-6-sun/lib" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
-        <jarDirectory url="file://$MODULE_DIR$/../../../../../cygwin/usr/local/tools/i686_win32/jdk1.6.0_01/lib" recursive="false" />
+        <jarDirectory url="file:///usr/lib/jvm/java-6-sun/lib" recursive="false" />
       </library>
     </orderEntry>
     <orderEntry type="library" name="Misc. libraries" level="project" />
+    <orderEntry type="library" name="external" level="project" />
     <orderEntryProperties />
   </component>
 </module>
