@@ -1274,7 +1274,6 @@ public class Dataset implements Cloneable {
     @SuppressWarnings("unchecked")
     protected ParentInfo lookupParent(String path, boolean create) {
         int startIndex = 0;
-        int length = path.length();
         HashMap parent = map;
         Object child;
         String key;

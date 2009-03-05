@@ -7,7 +7,7 @@ import java.util.*;
  * for manipulating strings.
  */
 public final class StringUtil {
-    // No constructor: this class only has a static methods.
+    // No constructor: this class only has static methods.
     private StringUtil() {}
 
     /**
@@ -664,7 +664,6 @@ public final class StringUtil {
      */
     public static String[] split(String s, char separator) {
         int current, length;
-        char c;
 
         // Count the substrings.
         for (current = 0, length = 0; ; length++) {
@@ -689,7 +688,6 @@ public final class StringUtil {
         for (int i = 0; i < length; i++) {
             current = skipSpaces(s, current);
             int next = s.indexOf(separator, current);
-            String spec;
             if (next >= 0) {
                 result[i] = s.substring(current, next);
                 current = next+1;

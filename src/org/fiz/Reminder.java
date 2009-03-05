@@ -196,7 +196,6 @@ public class Reminder {
         // Break the incoming data into the Mac signature and the main
         // body of the reminder.
         int i = start;
-        int inputLength = input.length();
         int macLength = parseLength(input, i, end);
         byte[] incomingMac = StringUtil.decode4to3(input, end.value,
                 macLength);

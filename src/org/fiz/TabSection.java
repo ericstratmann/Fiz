@@ -98,7 +98,7 @@ public class TabSection extends Section{
         boolean anyJavascript = false;
         String sectionId = properties.get("id");
 
-        // To get information about which that is selected?
+        // Get information about which tab is selected.
         String selected = null;
         String selector = properties.check("selector");
         if (selector != null) {

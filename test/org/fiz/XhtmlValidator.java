@@ -1,121 +1,72 @@
 package org.fiz;
+
 import java.io.*;
-import java.lang.*;
-import java.util.regex.*;
 import javax.xml.parsers.*;
-import org.junit.*;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
 import org.xml.sax.*;
 
 /**
- * TestUtil provides an assortment of methods for use in Fiz unit tests.
+ * This class implements XHTML document validation as a wrapper layer around
+ * a SAX-based XML document parser.
  */
-public class TestUtil {
+public class XhtmlValidator {
+    private XhtmlValidator()
+    {}
 
     /**
-     * Verifies that a given string has proper XHTML syntax, generates
-     * proper junit errors if it doesn't.
-     * @param html                       String to test.
+     * Validates an XHTML document or fragment.
+     *
+     * @param xhtml                XHTML document to validate.
+     * @return                     The return value is empty if the document
+     *                             is valid XHTML; otherwise it contains a
+     *                             human readable message describing the
+     *                             error(s).
      */
-    public static void assertXHTML(String html) {
-        String errors = XhtmlValidator.validate(html);
-        if (errors.length() != 0) {
-            Assert.fail("malformed XHTML:\n" + errors);
-        }
-    }
 
-    /**
-     * Verifies that test output contains a particular substring, generates
-     * a junit error message if it doesn't.
-     * @param message                    Message to incorporate in any
-     *                                   error message that is generated.
-     * @param substring                  Desired substring.
-     * @param actual                     Output from test, which should
-     *                                   contain substring.
-     */
-    public static void assertSubstring(String message, String substring,
-                                       String actual) {
-        if ((actual == null) || (actual.indexOf(substring) < 0)) {
-            Assert.fail(message + "\nExpected substring :" + substring
-                    + "\nTest output :" + actual);
-        }
-    }
-
-    /**
-     * Verifies that the test output matches a given regular expression;
-     * generates a junit error message if it doesn't.
-     * @param message                    Message to incorporate in any
-     *                                   error message that is generated.
-     * @param pattern                    Regular expression to match against
-     *                                   the test output.
-     * @param actual                     Output from test, which should match
-     *                                   pattern.
-     */
-    public static void assertMatch(String message, String pattern, String actual) {
-        if ((actual == null) || !actual.matches(pattern)) {
-            Assert.fail(message + "\nPattern :" + pattern
-                    + "\nDidn't match test output :" + actual);
-        }
-    }
-
-    /**
-     * Extract a substring from the test output using a regular expression
-     * pattern, then verify that the substring matches an expected value;
-     * generate a junit error message if it doesn't, or if the pattern
-     * doesn't match.
-     * @param message                    Message to incorporate in any
-     *                                   error message that is generated.
-     * @param expected                   Expected value for the substring of
-     *                                   {@code actual} that matches
-     *                                   {@code regexp}.
-     * @param actual                     Test output.
-     * @param regexp                     Regular expression pattern.
-     */
-    public static void assertMatchingSubstring(String message,
-            String expected, String actual, String regexp) {
-        Pattern pattern = Pattern.compile(regexp);
-        Matcher matcher = pattern.matcher(actual);
-        if (!matcher.find()) {
-            Assert.fail(message + "\nPattern :" + regexp
-                    + "\nDidn't match test output :" + actual);
-        }
-        Assert.assertEquals(message, expected, matcher.group());
-    }
-
-    /**
-     * Creates a file containing a given string as contents.  If an error
-     * occurs while creating the file, a test assertion error is generated
-     * with error information.
-     * @param fileName                   Name of the desired file
-     * @param contents                   Information to write to the file
-     * @return                           True means the file was successfully
-     *                                   written; false means there was an
-     *                                   error.
-     */
-    public static boolean writeFile(String fileName, String contents) {
+    public static String validate(String xhtml) {
+        XhtmlErrorHandler handler = new XhtmlErrorHandler(xhtml);
         try {
-            File f = new File(fileName);
-            PrintWriter p = new PrintWriter(f);
-            p.print(contents);
-            p.close();
-        }
-        catch (Exception e) {
-            Assert.assertEquals("couldn't write test file \"" + fileName + "\": "
-                    + e.getMessage(), true, false);
-            return false;
-        }
-        return true;
-    }
+            DocumentBuilderFactory factory =
+                    DocumentBuilderFactory.newInstance();
+            if (!xhtml.startsWith("<?xml ")) {
+                // This is just a document fragment so we need to prefix a
+                // DOCTYPE line for validation.  Furthermore, we need to
+                // know the name of the root element for the DOCTYPE line;
+                // the easiest way to get this is to parse the element once
+                // (without validation).
+                DocumentBuilder parser = factory.newDocumentBuilder();
+                parser.setEntityResolver(new XhtmlEntityResolver());
+                parser.setErrorHandler(handler);
+                InputStream in = new ByteArrayInputStream(xhtml.getBytes());
+                Document document = parser.parse(in);
+                String message = handler.getErrorMessage();
+                if (message.length() != 0) {
+                    return message;
+                }
+                xhtml = "<!DOCTYPE " +
+                        document.getDocumentElement().getNodeName() +
+                        " SYSTEM \"xhtml1-strict.dtd\">\n" + xhtml;
+                handler = new XhtmlErrorHandler(xhtml);
+            }
 
-    /**
-     * Deletes a file or directory subtree.  If an error occurs, a test
-     * assertion error is generated with error information.
-     * @param fileName                   Name of the file or directory to
-     *                                   delete
-     */
-    public static void deleteTree(String fileName) {
-        Assert.assertEquals("delete test file/directory \"" + fileName + "\"",
-                true, Util.deleteTree(fileName));
+            factory.setValidating(true);
+            DocumentBuilder parser = factory.newDocumentBuilder();
+            parser.setEntityResolver(new XhtmlEntityResolver());
+            parser.setErrorHandler(handler);
+            InputStream in = new ByteArrayInputStream(xhtml.getBytes());
+            Document document = parser.parse(in);
+            return handler.getErrorMessage();
+        }
+        catch (ParserConfigurationException e) {
+            return "XhtmlValidator couldn't configure parser: " +
+                    e.getMessage();
+        } catch (SAXException e) {
+            // Ignore this exception and just return the accumulated
+            // error information.
+            return handler.getErrorMessage();
+        } catch (IOException e) {
+            return "I/O error in XhtmlValidator: " + e.getMessage();
+        }
     }
 
     /**
@@ -124,7 +75,7 @@ public class TestUtil {
      */
     private static class XhtmlEntityResolver implements EntityResolver {
         // Directory containing all of the DTD files:
-        protected static final String DTD_ROOT = "test/dtd";
+        protected static final String DTD_ROOT = "test/dtd/";
 
         /**
          * Given the name of an entity, this method extracts the last

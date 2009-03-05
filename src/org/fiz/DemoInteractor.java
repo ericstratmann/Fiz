@@ -26,7 +26,7 @@ public class DemoInteractor extends Interactor {
     // performance statistics were reset.
     int baseGcInvocations = 0;
 
-    FormSection sideBySideForm =new FormSection(
+    FormSection sideBySideForm = new FormSection(
             new Dataset("id", "form1", "request", "demo.getFormData",
                     "postUrl", "ajaxSideBySidePost"),
             new EntryFormElement(new Dataset("id", "name",
@@ -94,7 +94,7 @@ public class DemoInteractor extends Interactor {
                     "label", "Favorite saying:"))
             );
 
-    FormSection verticalForm =new FormSection(
+    FormSection verticalForm = new FormSection(
             new Dataset("id", "form2", "request", "demo.getFormData",
                     "layout", "vertical", "postUrl", "ajaxVerticalPost"),
             new EntryFormElement(new Dataset("id", "name",
@@ -159,6 +159,15 @@ public class DemoInteractor extends Interactor {
                 sideBySideForm,
                 new TemplateSection("<h1>Vertical Form</h1>\n"),
                 verticalForm);
+    }
+
+    /**
+     * Returns an empty page; used as a control case for benchmarking.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    public void noop(ClientRequest cr) {
+        // Don't do anything.
     }
 
     /**
