@@ -18,7 +18,7 @@ package org.fiz;
  *                   error in its data request and is displaying an error
  *                   message next to the culprit form element, this value
  *                   specifies a template in the {@code styles} dataset,
- *                   which is expanded with the terror data and the main
+ *                   which is expanded with the error data and the main
  *                   dataset to produce the HTML to display.  Defaults to
  *                   "FormSection.elementError".
  *   errorStyle:     (optional) If an error occurs in {@code request} then
@@ -40,7 +40,7 @@ package org.fiz;
  *                   in the nested dataset are handled in the same way as the
  *                   values in a response to {@code request}.
  *   layout:         (optional) If specified with the value {@code vertical}
- *                   than the form is laid out in a single column with
+ *                   thean the form is laid out in a single column with
  *                   labels above controls.  Otherwise (default) a
  *                   side-by-side layout is used with labels in the left
  *                   column and controls in the right column.
@@ -101,6 +101,9 @@ public class FormSection extends Section {
     // property.
     protected String buttonStyle;
 
+    // The {@code id} property for the form, copied from {@code properties}.
+    protected String id;
+
     // The {@code help} configuration dataset:
     protected Dataset helpConfig;
 
@@ -122,12 +125,9 @@ public class FormSection extends Section {
     protected boolean anyElementErrors;
 
     // The following variable is used to make sure old form element
-    // errors get cleared no more than once during each indication of the
+    // errors get cleared no more than once during each invocation of the
     // {@code post} method.
     protected boolean oldElementErrorsCleared;
-
-    // The {@code id} property for the form, copy from {@code properties}.
-    protected String id;
 
     /**
      * Construct a FormSection.
@@ -210,8 +210,7 @@ public class FormSection extends Section {
             String elementId) {
         // Generate  HTML for the error message.
         StringBuilder html = new StringBuilder(100);
-        String templateName = properties.check(
-                "elementErrorStyle");
+        String templateName = properties.check("elementErrorStyle");
         if (templateName == null) {
             templateName = "FormSection.elementError";
         }
@@ -312,7 +311,7 @@ public class FormSection extends Section {
      * @return                     The dataset containing the result from
      *                             {@code requestName}.
      * @throws PostError           Thrown if {@code requestName} returns
-     *                             an error or if formed elements found some
+     *                             an error or if form elements found some
      *                             of the submitted data to be invalid.  This
      *                             method will handle the error by scheduling
      *                             various Ajax responses to display error
