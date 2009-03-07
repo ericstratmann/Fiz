@@ -126,7 +126,7 @@ public class FormSection extends Section {
 
     // The following variable is used to make sure old form element
     // errors get cleared no more than once during each invocation of the
-    // {@code post} method.
+    // {@code post} method. Test.
     protected boolean oldElementErrorsCleared;
 
     /**
