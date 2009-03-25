@@ -120,9 +120,9 @@ public class TreeSection extends Section implements DirectAjax {
         // Generate a Javascript method invocation for the browser to
         // invoke, which will instantiate the HTML.
         StringBuilder javascript = new StringBuilder(html.length() + 50);
-        Template.expand("Fiz.ids[\"@1\"].expand(\"@2\");", javascript,
+        Template.expand("Fiz.ids[\"@1\"].expand(\"@2\");\n", javascript,
                 Template.SpecialChars.JAVASCRIPT, id, html);
-        cr.ajaxEvalAction(javascript);
+        cr.evalJavascript(javascript);
     }
 
     /**
@@ -279,7 +279,7 @@ public class TreeSection extends Section implements DirectAjax {
                         child, expandedRow);
                 expandedRow.append("</td>\n");
                 expandedRow.append("  </tr>\n");
-                cr.includeJavascript(Template.expand("Fiz.ids[\"@1\"] = " +
+                cr.evalJavascript(Template.expand("Fiz.ids[\"@1\"] = " +
                         "new Fiz.TreeRow(\"@1\", \"@2\", \"@3\");\n",
                         Template.SpecialChars.JAVASCRIPT, rowId,
                         out.substring(rowStart), expandedRow));

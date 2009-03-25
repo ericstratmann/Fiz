@@ -73,7 +73,7 @@ public class TestUtil {
      */
     public static void assertMatchingSubstring(String message,
             String expected, String actual, String regexp) {
-        Pattern pattern = Pattern.compile(regexp);
+        Pattern pattern = Pattern.compile(regexp, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(actual);
         if (!matcher.find()) {
             Assert.fail(message + "\nPattern :" + regexp

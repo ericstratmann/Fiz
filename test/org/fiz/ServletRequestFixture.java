@@ -11,6 +11,41 @@ import javax.servlet.http.*;
 
 @SuppressWarnings("deprecation")
 public class ServletRequestFixture implements HttpServletRequest {
+    // The following class is needed to implement the function
+    // {@code getInputStream}.
+    protected static class InputFixture extends ServletInputStream {
+        // The following variable holds a string that provides input
+        // data for the request.
+        protected String data;
+
+        // The number of characters that have already been consumed
+        // from data.
+        protected int offset = 0;
+
+        public InputFixture(String data) {
+            this.data = data;
+        }
+
+        public int read() {
+            if (offset >= data.length()) {
+                return -1;
+            }
+            offset++;
+            return data.charAt(offset - 1);
+        }
+    }
+
+    // The following class implements a default input reader for requests,
+    // which generates an exception.
+    protected static class ExceptionReader extends BufferedReader {
+        public ExceptionReader(Reader reader) {
+            super(reader);
+        }
+        public int read() throws IOException {
+            throw new IOException("simulated error");
+        }
+    }
+
     // Some methods just set the following variable to indicate that they
     // were called.  This is used in situations where the method can't easily
     // synthesize an appropriate return type (such as HttpSession).
@@ -26,7 +61,7 @@ public class ServletRequestFixture implements HttpServletRequest {
     public String uri = "/x/y/z";
     public String queryString = "a=b&c=d";
     public String contentType = "contentType";
-    public BufferedReader inputReader = null;
+    protected String input = null;
 
     // A single session is shared across all ServletRequestsFixture
     // objects for all time (tests can nullify this variable to
@@ -55,6 +90,16 @@ public class ServletRequestFixture implements HttpServletRequest {
         for (int i = 0; i <= last; i += 2) {
             parameterMap.put(keysAndValues[i], keysAndValues[i+1]);
         }
+    }
+
+    /**
+     * Invoke this method to provide input data for the request, which
+     * will be available through the {@code getReader} and
+     * {@code getInputString} methods.
+     * @param input                Input data for the request.
+     */
+    public void setInput(String input) {
+        this.input = input;
     }
 
     // Methods from HttpServletRequest.
@@ -137,7 +182,10 @@ public class ServletRequestFixture implements HttpServletRequest {
     public String getContentType() {return contentType;}
     public ServletInputStream getInputStream() {
         lastMethod = "getInputStream";
-        return null;
+        if (input == null) {
+            return null;
+        }
+        return new InputFixture(input);
     }
     public String getLocalAddr() {return "localAddr";}
     public java.util.Locale getLocale() {
@@ -168,15 +216,26 @@ public class ServletRequestFixture implements HttpServletRequest {
         if (value == null) {
             return null;
         }
-        String[] values = new String[2];
+        if (value.equals("multiple")) {
+            // Simulate the existence of multiple values for this
+            // parameter.
+            String[] values = new String[3];
+            values[0] = "value1";
+            values[1] = "value2";
+            values[2] = "value3";
+            return values;
+        }
+        String[] values = new String[1];
         values[0] = value;
-        values[1] = value + "_next";
         return values;
     }
     public String getProtocol() {return "protocol";}
     public BufferedReader getReader() {
         lastMethod = "getReader";
-        return inputReader;
+        if (input != null) {
+            return new BufferedReader(new StringReader(input));
+        }
+        return new ExceptionReader(new StringReader("foobar"));
     }
     public String getRealPath(String path) {return "path " + path;}
     public String getRemoteAddr() {return "remoteAddr";}

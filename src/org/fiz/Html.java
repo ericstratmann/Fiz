@@ -219,7 +219,10 @@ public class Html {
 
     /**
      * Arrange for a particular piece of Javascript code to be executed
-     * by the browser after the page has been processed.
+     * by the browser after the page has been processed.  This method
+     * works only during normal HTML requests; for Ajax requests and
+     * form posts, use ClientRequest.evalJavascript instead.
+     * TODO: rename this method to evalJavascript for consistency.
      * @param code                 Javascript code.
      */
     public void includeJavascript(CharSequence code) {
@@ -229,6 +232,9 @@ public class Html {
     /**
      * Expand a Javascript code template and then arrange for the result
      * to be executed by the browser after the page has been processed.
+     * This method works only during normal HTML requests; for Ajax
+     * requests and form posts, use ClientRequest.evalJavascript
+     * instead.
      * @param template             Javascript code template.
      * @param data                 Values to be substituted into the template.
      */
@@ -292,7 +298,8 @@ public class Html {
      *                                not actually generate exceptions.
      */
     public void print(Writer writer) {
-        if ((title == null) && (body.length() == 0)) {
+        if ((title == null) && (body.length() == 0) &&
+                (jsCode.length() == 0)) {
             return;
         }
         try {
@@ -301,28 +308,31 @@ public class Html {
             writer.write("<title>" + ((title != null) ? title : "") +
                     "</title>\n");
 
-            // Output CSS info.
-            writer.write("<style type=\"text/css\">\n");
-            String mainCss = Css.getStylesheet("main.css");
-            writer.write(mainCss);
-            if (mainCss.charAt(mainCss.length()-1) != '\n') {
-                writer.write('\n');
+            // Output CSS info (but skip if the document contains no text,
+            // e.g. only Javascript).
+            if (body.length() > 0) {
+                writer.write("<style type=\"text/css\">\n");
+                String mainCss = Css.getStylesheet("main.css");
+                writer.write(mainCss);
+                if (mainCss.charAt(mainCss.length()-1) != '\n') {
+                    writer.write('\n');
+                }
+                if (css.length() > 0) {
+                    writer.write('\n');
+                    writer.write(css.toString());
+                }
+                if ((css.length() > 0) && (css.charAt(css.length()-1) != '\n')) {
+                    writer.write('\n');
+                }
+                writer.write("</style>\n");
             }
-            if (css.length() > 0) {
-                writer.write('\n');
-                writer.write(css.toString());
-            }
-            if ((css.length() > 0) && (css.charAt(css.length()-1) != '\n')) {
-                writer.write('\n');
-            }
-            writer.write("</style>\n");
 
             // Output body.
             writer.write("</head>\n<body>\n");
-            writer.write(jsFileHtml.toString());
             writer.write(body.toString());
 
-            // Output Javascript startup code.
+            // Output Javascript.
+            writer.write(jsFileHtml.toString());
             if (jsCode.length() > 0) {
                 // The CDATA construct below is needed to avoid validation
                 // errors under XHTML (without it, HTML entity characters such

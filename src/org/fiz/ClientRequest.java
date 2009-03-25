@@ -5,6 +5,9 @@ import java.util.*;
 import javax.crypto.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
+import org.apache.commons.fileupload.*;
+import org.apache.commons.fileupload.disk.*;
+import org.apache.commons.fileupload.servlet.*;
 import org.apache.log4j.*;
 
 /**
@@ -36,6 +39,31 @@ import org.apache.log4j.*;
 
 @SuppressWarnings("deprecation")
 public class ClientRequest {
+    /**
+     * This enum is used to identify the kind of request being serviced.
+     */
+    public enum Type {
+        /**
+         * A traditional request, where we return an HTML document
+         * for a completely new page.
+         */
+        NORMAL,
+
+        /**
+         * An Ajax request, which allows an existing page to make
+         * incremental modifications without replacing the entire page.
+         */
+        AJAX,
+
+        /**
+         * A form post: the result will be HTML that is rendered in an
+         * invisible iframe.  The goal is to provide the same behaviors as
+         * an Ajax request (but we can't use Ajax to submit a form because
+         * that would disallow file uploads).
+         */
+        POST
+    }
+
     // The servlet under which this ClientRequest is being processed.
     protected HttpServlet servlet;
 
@@ -61,7 +89,13 @@ public class ClientRequest {
 
     // Indicates whether or not we have already attempted to process
     // Ajax POST data for this request.  If true, don't try again.
-    protected boolean fizDataProcessed = false;
+    protected boolean requestDataProcessed = false;
+
+    // The following variable keeps track of all of the uploaded files
+    // provided to this request.  The key for each entry is the name
+    // of a form element, and the value is a handle for the uploaded
+    // file provided for that form element.
+    protected HashMap<String,FileItem> uploads = null;
 
     // Hash table that maps from the {@code name} argument passed to
     // {@code registerDataRequest} to the DataRequest that was returned
@@ -76,13 +110,16 @@ public class ClientRequest {
     protected ArrayList<DataRequest> unnamedRequests =
             new ArrayList<DataRequest>();
 
-    // The following variable indicates whether this request is an Ajax
-    // request (false means it is a normal HTML request).
-    protected boolean ajaxRequest = false;
+    // The kind of request we are currently servicing:
+    protected Type requestType = Type.NORMAL;
 
     // The following variable indicates whether any Ajax actions have been
     // generated in response to this request.
     protected boolean anyAjaxActions = false;
+
+    // The following variable accumulates Javascript code passed to the
+    // evalJavascript method, if there is any.
+    protected StringBuilder jsCode = null;
 
     // The following variable indicates whether any messages have been added
     // to the bulletin during this request (it's used to clear the bulletin
@@ -141,16 +178,12 @@ public class ClientRequest {
         String html = Template.expand(template, data);
         StringBuilder javascript = new StringBuilder();
         if (!anyBulletinMessages) {
-            javascript.append("Fiz.clearBulletin(); ");
+            javascript.append("Fiz.clearBulletin();\n");
             anyBulletinMessages = true;
         }
-        Template.expand("Fiz.addBulletinMessage(\"@1\", \"@2\");",
+        Template.expand("Fiz.addBulletinMessage(\"@1\", \"@2\");\n",
                 javascript, Template.SpecialChars.JAVASCRIPT, divClass, html);
-        if (ajaxRequest) {
-            ajaxEvalAction(javascript.toString());
-        } else {
-            getHtml().includeJavascript(javascript.toString());
-        }
+        evalJavascript(javascript);
     }
 
     /**
@@ -189,70 +222,6 @@ public class ClientRequest {
     }
 
     /**
-     * Output an Ajax {@code eval} action in response to the current Ajax
-     * request.  This action will cause the browser to execute the
-     * Javascript code specified by {@code javascript}.
-     * @param javascript           Javascript code for the browser to
-     *                             execute when the Ajax response is received.
-     */
-    public void ajaxEvalAction(CharSequence javascript) {
-        PrintWriter writer = ajaxActionHeader("eval");
-        writer.append(", javascript: \"");
-        Html.escapeStringChars(javascript, writer);
-        writer.append("\"}");
-    }
-
-    /**
-     * Output an Ajax {@code eval} action in response to the current Ajax
-     * request.  This action will cause the browser to execute the
-     * Javascript code specified by {@code template} and {@code data}.
-     * @param template             Template for the Javascript code, which will
-     *                             be expanded using {@code data}.
-     * @param data                 Dataset to use for expanding
-     *                             {@code template}.
-     */
-    public void ajaxEvalAction(String template, Dataset data) {
-        StringBuilder expanded = new StringBuilder();
-        Template.expand(template, data, expanded,
-                Template.SpecialChars.JAVASCRIPT);
-        ajaxEvalAction(expanded);
-    }
-
-    /**
-     * Output an Ajax {@code redirect} action in response to the current Ajax
-     * request.  This action will cause the browser to display the page
-     * specified by {@code url}.
-     * @param url                  New URL for the browser to display.
-     */
-    public void ajaxRedirectAction(String url) {
-        PrintWriter writer = ajaxActionHeader("redirect");
-        writer.append(", url: \"");
-
-        // No need to worry about quoting the characters in the URL: if
-        // it is a proper URL, there are no characters in it that have
-        // special meaning in Javascript strings.
-        writer.append(url);
-        writer.append("\"}");
-    }
-
-    /**
-     * Output an Ajax {@code update} action in the response to the current
-     * Ajax request.  This action will cause the browser to replace the
-     * innerHTML of the element given by {@code id} with new HTML.
-     * @param id                   DOM identifier for the element whose
-     *                             contents are to be replaced.
-     * @param html                 New HTML contents for element {@code id}.
-     */
-    public void ajaxUpdateAction(CharSequence id, CharSequence html) {
-        PrintWriter writer = ajaxActionHeader("update");
-        writer.append(", id: \"");
-        writer.append(id);
-        writer.append("\", html: \"");
-        Html.escapeStringChars(html, writer);
-        writer.append("\"}");
-    }
-
-    /**
      * Generate Ajax actions that will replace the innerHTML for one or more
      * Sections.
      * @param idsAndSections       An even number of arguments, grouped in
@@ -282,7 +251,7 @@ public class ClientRequest {
             String id = (String) idsAndSections[i];
             Section section = (Section) idsAndSections[i+1];
             section.html(this);
-            ajaxUpdateAction(id, out.substring(oldLength));
+            updateElement(id, out.substring(oldLength));
             out.setLength(oldLength);
         }
     }
@@ -297,8 +266,8 @@ public class ClientRequest {
      *                             request null is returned.
      */
     public Dataset checkReminder(String name) {
-        if (!fizDataProcessed) {
-            readFizData();
+        if (!requestDataProcessed) {
+            readRequestData();
         }
         if (reminders == null) {
             return null;
@@ -307,12 +276,65 @@ public class ClientRequest {
     }
 
     /**
+     * Arrange for a Javascript script to be executed in the browser.
+     * This method can be used for Ajax requests and form posts in
+     * addition to normal HTML requests; it will use the appropriate
+     * technique for each case.
+     * @param javascript           Javascript code for the browser to
+     *                             execute.  Must end with a semi-colon
+     *                             and a newline.
+     */
+    public void evalJavascript(CharSequence javascript) {
+        if (requestType == Type.NORMAL) {
+            getHtml().includeJavascript(javascript);
+            return;
+        }
+        if (jsCode == null) {
+            jsCode = new StringBuilder(javascript);
+        } else {
+            jsCode.append(javascript);
+        }
+    }
+
+    /**
+     * Arrange for a Javascript script to be executed in the browser.
+     * This method can be used for Ajax requests and form posts in
+     * addition to normal HTML requests; it will use the appropriate
+     * technique for each case.
+     * @param template             Template for the Javascript code, which
+     *                             will be expanded using {@code data}.
+     *                             Must end with a semi-colon and a newline.
+     * @param data                 Dataset to use for expanding
+     *                             {@code template}.
+     */
+    public void evalJavascript(String template, Dataset data) {
+        if (requestType == Type.NORMAL) {
+            getHtml().includeJavascript(template, data);
+            return;
+        }
+        if (jsCode == null) {
+            jsCode = new StringBuilder(template.length() + 20);
+        }
+        Template.expand(template, data, jsCode,
+                Template.SpecialChars.JAVASCRIPT);
+    }
+
+    /**
      * This method is invoked by the Dispatcher at the end of a request
      * to complete the transmission of the response back to the client.
      */
     public void finish() {
+        // Cleanup any uploaded files (this frees in-memory storage
+        // for uploads faster than waiting for garbage collection?
+        // or does it?).
+        if (uploads != null) {
+            for (FileItem upload: uploads.values()) {
+                upload.delete();
+            }
+        }
+
+        // Handle file download requests.
         if (fileSource != null) {
-            // This is a file download request.
             ServletOutputStream out;
             try {
                 out = servletResponse.getOutputStream();
@@ -365,7 +387,22 @@ public class ClientRequest {
             return;
         }
 
-        // This is a "normal" HTML or Ajax response.
+        // If we get here, this is not a file download request.  First,
+        // flush any accumulated Javascript in a fashion appropriate for
+        // the kind of request.
+        if (jsCode != null) {
+            if (requestType == Type.AJAX) {
+                // Create an Ajax "action" that will cause the Javascript
+                // to be evaluated in the browser.
+                PrintWriter writer = ajaxActionHeader("eval");
+                writer.append(", javascript: \"");
+                Html.escapeStringChars(jsCode, writer);
+                writer.append("\"}");
+            } else if (requestType == Type.POST) {
+                FormSection.sendFormResponse(this, jsCode);
+            }
+        }
+
         PrintWriter out;
         try {
             out = servletResponse.getWriter();
@@ -376,7 +413,7 @@ public class ClientRequest {
                     StringUtil.lcFirst(e.getMessage()));
             return;
         }
-        if (ajaxRequest) {
+        if (requestType == Type.AJAX) {
             if (anyAjaxActions) {
                 // Close off the Javascript code for the actions.
                 out.append("];");
@@ -386,8 +423,8 @@ public class ClientRequest {
                 out.append("var actions = [];");
             }
         } else {
-            // This is an HTML request.  Transmit the accumulated
-            // HTML, if any.
+            // This is an HTML request or a form post.  Transmit the
+            // accumulated HTML, if any.
             servletResponse.setContentType("text/html");
             if (html != null) {
                 html.print(out);
@@ -397,6 +434,17 @@ public class ClientRequest {
             logger.error("I/O error sending response in " +
                     "ClientRequest.finish");
         }
+    }
+
+    /**
+     * Returns information about the kind of client request we are
+     * currently servicing.
+     * @return                     Indicates whether the current request
+     *                             is a normal age in the request, Ajax
+     *                             request, etc.
+     */
+    public Type getClientRequestType() {
+        return requestType;
     }
 
     /**
@@ -472,8 +520,8 @@ public class ClientRequest {
         // need to build it.  First, if this is an Ajax request read in the
         // POST data for the request, extract the Ajax data from it, and
         // add that to the main dataset.
-        if (!fizDataProcessed) {
-            readFizData();
+        if (!requestDataProcessed) {
+            readRequestData();
         }
 
         // Next, load any query data provided to the request.
@@ -483,7 +531,17 @@ public class ClientRequest {
         Enumeration params = servletRequest.getParameterNames();
         while (params.hasMoreElements()) {
             String name = (String) params.nextElement();
-            mainDataset.set(name, servletRequest.getParameter(name));
+            String[] values = servletRequest.getParameterValues(name);
+            if (values.length == 1) {
+                mainDataset.set(name, values[0]);
+            } else {
+                // This parameter has multiple values: create a nested
+                // dataset for each of them, and store the value with the
+                // name "value".
+                for (String value: values) {
+                    mainDataset.addChild(name, new Dataset("value", value));
+                }
+            }
         }
         return mainDataset;
     }
@@ -560,27 +618,71 @@ public class ClientRequest {
     }
 
     /**
-     * Arrange for the response to include Javascript code, which will be
-     * evaluated by the browser when it receives a response.  This method
-     * works for both AJAX requests and normal HTML requests.
-     * @param javascript           Javascript code for the browser to
-     *                             execute.
+     * Return the FileItem object associated with an uploaded file
+     * that was received with the current request.  Note: see
+     * {@code saveUploadedFile} for a simpler mechanism for dealing with
+     * uploads.
+     * @param fieldName            Selects which uploaded file to return:
+     *                             the parameter value is the {@code name}
+     *                             attribute from the {@code <input>} form
+     *                             element that caused the desired file to be
+     *                             uploaded.
+     * @return                     The FileItem associated with
+     *                             {@code fieldName}, or null if the current
+     *                             request doesn't include an uploaded file
+     *                             corresponding to {@code fieldName}.
      */
-    public void includeJavascript(CharSequence javascript) {
-        if (ajaxRequest) {
-            ajaxEvalAction(javascript);
-        } else {
-            getHtml().includeJavascript(javascript);
+    public FileItem getUploadedFile(String fieldName) {
+        if (!requestDataProcessed) {
+            readRequestData();
         }
+        if (uploads == null) {
+            return null;
+        }
+        return uploads.get(fieldName);
     }
 
     /**
      * Returns true if this client request is an Ajax request, false
-     * if it is a traditional HTTP/HTML request.
+     * otherwise.
      * @return                     See above.
      */
     public boolean isAjax() {
-        return ajaxRequest;
+        return (requestType == Type.AJAX);
+    }
+
+    /**
+     * Returns true if this client request is a form submission, false
+     * otherwise.
+     * @return                     See above.
+     */
+    public boolean isPost() {
+        return (requestType == Type.POST);
+    }
+
+    /**
+     * Arrange for the browser to switch to display a different page.
+     * This method can be used during Ajax requests and form posts in
+     * addition to normal HTML requests; it will use the appropriate
+     * technique for each case.  Any previously-generated HTML is
+     * cleared.
+     * @param url                  URL for the new page to display
+     */
+    public void redirect(CharSequence url) {
+        if (requestType == Type.NORMAL) {
+            getHtml().clear();
+            try {
+                servletResponse.sendRedirect(url.toString());
+            }
+            catch (IOException e) {
+                logger.error("I/O error in ClientRequest.redirect: " +
+                        StringUtil.lcFirst(e.getMessage()));
+            }
+        } else {
+            jsCode = null;
+            evalJavascript(Template.expand("document.location.href = \"@1\";\n",
+                    Template.SpecialChars.JAVASCRIPT, url));
+        }
     }
 
     /**
@@ -611,7 +713,7 @@ public class ClientRequest {
     }
 
     /**
-     * Given a DatedRequest created by the caller, associate it with this
+     * Given a DataRequest created by the caller, associate it with this
      * ClientRequest so that it will be started by the
      * {@code startDataRequests} method.  This method is typically invoked
      * by the {@code registerDataRequests} methods of Sections to specify
@@ -682,15 +784,40 @@ public class ClientRequest {
     }
 
     /**
-     * This method is invoked (typically by the dispatcher) to indicate
-     * what kind of request this is.
-     * @param isAjax               True means the current request should be
-     *                             processed using the Fiz Ajax protocol;
-     *                             false means it is a traditional HTML
-     *                             request.
+     * Arranged for an uploaded file (received with the current request)
+     * to be saved in a given location on disk.  If any errors occur
+     * while saving the file an Error is thrown.
+     * @param fieldName            Selects which uploaded files to save:
+     *                             the value is the {@code name} attribute
+     *                             from the {@code <input>} form element
+     *                             that caused the desired file to be
+     *                             uploaded.
+     * @param dest                 Path name on disk where the upload
+     *                             should be saved.
+     * @return                    True means the file was successfully
+     *                             saved.  False means that there is no
+     *                             uploaded file corresponding to
+     *                             {@code fieldName}.
      */
-    public void setAjax(boolean isAjax) {
-        ajaxRequest = isAjax;
+    public boolean saveUploadedFile(String fieldName, String dest) {
+        if (!requestDataProcessed) {
+            readRequestData();
+        }
+        if (uploads == null) {
+            return false;
+        }
+        FileItem upload = uploads.get(fieldName);
+        if (upload == null) {
+            return false;
+        }
+        try {
+            upload.write(new File(dest));
+        }
+        catch (Exception e) {
+            throw new Error("I/O error saving uploaded file for \"" +
+                    fieldName + "\" to \"" + dest + "\": " + e.getMessage());
+        }
+        return true;
     }
 
     /**
@@ -705,7 +832,16 @@ public class ClientRequest {
             reminders = new HashMap<String,Dataset>();
         }
         reminders.put(name, contents);
-        fizDataProcessed = true;
+        requestDataProcessed = true;
+    }
+
+    /**
+     * This method is invoked (typically by the dispatcher) to indicate
+     * what kind of request this is.
+     * @param type                 Request type (NORMAL, AJAX, POST).
+     */
+    public void setClientRequestType(Type type) {
+        requestType = type;
     }
 
     /**
@@ -799,6 +935,23 @@ public class ClientRequest {
     }
 
     /**
+     * This method will arrange for the contents of a given HTML element
+     * to be replaced.  This method can be used during Ajax requests and
+     * form posts as well as normal HTML requests; it will use the
+     * appropriate technique for each case.
+     * @param id                   {@code id} attribute for an HTML element
+     *                             in the page.
+     * @param html                 New HTML for the element given by
+     *                             {@code id}; will be assigned to its
+     *                             {@code innerHTML} property.
+     */
+    public void updateElement(String id, String html) {
+        evalJavascript(Template.expand(
+                "document.getElementById(\"@1\").innerHTML = \"@2\";\n",
+                Template.SpecialChars.JAVASCRIPT, id, html));
+    }
+
+    /**
      * This is a utility method shared by Ajax action generators; it
      * generates the initial part of the action's Javascript description,
      * including separator from the previous action (if any) and the
@@ -829,29 +982,12 @@ public class ClientRequest {
     }
 
     /**
-     * This method reads data in the special format used to transmit
-     * information from the browser to the server during Ajax requests,
-     * populating various internal data structures with the results.
-     * If this method has already been called for the current request,
-     * or if there is no data in the expected format, than this method
-     * does nothing.
+     * This method is invoked to parse incoming request data that
+     * has MIME type text/fiz, which is used for Ajax requests.  It
+     * populates various internal data structures with the contents
+     * of the data.
      */
-    protected void readFizData () {
-        if (fizDataProcessed) {
-            // We have already processed the data once; no need to
-            // do it again.
-            return;
-        }
-        fizDataProcessed = true;
-
-        // Make sure that the incoming data has the right MIME type.
-        String contentType = (servletRequest.getContentType());
-        if ((contentType == null)
-                || !contentType.startsWith("text/fiz")) {
-            return;
-        }
-
-        // Read in all of the posted data.
+    protected void readAjaxData() {
         StringBuilder postData = new StringBuilder();
         try {
             BufferedReader reader = servletRequest.getReader();
@@ -864,7 +1000,7 @@ public class ClientRequest {
             }
         }
         catch (IOException e) {
-            throw new IOError("I/O error in ClientRequest.readFizData: " +
+            throw new IOError("I/O error in ClientRequest.readAjaxData: " +
                     e.getMessage());
         }
 
@@ -897,9 +1033,6 @@ public class ClientRequest {
 
             // Check against the known types and handle appropriately.
             if (type.equals("main")) {
-                if (mainDataset == null) {
-                    mainDataset = new Dataset();
-                }
                 current = mainDataset.addSerializedData(postData, current);
             } else if (type.equals("reminder")) {
                 Dataset d = new Dataset();
@@ -914,6 +1047,92 @@ public class ClientRequest {
                 throw new SyntaxError("unknown type \"" + type +
                         "\" in Fiz browser data");
             }
+        }
+    }
+
+    /**
+     * This method is invoked to parse multipart form data coming
+     * from the browser.  Data for basic form fields is copied to
+     * the main dataset.  For uploaded files, information is saved
+     * in {@code uploads} for use by other methods.
+     */
+    protected void readMultipartFormData() {
+        DiskFileItemFactory factory = new DiskFileItemFactory();
+        ServletFileUpload upload = new ServletFileUpload(factory);
+        try {
+            for (Object o: upload.parseRequest(servletRequest)) {
+                FileItem item = (FileItem) o;
+                if (item.isFormField()) {
+                    // This is a simple string-valued field; add it to
+                    // the main dataset.  If there are multiple values
+                    // with the same name, store them as a collection
+                    // of child datasets, each with a single "value"
+                    // element.
+                    String name = item.getFieldName();
+                    Object existing = mainDataset.lookup(name,
+                            Dataset.DesiredType.ANY,
+                            Dataset.Quantity.FIRST_ONLY);
+                    if (existing == null) {
+                        mainDataset.set(name, item.getString());
+                    } else {
+                        if (existing instanceof String) {
+                            // Must convert the existing string value to
+                            // a nested dataset.
+                            mainDataset.addChild(name, new Dataset(
+                                    "value",  existing));
+                        }
+                        mainDataset.addChild(name, new Dataset(
+                                "value", item.getString()));
+                    }
+                } else {
+                    // This is an uploaded file.  Save information about
+                    // the file in {@code uploads}.
+                    if (uploads == null) {
+                        uploads = new HashMap<String,FileItem>();
+                    }
+                    uploads.put(item.getFieldName(), item);
+                }
+            }
+        }
+        catch (FileUploadException e) {
+            throw new InternalError("error reading multi-part form data: " +
+                    e.getMessage());
+        }
+    }
+
+    /**
+     * This method processes the incoming data in an HTTP request
+     * if it is in a form other than application/x-www-form-urlencoded
+     * (which is processed automatically by the Servlet).  In
+     * particular, this method will handle multipart/form-data
+     * (used in Fiz forms to enable file uploads) and text/fiz
+     * (used during Ajax requests).  Various internal data structures
+     * get populated with the contents of the incoming data.
+     * If this method has already been called for the current request,
+     * or if there is no data in a known format then this method
+     * does nothing.
+     */
+    protected void readRequestData() {
+        if (requestDataProcessed) {
+            // We have already processed the data once; no need to
+            // do it again.
+            return;
+        }
+        requestDataProcessed = true;
+        if (mainDataset == null) {
+            mainDataset = new Dataset();
+        }
+
+        // Process the incoming data according to its MIME type.
+        String contentType = (servletRequest.getContentType());
+        if (contentType == null) {
+            return;
+        }
+        if (contentType.startsWith("multipart/form-data")) {
+            readMultipartFormData();
+        }
+        if (contentType.startsWith("text/fiz")) {
+            readAjaxData();
         }
     }
 }

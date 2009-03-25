@@ -29,15 +29,15 @@
  *                     at least a {@code message} value in {@code properties}
  *                     which contains a human-readable message.  Other
  *                     values may be available on a case-by-case basis.
- *     * The result of an Ajax request is determined entirely by the server.
- *       The initiating Javascript code provides information for the request
- *       but it does not tell how to handle the response;  the server
- *       determines that by creating {@code update}, {@code eval}, and
- *       {@code error} actions in the response.  If Javascript code wishes
- *       to update a particular {@code <div>} it might include the id for
- *       the {@code <div>} in the Ajax request, but it is up to the server
- *       to decide whether to honor that id or specify something else in the
- *       response.  The initiating code has control only over error handling.
+ *   * The result of an Ajax request is determined entirely by the server.
+ *     The initiating Javascript code provides information for the request
+ *     but it does not tell how to handle the response;  the server
+ *     determines that by creating {@code update}, {@code eval}, and
+ *     {@code error} actions in the response.  If Javascript code wishes
+ *     to update a particular {@code <div>} it might include the id for
+ *     the {@code <div>} in the Ajax request, but it is up to the server
+ *     to decide whether to honor that id or specify something else in the
+ *     response.  The initiating code has control only over error handling.
  */
 
 // The following line is used by Fiz to manage Javascript dependencies.
@@ -166,6 +166,7 @@ Fiz.Ajax.prototype.stateChange = function() {
     // {@code actions}.  That variable consists of an array, each of whose
     // elements is an object describing a single action to take.  Walk
     // through the array, carrying out the actions in order.
+    // TODO: eliminate Ajax actions that aren't used anymore.
     try {
         eval(this.xmlhttp.responseText);
         for (var i = 0, length = actions.length; i < length; i++) {

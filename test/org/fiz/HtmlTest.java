@@ -222,6 +222,19 @@ public class HtmlTest extends junit.framework.TestCase {
         html.getBody().append("body info\n");
         TestUtil.assertSubstring("body only", "body info",
                 html.toString());
+        html.clear();
+        html.includeJavascript("x = 44;");
+        TestUtil.assertSubstring("Javascript only",
+                "<head>\n" +
+                "<title></title>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "<script type=\"text/javascript\">\n" +
+                "//<![CDATA[\n" +
+                "x = 44;//]]>\n" +
+                "</script>\n" +
+                "</body>",
+                html.toString());
     }
     public void test_print_noTitle() {
         html.getBody().append("first line\nsecond line\n");
@@ -260,6 +273,19 @@ public class HtmlTest extends junit.framework.TestCase {
                 "</html>\n",
                 out.toString());
     }
+    public void test_print_skipCssIfNoBody() {
+        (new File("_test_")).mkdir();
+        TestUtil.writeFile("_test_/first.css", "first.css\n");
+        TestUtil.writeFile("_test_/main.css", "main.css\n");
+        Css.init("_test_");
+        html.setTitle("sample");
+        TestUtil.assertSubstring("header section",
+                "<head>\n" +
+                "<title>sample</title>\n" +
+                "</head>\n",
+                html.toString());
+        Util.deleteTree("_test_");
+    }
     public void test_print_css() {
         (new File("_test_")).mkdir();
         TestUtil.writeFile("_test_/first.css", "first.css\n");
@@ -267,6 +293,7 @@ public class HtmlTest extends junit.framework.TestCase {
         Css.init("_test_");
         html.setTitle("sample");
         html.includeCssFile("first.css");
+        html.getBody().append("<p>xyz</p>\n");
         TestUtil.assertSubstring("header section",
                 "<head>\n" +
                 "<title>sample</title>\n" +
@@ -286,6 +313,7 @@ public class HtmlTest extends junit.framework.TestCase {
         Css.init("_test_");
         html.setTitle("sample");
         html.includeCssFile("first.css");
+        html.getBody().append("<p>xyz</p>\n");
         TestUtil.assertSubstring("header section",
                 "<head>\n" +
                 "<title>sample</title>\n" +
@@ -303,6 +331,7 @@ public class HtmlTest extends junit.framework.TestCase {
         TestUtil.writeFile("_test_/main.css", "main.css");
         Css.init("_test_");
         html.setTitle("sample");
+        html.getBody().append("<p>xyz</p>\n");
         TestUtil.assertSubstring("header section",
                 "<head>\n" +
                 "<title>sample</title>\n" +
@@ -324,11 +353,11 @@ public class HtmlTest extends junit.framework.TestCase {
         html.includeJsFile("file2.js");
         TestUtil.assertSubstring("body section",
                 "<body>\n" +
+                "<p>Body text.</p>\n" +
                 "<script type=\"text/javascript\" " +
                 "src=\"/servlet/file1.js\"></script>\n" +
                 "<script type=\"text/javascript\" " +
                 "src=\"/servlet/file2.js\"></script>\n" +
-                "<p>Body text.</p>\n" +
                 "</body>\n",
                 html.toString());
         Util.deleteTree("_test_");

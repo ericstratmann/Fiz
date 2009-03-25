@@ -13,52 +13,27 @@ Fiz.Ajax = function(properties) {
             printDataset(properties.data, "    ");
 }
 
-test("FormSection_post", function() {
+test("FormSection_clearElementErrors", function() {
     document = new Document();
-    document.addElementWithId("form16", {length: 17, elements: [
-        {tagName: "input",    type: "button",     name: "b1", value: "b1v"},
-        {tagName: "input",    type: "checkbox",   name: "c1", value: "c1v",
-            checked: false},
-        {tagName: "input",    type: "checkbox",   name: "c2", value: "c2v",
-            checked: true},
-        {tagName: "input",    type: "file",       name: "f1", value: "f1v"},
-        {tagName: "input",    type: "hidden",     name: "h1", value: "h1v"},
-        {tagName: "input",    type: "image",      name: "i1"},
-        {tagName: "input",    type: "password",   name: "p1", value: "p1v"},
-        {tagName: "input",    type: "radio",      name: "r1", value: "r1_a",
-            checked: true},
-        {tagName: "input",    type: "radio",      name: "r1", value: "r1_b",
-            checked: false},
-        {tagName: "input",    type: "reset",      name: "rs1", value: "rs1v"},
-        {tagName: "input",    type: "submit",     name: "s1", value: "s1v"},
-        {tagName: "input",    type: "text",       name: "t1", value: "t1v"},
-        {tagName: "button",   type: "???",        name: "b2", value: "b2v"},
-        {tagName: "select",   type: "select-one", name: "s2", value: "s2v"},
-        {tagName: "select",   type: "select-multiple", name: "s3",
-            value: "s3v", options: [
-            {selected: false, value: "Arizona"},
-            {selected: true,  value: "California"},
-            {selected: true,  value: "Nevada"},
-            {selected: false, value: "Oregon"},
-            {selected: true,  value: "Washington"}]},
-        {tagName: "textarea", type: "textarea",   name: "t2", value: "t2v"},
-        {tagName: "unknown",  type: "unknown",    name: "xx", value: "999"}
-    ]});
-    var form = new Fiz.FormSection("form16", "/a/b/c");
-    form.post();
-    assertEqual("Fiz.Ajax url: /a/b/c, data:\n" +
-            "    c2: c2v\n" +
-            "    h1: h1v\n" +
-            "    p1: p1v\n" +
-            "    r1: r1_a\n" +
-            "    s2: s2v\n" +
-            "    s3:\n" +
-            "      - value: California\n" +
-            "      - value: Nevada\n" +
-            "      - value: Washington\n" +
-            "    t1: t1v\n" +
-            "    t2: t2v\n",
-            jsunit.log, "jsunit.log");
+    var row1 = document.addElementWithId("div1", {className: "undefined"});
+    var div1 = document.addElementWithId("div1_diagnostic",
+        {style: {display: "none"}, innerHTML: "xxx"});
+    var row2 = document.addElementWithId("div2", {className: "undefined"});
+    var div2 = document.addElementWithId("div2_diagnostic",
+            {style: {display: "none"}, innerHTML: "yyy"});
+    var form = new Fiz.FormSection("form16");
+
+    form.elementError("div1", "error1");
+    form.elementError("div2", "error2");
+    form.clearElementErrors();
+    assertEqual("none", div1.style.display,
+            "div1.style.display after call");
+    assertEqual("", row1.className, "row1.className after call");
+    assertEqual("none", div2.style.display,
+            "div2.style.display after call");
+    assertEqual("", row2.className, "row2.className after call");
+    assertEqual("", form.errorElements.join(", "),
+            "form.errorElements after call");
 });
 
 test("FormSection_elementError", function() {
@@ -69,7 +44,7 @@ test("FormSection_elementError", function() {
     var row2 = document.addElementWithId("div2", {className: "undefined"});
     var div2 = document.addElementWithId("div2_diagnostic",
             {style: {display: "none"}, innerHTML: "yyy"});
-    var form = new Fiz.FormSection("form16", "/a/b/c");
+    var form = new Fiz.FormSection("form16");
 
     form.elementError("div1", "error1");
     assertEqual("div1", form.errorElements.join(", "),
@@ -88,25 +63,35 @@ test("FormSection_elementError", function() {
             "form.errorElements after second call");
 });
 
-test("FormSection_clearElementErrors", function() {
+test("FormSection_submit", function() {
     document = new Document();
-    var row1 = document.addElementWithId("div1", {className: "undefined"});
-    var div1 = document.addElementWithId("div1_diagnostic",
-        {style: {display: "none"}, innerHTML: "xxx"});
-    var row2 = document.addElementWithId("div2", {className: "undefined"});
-    var div2 = document.addElementWithId("div2_diagnostic",
-            {style: {display: "none"}, innerHTML: "yyy"});
-    var form = new Fiz.FormSection("form16", "/a/b/c");
+    var form1 = document.addElementWithId("form1", {target: "undefined"});
+    var div1 = document.addElementWithId("form1_target", {innerHTML: "xxx"});
+    var form = new Fiz.FormSection("form1");
 
-    form.elementError("div1", "error1");
-    form.elementError("div2", "error2");
-    form.clearElementErrors();
-    assertEqual("none", div1.style.display,
-            "div1.style.display after call");
-    assertEqual("", row1.className, "row1.className after call");
-    assertEqual("none", div2.style.display,
-            "div2.style.display after call");
-    assertEqual("", row2.className, "row2.className after call");
-    assertEqual("", form.errorElements.join(", "),
-            "form.errorElements after call");
+    assertEqual(true, form.submit(), "return value");
+    assertEqual("<iframe name=\"form1_iframe\"></iframe>",
+            div1.innerHTML, "HTML for iframe");
+    assertEqual("form1_iframe", form1.target, "form1.target");
+});
+
+test("FormSection_handleResponse", function() {
+    Fiz.ids.form1 = new Fiz.FormSection("formxx");
+    Fiz.ids.form1.handleResponse2 = function(script) {
+        window.testLog = "handleResponse2 argument: " + script;
+    }
+    Fiz.FormSection.handleResponse("form1", "window.xyzzy += 3;");
+    jsunit.setTimeoutArg();
+    assertEqual("handleResponse2 argument: window.xyzzy += 3;",
+            window.testLog, "log information");
+});
+
+test("FormSection_handleResponse2", function() {
+    document = new Document();
+    var div1 = document.addElementWithId("form1_target", {innerHTML: "xxx"});
+    var form = new Fiz.FormSection("form1");
+    window.xyzzy = 44;
+    form.handleResponse2("window.xyzzy += 3;");
+    assertEqual("", div1.innerHTML, "HTML for iframe");
+    assertEqual("47", window.xyzzy, "incremented variable contents");
 });

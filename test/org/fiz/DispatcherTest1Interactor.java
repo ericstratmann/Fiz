@@ -17,6 +17,8 @@ public class DispatcherTest1Interactor extends Interactor {
     public static int initCount = 0;
     public static int destroyCount = 0;
     public static boolean isAjax = false;
+    public static ClientRequest.Type requestType =
+            ClientRequest.Type.NORMAL;
     public void DispatcherTest1() {}
     public void init() {
         initCount++;
@@ -31,6 +33,9 @@ public class DispatcherTest1Interactor extends Interactor {
     public void incCount(ClientRequest cr) {
         count++;
         isAjax = cr.isAjax();
+    }
+    public void postTest(ClientRequest cr) {
+        requestType = cr.getClientRequestType();
     }
     public void resetCount(ClientRequest cr) {
         count = 0;

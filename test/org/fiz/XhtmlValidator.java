@@ -30,22 +30,12 @@ public class XhtmlValidator {
                     DocumentBuilderFactory.newInstance();
             if (!xhtml.startsWith("<?xml ")) {
                 // This is just a document fragment so we need to prefix a
-                // DOCTYPE line for validation.  Furthermore, we need to
-                // know the name of the root element for the DOCTYPE line;
-                // the easiest way to get this is to parse the element once
-                // (without validation).
-                DocumentBuilder parser = factory.newDocumentBuilder();
-                parser.setEntityResolver(new XhtmlEntityResolver());
-                parser.setErrorHandler(handler);
-                InputStream in = new ByteArrayInputStream(xhtml.getBytes());
-                Document document = parser.parse(in);
-                String message = handler.getErrorMessage();
-                if (message.length() != 0) {
-                    return message;
-                }
-                xhtml = "<!DOCTYPE " +
-                        document.getDocumentElement().getNodeName() +
-                        " SYSTEM \"xhtml1-strict.dtd\">\n" + xhtml;
+                // DOCTYPE line for validation and encase the fragment in
+                // a <div> element.
+                xhtml = "<!DOCTYPE div SYSTEM \"xhtml1-strict.dtd\">\n" +
+                        "<div>\n" +
+                        xhtml +
+                        "</div>";
                 handler = new XhtmlErrorHandler(xhtml);
             }
 

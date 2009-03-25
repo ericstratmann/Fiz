@@ -1,10 +1,16 @@
 package org.fiz;
 
+import org.apache.log4j.*;
+
 /**
  * This interactor demonstrates several interesting Fiz sections with a
  * single page.
  */
 public class Demo2Interactor extends Interactor {
+    // The following variable is used for log4j-based logging.
+    protected static Logger logger = Logger.getLogger(
+            "org.fiz.Demo2Interactor");
+
     /**
      * Main URL entry point; displays a page containing some tabs, a table,
      * and a form.
@@ -38,7 +44,7 @@ public class Demo2Interactor extends Interactor {
                     new Column("GPA", "@gpa")),
                 new TemplateSection("<h2>Enter New Student</h2>\n"),
                 new FormSection(
-                    new Dataset("id", "form1"),
+                    new Dataset("id", "form1", "postUrl", "post"),
                     new EntryFormElement(new Dataset("id", "last",
                             "label", "Last name:")),
                     new EntryFormElement(new Dataset("id", "first",
@@ -104,7 +110,7 @@ public class Demo2Interactor extends Interactor {
      * @param cr                   Overall information about the client
      *                             request being serviced.
      */
-    public void ajaxPost(ClientRequest cr) {
+    public void post(ClientRequest cr) {
         FormSection form = new FormSection(
                 new Dataset("id", "form1"),
                 new EntryFormElement(new Dataset("id", "last",

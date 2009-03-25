@@ -20,29 +20,37 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/dtd/xhtml1-strict.dtd" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/StringUtil.java" afterPath="$PROJECT_DIR$/src/org/fiz/StringUtil.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/dtd/xhtml11-flat.dtd" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/org/fiz/XhtmlValidator.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/dtd/xhtml11-model-1.mod" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/dtd/xhtml1-frameset.dtd" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/dtd" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/dtd/xhtml-symbol.ent" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/dtd/xhtml.soc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/dtd/xhtml1.dcl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/Reminder.java" afterPath="$PROJECT_DIR$/src/org/fiz/Reminder.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/Html.java" afterPath="$PROJECT_DIR$/src/org/fiz/Html.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/org/fiz/ServletResponseFixture.java" afterPath="$PROJECT_DIR$/test/org/fiz/ServletResponseFixture.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/org/fiz/XhtmlValidator.java" afterPath="$PROJECT_DIR$/test/org/fiz/XhtmlValidator.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/org/fiz/FormSectionTest.java" afterPath="$PROJECT_DIR$/test/org/fiz/FormSectionTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/dtd/xhtml1-strict.dtd" afterPath="$PROJECT_DIR$/test/dtd/xhtml1-strict.dtd" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/org/fiz/ClientRequestTest.java" afterPath="$PROJECT_DIR$/test/org/fiz/ClientRequestTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/javascript/fizlib/FormSection.js" afterPath="$PROJECT_DIR$/javascript/fizlib/FormSection.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/org/fiz/HtmlTest.java" afterPath="$PROJECT_DIR$/test/org/fiz/HtmlTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/org/fiz/ServletRequestFixture.java" afterPath="$PROJECT_DIR$/test/org/fiz/ServletRequestFixture.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/ClientRequest.java" afterPath="$PROJECT_DIR$/src/org/fiz/ClientRequest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/org/fiz/DispatcherTest.java" afterPath="$PROJECT_DIR$/test/org/fiz/DispatcherTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/TestInteractor.java" afterPath="$PROJECT_DIR$/src/org/fiz/TestInteractor.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/FormSection.java" afterPath="$PROJECT_DIR$/src/org/fiz/FormSection.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/DemoInteractor.java" afterPath="$PROJECT_DIR$/src/org/fiz/DemoInteractor.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/dtd/xhtml-special.ent" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/dtd/VERSION" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/dtd/xhtml11.cat" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/dtd/xml1n.dcl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/Dataset.java" afterPath="$PROJECT_DIR$/src/org/fiz/Dataset.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/dtd/xhtml-lat1.ent" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/dtd/xhtml1-transitional.dtd" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/dtd/xhtml11.dtd" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/Reminder.java" afterPath="$PROJECT_DIR$/src/org/fiz/Reminder.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/org/fiz/TreeSectionTest.java" afterPath="$PROJECT_DIR$/test/org/fiz/TreeSectionTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Fiz.iml" afterPath="$PROJECT_DIR$/Fiz.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/jsunit/jsunit.js" afterPath="$PROJECT_DIR$/test/jsunit/jsunit.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/org/fiz/CompoundFormElementTest.java" afterPath="$PROJECT_DIR$/test/org/fiz/CompoundFormElementTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/Dispatcher.java" afterPath="$PROJECT_DIR$/src/org/fiz/Dispatcher.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/jsunit/FormSectionTest.js" afterPath="$PROJECT_DIR$/test/jsunit/FormSectionTest.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/org/fiz/StringAppender.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/org/fiz/ClientRequestFixture.java" afterPath="$PROJECT_DIR$/test/org/fiz/ClientRequestFixture.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/testData/WEB-INF/config/styles.yaml" afterPath="$PROJECT_DIR$/test/testData/WEB-INF/config/styles.yaml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/Demo2Interactor.java" afterPath="$PROJECT_DIR$/src/org/fiz/Demo2Interactor.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/org/fiz/TestUtil.java" afterPath="$PROJECT_DIR$/test/org/fiz/TestUtil.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/TabSection.java" afterPath="$PROJECT_DIR$/src/org/fiz/TabSection.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/dtd/xml1.dcl" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/org/fiz/SelectFormElementTest.java" afterPath="$PROJECT_DIR$/test/org/fiz/SelectFormElementTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/fiz/TreeSection.java" afterPath="$PROJECT_DIR$/src/org/fiz/TreeSection.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/web/WEB-INF/fiz/config/styles.yaml" afterPath="$PROJECT_DIR$/web/WEB-INF/fiz/config/styles.yaml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/javascript/fizlib/Ajax.js" afterPath="$PROJECT_DIR$/javascript/fizlib/Ajax.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/org/fiz/DispatcherTest1Interactor.java" afterPath="$PROJECT_DIR$/test/org/fiz/DispatcherTest1Interactor.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Fiz.iws" afterPath="$PROJECT_DIR$/Fiz.iws" />
     </list>
     <ignored path="TomcatTest.iws" />
@@ -68,6 +76,23 @@
     <disable_hints />
   </component>
   <component name="DebuggerManager">
+    <exception_breakpoints>
+      <breakpoint class_name="java.lang.NullPointerException" package_name="java.lang">
+        <option name="NOTIFY_CAUGHT" value="true" />
+        <option name="NOTIFY_UNCAUGHT" value="true" />
+        <option name="ENABLED" value="false" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+    </exception_breakpoints>
     <breakpoint_any>
       <breakpoint>
         <option name="NOTIFY_CAUGHT" value="true" />
@@ -114,7 +139,7 @@
       <property name="line_breakpoints_flattenPackages" value="true" />
       <property name="field_breakpoints_groupByClasses" value="true" />
       <property name="method_breakpoints_groupByClasses" value="true" />
-      <property name="exception_breakpoints_viewId" value="TABLE" />
+      <property name="exception_breakpoints_viewId" value="TREE" />
       <property name="exception_breakpoints_groupByClasses" value="true" />
       <property name="field_breakpoints_viewId" value="TABLE" />
       <property name="method_breakpoints_groupByMethods" value="false" />
@@ -128,51 +153,40 @@
     <favorites_list name="TomcatTest" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5">
+    <splitter split-orientation="horizontal" split-proportion="0.50156987">
       <split-first>
         <leaf>
+          <file leaf-file-name="ClientRequestTest.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/test/org/fiz/ClientRequestTest.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="851" column="31" selection-start="37270" selection-end="37270" vertical-scroll-proportion="-0.8410931">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="HtmlTest.java" pinned="false" current="true" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/test/org/fiz/HtmlTest.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="245" column="47" selection-start="9442" selection-end="9506" vertical-scroll-proportion="0.27327934">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="Ajax.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/javascript/fizlib/Ajax.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="168" column="47" selection-start="8329" selection-end="8329" vertical-scroll-proportion="0.3512146">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
           <file leaf-file-name="Dataset.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/Dataset.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="57" column="11" selection-start="1758" selection-end="1758" vertical-scroll-proportion="0.0273752">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="XhtmlValidator.java" pinned="false" current="true" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/test/org/fiz/XhtmlValidator.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="12" column="11" selection-start="278" selection-end="278" vertical-scroll-proportion="-3.9951692">
-                  <folding>
-                    <element signature="imports" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="HtmlTest.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/test/org/fiz/HtmlTest.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="15" column="22" selection-start="395" selection-end="395" vertical-scroll-proportion="0.34460548">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="CompoundSection.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/org/fiz/CompoundSection.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="27" column="13" selection-start="1553" selection-end="1553" vertical-scroll-proportion="0.73913044">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="xhtml1-strict.dtd" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/test/dtd/xhtml1-strict.dtd">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="215" column="27" selection-start="6303" selection-end="6303" vertical-scroll-proportion="0.028333334">
+                <state line="469" column="0" selection-start="19493" selection-end="19493" vertical-scroll-proportion="0.017206477">
                   <folding />
                 </state>
               </provider>
@@ -181,7 +195,16 @@
           <file leaf-file-name="FormSection.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/FormSection.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="63" column="13" selection-start="4049" selection-end="4049" vertical-scroll-proportion="0.0273752">
+                <state line="564" column="0" selection-start="26666" selection-end="26666" vertical-scroll-proportion="7.1983805">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="TestUtil.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/test/org/fiz/TestUtil.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="81" column="8" selection-start="3463" selection-end="3470" vertical-scroll-proportion="0.017206477">
                   <folding />
                 </state>
               </provider>
@@ -190,25 +213,16 @@
           <file leaf-file-name="DataRequest.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/DataRequest.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="360" column="20" selection-start="16342" selection-end="16342" vertical-scroll-proportion="0.0273752">
+                <state line="363" column="22" selection-start="16560" selection-end="16560" vertical-scroll-proportion="0.017206477">
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="Timer.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/org/fiz/Timer.java">
+          <file leaf-file-name="Util.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/org/fiz/Util.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="65" column="7" selection-start="2245" selection-end="2245" vertical-scroll-proportion="0.0273752">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="Demo2Interactor.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/org/fiz/Demo2Interactor.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="34" column="73" selection-start="1700" selection-end="1700" vertical-scroll-proportion="0.0273752">
+                <state line="207" column="32" selection-start="8222" selection-end="8222" vertical-scroll-proportion="0.017206477">
                   <folding />
                 </state>
               </provider>
@@ -217,7 +231,7 @@
           <file leaf-file-name="TabSection.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/TabSection.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="100" column="55" selection-start="5293" selection-end="5293" vertical-scroll-proportion="0.0273752">
+                <state line="100" column="55" selection-start="5293" selection-end="5293" vertical-scroll-proportion="0.017206477">
                   <folding />
                 </state>
               </provider>
@@ -226,7 +240,18 @@
           <file leaf-file-name="Dispatcher.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/Dispatcher.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="218" column="13" selection-start="9303" selection-end="9426" vertical-scroll-proportion="5.830918">
+                <state line="322" column="63" selection-start="13977" selection-end="13977" vertical-scroll-proportion="5.347166">
+                  <folding>
+                    <element signature="imports" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="Fiz.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/javascript/fizlib/Fiz.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="57" column="0" selection-start="2366" selection-end="2366" vertical-scroll-proportion="0.9008097">
                   <folding />
                 </state>
               </provider>
@@ -236,28 +261,28 @@
       </split-first>
       <split-second>
         <leaf>
-          <file leaf-file-name="PerfString.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/test/org/fiz/PerfString.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="45" column="41" selection-start="1562" selection-end="1562" vertical-scroll-proportion="0.0273752">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
           <file leaf-file-name="Template.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/Template.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="517" column="61" selection-start="28553" selection-end="28553" vertical-scroll-proportion="0.0273752">
+                <state line="97" column="5" selection-start="5410" selection-end="5410" vertical-scroll-proportion="0.017525773">
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="ClientRequest.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/org/fiz/ClientRequest.java">
+          <file leaf-file-name="DispatcherTest.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/test/org/fiz/DispatcherTest.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="37" column="13" selection-start="1780" selection-end="1780" vertical-scroll-proportion="0.0273752">
+                <state line="187" column="52" selection-start="9189" selection-end="9189" vertical-scroll-proportion="0.385567">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="ServletRequestFixture.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/test/org/fiz/ServletRequestFixture.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="54" column="59" selection-start="1789" selection-end="1789" vertical-scroll-proportion="-2.2587628">
                   <folding />
                 </state>
               </provider>
@@ -266,36 +291,7 @@
           <file leaf-file-name="DemoInteractor.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/DemoInteractor.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="299" column="15" selection-start="13979" selection-end="13979" vertical-scroll-proportion="0.028052805">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="TableSection.java" pinned="false" current="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/src/org/fiz/TableSection.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="179" column="36" selection-start="9056" selection-end="9056" vertical-scroll-proportion="1.2866344">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="TestUtil.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/test/org/fiz/TestUtil.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="20" column="54" selection-start="570" selection-end="570" vertical-scroll-proportion="0.5152979">
-                  <folding>
-                    <element signature="imports" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="TableSectionTest.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/test/org/fiz/TableSectionTest.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="47" column="29" selection-start="1684" selection-end="1684" vertical-scroll-proportion="0.60225445">
+                <state line="317" column="33" selection-start="14633" selection-end="14633" vertical-scroll-proportion="0.113089">
                   <folding />
                 </state>
               </provider>
@@ -304,7 +300,7 @@
           <file leaf-file-name="Config.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/Config.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="34" column="65" selection-start="1555" selection-end="1555" vertical-scroll-proportion="0.0273752">
+                <state line="34" column="65" selection-start="1555" selection-end="1555" vertical-scroll-proportion="0.017525773">
                   <folding />
                 </state>
               </provider>
@@ -313,7 +309,7 @@
           <file leaf-file-name="Link.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/Link.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="137" column="47" selection-start="6229" selection-end="6233" vertical-scroll-proportion="0.0273752">
+                <state line="137" column="47" selection-start="6229" selection-end="6233" vertical-scroll-proportion="0.017525773">
                   <folding />
                 </state>
               </provider>
@@ -322,7 +318,7 @@
           <file leaf-file-name="DataManager.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/DataManager.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="52" column="22" selection-start="2922" selection-end="2922" vertical-scroll-proportion="0.0273752">
+                <state line="52" column="22" selection-start="2922" selection-end="2922" vertical-scroll-proportion="0.017525773">
                   <folding />
                 </state>
               </provider>
@@ -331,7 +327,7 @@
           <file leaf-file-name="StringUtil.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/StringUtil.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="9" column="44" selection-start="225" selection-end="225" vertical-scroll-proportion="0.0273752">
+                <state line="8" column="19" selection-start="168" selection-end="168" vertical-scroll-proportion="0.017525773">
                   <folding />
                 </state>
               </provider>
@@ -340,7 +336,7 @@
           <file leaf-file-name="Reminder.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/Reminder.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="19" column="13" selection-start="801" selection-end="801" vertical-scroll-proportion="0.0273752">
+                <state line="260" column="15" selection-start="11416" selection-end="11416" vertical-scroll-proportion="0.017525773">
                   <folding />
                 </state>
               </provider>
@@ -349,7 +345,52 @@
           <file leaf-file-name="Html.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/org/fiz/Html.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="146" column="5" selection-start="6003" selection-end="6003" vertical-scroll-proportion="0.72141707">
+                <state line="228" column="0" selection-start="9417" selection-end="9417" vertical-scroll-proportion="0.017525773">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="Demo2Interactor.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/org/fiz/Demo2Interactor.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="159" column="51" selection-start="7374" selection-end="7374" vertical-scroll-proportion="0.8298969">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="ClientRequest.java" pinned="false" current="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/src/org/fiz/ClientRequest.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="401" column="0" selection-start="17656" selection-end="17656" vertical-scroll-proportion="-1.7092783">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="FormSectionTest.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/test/org/fiz/FormSectionTest.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="150" column="33" selection-start="6738" selection-end="6738" vertical-scroll-proportion="0.08659794">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="FormSectionTest.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/test/jsunit/FormSectionTest.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="10" column="33" selection-start="308" selection-end="308" vertical-scroll-proportion="0.17525773">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="Interactor.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/org/fiz/Interactor.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="8" column="68" selection-start="392" selection-end="398" vertical-scroll-proportion="0.017525773">
                   <folding />
                 </state>
               </provider>
@@ -464,6 +505,106 @@
           <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\web" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\web\WEB-INF" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Fiz" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Fiz" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\web" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\web\WEB-INF" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\web\WEB-INF\fiz" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Fiz" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Fiz" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\web" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\web\WEB-INF" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\web\WEB-INF\fiz" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\web\WEB-INF\fiz\config" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Fiz" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Fiz" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\web" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Fiz" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Fiz" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\web" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\web\fizlib" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
       </PATH>
       <PATH>
         <PATH_ELEMENT>
@@ -480,6 +621,66 @@
         </PATH_ELEMENT>
         <PATH_ELEMENT>
           <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\test" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\test\testData" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Fiz" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Fiz" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\test" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\test\testData" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\test\testData\WEB-INF" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Fiz" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Fiz" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\test" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\test\testData" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\test\testData\WEB-INF" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\test\testData\WEB-INF\config" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
       </PATH>
@@ -523,7 +724,25 @@
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\test\dtd" />
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\test\jsunit" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Fiz" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Fiz" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:C:\Documents and Settings\John Ousterhout\My Documents\Fiz\src\test" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
       </PATH>
@@ -691,56 +910,6 @@
         <option name="Make" value="true" />
       </method>
     </configuration>
-    <configuration default="true" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
-      <module name="" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="ADDITIONAL_CLASS_PATH" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="wholeProject" />
-      </option>
-      <envs />
-      <method>
-        <option name="Make" value="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-    </configuration>
-    <configuration default="true" type="Application" factoryName="Application" enabled="false" merge="false">
-      <option name="MAIN_CLASS_NAME" />
-      <option name="VM_PARAMETERS" />
-      <option name="PROGRAM_PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="" />
-      <envs />
-      <method>
-        <option name="Make" value="true" />
-      </method>
-    </configuration>
     <configuration default="true" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local">
       <option name="WORKING_DIRECTORY" />
       <option name="HOST" value="localhost" />
@@ -793,6 +962,22 @@
         </SHUTDOWN>
       </ConfigurationWrapper>
     </configuration>
+    <configuration default="true" type="Application" factoryName="Application" enabled="false" merge="false">
+      <option name="MAIN_CLASS_NAME" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="" />
+      <envs />
+      <method>
+        <option name="Make" value="true" />
+      </method>
+    </configuration>
     <configuration default="true" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Remote">
       <option name="WORKING_DIRECTORY" />
       <option name="HOST" value="localhost" />
@@ -812,6 +997,40 @@
       <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
+    </configuration>
+    <configuration default="true" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
+      <module name="" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="METHOD_NAME" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="ADDITIONAL_CLASS_PATH" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="wholeProject" />
+      </option>
+      <envs />
+      <method>
+        <option name="Make" value="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
     </configuration>
     <configuration default="false" name="PerfYamlDataset" type="Application" factoryName="Application" enabled="false" merge="false">
       <option name="MAIN_CLASS_NAME" value="PerfYamlDataset" />
@@ -993,7 +1212,7 @@
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
       <option name="PACKAGE_NAME" value="org.fiz" />
-      <option name="MAIN_CLASS_NAME" value="org.fiz.TableSectionTest" />
+      <option name="MAIN_CLASS_NAME" value="org.fiz.ClientRequestTest" />
       <option name="METHOD_NAME" value="" />
       <option name="TEST_OBJECT" value="class" />
       <option name="VM_PARAMETERS" value="" />
@@ -1153,25 +1372,25 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1924" y="-292" width="1928" height="1155" extended-state="6" />
-    <editor active="false" />
+    <frame x="-1924" y="-228" width="1928" height="1155" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
-      <window_info id="Changes" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3297975" order="6" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32786885" order="6" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="6" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.087026164" order="1" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3240418" order="1" />
-      <window_info id="Debug" active="false" anchor="left" auto_hide="false" internal_type="SLIDING" type="FLOATING" visible="false" weight="0.39934355" order="4" x="22" y="45" width="970" height="631" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32208294" order="1" />
+      <window_info id="Debug" active="false" anchor="left" auto_hide="false" internal_type="SLIDING" type="FLOATING" visible="true" weight="0.39934355" order="4" x="46" y="22" width="970" height="631" />
       <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="7" />
       <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32883316" order="8" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.0" order="8" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.30761814" order="12" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32497588" order="14" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" weight="0.24951768" order="1" x="129" y="51" width="533" height="682" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39987123" order="0" />
       <window_info id="Maven projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="4" />
       <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32969153" order="5" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21783236" order="0" x="2011" y="19" width="676" height="1037" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17351842" order="0" x="2011" y="19" width="676" height="1037" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32932165" order="11" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2491951" order="2" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39953542" order="5" />
@@ -1180,6 +1399,7 @@
       <window_info id="SVN Repositories" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32964602" order="9" />
       <window_info id="Thumbnails" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32964602" order="10" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="4" />
+      <window_info id="SVN Properties" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3297975" order="8" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="0" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="2" />
       <window_info id="EJB" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="3" />
@@ -1193,7 +1413,7 @@
     <option name="PERFORM_EDIT_IN_BACKGROUND" value="true" />
     <option name="PERFORM_ADD_REMOVE_IN_BACKGROUND" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added new class XhtmlValidator to eliminate need for &quot;xmlvalid&quot; program, which isn't free.&#10;&#10;Also, various lint cleanups." />
+    <option name="LAST_COMMIT_MESSAGE" value="Another test of FIZ-31" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_FILE_COMMIT" value="false" />
@@ -1204,8 +1424,6 @@
     <option name="UPDATE_GROUP_BY_CHANGELIST" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="Fixed broken test." />
-    <MESSAGE value="Added CompoundSection class." />
     <MESSAGE value="Just testing the new svnserve Subversion configuration." />
     <MESSAGE value="Undo last modification.&#10;" />
     <MESSAGE value="* New Dataset constructor that takes alternating String and Dataset/String arguments.&#10;&#10;* Added ClientRequest.ajaxUpdateSections method: simple way to update one or more sections, including handling their data requests." />
@@ -1229,6 +1447,8 @@
     <MESSAGE value="Various improvements to FormSection:&#10;* Don't use element ids directly in the HTML; concatenate&#10;  them with the form id.&#10;* Use &quot;_&quot; instead of &quot;.&quot; when creating hierarchical ids.&#10;* When displaying error diagnostics, change the class of the&#10;  overall table row to &quot;formError&quot;.&#10;* For vertically-oriented forms, use one row for each element,&#10;  with three divs for the label, control, and diagnostic." />
     <MESSAGE value="* Cleaned up images for TabSection (changed names to conform to &quot;family&quot;&#10;  convention, added guidlines in Illustrator file).&#10;&#10;* Fixed broken tests in FormSectionTest.js.&#10;&#10;* Fixed broken check for &quot;request&quot; property in TableSection constructor." />
     <MESSAGE value="Added new class XhtmlValidator to eliminate need for &quot;xmlvalid&quot; program, which isn't free.&#10;&#10;Also, various lint cleanups." />
+    <MESSAGE value="FIZ-31: testing Subversion integration.&#10;&#10;Also a small amount of lint." />
+    <MESSAGE value="Another test of FIZ-31" />
   </component>
   <component name="VssConfiguration">
     <option name="CLIENT_PATH" value="" />
@@ -1282,119 +1502,117 @@
     </buildFile>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/test/org/fiz/DispatcherTest2Interactor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="7" column="13" selection-start="144" selection-end="144" vertical-scroll-proportion="0.12268041">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/org/fiz/DemoInteractor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="299" column="15" selection-start="13979" selection-end="13979" vertical-scroll-proportion="0.028052805">
+        <state line="317" column="33" selection-start="14633" selection-end="14633" vertical-scroll-proportion="0.113089">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/Config.java">
+    <entry file="file://$PROJECT_DIR$/test/testData/WEB-INF/config/styles.yaml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="34" column="65" selection-start="1555" selection-end="1555" vertical-scroll-proportion="0.0273752">
+        <state line="6" column="38" selection-start="204" selection-end="204" vertical-scroll-proportion="0.103238866">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/Link.java">
+    <entry file="file://$PROJECT_DIR$/test/org/fiz/DispatcherTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="137" column="47" selection-start="6229" selection-end="6233" vertical-scroll-proportion="0.0273752">
+        <state line="187" column="52" selection-start="9189" selection-end="9189" vertical-scroll-proportion="0.385567">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/DataManager.java">
+    <entry file="file://$PROJECT_DIR$/src/org/fiz/TestInteractor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="52" column="22" selection-start="2922" selection-end="2922" vertical-scroll-proportion="0.0273752">
+        <state line="118" column="24" selection-start="4983" selection-end="4983" vertical-scroll-proportion="0.017525773">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/StringUtil.java">
+    <entry file="file://$PROJECT_DIR$/src/org/fiz/Demo2Interactor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="44" selection-start="225" selection-end="225" vertical-scroll-proportion="0.0273752">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/Reminder.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="13" selection-start="801" selection-end="801" vertical-scroll-proportion="0.0273752">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/CompoundSection.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="13" selection-start="1553" selection-end="1553" vertical-scroll-proportion="0.73913044">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/Dataset.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="57" column="11" selection-start="1758" selection-end="1758" vertical-scroll-proportion="0.0273752">
+        <state line="159" column="51" selection-start="7374" selection-end="7374" vertical-scroll-proportion="0.8298969">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/fiz/Dispatcher.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="218" column="13" selection-start="9303" selection-end="9426" vertical-scroll-proportion="5.830918">
+        <state line="322" column="63" selection-start="13977" selection-end="13977" vertical-scroll-proportion="5.347166">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/org/fiz/FormSectionTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="150" column="33" selection-start="6738" selection-end="6738" vertical-scroll-proportion="0.08659794">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/fiz/FormSection.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="564" column="0" selection-start="26666" selection-end="26666" vertical-scroll-proportion="7.1983805">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/jsunit/FormSectionTest.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="10" column="33" selection-start="308" selection-end="308" vertical-scroll-proportion="0.17525773">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/web/WEB-INF/fiz/config/styles.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="53" column="42" selection-start="2653" selection-end="2653" vertical-scroll-proportion="0.6617801">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/org/fiz/ServletRequestFixture.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="54" column="59" selection-start="1789" selection-end="1789" vertical-scroll-proportion="-2.2587628">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/org/fiz/ClientRequestFixture.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="7" column="13" selection-start="160" selection-end="160" vertical-scroll-proportion="0.12268041">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/fiz/ClientRequest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="401" column="0" selection-start="17656" selection-end="17656" vertical-scroll-proportion="-1.7092783">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/org/fiz/ClientRequestTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="851" column="31" selection-start="37270" selection-end="37270" vertical-scroll-proportion="-0.8410931">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test/org/fiz/HtmlTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="22" selection-start="395" selection-end="395" vertical-scroll-proportion="0.34460548">
+        <state line="245" column="47" selection-start="9442" selection-end="9506" vertical-scroll-proportion="0.27327934">
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/Html.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="146" column="5" selection-start="6003" selection-end="6003" vertical-scroll-proportion="0.72141707">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/Template.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="517" column="61" selection-start="28553" selection-end="28553" vertical-scroll-proportion="0.0273752">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/org/fiz/TableSectionTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="47" column="29" selection-start="1684" selection-end="1684" vertical-scroll-proportion="0.60225445">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/org/fiz/TestUtil.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="54" selection-start="570" selection-end="570" vertical-scroll-proportion="0.5152979">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/fiz/TableSection.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="179" column="36" selection-start="9056" selection-end="9056" vertical-scroll-proportion="1.2866344">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/org/fiz/XhtmlValidator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="12" column="11" selection-start="278" selection-end="278" vertical-scroll-proportion="-3.9951692">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>

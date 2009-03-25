@@ -75,7 +75,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "form1", "request", "getPerson"),
                 new ErrorFormElement("name", "name error"),
                 new ErrorFormElement("age", "age error"));
-        cr.setAjax(true);
+        cr.setClientRequestType(ClientRequest.Type.POST);
         boolean gotException = false;
         try {
             form.collectFormData(cr);
@@ -87,21 +87,17 @@ public class FormSectionTest extends junit.framework.TestCase {
                 StringUtil.join(e.getErrorData(), "\n"));
         }
         assertEquals("exception happened", true, gotException);
-        ServletResponseFixture response =
-                ((ServletResponseFixture)cr.getServletResponse());
-        assertEquals("response Javascript for Ajax",
-                "var actions = [{type: \"eval\", javascript: " +
-                "\"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
-                "\\\"bulletinError\\\", \\\"bulletin: One or more of the " +
-                "input fields are invalid; see details below.\\\");\"}, " +
-                "{type: \"eval\", javascript: " +
-                "\"Fiz.ids.form1.clearElementErrors();\"}, " +
-                "{type: \"eval\", javascript: \"Fiz.ids.form1.elementError(" +
-                "\\\"form1_name\\\", \\\"<span class=\\\\\\\"error\\\\\\\">" +
-                "name error</span>\\\");\"}, {type: \"eval\", javascript: " +
-                "\"Fiz.ids.form1.elementError(\\\"form1_age\\\", \\\"<span " +
-                "class=\\\\\\\"error\\\\\\\">age error</span>\\\");\"}",
-                response.toString());
+        assertEquals("javascript response",
+                "Fiz.clearBulletin();\n" +
+                "Fiz.addBulletinMessage(\"bulletinError\", \"bulletin: " +
+                "One or more of the input fields are invalid; " +
+                "see details below.\");\n" +
+                "Fiz.ids.form1.clearElementErrors();\n" +
+                "Fiz.ids.form1.elementError(\"form1_name\", " +
+                "\"<span class=\\\"error\\\">name error</span>\");\n" +
+                "Fiz.ids.form1.elementError(\"form1_age\", " +
+                "\"<span class=\\\"error\\\">age error</span>\");\n",
+                cr.jsCode.toString());
     }
 
     public void test_elementError_basics() {
@@ -109,7 +105,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "form1", "elementErrorStyle", "style22"),
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
-        cr.setAjax(true);
+        cr.setClientRequestType(ClientRequest.Type.POST);
         // Make sure that the template references data in the main dataset,
         // to verify that it is available.
         Config.setDataset("styles", new Dataset(
@@ -122,19 +118,15 @@ public class FormSectionTest extends junit.framework.TestCase {
         main.set("age", "21");
         form.elementError(cr, new Dataset("message", "<failure>",
                 "culprit", "age"), "id11");
-        ServletResponseFixture response =
-                ((ServletResponseFixture)cr.getServletResponse());
-        assertEquals("response Javascript for Ajax",
-                "var actions = [{type: \"eval\", javascript: " +
-                "\"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
-                "\\\"bulletinError\\\", \\\"bulletin: One or more of the " +
-                "input fields are invalid; see details below.\\\");\"}, " +
-                "{type: \"eval\", javascript: " +
-                "\"Fiz.ids.form1.clearElementErrors();\"}, " +
-                "{type: \"eval\", javascript: \"Fiz.ids.form1.elementError(" +
-                "\\\"form1_id11\\\", \\\"error for Alice: " +
-                "&lt;failure&gt;\\\");\"}",
-                response.toString());
+        assertEquals("javascript response",
+                "Fiz.clearBulletin();\n" +
+                "Fiz.addBulletinMessage(\"bulletinError\", \"bulletin: " +
+                "One or more of the input fields are invalid; see " +
+                "details below.\");\n" +
+                "Fiz.ids.form1.clearElementErrors();\n" +
+                "Fiz.ids.form1.elementError(\"form1_id11\", \"error for " +
+                "Alice: &lt;failure&gt;\");\n",
+                cr.jsCode.toString());
     }
     public void test_elementError_notFirstError() {
         FormSection form = new FormSection(
@@ -142,7 +134,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
         form.anyElementErrors = true;
-        cr.setAjax(true);
+        cr.setClientRequestType(ClientRequest.Type.POST);
         // Make sure that the template references data in the main dataset,
         // to verify that it is available.
         Config.setDataset("styles", new Dataset(
@@ -155,13 +147,10 @@ public class FormSectionTest extends junit.framework.TestCase {
         main.set("age", "21");
         form.elementError(cr, new Dataset("message", "<failure>",
                 "culprit", "age"), "id11");
-        ServletResponseFixture response =
-                ((ServletResponseFixture)cr.getServletResponse());
-        assertEquals("response Javascript for Ajax",
-                "var actions = [{type: \"eval\", javascript: " +
-                "\"Fiz.ids.form1.elementError(\\\"form1_id11\\\", " +
-                "\\\"error for Alice: &lt;failure&gt;\\\");\"}",
-                response.toString());
+        assertEquals("javascript response",
+                "Fiz.ids.form1.elementError(\"form1_id11\", \"error " +
+                "for Alice: &lt;failure&gt;\");\n",
+                cr.jsCode.toString());
     }
     public void test_elementError_defaultStyle() {
         FormSection form = new FormSection(
@@ -169,18 +158,15 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
         form.anyElementErrors = true;
-        cr.setAjax(true);
+        cr.setClientRequestType(ClientRequest.Type.POST);
         Config.setDataset("styles", new Dataset("FormSection",
                 new Dataset("elementError", "default style: @message")));
         form.elementError(cr, new Dataset("message", "<failure>",
                 "culprit", "age"), "id11");
-        ServletResponseFixture response =
-                ((ServletResponseFixture)cr.getServletResponse());
-        assertEquals("response Javascript for Ajax",
-                "var actions = [{type: \"eval\", javascript: " +
-                "\"Fiz.ids.form1.elementError(\\\"form1_id11\\\", " +
-                "\\\"default style: &lt;failure&gt;\\\");\"}",
-                response.toString());
+        assertEquals("javascript response",
+                "Fiz.ids.form1.elementError(\"form1_id11\", " +
+                "\"default style: &lt;failure&gt;\");\n",
+                cr.jsCode.toString());
     }
 
     public void test_html_requestErrorDefaultStyle() {
@@ -211,29 +197,32 @@ public class FormSectionTest extends junit.framework.TestCase {
     }
     public void test_html_lookForNestedData() {
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson"),
+                new Dataset("id", "form1", "request", "getPerson",
+                        "postUrl", "x/y"),
                 new EntryFormElement("name", "Name:"));
         cr.showSections(form);
         TestUtil.assertMatchingSubstring("form element displaying name",
                 "<input type=\"text\" name=\"name\" " +
                 "class=\"EntryFormElement\" value=\"David\" />",
-                cr.getHtml().getBody().toString(), "<input[^>]*>");
+                cr.getHtml().getBody().toString(), "<input[^>]*text[^>]*>");
     }
     public void test_html_dataNotNested() {
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getState"),
+                new Dataset("id", "form1", "request", "getState",
+                        "postUrl", "x/y"),
                 new EntryFormElement("name", "Name:"));
         cr.showSections(form);
         TestUtil.assertMatchingSubstring("form element displaying name",
                 "<input type=\"text\" name=\"name\" " +
                 "class=\"EntryFormElement\" value=\"California\" />",
-                cr.getHtml().getBody().toString(), "<input[^>]*>");
+                cr.getHtml().getBody().toString(), "<input[^>]*text[^>]*>");
     }
-    public void test_html_noRequestButInitialValue() {
+    public void test_html_noRequestButInitialValues() {
         // In this case, the "name" value is supplied from a property.
         FormSection form = new FormSection(
                 YamlDataset.newStringInstance(
                     "id: form1\n" +
+                    "postUrl: /x/y\n" +
                     "initialValues:\n" +
                     "    name: Fred\n"),
                 new EntryFormElement("name", "Name:"));
@@ -241,22 +230,23 @@ public class FormSectionTest extends junit.framework.TestCase {
         TestUtil.assertMatchingSubstring("form element displaying name",
                 "<input type=\"text\" name=\"name\" " +
                 "class=\"EntryFormElement\" value=\"Fred\" />",
-                cr.getHtml().getBody().toString(), "<input[^>]*>");
+                cr.getHtml().getBody().toString(), "<input[^>]*text[^>]*>");
     }
-    public void test_html_noRequestOrInitialValue() {
+    public void test_html_noRequestOrInitialValues() {
         // In this case, the "name" value is supplied from the main dataset.
         FormSection form = new FormSection(
-                new Dataset("id", "form1"),
+                new Dataset("id", "form1", "postUrl", "x/y"),
                 new EntryFormElement("name", "Name:"));
         cr.showSections(form);
         TestUtil.assertMatchingSubstring("form element displaying name",
                 "<input type=\"text\" name=\"name\" " +
                 "class=\"EntryFormElement\" value=\"Alice\" />",
-                cr.getHtml().getBody().toString(), "<input[^>]*>");
+                cr.getHtml().getBody().toString(), "<input[^>]*text[^>]*>");
     }
     public void test_html_defaultCssFile() {
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson"),
+                new Dataset("id", "form1", "request", "getPerson",
+                        "postUrl", "x/y"),
                 new EntryFormElement("name", "Name:"));
         cr.showSections(form);
         assertEquals("CSS files", "EntryFormElement.css, FormSection.css",
@@ -264,21 +254,54 @@ public class FormSectionTest extends junit.framework.TestCase {
     }
     public void test_html_noCssFile() {
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "class", "class22"),
+                new Dataset("id", "form1", "class", "class22",
+                        "postUrl", "x/y"),
                 new EntryFormElement("name", "Name:"));
         cr.showSections(form);
         assertEquals("CSS files", "EntryFormElement.css",
                 cr.getHtml().getCssFiles());
     }
+    public void test_html_boilerplate() {
+        FormSection form = new FormSection(
+                new Dataset("id", "form1", "class", "class22",
+                        "postUrl", "x/y"));
+        cr.showSections(form);
+        TestUtil.assertMatchingSubstring("form HTML", "\n" +
+                "<!-- Start FormSection form1 -->\n" +
+                "<div id=\"form1_target\" style=\"display:none;\"></div>\n" +
+                "<form id=\"form1\" class=\"class22\" " +
+                "onsubmit=\"return Fiz.ids.form1.submit();\" " +
+                "action=\"x/y\" method=\"post\" " +
+                "enctype=\"multipart/form-data\">\n" +
+                "  <input type=\"hidden\" name=\"fiz_formId\" " +
+                "value=\"form1\" />\n" +
+                "  <table",
+                cr.getHtml().getBody().toString(), ".*<table");
+    }
+    public void test_html_boilerplateNoClassOrUrl() {
+        FormSection form = new FormSection(
+                new Dataset("id", "form1"));
+        cr.showSections(form);
+        TestUtil.assertMatchingSubstring("form HTML", "\n" +
+                "<!-- Start FormSection form1 -->\n" +
+                "<div id=\"form1_target\" style=\"display:none;\"></div>\n" +
+                "<form id=\"form1\" class=\"FormSection\" " +
+                "onsubmit=\"return Fiz.ids.form1.submit();\" " +
+                "action=\"post\" method=\"post\" " +
+                "enctype=\"multipart/form-data\">\n" +
+                "  <input type=\"hidden\" name=\"fiz_formId\" " +
+                "value=\"form1\" />\n" +
+                "  <table",
+                cr.getHtml().getBody().toString(), ".*<table");
+    }
     public void test_html_javascript() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", ""),
+                "buttonStyle", "", "postUrl", "x/y"),
                 new EntryFormElement("name", "Name:"));
         cr.showSections(form);
         assertEquals("Javascript code",
-                "Fiz.ids.form1 = new Fiz.FormSection(\"form1\", " +
-                "\"ajaxPost\");\n",
+                "Fiz.ids.form1 = new Fiz.FormSection(\"form1\");\n",
                 cr.getHtml().jsCode.toString());
         assertEquals("Javascript files",
                 "fizlib/Ajax.js, fizlib/Fiz.js, fizlib/FormSection.js",
@@ -310,7 +333,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "form1"),
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
-        cr.setAjax(true);
+        cr.setClientRequestType(ClientRequest.Type.POST);
         Config.setDataset("styles", new Dataset("FormSection",
                 new Dataset("elementError", "element: @message"),
                 "bulletin", "bulletin: @message"));
@@ -322,80 +345,71 @@ public class FormSectionTest extends junit.framework.TestCase {
         main.set("age", "21");
         boolean gotException = false;
         try {
-            Dataset result = form.post(cr, "fixture1");
+            form.post(cr, "fixture1");
         }
         catch (FormSection.PostError e) {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
-        ServletResponseFixture response =
-                ((ServletResponseFixture)cr.getServletResponse());
-        assertEquals("response Javascript for Ajax",
-                "var actions = [{type: \"eval\", javascript: " +
-                "\"Fiz.ids.form1.clearElementErrors();\"}, {type: \"eval\", " +
-                "javascript: \"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
-                "\\\"bulletinError\\\", \\\"bulletin: One or more of the " +
-                "input fields are invalid; see details below.\\\");\"}, " +
-                "{type: \"eval\", " +
-                "javascript: \"Fiz.ids.form1.elementError(\\\"form1_age\\\", " +
-                "\\\"element: &lt;failure&gt;\\\");\"}, {type: \"eval\", " +
-                "javascript: \"Fiz.ids.form1.elementError(\\\"form1_name\\\", " +
-                "\\\"element: error33\\\");\"}",
-                response.toString());
+        assertEquals("javascript response",
+                "Fiz.ids.form1.clearElementErrors();\n" +
+                "Fiz.clearBulletin();\n" +
+                "Fiz.addBulletinMessage(\"bulletinError\", \"bulletin: " +
+                "One or more of the input fields are invalid; see " +
+                "details below.\");\n" +
+                "Fiz.ids.form1.elementError(\"form1_age\", " +
+                "\"element: &lt;failure&gt;\");\n" +
+                "Fiz.ids.form1.elementError(\"form1_name\", " +
+                "\"element: error33\");\n",
+                cr.jsCode.toString());
     }
     public void test_post_errorButCulpritNotFound() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1"),
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
-        cr.setAjax(true);
+        cr.setClientRequestType(ClientRequest.Type.POST);
         DataManagerFixture.setErrorData(new Dataset("message", "<failure>",
                 "culprit", "height"));
         boolean gotException = false;
         try {
-            Dataset result = form.post(cr, "fixture1");
+            form.post(cr, "fixture1");
         }
         catch (FormSection.PostError e) {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
-        ServletResponseFixture response =
-                ((ServletResponseFixture)cr.getServletResponse());
-        assertEquals("response Javascript for Ajax",
-                "var actions = [{type: \"eval\", javascript: " +
-                "\"Fiz.ids.form1.clearElementErrors();\"}, {type: \"eval\", " +
-                "javascript: \"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
-                "\\\"bulletinError\\\", \\\"bulletin: " +
-                "&lt;failure&gt;\\\");\"}",
-                response.toString());
+        assertEquals("javascript response",
+                "Fiz.ids.form1.clearElementErrors();\n" +
+                "Fiz.clearBulletin();\n" +
+                "Fiz.addBulletinMessage(\"bulletinError\", " +
+                "\"bulletin: &lt;failure&gt;\");\n",
+                cr.jsCode.toString());
     }
     public void test_post_errorWithNoCulpritValue() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson"),
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
-        cr.setAjax(true);
+        cr.setClientRequestType(ClientRequest.Type.POST);
         DataManagerFixture.setErrorData(new Dataset("message", "<failure>"));
         Dataset main = cr.getMainDataset();
         main.set("name", "Alice");
         main.set("age", "21");
         boolean gotException = false;
         try {
-            Dataset result = form.post(cr, "fixture1");
+            form.post(cr, "fixture1");
         }
         catch (FormSection.PostError e) {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
-        ServletResponseFixture response =
-                ((ServletResponseFixture)cr.getServletResponse());
-        assertEquals("response Javascript for Ajax",
-                "var actions = [{type: \"eval\", javascript: " +
-                "\"Fiz.ids.form1.clearElementErrors();\"}, {type: \"eval\", " +
-                "javascript: \"Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
-                "\\\"bulletinError\\\", \\\"bulletin: " +
-                "&lt;failure&gt;\\\");\"}",
-                response.toString());
+        assertEquals("javascript response",
+                "Fiz.ids.form1.clearElementErrors();\n" +
+                "Fiz.clearBulletin();\n" +
+                "Fiz.addBulletinMessage(\"bulletinError\", " +
+                "\"bulletin: &lt;failure&gt;\");\n",
+                cr.jsCode.toString());
     }
 
     public void test_registerRequests() {
@@ -440,14 +454,11 @@ public class FormSectionTest extends junit.framework.TestCase {
         FormSection form = new FormSection(
                 new Dataset("id", "form1"));
         form.oldElementErrorsCleared = false;
-        cr.setAjax(true);
+        cr.setClientRequestType(ClientRequest.Type.POST);
         form.clearOldElementErrors(cr);
-        ServletResponseFixture response =
-                ((ServletResponseFixture)cr.getServletResponse());
-        assertEquals("response Javascript for Ajax",
-                "var actions = [{type: \"eval\", " +
-                "javascript: \"Fiz.ids.form1.clearElementErrors();\"}",
-                response.toString());
+        assertEquals("javascript response",
+                "Fiz.ids.form1.clearElementErrors();\n",
+                cr.jsCode.toString());
         assertEquals("oldElementErrorsCleared value", true,
                 form.oldElementErrorsCleared);
     }
@@ -455,11 +466,9 @@ public class FormSectionTest extends junit.framework.TestCase {
         FormSection form = new FormSection(
                 new Dataset("id", "form1"));
         form.oldElementErrorsCleared = true;
-        cr.setAjax(true);
+        cr.setClientRequestType(ClientRequest.Type.POST);
         form.clearOldElementErrors(cr);
-        ServletResponseFixture response =
-                ((ServletResponseFixture)cr.getServletResponse());
-        assertEquals("response Javascript for Ajax", "", response.toString());
+        assertEquals("javascript response", null, cr.jsCode);
     }
 
     public void test_getHelpText() {
@@ -494,47 +503,36 @@ public class FormSectionTest extends junit.framework.TestCase {
     public void test_innerHtml_noSubmitButton() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", ""), new TemplateFormElement(
+                "buttonStyle", "", "postUrl", "x/y"), new TemplateFormElement(
                 new Dataset("id", "id11", "template", "xyz")));
         cr.showSections(form);
-        assertEquals("generated HTML", "\n" +
-                "<!-- Start FormSection form1 -->\n" +
-                "<form id=\"form1\" class=\"FormSection\" " +
-                "action=\"javascript: Fiz.ids.form1.post();\" " +
-                "method=\"post\">\n" +
-                "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
+        TestUtil.assertMatchingSubstring("form contents",
+                "<table cellspacing=\"0\" class=\"sideBySide\">\n" +
                 "    <tr id=\"form1_id11\">\n" +
                 "      <td class=\"label\"></td>\n" +
                 "      <td class=\"control\">xyz<div " +
                 "id=\"form1_id11_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
-                "  </table>\n" +
-                "</form>\n" +
-                "<!-- End FormSection form1 -->\n",
-                cr.getHtml().getBody().toString());
-        TestUtil.assertXHTML(cr.getHtml().toString());
+                "  </table>",
+                cr.getHtml().getBody().toString(), "<table.*</table>");
+        TestUtil.assertXHTML( cr.getHtml().toString());
     }
     public void test_innerHtml_submitButton() {
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson"));
+                new Dataset("id", "form1", "request", "getPerson",
+                "postUrl", "x/y"));
         cr.showSections(form);
-        assertEquals("generated HTML", "\n" +
-                "<!-- Start FormSection form1 -->\n" +
-                "<form id=\"form1\" class=\"FormSection\" " +
-                "action=\"javascript: Fiz.ids.form1.post();\" " +
-                "method=\"post\">\n" +
-                "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
+        TestUtil.assertMatchingSubstring("form contents",
+                "<table cellspacing=\"0\" class=\"sideBySide\">\n" +
                 "    <tr>\n" +
-                "      <td class=\"submit\" colspan=\"2\"><div class=" +
-                "\"buttons\"><input type=\"submit\" name=\"action\" " +
-                "value=\"Submit\" accesskey=\"s\" title=\"Press Alt+Shift+s " +
-                "to submit.\" /></div> </td>\n" +
+                "      <td class=\"submit\" colspan=\"2\"><div " +
+                "class=\"buttons\"><input type=\"submit\" name=\"action\" " +
+                "value=\"Submit\" accesskey=\"s\" " +
+                "title=\"Press Alt+Shift+s to submit.\" /></div> </td>\n" +
                 "    </tr>\n" +
-                "  </table>\n" +
-                "</form>\n" +
-                "<!-- End FormSection form1 -->\n",
-                cr.getHtml().getBody().toString());
+                "  </table>",
+                cr.getHtml().getBody().toString(), "<table.*</table>");
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
 
@@ -546,13 +544,10 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "id2", "template", "element 2 html"));
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", ""), element1, element2);
+                "buttonStyle", "", "postUrl", "x/y"), element1, element2);
         cr.showSections(form);
-        assertEquals("generated HTML", "\n" +
-                "<!-- Start FormSection form1 -->\n" +
-                "<form id=\"form1\" class=\"FormSection\" action=" +
-                "\"javascript: Fiz.ids.form1.post();\" method=\"post\">\n" +
-                "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
+        TestUtil.assertMatchingSubstring("form contents",
+                "<table cellspacing=\"0\" class=\"sideBySide\">\n" +
                 "    <tr id=\"form1_id1\">\n" +
                 "      <td class=\"control\" colspan=\"2\">element 1 html" +
                 "<div id=\"form1_id1_diagnostic\" class=\"diagnostic\" " +
@@ -564,10 +559,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "<div id=\"form1_id2_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
-                "  </table>\n" +
-                "</form>\n" +
-                "<!-- End FormSection form1 -->\n",
-                cr.getHtml().getBody().toString());
+                "  </table>",
+                cr.getHtml().getBody().toString(), "<table.*</table>");
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_sideBySideElement_helpText() {
@@ -578,13 +571,10 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "id2", "template", "element 2 html"));
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", ""), element1, element2);
+                "buttonStyle", "", "postUrl", "x/y"), element1, element2);
         cr.showSections(form);
-        assertEquals("generated HTML", "\n" +
-                "<!-- Start FormSection form1 -->\n" +
-                "<form id=\"form1\" class=\"FormSection\" action=" +
-                "\"javascript: Fiz.ids.form1.post();\" method=\"post\">\n" +
-                "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
+        TestUtil.assertMatchingSubstring("form contents",
+                "<table cellspacing=\"0\" class=\"sideBySide\">\n" +
                 "    <tr id=\"form1_id1\" title=\"Sample help text\">\n" +
                 "      <td class=\"label\"></td>\n" +
                 "      <td class=\"control\">element 1 html" +
@@ -597,25 +587,19 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "<div id=\"form1_id2_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
-                "  </table>\n" +
-                "</form>\n" +
-                "<!-- End FormSection form1 -->\n",
-                cr.getHtml().getBody().toString());
+                "  </table>",
+                cr.getHtml().getBody().toString(), "<table.*</table>");
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_sideBySideElement_elements() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
-                        "buttonStyle", ""),
+                        "buttonStyle", "", "postUrl", "x/y"),
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
         cr.showSections(form);
-        assertEquals("generated HTML", "\n" +
-                "<!-- Start FormSection form1 -->\n" +
-                "<form id=\"form1\" class=\"FormSection\" " +
-                "action=\"javascript: Fiz.ids.form1.post();\" " +
-                "method=\"post\">\n" +
-                "  <table cellspacing=\"0\" class=\"sideBySide\">\n" +
+        TestUtil.assertMatchingSubstring("form contents",
+                "<table cellspacing=\"0\" class=\"sideBySide\">\n" +
                 "    <tr id=\"form1_name\">\n" +
                 "      <td class=\"label\">Name:</td>\n" +
                 "      <td class=\"control\"><input type=\"text\" " +
@@ -631,10 +615,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "value=\"66\" /><div id=\"form1_age_diagnostic\" " +
                 "class=\"diagnostic\" style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
-                "  </table>\n" +
-                "</form>\n" +
-                "<!-- End FormSection form1 -->\n",
-                cr.getHtml().getBody().toString());
+                "  </table>",
+                cr.getHtml().getBody().toString(), "<table.*</table>");
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
 
@@ -647,14 +629,11 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "label", "sample"));
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", "", "layout", "vertical"),
+                "buttonStyle", "", "layout", "vertical", "postUrl", "x/y"),
                 element1, element2);
         cr.showSections(form);
-        assertEquals("generated HTML", "\n" +
-                "<!-- Start FormSection form1 -->\n" +
-                "<form id=\"form1\" class=\"FormSection\" action=" +
-                "\"javascript: Fiz.ids.form1.post();\" method=\"post\">\n" +
-                "  <table cellspacing=\"0\" class=\"vertical\">\n" +
+        TestUtil.assertMatchingSubstring("form contents",
+                "<table cellspacing=\"0\" class=\"vertical\">\n" +
                 "    <tr id=\"form1_id1\"><td>\n" +
                 "      <div class=\"control\">element 1 html</div>\n" +
                 "      <div id=\"form1_id1_diagnostic\" class=\"diagnostic\" " +
@@ -666,10 +645,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "      <div id=\"form1_id2_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div>\n" +
                 "    </td></tr>\n" +
-                "  </table>\n" +
-                "</form>\n" +
-                "<!-- End FormSection form1 -->\n",
-                cr.getHtml().getBody().toString());
+                "  </table>",
+                cr.getHtml().getBody().toString(), "<table.*</table>");
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_verticalElement_helpText() {
@@ -680,14 +657,11 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "id2", "template", "element 2 html"));
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", "", "layout", "vertical"),
+                "buttonStyle", "", "layout", "vertical", "postUrl", "x/y"),
                 element1, element2);
         cr.showSections(form);
-        assertEquals("generated HTML", "\n" +
-                "<!-- Start FormSection form1 -->\n" +
-                "<form id=\"form1\" class=\"FormSection\" action=" +
-                "\"javascript: Fiz.ids.form1.post();\" method=\"post\">\n" +
-                "  <table cellspacing=\"0\" class=\"vertical\">\n" +
+        TestUtil.assertMatchingSubstring("form contents",
+                "<table cellspacing=\"0\" class=\"vertical\">\n" +
                 "    <tr id=\"form1_id1\" title=\"Sample help text\"><td>\n" +
                 "      <div class=\"control\">element 1 html</div>\n" +
                 "      <div id=\"form1_id1_diagnostic\" class=\"diagnostic\" " +
@@ -698,25 +672,19 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "      <div id=\"form1_id2_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div>\n" +
                 "    </td></tr>\n" +
-                "  </table>\n" +
-                "</form>\n" +
-                "<!-- End FormSection form1 -->\n",
-                cr.getHtml().getBody().toString());
+                "  </table>",
+                cr.getHtml().getBody().toString(), "<table.*</table>");
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_verticalElement_elements() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
-                "buttonStyle", "", "layout", "vertical"),
+                "buttonStyle", "", "layout", "vertical", "postUrl", "x/y"),
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
         cr.showSections(form);
-        assertEquals("generated HTML", "\n" +
-                "<!-- Start FormSection form1 -->\n" +
-                "<form id=\"form1\" class=\"FormSection\" " +
-                "action=\"javascript: Fiz.ids.form1.post();\" " +
-                "method=\"post\">\n" +
-                "  <table cellspacing=\"0\" class=\"vertical\">\n" +
+        TestUtil.assertMatchingSubstring("form contents",
+                "<table cellspacing=\"0\" class=\"vertical\">\n" +
                 "    <tr id=\"form1_name\"><td>\n" +
                 "      <div class=\"label\">Name:</div>\n" +
                 "      <div class=\"control\"><input type=\"text\" " +
@@ -733,10 +701,17 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "      <div id=\"form1_age_diagnostic\" " +
                 "class=\"diagnostic\" style=\"display:none\"></div>\n" +
                 "    </td></tr>\n" +
-                "  </table>\n" +
-                "</form>\n" +
-                "<!-- End FormSection form1 -->\n",
-                cr.getHtml().getBody().toString());
+                "  </table>",
+                cr.getHtml().getBody().toString(), "<table.*</table>");
         TestUtil.assertXHTML(cr.getHtml().toString());
+    }
+
+    public void test_sendFormResponse() {
+        cr.getMainDataset().set("fiz_formId", "ab\"<$&");
+        FormSection.sendFormResponse(cr, "x = \"abc<&>\";");
+        assertEquals("form response Javascript",
+                "window.parent.Fiz.FormSection.handleResponse(" +
+                "\"ab\\\"<$&\", \"x = \\\"abc<&>\\\";\");\n",
+                cr.getHtml().jsCode.toString());
     }
 }

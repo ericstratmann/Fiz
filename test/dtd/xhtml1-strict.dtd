@@ -12,7 +12,7 @@
    All Rights Reserved.
 
    This DTD module is identified by the PUBLIC and SYSTEM identifiers:
-
+f
    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
    SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
 
@@ -84,6 +84,9 @@
 
 <!ENTITY % Text "CDATA">
     <!-- used for titles etc. -->
+
+<!ENTITY % FrameTarget "NMTOKEN">
+    <!-- render in this frame -->
 
 <!ENTITY % Length "CDATA">
     <!-- nn for pixels or nn% for percentage length -->
@@ -173,7 +176,7 @@
 
 
 <!ENTITY % special
-   "%special.pre; | object | img ">
+   "%special.pre; | object | img | iframe">
 
 <!ENTITY % fontstyle "tt | i | b | big | small ">
 
@@ -223,7 +226,7 @@
 
 <!-- form uses %Block; excluding form -->
 
-<!ENTITY % form.content "(%block; | %misc;)*">
+<!ENTITY % form.content "(%block; | %misc; | %inline.forms;)*">
 
 <!-- button uses %Flow; but excludes a, form and form controls -->
 
@@ -343,9 +346,34 @@
   %attrs;
   >
 
+<!--======================= Frames =======================================-->
+
+<!-- inline subwindow -->
+
+<!ELEMENT iframe %Flow;>
+<!ATTLIST iframe
+  %coreattrs;
+  longdesc    %URI;          #IMPLIED
+  name        NMTOKEN        #IMPLIED
+  src         %URI;          #IMPLIED
+  frameborder (1|0)          "1"
+  marginwidth %Pixels;       #IMPLIED
+  marginheight %Pixels;      #IMPLIED
+  scrolling   (yes|no|auto)  "auto"
+  height      %Length;       #IMPLIED
+  width       %Length;       #IMPLIED
+  >
+
+<!-- alternate content container for non frame-based rendering -->
+
+<!ELEMENT noframes %Flow;>
+<!ATTLIST noframes
+  %attrs;
+  >
+
 <!--=================== Document Body ====================================-->
 
-<!ELEMENT body %Block;>
+<!ELEMENT body %Flow;>
 <!ATTLIST body
   %attrs;
   onload          %Script;   #IMPLIED
@@ -699,6 +727,7 @@
   onreset     %Script;       #IMPLIED
   accept      %ContentTypes; #IMPLIED
   accept-charset %Charsets;  #IMPLIED
+  target      %FrameTarget;  #IMPLIED
   >
 
 <!--

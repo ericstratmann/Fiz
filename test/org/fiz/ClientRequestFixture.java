@@ -31,6 +31,6 @@ public class ClientRequestFixture extends ClientRequest {
     public void clearData() {
         mainDataset = null;
         reminders = null;
-        fizDataProcessed = false;
+        requestDataProcessed = false;
     }
 }

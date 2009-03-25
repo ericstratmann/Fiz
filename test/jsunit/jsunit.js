@@ -44,7 +44,10 @@ var jsunit = {
     // that they were called.  Tests can check this variable to verify
     // that certain calls were made.  The variable is cleared before
     // each test.
-    log:               ""
+    log:               "",
+
+    // First argument to the most recent call to setTimeout:
+    setTimeoutArg:     null
 }
 
 // Create the global {@code window} object, which is a container for
@@ -300,6 +303,19 @@ function include(fileName) {
  */
 function alert(message) {
     jsunit.log += "alert(message: " + message + ")\n";
+}
+
+/**
+ * This method is a stand-in for the browser method of the same name.
+ * It just logs information about the call to {@code jsunit.log}.
+ * @param firstArg                 First argument to setTimeout: either a
+ *                                 function or a script.
+ * @param interval                 Second argument to setTimeout.
+ */
+function setTimeout(firstArg, interval) {
+    jsunit.log += "setTimeout(" + firstArg.toString() + ", " +
+            interval + ")\n";
+    jsunit.setTimeoutArg = firstArg;
 }
 
 /**

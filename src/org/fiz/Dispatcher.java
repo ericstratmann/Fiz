@@ -212,10 +212,12 @@ public class Dispatcher extends HttpServlet {
         UrlMethod method = null;
         String methodName = null;
         ClientRequest cr = null;
-        boolean isAjax = false;
+        ClientRequest.Type requestType =
+                ClientRequest.Type.NORMAL;
         try {
             if (logger.isTraceEnabled()) {
-                logger.trace("incoming URL: " + Util.getUrlWithQuery(request));
+                logger.trace("incoming " + request.getMethod() +
+                        ": " + Util.getUrlWithQuery(request));
             }
 
             // See if we are in a debugging mode where we should flush caches
@@ -246,7 +248,11 @@ public class Dispatcher extends HttpServlet {
                         "URL doesn't contain class name and/or method "
                         + "name");
             }
-            isAjax = pathInfo.startsWith("ajax", endOfClass+1);
+            if (pathInfo.startsWith("ajax", endOfClass+1)) {
+                requestType = ClientRequest.Type.AJAX;
+            } else if (pathInfo.startsWith("post", endOfClass+1)) {
+                requestType = ClientRequest.Type.POST;
+            }
             methodName = pathInfo.substring(1, endOfMethod);
             method = findMethod(methodName, endOfClass-1, request);
 
@@ -258,9 +264,7 @@ public class Dispatcher extends HttpServlet {
             } else {
                 cr = new ClientRequest(this, request, response);
             }
-            if (isAjax) {
-                cr.setAjax(true);
-            }
+            cr.setClientRequestType(requestType);
             dispatcherTimer.start(startTime);
             dispatcherTimer.stop();
             method.method.invoke(method.interactor, cr);
@@ -284,7 +288,7 @@ public class Dispatcher extends HttpServlet {
             // create one here so we can use it for reporting the error.
             if (cr == null) {
                 cr = new ClientRequest(this, request, response);
-                cr.setAjax(isAjax);
+                cr.setClientRequestType(requestType);
             }
             if (cause instanceof HandledError) {
                 // There was an error, but it was already handled.  The
@@ -303,14 +307,22 @@ public class Dispatcher extends HttpServlet {
                     + sWriter.toString();
             logger.error(fullMessage);
 
-            // If this is an AJAX request then return the error message
-            // via the AJAX protocol.
-            if (cr.isAjax()) {
+            // If this is an AJAX or post request then return the error
+            // message in a protocol-specific fashion.
+            if (requestType == ClientRequest.Type.AJAX) {
                 cr.ajaxErrorAction(new Dataset("message",
                         Template.expand(Config.getPath("styles",
                                 "uncaught.ajax"),
                         new Dataset("message", basicMessage),
                         Template.SpecialChars.NONE)));
+                cr.finish();
+                return;
+            }
+            if (requestType == ClientRequest.Type.POST) {
+                cr.addMessageToBulletin(
+                        Config.getPath("styles", "uncaught.post"),
+                        new Dataset("message", basicMessage),
+                        "bulletinError");
                 cr.finish();
                 return;
             }

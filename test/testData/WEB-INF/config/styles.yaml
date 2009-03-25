@@ -4,3 +4,4 @@
 bulletin: "bulletin{{: @message}}"
 uncaught:
     ajax: "uncaughtAjax{{: @message}}"
+    post: "uncaughtPost{{: @message}}"

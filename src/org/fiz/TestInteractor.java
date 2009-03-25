@@ -93,8 +93,8 @@ public class TestInteractor extends Interactor {
     public void ajaxPerf(ClientRequest cr) {
         ajaxCount = 0;
         startTime = System.nanoTime();
-        cr.ajaxUpdateAction("perf", "<br>Measuring ...");
-        cr.ajaxEvalAction("new Fiz.Ajax(\"ajaxPerf2\");");
+        cr.updateElement("perf", "<br>Measuring ...");
+        cr.evalJavascript("new Fiz.Ajax(\"ajaxPerf2\");");
     }
 
     // This entry point is visited repeatedly during Ajax performance
@@ -104,19 +104,19 @@ public class TestInteractor extends Interactor {
         ajaxCount++;
         final int count = 100;
         if (ajaxCount < count) {
-            cr.ajaxEvalAction("new Fiz.Ajax(\"ajaxPerf2\");");
+            cr.evalJavascript("new Fiz.Ajax(\"ajaxPerf2\");");
             return;
         }
 
         // Compute statistics and display them on the page.
         long endTime = System.nanoTime();
-        cr.ajaxUpdateAction("perf",
+        cr.updateElement("perf",
                 String.format("<br>Time per round-trip: %.2fms",
                 (endTime - startTime)/(count*1000000.0)));
     }
 
     public void ajaxUpdateTime(ClientRequest cr) throws IOException {
-        cr.ajaxUpdateAction("updateMe", (new Date()).toString());
+        cr.updateElement("updateMe", (new Date()).toString());
     }
 
     // Return the contents of a file, specified with the "name"

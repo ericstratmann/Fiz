@@ -258,7 +258,7 @@ public class Reminder {
         Template.expand("Fiz.Reminder.reminders[\"@1\"] = \"@2@3\";\n",
                 javascript, Template.SpecialChars.JAVASCRIPT, id,
                 header, out);
-        cr.includeJavascript(javascript);
+        cr.evalJavascript(javascript);
 
         // Remove the closing parenthesis, in case the caller decides to
         // add more information to the reminder.

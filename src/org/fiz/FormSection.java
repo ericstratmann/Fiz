@@ -45,9 +45,9 @@ package org.fiz;
  *                   side-by-side layout is used with labels in the left
  *                   column and controls in the right column.
  *   postUrl:        (optional) When the form is submitted an Ajax request
- *                   is sent to this URL; defaults to {@code ajaxPost}.  The
- *                   caller must ensure that this URL is implemented by an
- *                   Interactor.
+ *                   is sent to this URL.  The caller must ensure that
+ *                   this URL is implemented by an Interactor.  Defaults
+ *                   to {@code post}.
  *   request:        (optional) Specifies a DataRequest that will supply
  *                   initial values to display in the FormSection (either
  *                   the name of a request in the {@code dataRequests}
@@ -126,7 +126,7 @@ public class FormSection extends Section {
 
     // The following variable is used to make sure old form element
     // errors get cleared no more than once during each invocation of the
-    // {@code post} method. Test.
+    // {@code post} method.
     protected boolean oldElementErrorsCleared;
 
     /**
@@ -230,8 +230,8 @@ public class FormSection extends Section {
 
         // Invoke a Javascript method, passing it information about
         // the form element plus the HTML.
-        cr.ajaxEvalAction(Template.expand("Fiz.ids.@1.elementError(" +
-                "\"@(1)_@2\", \"@3\");", Template.SpecialChars.JAVASCRIPT,
+        cr.evalJavascript(Template.expand("Fiz.ids.@1.elementError(" +
+                "\"@(1)_@2\", \"@3\");\n", Template.SpecialChars.JAVASCRIPT,
                 id, elementId, html));
     }
 
@@ -280,9 +280,21 @@ public class FormSection extends Section {
         if (!properties.containsKey("class")) {
             html.includeCssFile("FormSection.css");
         }
+        // Notes:
+        // * The <div> below is used to hold a temporary iframe that
+        //   receives responses to form submits.  See the documentation
+        //   for the Javascript function Fiz.FormSection.submit for
+        //   details.
+        // * Create a hidden form element containing the form's id; we
+        //   will need it in order to generate responses to form submissions.
         Template.expand("\n<!-- Start FormSection @id -->\n" +
+                "<div id=\"@(id)_target\" style=\"display:none;\"></div>\n" +
                 "<form id=\"@id\" class=\"@class?{FormSection}\" " +
-                "action=\"javascript: Fiz.ids.@id.post();\" method=\"post\">\n",
+                "onsubmit=\"return Fiz.ids.@id.submit();\" " +
+                "action=\"@postUrl?{post}\" method=\"post\" " +
+                "enctype=\"multipart/form-data\">\n" +
+                "  <input type=\"hidden\" name=\"fiz_formId\" " +
+                "value=\"@id\" />\n",
                 properties, out);
         innerHtml(cr, data, out);
         Template.expand("</form>\n" +
@@ -290,8 +302,8 @@ public class FormSection extends Section {
                 properties, out);
 
         // Generate a Javascript object containing information about the form.
-        html.includeJavascript("Fiz.ids.@id = new Fiz.FormSection(" +
-                "\"@id\", \"@postUrl?{ajaxPost}\");\n", properties);
+        cr.evalJavascript("Fiz.ids.@id = new Fiz.FormSection(\"@id\");\n",
+                properties);
         html.includeJsFile("fizlib/FormSection.js");
     }
 
@@ -385,9 +397,8 @@ public class FormSection extends Section {
      */
     protected void clearOldElementErrors(ClientRequest cr) {
         if (!oldElementErrorsCleared) {
-            cr.ajaxEvalAction(Template.expand(
-                    "Fiz.ids.@id.clearElementErrors();",
-                    properties, Template.SpecialChars.JAVASCRIPT));
+            cr.evalJavascript("Fiz.ids.@id.clearElementErrors();\n",
+                    properties);
             oldElementErrorsCleared = true;
         }
     }
@@ -534,5 +545,27 @@ public class FormSection extends Section {
         // error messages pertaining to this form element.
         Template.expand(diagnosticTemplate, out, id, elementId);
         out.append("\n    </td></tr>\n");
+    }
+
+    /**
+     * This method is invoked by ClientRequest.finish to return the response
+     * for a form submission.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @param javascript           Javascript code that embodies the response;
+     *                             This method will make sure the script is
+     *                             eval-ed in the window/frame containing
+     *                             the form responsible for the post.
+     */
+    protected static void sendFormResponse(ClientRequest cr,
+            CharSequence javascript) {
+        // In order to handle the response correctly, we need the id for the
+        // form.  Fortunately, there should be a value "fiz_formId" in
+        // the form's data.
+        cr.getHtml().includeJavascript(
+                "window.parent.Fiz.FormSection.handleResponse(" +
+                "\"@1\", \"@2\");\n", cr.getMainDataset().get("fiz_formId"),
+                javascript);
+
     }
 }

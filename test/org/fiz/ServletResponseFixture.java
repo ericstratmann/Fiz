@@ -40,6 +40,7 @@ public class ServletResponseFixture implements HttpServletResponse{
     String queryString = "?a=b&c=d";
     boolean getOutputStreamException = false;
     boolean getWriterException = false;
+    boolean sendRedirectException = false;
 
     // HttpServletResponse methods:
 
@@ -82,6 +83,9 @@ public class ServletResponseFixture implements HttpServletResponse{
     }
     public void sendRedirect(String location) throws IOException {
         appendToLog("sendRedirect(\"" + location + "\")");
+        if (sendRedirectException) {
+            throw new IOException("fake IOException for testing");
+        }
     }
     public void setDateHeader(String name, long date) {
         appendToLog("setDateHeader(\"" + name + "\", " + date + ")");

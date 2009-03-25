@@ -69,8 +69,9 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
                 "height", "65"), out);
         assertEquals("result HTML", "name Alice, age 35", out.toString());
         assertEquals("Javascript for HTML",
-                "Fiz.clearBulletin(); Fiz.addBulletinMessage(" +
-                "\"bulletinError\", \"bulletin: sample &lt;error&gt;\");",
+                "Fiz.clearBulletin();\n" +
+                "Fiz.addBulletinMessage(\"bulletinError\", " +
+                "\"bulletin: sample &lt;error&gt;\");\n",
                 cr.getHtml().jsCode.toString());
     }
     public void test_html_useDataFromRequest() {

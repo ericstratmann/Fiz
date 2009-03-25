@@ -1,6 +1,8 @@
 package org.fiz;
 import java.lang.management.*;
 import java.util.*;
+import java.io.BufferedReader;
+import java.io.IOException;
 
 import org.apache.log4j.*;
 
@@ -28,7 +30,7 @@ public class DemoInteractor extends Interactor {
 
     FormSection sideBySideForm = new FormSection(
             new Dataset("id", "form1", "request", "demo.getFormData",
-                    "postUrl", "ajaxSideBySidePost"),
+                    "postUrl", "postSideBySide"),
             new EntryFormElement(new Dataset("id", "name",
                     "label", "Name:", "help", "Enter customer name here")),
             new EntryFormElement(new Dataset("id", "age",
@@ -96,7 +98,7 @@ public class DemoInteractor extends Interactor {
 
     FormSection verticalForm = new FormSection(
             new Dataset("id", "form2", "request", "demo.getFormData",
-                    "layout", "vertical", "postUrl", "ajaxVerticalPost"),
+                    "layout", "vertical", "postUrl", "postVertical"),
             new EntryFormElement(new Dataset("id", "name",
                     "label", "Name:", "help", "Enter employee name here")),
             new EntryFormElement(new Dataset("id", "age",
@@ -204,7 +206,7 @@ public class DemoInteractor extends Interactor {
      * @param cr
      */
     public void ajaxTab(ClientRequest cr) {
-        cr.ajaxUpdateAction("text", "You clicked on tab \"" +
+        cr.updateElement("text", "You clicked on tab \"" +
                 cr.getMainDataset().get("tab") +
                 "\", which caused this text to be updated via AJAX.");
     }
@@ -342,10 +344,10 @@ public class DemoInteractor extends Interactor {
         }
         baseGcMs = gcMs;
         baseGcInvocations = gcInvocations;
-        cr.ajaxRedirectAction("stats");
+        cr.redirect("stats");
     }
 
-    public void ajaxSideBySidePost(ClientRequest cr) {
+    public void postSideBySide(ClientRequest cr) {
         Dataset main = cr.getMainDataset();
         logger.info("Posted dataset:\n" + main.toString());
         sideBySideForm.post(cr, (main.get("state").length() == 0) ?
@@ -353,7 +355,7 @@ public class DemoInteractor extends Interactor {
 
     }
 
-    public void ajaxVerticalPost(ClientRequest cr) {
+    public void postVertical(ClientRequest cr) {
         Dataset main = cr.getMainDataset();
         logger.info("Posted dataset:\n" + main.toString());
         verticalForm.post(cr, "demo.formError3");

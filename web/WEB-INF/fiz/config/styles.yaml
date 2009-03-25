@@ -46,6 +46,13 @@ uncaught:
         while handling an AJAX request: @message.  This page may not
         function correctly without a refresh.
 
+    # Used when there is an uncaught exception or error in the handler for a
+    # form submission.  This template generates HTML that will appear in the
+    # bulletin.
+    post: >
+        An internal error (uncaught exception) occurred on the server
+        while handling the form submission: @message.
+
     # Used for uncaught exceptions in the page generation code for an HTML
     # request.
     html:             |

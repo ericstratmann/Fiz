@@ -47,22 +47,17 @@ public class TreeSectionTest extends junit.framework.TestCase {
         cr.setReminder("TreeSection", new Dataset("id", "tree1",
                 "request", "treeInfo"));
         TreeSection.ajaxExpand(cr);
-        ServletResponseFixture response =
-                ((ServletResponseFixture)cr.getServletResponse());
         assertEquals("Ajax javascript action",
-                "var actions = [{type: \"eval\", " +
-                "javascript: \"Fiz.ids[\\\"tree1_2\\\"].expand(\\\"<table " +
-                "cellspacing=\\\\\\\"0\\\\\\\" class=\\\\\\\"TreeSection" +
-                "\\\\\\\" id=\\\\\\\"tree1_2\\\\\\\">\\\\n  <tr " +
-                "id=\\\\\\\"tree1_2_0\\\\\\\">\\\\n    <td class=\\\\\\\"" +
-                "left\\\\\\\" style=\\\\\\\"background-image: " +
-                "url(/fizlib/images/treeSolid-line.gif); background-repeat: " +
-                "no-repeat;\\\\\\\"><img src=\\\\\\\"/fizlib/images/" +
-                "treeSolid-leaf.gif\\\\\\\"></td>\\\\n    <td " +
-                "class=\\\\\\\"right\\\\\\\">leaf: child1" +
-                "</td>\\\\n  </tr>\\\\n" +
-                "</table>\\\\n\\\");\"}",
-                response.toString());
+                "Fiz.ids[\"tree1_2\"].expand(\"<table cellspacing=\\\"0\\\" " +
+                "class=\\\"TreeSection\\\" id=\\\"tree1_2\\\">\\n  " +
+                "<tr id=\\\"tree1_2_0\\\">\\n    <td class=\\\"left\\\" " +
+                "style=\\\"background-image: url(/fizlib/images/" +
+                "treeSolid-line.gif); background-repeat: " +
+                "no-repeat;\\\"><img src=\\\"/fizlib/images/" +
+                "treeSolid-leaf.gif\\\"></td>\\n    <td " +
+                "class=\\\"right\\\">leaf: child1</td>\\n  " +
+                "</tr>\\n</table>\\n\");\n",
+                cr.getHtml().jsCode.toString());
     }
 
     public void test_html_basics() {

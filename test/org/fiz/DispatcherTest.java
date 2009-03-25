@@ -124,6 +124,13 @@ public class DispatcherTest extends junit.framework.TestCase {
         assertEquals("Ajax request", true, DispatcherTest1Interactor.isAjax);
         assertEquals("count variable", 2, DispatcherTest1Interactor.count);
     }
+    public void test_service_setPostType() {
+        DispatcherTest1Interactor.count = 0;
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest1/postTest"), new ServletResponseFixture());
+        assertEquals("request type", ClientRequest.Type.POST,
+                DispatcherTest1Interactor.requestType);
+    }
     public void test_service_exceptionInMethod() {
         dispatcher.service(new ServletRequestFixture("/dispatcherTest1/error"),
                 new ServletResponseFixture());
@@ -158,15 +165,31 @@ public class DispatcherTest extends junit.framework.TestCase {
                 "\tat org.fiz.DispatcherTest1Interactor.error",
                 message);
     }
-    public void test_service_exception_ajaxResponse() {
+    public void test_service_exception_ajaxRequest() {
         ServletResponseFixture response = new ServletResponseFixture();
-        dispatcher.service(new ServletRequestFixture("/dispatcherTest2/ajaxBogus"),
-                response);
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest2/ajaxBogus"), response);
         assertEquals("AJAX response", "var actions = [{type: \"error\", " +
                 "properties: {message: \"uncaughtAjax: unsupported URL " +
                 "\\\"/x/y/z\\\": couldn't find method \\\"ajaxBogus\\\" with " +
                 "proper signature in class DispatcherTest2Interactor\"}}];",
                 response.toString());
+    }
+    public void test_service_exception_postRequest() {
+        ServletResponseFixture response = new ServletResponseFixture();
+        ServletRequestFixture request = new ServletRequestFixture(
+                "/dispatcherTest2/postBogus");
+        request.parameterMap = new Hashtable<String,String>();
+        request.parameterMap.put("fiz_formId", "xyzzy");
+        dispatcher.service(request, response);
+        TestUtil.assertMatchingSubstring("Response Javascript",
+                "window.parent.Fiz.FormSection.handleResponse(\"xyzzy\", " +
+                "\"Fiz.clearBulletin();\\nFiz.addBulletinMessage(\\\"" +
+                "bulletinError\\\", \\\"uncaughtPost: unsupported URL " +
+                "&quot;/x/y/z&quot;: couldn't find method &quot;postBogus" +
+                "&quot; with proper signature in class " +
+                "DispatcherTest2Interactor\\\");\\n\");",
+                response.toString(), "window.parent.Fiz[^\n]*");
     }
     public void test_service_exception_htmlResponseClearFirst() {
         Config.setDataset("styles", new Dataset("uncaught",
@@ -282,7 +305,7 @@ public class DispatcherTest extends junit.framework.TestCase {
         Collections.sort(names);
         assertEquals("dispatcherTest1/ajaxIncCount, dispatcherTest1/error, " +
                 "dispatcherTest1/handledError, dispatcherTest1/incCount, " +
-                "dispatcherTest1/resetCount",
+                "dispatcherTest1/postTest, dispatcherTest1/resetCount",
                 StringUtil.join(names, ", "));
     }
     public void test_findMethod_methodNotFound() {
