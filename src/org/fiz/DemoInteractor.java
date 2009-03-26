@@ -93,7 +93,8 @@ public class DemoInteractor extends Interactor {
                     "choiceName", "fruit")),
             new TextAreaFormElement(new Dataset("id", "saying",
                     "label", "Favorite saying:")),
-            new UploadFormElement("upload", "File to upload:")
+            new UploadFormElement("upload", "File to upload:"),
+            new HiddenFormElement("state")
             );
 
     FormSection verticalForm = new FormSection(

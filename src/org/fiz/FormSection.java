@@ -444,6 +444,8 @@ public class FormSection extends Section {
      */
     protected void innerHtml(ClientRequest cr, Dataset data,
             StringBuilder out) {
+        boolean anyHidden = false;
+
         String layout = properties.check("layout");
         boolean vertical = (layout != null) && layout.equals("vertical");
         Template.expand("  <table cellspacing=\"0\" class=\"@1\">\n", out,
@@ -452,6 +454,13 @@ public class FormSection extends Section {
         // Each iteration of the following loop displays a single
         // FormElement.
         for (FormElement element : elements) {
+            if (element instanceof HiddenFormElement) {
+                // Don't render hidden form elements here, since they may
+                // mess up the table formatting; they will get rendered
+                // separately, at the end of the table.
+                anyHidden = true;
+                continue;
+            }
             if (vertical) {
                 verticalElement(cr, element, data, out);
             } else {
@@ -470,6 +479,18 @@ public class FormSection extends Section {
             out.append("</td>\n    </tr>\n");
         }
         out.append("  </table>\n");
+
+        // If there are hidden form elements, render them here, outside
+        // the main table.
+        if (anyHidden) {
+            for (FormElement element : elements) {
+                if (element instanceof HiddenFormElement) {
+                    out.append("  ");
+                    element.html(cr, data, out);
+                    out.append("\n");
+                }
+            }
+        }
     }
 
     /**

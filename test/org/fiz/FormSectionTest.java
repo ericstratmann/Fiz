@@ -518,6 +518,30 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString(), "<table.*</table>");
         TestUtil.assertXHTML( cr.getHtml().toString());
     }
+    public void test_innerHtml_hiddenElements() {
+        FormSection form = new FormSection(
+                new Dataset("id", "form1", "request", "getPerson",
+                "buttonStyle", "", "postUrl", "x/y"),
+                new TemplateFormElement(
+                        new Dataset("id", "id2", "template", "element html")),
+                new HiddenFormElement("name"),
+                new HiddenFormElement("iq"));
+        cr.showSections(form);
+        TestUtil.assertMatchingSubstring("form contents",
+                "<table cellspacing=\"0\" class=\"sideBySide\">\n" +
+                "    <tr id=\"form1_id2\">\n" +
+                "      <td class=\"label\"></td>\n" +
+                "      <td class=\"control\">element html" +
+                "<div id=\"form1_id2_diagnostic\" class=\"diagnostic\" " +
+                "style=\"display:none\"></div></td>\n" +
+                "    </tr>\n" +
+                "  </table>\n" +
+                "  <input type=\"hidden\" name=\"name\" value=\"David\" />\n" +
+                "  <input type=\"hidden\" name=\"iq\" />\n" +
+                "</form>",
+                cr.getHtml().getBody().toString(), "<table.*</form>");
+        TestUtil.assertXHTML( cr.getHtml().toString());
+    }
     public void test_innerHtml_submitButton() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",

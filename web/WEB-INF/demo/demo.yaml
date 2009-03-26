@@ -35,6 +35,7 @@ formData:
         saying: "Line 1\nLine 2\n<Line 3>\n"
         fruit: grape
         notify: all
+        state: California
 
 fruits:
     fruit:
