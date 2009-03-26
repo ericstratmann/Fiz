@@ -1,13 +1,13 @@
-/* EntryFormElement.css -
+/* UploadFormElement.css -
  *
- * This file defines styles for EntryFormElements that use the default class.
+ * This file defines styles for UploadFormElements that use the default class.
  * Many of the styles are inherited from those defined in css.yaml.
  */
 
 /* Browser compatibility note: IE adds 1 pixel of margin on the top and
  * bottom of text inputs, and there seems to be no way to eliminate this.
  */
-.EntryFormElement {
+.UploadFormElement {
     width: @formElementWidth;
     font-family: @fontFamily;
     font-size: 100%;

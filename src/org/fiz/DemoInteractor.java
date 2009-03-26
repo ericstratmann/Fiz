@@ -1,9 +1,8 @@
 package org.fiz;
 import java.lang.management.*;
 import java.util.*;
-import java.io.BufferedReader;
-import java.io.IOException;
 
+import org.apache.commons.fileupload.*;
 import org.apache.log4j.*;
 
 /**
@@ -93,7 +92,8 @@ public class DemoInteractor extends Interactor {
                     "height", "5",
                     "choiceName", "fruit")),
             new TextAreaFormElement(new Dataset("id", "saying",
-                    "label", "Favorite saying:"))
+                    "label", "Favorite saying:")),
+            new UploadFormElement("upload", "File to upload:")
             );
 
     FormSection verticalForm = new FormSection(
@@ -350,6 +350,18 @@ public class DemoInteractor extends Interactor {
     public void postSideBySide(ClientRequest cr) {
         Dataset main = cr.getMainDataset();
         logger.info("Posted dataset:\n" + main.toString());
+        FileItem upload = cr.getUploadedFile("upload");
+        if (upload != null) {
+            if (upload.getSize() > 200) {
+                logger.info("Contents of uploaded file:\n" +
+                        upload.getString().substring(0, 200) + " ...");
+            } else {
+                logger.info("Contents of uploaded file:\n" +
+                        upload.getString());
+            }
+        } else {
+            logger.info("No file upload with this submission");
+        }
         sideBySideForm.post(cr, (main.get("state").length() == 0) ?
                 "demo.formError1" : "demo.formError2");
 

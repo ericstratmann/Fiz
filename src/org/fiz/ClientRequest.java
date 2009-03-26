@@ -623,10 +623,12 @@ public class ClientRequest {
      * {@code saveUploadedFile} for a simpler mechanism for dealing with
      * uploads.
      * @param fieldName            Selects which uploaded file to return:
-     *                             the parameter value is the {@code name}
+     *                             the parameter value is the {@code id}
+     *                             property from the UploadFormElement
+     *                             (which is also the {@code name}
      *                             attribute from the {@code <input>} form
      *                             element that caused the desired file to be
-     *                             uploaded.
+     *                             uploaded).
      * @return                     The FileItem associated with
      *                             {@code fieldName}, or null if the current
      *                             request doesn't include an uploaded file
@@ -787,11 +789,13 @@ public class ClientRequest {
      * Arranged for an uploaded file (received with the current request)
      * to be saved in a given location on disk.  If any errors occur
      * while saving the file an Error is thrown.
-     * @param fieldName            Selects which uploaded files to save:
-     *                             the value is the {@code name} attribute
-     *                             from the {@code <input>} form element
-     *                             that caused the desired file to be
-     *                             uploaded.
+     * @param fieldName            Selects which uploaded file to save:
+     *                             the parameter value is the {@code id}
+     *                             property from the UploadFormElement
+     *                             (which is also the {@code name}
+     *                             attribute from the {@code <input>} form
+     *                             element that caused the file to be
+     *                             uploaded).
      * @param dest                 Path name on disk where the upload
      *                             should be saved.
      * @return                    True means the file was successfully
