@@ -235,6 +235,9 @@ public class Dispatcher extends HttpServlet {
             // "class/method" part and lookup the method.
 
             String pathInfo = request.getPathInfo();
+            if (pathInfo == null) {
+                pathInfo = "";
+            }
             int endOfMethod = -1;
             int endOfClass = pathInfo.indexOf('/', 1);
             if (endOfClass >= 1) {

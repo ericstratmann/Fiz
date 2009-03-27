@@ -89,6 +89,12 @@ public class DispatcherTest extends junit.framework.TestCase {
                 dispatcher.basicMessage);
     }
     public void test_service_notEnoughInfoInUri() {
+        dispatcher.service(new ServletRequestFixture(null),
+                new ServletResponseFixture());
+        TestUtil.assertSubstring("no path info",
+                "URL doesn't contain class name and/or method name",
+                dispatcher.basicMessage);
+        dispatcher.basicMessage = null;
         dispatcher.service(new ServletRequestFixture("abc"),
                 new ServletResponseFixture());
         TestUtil.assertSubstring("no slashes",
