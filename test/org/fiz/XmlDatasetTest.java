@@ -87,9 +87,8 @@ public class XmlDatasetTest extends junit.framework.TestCase {
         catch (FileNotFoundError e) {
             assertEquals("exception message",
                     "couldn't open XML dataset file " +
-                    "\"_bogus_/_missing_/foo.xml\": The system cannot find " +
-                    "the path specified",
-                    e.getMessage());
+                    "\"_bogus_/_missing_/foo.xml\": ...",
+                    TestUtil.truncate(e.getMessage(), "xml\": "));
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
@@ -269,9 +268,8 @@ public class XmlDatasetTest extends junit.framework.TestCase {
         }
         catch (IOError e) {
             assertEquals("exception message",
-                    "I/O error in file \"_bogus/a/b/c.xml\": The system " +
-                    "cannot find the path specified",
-                    e.getMessage());
+                    "I/O error in file \"_bogus/a/b/c.xml\": ...",
+                    TestUtil.truncate(e.getMessage(), "xml\": "));
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);

@@ -206,8 +206,8 @@ public class UtilTest extends junit.framework.TestCase {
         }
         catch (FileNotFoundException e) {
             assertEquals("exception message",
-                    "bogus\\nonexistent (The system cannot find the "
-                    + "path specified)", e.getMessage());
+                    "bogus\\nonexistent (...",
+                    TestUtil.truncate(e.getMessage(), "ent ("));
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);

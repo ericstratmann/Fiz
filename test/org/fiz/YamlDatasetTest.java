@@ -66,9 +66,8 @@ public class YamlDatasetTest extends junit.framework.TestCase {
         }
         catch (FileNotFoundError e) {
             assertEquals("exception message",
-                    "couldn't open dataset file \"bogus_44.yml\": The " +
-                    "system cannot find the file specified",
-                    e.getMessage());
+                    "couldn't open dataset file \"bogus_44.yml\": ...",
+                    TestUtil.truncate(e.getMessage(), "yml\": "));
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
@@ -165,9 +164,8 @@ public class YamlDatasetTest extends junit.framework.TestCase {
         catch (FileNotFoundError e) {
             assertEquals("exception message",
                     "couldn't open YAML dataset file " +
-                    "\"_bogus_/_missing_/foo.yml\": The system cannot " +
-                    "find the path specified",
-                    e.getMessage());
+                    "\"_bogus_/_missing_/foo.yml\": ...",
+                    TestUtil.truncate(e.getMessage(), "yml\": "));
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);

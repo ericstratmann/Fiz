@@ -512,9 +512,8 @@ public class HtmlTest extends junit.framework.TestCase {
         }
         catch (FileNotFoundError e) {
             assertEquals("exception message",
-                    "couldn't open javascript file \"_test_/bogus.js\": " +
-                    "The system cannot find the path specified",
-                    e.getMessage());
+                    "couldn't open javascript file \"_test_/bogus.js\": ...",
+                    TestUtil.truncate(e.getMessage(), "js\": "));
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);

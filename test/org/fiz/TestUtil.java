@@ -119,6 +119,28 @@ public class TestUtil {
     }
 
     /**
+     * This method is typically used to remove system-specific text from
+     * error messages, so that the error messages can be checked in a
+     * system-independent fashion.
+     * @param message              An error message or other string that
+     *                             needs to be truncated.
+     * @param substring            A substring to find in {@code message}.
+     * @return                     If {@code message} contains
+     *                             {@code substring} then the return value
+     *                             consists of the portion of {@code message}
+     *                             up to and including {@code substring},
+     *                             followed by "...".  Otherwise the return
+     *                             value is {@code message}.
+     */
+    public static String truncate(String message, String substring) {
+        int i = message.indexOf(substring);
+        if (i < 0) {
+            return message;
+        }
+        return message.substring(0, i + substring.length()) + "...";
+    }
+
+    /**
      * The following class is used by the XML parser to map from external
      * entity names (for DTD's) to files.
      */
