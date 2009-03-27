@@ -444,6 +444,12 @@ public class HtmlTest extends junit.framework.TestCase {
         assertEquals("abc\\x1f  | \\n\\t\\r | \\x01 | \\\\\\\"",
                 out.toString());
     }
+    public void test_escapeStringChars_stringBuilder_closeStringTag() {
+        StringBuilder out = new StringBuilder();
+        Html.escapeStringChars("aaa</scriptbbb</script>ccc</script", out);
+        assertEquals("aaa</scriptbbb\\x3c/script>ccc</script",
+                out.toString());
+    }
     public void test_escapeStringChars_stringBuilder_handleException() {
         boolean gotException = false;
         try {

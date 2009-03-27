@@ -549,6 +549,25 @@ public class Html {
                     out.append("\\\"");
                 } else if (c == '\177') {
                     out.append("\\x3f");
+                } else if (c == '<') {
+                    // Check for the special case of "</script>".  If this
+                    // occurs in a Javascript string embedded in a <script>
+                    // tag, it will prematurely terminate the <script>.  Two
+                    // protect against this, quote the first character
+                    // in the pattern.
+                    if ((s.length() >= (i+9))
+                            && (s.charAt(i+1) == '/')
+                            && (s.charAt(i+2) == 's')
+                            && (s.charAt(i+3) == 'c')
+                            && (s.charAt(i+4) == 'r')
+                            && (s.charAt(i+5) == 'i')
+                            && (s.charAt(i+6) == 'p')
+                            && (s.charAt(i+7) == 't')
+                            && (s.charAt(i+8) == '>')) {
+                        out.append(String.format("\\x%02x", (int) c));
+                    } else {
+                        out.append(c);
+                    }
                 } else {
                     out.append(c);
                 }
