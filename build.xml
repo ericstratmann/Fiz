@@ -108,9 +108,11 @@ for the Fiz framework.
     <property name="classdir" value="../out/classes" />
 
     <path id="classpath">
-        <pathelement location="${libdir}/servlet.jar"/>
-        <pathelement location="${libdir}/log4j.jar" />
-        <pathelement location="${libdir}/jyaml.jar" />
+        <pathelement location="${libdir}/commons-fileupload-1.2.1.jar" />
+        <pathelement location="${libdir}/commons-io-1.4.jar" />
         <pathelement location="${libdir}/js.jar" />
+        <pathelement location="${libdir}/jyaml.jar" />
+        <pathelement location="${libdir}/log4j.jar" />
+        <pathelement location="${libdir}/servlet.jar"/>
     </path>
 </project>

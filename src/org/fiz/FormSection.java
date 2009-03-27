@@ -13,9 +13,8 @@ package org.fiz;
  *   class:          (optional) Used as the {@code class} attribute for
  *                   the HTML table that displays the FormSection.
  *                   Defaults to {@code FormSection}.
- *   elementErrorStyle:
- *                   (optional) When the {@code post} method encounters an
- *                   error in its data request and is displaying an error
+ *   elementErrorStyle:   (optional) When the {@code post} method encounters
+ *                   an error in its data request and displays an error
  *                   message next to the culprit form element, this value
  *                   specifies a template in the {@code styles} dataset,
  *                   which is expanded with the error data and the main
@@ -60,6 +59,28 @@ package org.fiz;
  *                   of the results are used for the form's initial data.
  *                   If this property is omitted the form will initially be
  *                   empty.
+ *
+ * When a Fiz form is posted, the form response is targeted at a hidden
+ * iframe, not the main window.  This means that the post methods for a
+ * form should not generate HTML, since it will not be seen.  Instead,
+ * a post method should normally invoke ClientRequest.redirect to
+ * redirect the browser to a results page.  Post methods can also call
+ * ClientRequest.evalJavascript to update the form page; this approach is
+ * used by methods such as FormSection.elementError to display error
+ * information inline in the form.
+ *
+ * FormSection automatically displays help text for a form element when
+ * the mouse moves over the form element.  To locate help text for a
+ * given element, FormSection checks the following locations, in order:
+ * * A {@code help} property on the form element.
+ * * The element named <i>formId.elementId</i> in the {@code help}
+ *   configuration dataset, where <i>formId</i> is the {@code id}
+ *   property for the form, and <i>elementId</i> is the {@code id} property
+ *   for the form element.
+ * * The element named <i>elementId</i> in the {@code help}
+ *   configuration dataset, where <i>elementId</i> is the {@code id}
+ *   property for the form element.
+ * The help text is raw text, not HTML or a template.
  */
 public class FormSection extends Section {
     /**

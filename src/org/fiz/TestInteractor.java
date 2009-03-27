@@ -176,6 +176,11 @@ public class TestInteractor extends Interactor {
         Template.expand("<a href=\"#\" onclick =\"@1; return false;\">" +
                 "Click me</a>\n", body,
                 Ajax.invoke(cr, "ajaxReminders", null, "r1", "r2"));
+        body.append("<p>The following link issues an Ajax request " +
+                "to a nonexistent URL: ");
+        Template.expand("<a href=\"#\" onclick =\"@1; return false;\">" +
+                "Click me</a>\n", body,
+                Ajax.invoke(cr, "/bogus/nonexistent", null));
         Link link3 = new Link(new Dataset("text", "Click here",
                 "ajaxUrl", "/fiz/test/ajaxUpdateTime"));
         body.append("<p>");

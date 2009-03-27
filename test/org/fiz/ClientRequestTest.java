@@ -53,43 +53,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 cr.getHtml().jsCode.toString());
     }
 
-    public void test_ajaxErrorAction() {
-        ServletResponseFixture response =
-                ((ServletResponseFixture)cr.getServletResponse());
-        cr.setClientRequestType(ClientRequest.Type.AJAX);
-        Dataset properties = new Dataset("message", "catastrophe",
-                "value", "92");
-        cr.ajaxErrorAction(properties);
-        assertEquals("response",
-                "var actions = [{type: \"error\", properties: " +
-                "{message: \"catastrophe\", value: \"92\"}}",
-                response.toString());
-    }
-
-    public void test_ajaxUpdateSections() {
-        Section section1 = new TemplateSection(new Dataset(
-                "template", "state: @state",
-                "request", new Dataset("manager", "raw",
-                "result", new Dataset("state", "California"))
-        ));
-        Section section2 = new TemplateSection(new Dataset(
-                "template", "capital: @capital",
-                "request", new Dataset("manager", "raw",
-                "result", new Dataset("capital", "Sacramento"))
-        ));
-        cr.getHtml().getBody().append("Original text");
-        cr.setClientRequestType(ClientRequest.Type.AJAX);
-        cr.ajaxUpdateSections("id44", section1, "id55", section2);
-        assertEquals("response Javascript",
-                "document.getElementById(\"id44\").innerHTML = " +
-                "\"state: California\";\n" +
-                "document.getElementById(\"id55\").innerHTML = " +
-                "\"capital: Sacramento\";\n",
-                cr.jsCode.toString());
-        assertEquals("don't leave permanent modifications in HTML body",
-                "Original text", cr.getHtml().getBody().toString());
-    }
-
     public void test_checkReminder() {
         cr.clearData();                 // Discard default info from fixture.
         servletRequest.setParameters();
@@ -192,6 +155,20 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 ((ServletResponseFixture)cr.getServletResponse());
         assertEquals("response", "lorem ipsum", response.toString());
     }
+    public void test_finish_exceptionGettingPrintWriter() {
+        StringAppender appender = new StringAppender();
+        ClientRequest.logger = Logger.getRootLogger();
+        ClientRequest.logger.removeAllAppenders();
+        ClientRequest.logger.addAppender(appender);
+        ((ServletResponseFixture)
+                cr.getServletResponse()).getWriterException = true;
+        cr.setClientRequestType(ClientRequest.Type.AJAX);
+        cr.evalJavascript("x = 33;");
+        cr.finish();
+        assertEquals("log output", "I/O error retrieving response writer " +
+                "in ClientRequest.finish: getWriter failed",
+                appender.log.toString());
+    }
     public void test_finish_javascriptForAjax() throws IOException {
         ServletResponseFixture response =
                 ((ServletResponseFixture)cr.getServletResponse());
@@ -199,8 +176,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
         cr.evalJavascript("if (x < y) alert(\"error!\");");
         cr.finish();
         assertEquals("response",
-                "var actions = [{type: \"eval\", javascript: " +
-                "\"if (x < y) alert(\\\"error!\\\");\"}];",
+                "if (x < y) alert(\"error!\");",
                 response.toString());
     }
     public void test_finish_javascriptForPost() throws IOException {
@@ -214,27 +190,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "Fiz.FormSection.handleResponse(\"abc\", " +
                 "\"if (x < y) alert(\\\"error!\\\");\");",
                 response.toString(), "Fiz.FormSection[^\n]*");
-    }
-    public void test_finish_ajax() throws IOException {
-        ServletResponseFixture response =
-                ((ServletResponseFixture)cr.getServletResponse());
-        cr.setClientRequestType(ClientRequest.Type.AJAX);
-        cr.updateElement("id44", "Alice");
-        cr.finish();
-        assertEquals("response",
-                "var actions = [{type: \"eval\", javascript: " +
-                "\"document.getElementById(\\\"id44\\\").innerHTML " +
-                "= \\\"Alice\\\";\\n\"}];",
-                response.toString());
-    }
-    public void test_finish_ajax_noActions() throws IOException {
-        ServletResponseFixture response =
-                ((ServletResponseFixture)cr.getServletResponse());
-        cr.setClientRequestType(ClientRequest.Type.AJAX);
-        cr.finish();
-        assertEquals("response",
-                "var actions = [];",
-                response.toString());
     }
     public void test_finish_html() throws IOException {
         PrintWriter writer = cr.getServletResponse().getWriter();
@@ -663,34 +618,28 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 cr.getHtml().jsCode.toString());
     }
 
-    public void test_ajaxActionHeader() throws IOException {
-        PrintWriter writer = cr.getServletResponse().getWriter();
-        ServletResponseFixture response =
-                ((ServletResponseFixture)cr.getServletResponse());
+    public void test_updateSections() {
+        Section section1 = new TemplateSection(new Dataset(
+                "template", "state: @state",
+                "request", new Dataset("manager", "raw",
+                "result", new Dataset("state", "California"))
+        ));
+        Section section2 = new TemplateSection(new Dataset(
+                "template", "capital: @capital",
+                "request", new Dataset("manager", "raw",
+                "result", new Dataset("capital", "Sacramento"))
+        ));
+        cr.getHtml().getBody().append("Original text");
         cr.setClientRequestType(ClientRequest.Type.AJAX);
-        assertEquals("initial response", "", response.toString());
-        assertEquals("return value", writer, cr.ajaxActionHeader("first"));
-        assertEquals("response after first header",
-                "var actions = [{type: \"first\"", response.toString());
-        cr.ajaxActionHeader("second");
-        assertEquals("response after second header",
-                "var actions = [{type: \"first\", {type: \"second\"",
-                response.toString());
-    }
-    public void test_printWriter_exception() {
-        ((ServletResponseFixture)
-                cr.getServletResponse()).getWriterException = true;
-        cr.setClientRequestType(ClientRequest.Type.AJAX);
-        boolean gotException = false;
-        try {
-            cr.ajaxActionHeader("first");
-        }
-        catch (IOError e) {
-            assertEquals("exception message",
-                    "getWriter failed", e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
+        cr.updateSections("id44", section1, "id55", section2);
+        assertEquals("response Javascript",
+                "document.getElementById(\"id44\").innerHTML = " +
+                "\"state: California\";\n" +
+                "document.getElementById(\"id55\").innerHTML = " +
+                "\"capital: Sacramento\";\n",
+                cr.jsCode.toString());
+        assertEquals("don't leave permanent modifications in HTML body",
+                "Original text", cr.getHtml().getBody().toString());
     }
 
     public void test_readAjaxData_basics() {

@@ -113,10 +113,6 @@ public class ClientRequest {
     // The kind of request we are currently servicing:
     protected Type requestType = Type.NORMAL;
 
-    // The following variable indicates whether any Ajax actions have been
-    // generated in response to this request.
-    protected boolean anyAjaxActions = false;
-
     // The following variable accumulates Javascript code passed to the
     // evalJavascript method, if there is any.
     protected StringBuilder jsCode = null;
@@ -202,57 +198,6 @@ public class ClientRequest {
         for (Dataset error : errors) {
             addMessageToBulletin(Config.get("styles", "bulletin"), error,
                     "bulletinError");
-        }
-    }
-
-    /**
-     * Output an Ajax {@code error} action in response to the current Ajax
-     * request.  This action will cause the browser to report the error
-     * described by {@code properties}.
-     * @param properties           Dataset containing information about
-     *                             the error.  Must have at least a
-     *                             {@code message} element.
-     */
-    public void ajaxErrorAction(Dataset properties) {
-        // TODO: buffer Ajax actions just like HTML?
-        PrintWriter writer = ajaxActionHeader("error");
-        writer.append(", properties: ");
-        properties.toJavascript(writer);
-        writer.append("}");
-    }
-
-    /**
-     * Generate Ajax actions that will replace the innerHTML for one or more
-     * Sections.
-     * @param idsAndSections       An even number of arguments, grouped in
-     *                             pairs of which the first argument is a
-     *                             String containing an HTML element id, and
-     *                             the second is a Section.  Each Section's
-     *                             HTML will be regenerated and an Ajax
-     *                             action will be created that uses the HTML
-     *                             to replace the innerHTML of the
-     *                             corresponding HTML element.
-     */
-    public void ajaxUpdateSections(Object... idsAndSections) {
-        StringBuilder out = getHtml().getBody();
-        int oldLength = out.length();
-        int lastId = idsAndSections.length - 2;
-
-        // This method operates in 2 passes, much like showSections:
-        // the first pass registers of data requests, which can then
-        // execute in parallel.  The second pass generates the HTML
-        // and the Ajax actions.
-        for (int i = 0; i <= lastId; i += 2) {
-            Section section = (Section) idsAndSections[i+1];
-            section.registerRequests(this);
-        }
-        startDataRequests();
-        for (int i = 0; i <= lastId; i += 2) {
-            String id = (String) idsAndSections[i];
-            Section section = (Section) idsAndSections[i+1];
-            section.html(this);
-            updateElement(id, out.substring(oldLength));
-            out.setLength(oldLength);
         }
     }
 
@@ -390,22 +335,9 @@ public class ClientRequest {
         // If we get here, this is not a file download request.  First,
         // flush any accumulated Javascript in a fashion appropriate for
         // the kind of request.
-        if (jsCode != null) {
-            if (requestType == Type.AJAX) {
-                // Create an Ajax "action" that will cause the Javascript
-                // to be evaluated in the browser.
-                PrintWriter writer = ajaxActionHeader("eval");
-                writer.append(", javascript: \"");
-                Html.escapeStringChars(jsCode, writer);
-                writer.append("\"}");
-            } else if (requestType == Type.POST) {
-                FormSection.sendFormResponse(this, jsCode);
-            }
-        }
-
-        PrintWriter out;
+        PrintWriter writer;
         try {
-            out = servletResponse.getWriter();
+            writer = servletResponse.getWriter();
         }
         catch (IOException e) {
             logger.error("I/O error retrieving response writer in " +
@@ -413,24 +345,23 @@ public class ClientRequest {
                     StringUtil.lcFirst(e.getMessage()));
             return;
         }
-        if (requestType == Type.AJAX) {
-            if (anyAjaxActions) {
-                // Close off the Javascript code for the actions.
-                out.append("];");
-            } else {
-                // Output Javascript code for an empty action array (the
-                // browser will be expecting the array, even if it is empty.
-                out.append("var actions = [];");
+        if (jsCode != null) {
+            if (requestType == Type.AJAX) {
+                writer.append(jsCode);
+            } else if (requestType == Type.POST) {
+                FormSection.sendFormResponse(this, jsCode);
             }
-        } else {
+        }
+
+        if (requestType != Type.AJAX) {
             // This is an HTML request or a form post.  Transmit the
             // accumulated HTML, if any.
             servletResponse.setContentType("text/html");
             if (html != null) {
-                html.print(out);
+                html.print(writer);
             }
         }
-        if (out.checkError()) {
+        if (writer.checkError()) {
             logger.error("I/O error sending response in " +
                     "ClientRequest.finish");
         }
@@ -956,33 +887,40 @@ public class ClientRequest {
     }
 
     /**
-     * This is a utility method shared by Ajax action generators; it
-     * generates the initial part of the action's Javascript description,
-     * including separator from the previous action (if any) and the
-     * {@code type} property for this action (up to but not including
-     * a comma separator).
-     * @param type                 Value of the {@code type} property for
-     *                             this action.
-     * @return                     The PrintWriter for the response.
+     * Generate Javascript code to replace the innerHTML for one or more
+     * Sections.  The javascript code will be included in the response
+     * and will execute on the browser.  This method can be used during
+     * Ajax requests and form posts as well as normal HTML requests;
+     * @param idsAndSections       An even number of arguments, grouped in
+     *                             pairs of which the first argument is a
+     *                             String containing an HTML element id, and
+     *                             the second is a Section.  Each Section's
+     *                             HTML will be regenerated and an Ajax
+     *                             action will be created that uses the HTML
+     *                             to replace the innerHTML of the
+     *                             corresponding HTML element.
      */
-    protected PrintWriter ajaxActionHeader(String type) {
-        PrintWriter writer;
-        try {
-            writer = servletResponse.getWriter();
+    public void updateSections(Object... idsAndSections) {
+        StringBuilder out = getHtml().getBody();
+        int oldLength = out.length();
+        int lastId = idsAndSections.length - 2;
+
+        // This method operates in 2 passes, much like showSections:
+        // the first pass registers of data requests, which can then
+        // execute in parallel.  The second pass generates the HTML
+        // and the Ajax actions.
+        for (int i = 0; i <= lastId; i += 2) {
+            Section section = (Section) idsAndSections[i+1];
+            section.registerRequests(this);
         }
-        catch (IOException e) {
-            throw new IOError(e.getMessage());
+        startDataRequests();
+        for (int i = 0; i <= lastId; i += 2) {
+            String id = (String) idsAndSections[i];
+            Section section = (Section) idsAndSections[i+1];
+            section.html(this);
+            updateElement(id, out.substring(oldLength));
+            out.setLength(oldLength);
         }
-        if (!anyAjaxActions) {
-            // This is the first Ajax action.
-            writer.append("var actions = [{type: \"");
-            anyAjaxActions = true;
-        } else {
-            writer.append(", {type: \"");
-        }
-        writer.append(type);
-        writer.append("\"");
-        return writer;
     }
 
     /**

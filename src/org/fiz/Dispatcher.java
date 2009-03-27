@@ -310,11 +310,10 @@ public class Dispatcher extends HttpServlet {
             // If this is an AJAX or post request then return the error
             // message in a protocol-specific fashion.
             if (requestType == ClientRequest.Type.AJAX) {
-                cr.ajaxErrorAction(new Dataset("message",
-                        Template.expand(Config.getPath("styles",
-                                "uncaught.ajax"),
+                cr.addMessageToBulletin(
+                        Config.getPath("styles", "uncaught.ajax"),
                         new Dataset("message", basicMessage),
-                        Template.SpecialChars.NONE)));
+                        "bulletinError");
                 cr.finish();
                 return;
             }

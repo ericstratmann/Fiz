@@ -7,37 +7,21 @@
  *     information.  The dataset is transmitted using the POST message
  *     using a custom Fiz format (see the {@code readInputData} method
  *     of the Ajax class for details.  Parameters can also be supplied
- *     using query values attached to the URL.
- *   * Each Ajax response consists of Javascript code that, when evaluated,
- *     will create a Javascript array named {@code Actions}.  Each element
- *     of this array is a Javascript Object whose properties specify an
- *     action for the browser to take.  The {@code type} property specifies
- *     the kind of action, and other properties provide additional parameters
- *     depending on {@code type}.  The action types currently supported are:
- *       update:       Replace the value of a DOM element.  The {@code id}
- *                     property gives the id of the element, and the
- *                     {@code html} property contains the new HTML for the
- *                     element.
- *       eval:         Execute Javascript code.  The {@code javascript}
- *                     property contains the code to evaluate.
- *       redirect:     Change the page displayed in the window to the one
- *                     given by {@code url}.
- *       error:        Register an error using whatever mechanism was
- *                     defined for the request.  The {@code properties}
- *                     property contains a dataset (nested Objects and Arrays)
- *                     with information about the error.  All errors have
- *                     at least a {@code message} value in {@code properties}
- *                     which contains a human-readable message.  Other
- *                     values may be available on a case-by-case basis.
+ *     using query values attached to the URL.  In addition, each request
+ *     can include one or more Reminders.  See Reminder.java for details
+ *     on how and why to use reminders.
+ *   * An Ajax response consists of Javascript code that is evaluated
+ *     in the browser.
  *   * The result of an Ajax request is determined entirely by the server.
  *     The initiating Javascript code provides information for the request
- *     but it does not tell how to handle the response;  the server
- *     determines that by creating {@code update}, {@code eval}, and
- *     {@code error} actions in the response.  If Javascript code wishes
- *     to update a particular {@code <div>} it might include the id for
- *     the {@code <div>} in the Ajax request, but it is up to the server
- *     to decide whether to honor that id or specify something else in the
- *     response.  The initiating code has control only over error handling.
+ *     but it has no control over handling of response;  the server
+ *     determines that with the code it returns.  For example, if
+ *     Javascript code wishes to update a particular {@code <div>} it
+ *     might include the id for the {@code <div>} in the Ajax request, but
+ *     it is up to the server to decide whether to use that id in its
+ *     response.
+ *   * If unexpected errors occurred while handling an Ajax request,
+ *     error information is displayed in the bulletin.
  */
 
 // The following line is used by Fiz to manage Javascript dependencies.
@@ -56,16 +40,6 @@
  *                                 objects in addition to string values.
  *                                 Each top-level value becomes an entry
  *                                 in the main dataset on the server.
- *   errorHandler:                 (optional) If an error occurs the
- *                                 {@code ajaxError} method will be invoked
- *                                 on this object, with a single parameter
- *                                 consisting of an Object whose properties
- *                                 provide information about the error.  If
- *                                 this property is omitted than a default
- *                                 error method is invoked, which displays
- *                                 a pop-up dialog.  The error method may be
- *                                 invoked before this function returns, for
- *                                 some kinds of errors.
  *   reminders:                    (optional) Either a single string or
  *                                 an array of strings, each of which contains
  *                                 a reminder to be sent to the server with
@@ -76,8 +50,8 @@
  *                                 request.  See above for supported values.
  *                                 Or, this parameter can be a string
  *                                 whose value is the {@code url} property,
- *                                 in which case all other properties are
- *                                 considered to be unspecified.
+ *                                 in which case all other properties get
+ *                                 default values.
  */
 Fiz.Ajax = function(properties) {
     if ((typeof properties) == "string") {
@@ -85,7 +59,6 @@ Fiz.Ajax = function(properties) {
     } else {
         this.url = properties.url;
         this.data = properties.data;
-        this.errorHandler = properties.errorHandler;
         this.reminders = properties.reminders;
     }
     this.xmlhttp = null;           // XMLHTTP object for controlling the
@@ -103,8 +76,7 @@ Fiz.Ajax = function(properties) {
             try {
                 this.xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
             } catch(e) {
-                this.error({message: "couldn't create XMLHttpRequest object"},
-                        true);
+                this.error("couldn't create XMLHttpRequest object");
                 return;
             }
         }
@@ -157,76 +129,37 @@ Fiz.Ajax.prototype.stateChange = function() {
     this.xmlhttp.onreadystatechange = null;
 
     if (this.xmlhttp.status != 200) {
-        this.error({message: "HTTP error " + this.xmlhttp.status + ": "
-                + this.xmlhttp.statusText}, true);
+        this.error( "HTTP error " + this.xmlhttp.status + ": "
+                + this.xmlhttp.statusText);
         return;
     }
 
-    // The response consists of Javascript code that will set a variable
-    // {@code actions}.  That variable consists of an array, each of whose
-    // elements is an object describing a single action to take.  Walk
-    // through the array, carrying out the actions in order.
-    // TODO: eliminate Ajax actions that aren't used anymore.
+    // The response consists of Javascript code that will carry out the
+    // server's wishes.
     try {
         eval(this.xmlhttp.responseText);
-        for (var i = 0, length = actions.length; i < length; i++) {
-            var action = actions[i];
-            var type = action.type;
-            if (type == "update"){
-                var target = document.getElementById(action.id);
-                if (target != null) {
-                    target.innerHTML = action.html;
-                } else {
-                    throw "nonexistent element \"" + action.id +
-                          "\" in update action";
-                }
-            } else if (type == "eval") {
-                eval(action.javascript);
-            } else if (type == "redirect") {
-                document.location.href = action.url;
-            } else if (type == "error") {
-                this.error(action.properties, false);
-            } else {
-                throw "unknown response action \"" + op + "\"";
-            }
-        }
     } catch (e) {
         var where = "";
         if (e.fileName && e.lineNumber) {
             where = " (" + e.fileName + ":" + e.lineNumber + ")";
         }
-        this.error({message: "error processing responseText" +
-                where + ": " + e}, true);
+        this.error("error in Javascript response" + where + ": " + e);
     }
 }
 
 /**
  * Private: this function is invoked when an error occurs during an Ajax
- * request.  It reports the error and aborts the request.
- * @param properties               Object containing information about the
- *                                 error.  Must have at least a
- *                                 {@code message} property with a
- *                                 human-readable description of the problem.
- * @param addInfoPrefix            True means that additional information
- *                                 about the AJAX requests should be prepended
- *                                 to the message before displaying it in an
- *                                 alert box; false means the message is
- *                                 already complete by itself.  False is
- *                                 only used if the error message came from
- *                                 the server.
+ * request.  It reports the error to the user, using the bulletin.
+ * @param message                  Human-readable HTML describing the problem.
  */
-Fiz.Ajax.prototype.error = function(properties, addInfoPrefix) {
-    if (this.errorHandler) {
-        this.errorHandler.ajaxError(properties);
-    } else {
-        alert(((addInfoPrefix) ?
-               ("Error in Ajax request for " + this.url + ": ") : "") +
-                properties.message);
-    }
+Fiz.Ajax.prototype.error = function(message) {
+    Fiz.clearBulletin();
+    Fiz.addBulletinMessage("bulletinError",
+            "Error in Ajax request for " + this.url + ": " + message);
 }
 
 /**
- * Translate a dataset-like object into the form of a serialized dataset,
+ * Private: translate a dataset-like object into the form of a serialized dataset,
  * which can then be sent to Fiz.  See the {@code to serialize} method
   * in Dataset.java for details on the syntax of this format.
  * @param object                   Object consisting of a hierarchical

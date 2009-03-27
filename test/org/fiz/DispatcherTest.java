@@ -141,10 +141,11 @@ public class DispatcherTest extends junit.framework.TestCase {
         ServletResponseFixture response = new ServletResponseFixture();
         dispatcher.service(new ServletRequestFixture("/dispatcherTest2/ajaxBogus"),
                 response);
-        assertEquals("AJAX response", "var actions = [{type: \"error\", " +
-                "properties: {message: \"uncaughtAjax: unsupported URL " +
-                "\\\"/x/y/z\\\": couldn't find method \\\"ajaxBogus\\\" with " +
-                "proper signature in class DispatcherTest2Interactor\"}}];",
+        assertEquals("AJAX response", "Fiz.clearBulletin();\n" +
+                "Fiz.addBulletinMessage(\"bulletinError\", \"uncaughtAjax: " +
+                "unsupported URL &quot;/x/y/z&quot;: couldn't find method " +
+                "&quot;ajaxBogus&quot; with proper signature in class " +
+                "DispatcherTest2Interactor\");\n",
                 response.toString());
     }
     public void test_service_exception_HandledError() {
@@ -169,10 +170,11 @@ public class DispatcherTest extends junit.framework.TestCase {
         ServletResponseFixture response = new ServletResponseFixture();
         dispatcher.service(new ServletRequestFixture(
                 "/dispatcherTest2/ajaxBogus"), response);
-        assertEquals("AJAX response", "var actions = [{type: \"error\", " +
-                "properties: {message: \"uncaughtAjax: unsupported URL " +
-                "\\\"/x/y/z\\\": couldn't find method \\\"ajaxBogus\\\" with " +
-                "proper signature in class DispatcherTest2Interactor\"}}];",
+        assertEquals("AJAX response", "Fiz.clearBulletin();\n" +
+                "Fiz.addBulletinMessage(\"bulletinError\", \"uncaughtAjax: " +
+                "unsupported URL &quot;/x/y/z&quot;: couldn't find method " +
+                "&quot;ajaxBogus&quot; with proper signature in class " +
+                "DispatcherTest2Interactor\");\n",
                 response.toString());
     }
     public void test_service_exception_postRequest() {
