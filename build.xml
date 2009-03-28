@@ -6,6 +6,9 @@ for the Fiz framework.
 -->
 <project name="fiz" default="javadoc" basedir=".">
 
+    <taskdef name="jslint" classname="net.happygiraffe.jslint.ant.JSLintTask"
+             classpath="../lib/jslint4java-1.2.1.jar" />
+
     <target name="clean" description="Remove all generated files">
         <delete dir="out"/>
     </target>
@@ -96,6 +99,14 @@ for the Fiz framework.
         <concat destfile="../doc/stylesheet.css" append="true">
             <filelist dir="." files="javadoc.css"/>
         </concat>
+    </target>
+
+    <target name="jslint">
+        <jslint>
+            <formatter type="plain" />
+            <fileset dir="test/jsunit" includes="*.js" />
+            <fileset dir="javascript/fizlib" includes="*.js" />
+        </jslint>
     </target>
 
     <!-- The directory in which distributions are created. -->
