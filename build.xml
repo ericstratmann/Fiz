@@ -6,9 +6,6 @@ for the Fiz framework.
 -->
 <project name="fiz" default="javadoc" basedir=".">
 
-    <taskdef name="jslint" classname="net.happygiraffe.jslint.ant.JSLintTask"
-             classpath="../lib/jslint4java-1.2.1.jar" />
-
     <target name="clean" description="Remove all generated files">
         <delete dir="out"/>
     </target>
@@ -126,4 +123,8 @@ for the Fiz framework.
         <pathelement location="${libdir}/log4j.jar" />
         <pathelement location="${libdir}/servlet.jar"/>
     </path>
+
+    <taskdef name="jslint" classname="net.happygiraffe.jslint.ant.JSLintTask"
+             classpath="${libdir}/jslint4java-1.2.1.jar"/>
+    
 </project>
