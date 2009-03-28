@@ -22,12 +22,13 @@ public class ClientRequestTest extends junit.framework.TestCase {
         // The first call should clear the existing bulletin.
         cr.addMessageToBulletin("name: @name", new Dataset("name", "<Alice>"),
                 "xyzzy");
-        ServletResponseFixture response =
-                ((ServletResponseFixture)cr.getServletResponse());
         assertEquals("javascript after first add",
                 "Fiz.clearBulletin();\n" +
                 "Fiz.addBulletinMessage(\"xyzzy\", \"name: &lt;Alice&gt;\");\n",
                 cr.getHtml().jsCode.toString());
+        assertEquals("js files in Html object",
+                "fizlib/Fiz.js",
+                cr.getHtml().getJsFiles());
 
         // The second call should add on without clearing the bulletin again.
         cr.addMessageToBulletin("message #2", null, "class2");
@@ -542,6 +543,8 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("Javascript code",
                 "Fiz.addBulletinMessage(\"Bulletin: sample &lt;error&gt;\");",
                 cr.getHtml().jsCode.toString());
+        assertEquals("js files in Html object", "fizlib/Fiz.js",
+                cr.getHtml().getJsFiles());
     }
     public void test_showErrorInfo_html() {
         Config.setDataset("styles", new Dataset("test", new Dataset(
@@ -562,6 +565,8 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "Fiz.addBulletinMessage(\"Bulletin: sample &lt;error&gt; " +
                 "(from Alice)\");",
                 cr.getHtml().jsCode.toString());
+        assertEquals("js files in Html object", "fizlib/Fiz.js",
+                cr.getHtml().getJsFiles());
     }
     public void test_showErrorInfo_noTemplates() {
         Config.setDataset("styles", new Dataset("test", "abc"));

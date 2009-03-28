@@ -171,6 +171,7 @@ public class ClientRequest {
      */
     public void addMessageToBulletin(String template, Dataset data,
             String divClass) {
+        getHtml().includeJsFile("fizlib/Fiz.js");
         String html = Template.expand(template, data);
         StringBuilder javascript = new StringBuilder();
         if (!anyBulletinMessages) {
@@ -819,6 +820,7 @@ public class ClientRequest {
                     Dataset.DesiredType.STRING, Dataset.Quantity.FIRST_ONLY);
             if (template != null) {
                 foundTemplate = true;
+                getHtml().includeJsFile("fizlib/Fiz.js");
                 getHtml().includeJavascript("Fiz.addBulletinMessage(\"@html\");",
                         new Dataset("html", Template.expand(template,
                         compound)));
