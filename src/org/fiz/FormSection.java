@@ -354,6 +354,10 @@ public class FormSection extends Section {
      */
     public Dataset post(ClientRequest cr, String requestName)
             throws PostError {
+        // If there are any element-specific messages currently displayed
+        // because of a previous post, undisplay them.
+        clearOldElementErrors(cr);
+        
         // Collect the form's data, issue a request to the data manager,
         // and wait for it to complete.
         anyElementErrors = false;
@@ -369,11 +373,8 @@ public class FormSection extends Section {
         // One or more errors occurred while processing the request.  If an
         // error can be attributed to a particular form element, display an
         // error message next to the culprit.  Otherwise display the error
-        // message in the bulletin.  If there are any element-specific
-        // messages currently displayed because of a previous post,
-        // undisplay them.
+        // message in the bulletin.
         Dataset[] errors = request.getErrorData();
-        clearOldElementErrors(cr);
         for (Dataset errorData : errors) {
             String culprit = errorData.check("culprit");
             boolean foundCulprit = false;

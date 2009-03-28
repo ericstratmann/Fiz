@@ -357,6 +357,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "Fiz.addBulletinMessage(\"bulletinError\", \"bulletin: " +
                 "One or more of the input fields are invalid; see " +
                 "details below.\");\n" +
+                "Fiz.ids.form1.clearElementErrors();\n" +
                 "Fiz.ids.form1.elementError(\"form1_age\", " +
                 "\"element: &lt;failure&gt;\");\n" +
                 "Fiz.ids.form1.elementError(\"form1_name\", " +
