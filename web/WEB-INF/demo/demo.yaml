@@ -36,6 +36,7 @@ formData:
         fruit: grape
         notify: all
         state: California
+        mascot: Spartans
 
 fruits:
     fruit:

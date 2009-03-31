@@ -63,7 +63,7 @@ public class Reminder {
     // The following variable is set to true during some tests; this
     // causes the normal signature generation and checking algorithms to
     // be bypassed, using instead a single fixed signature (so that
-    // tests don't have toworry about the signature being different
+    // tests don't have to worry about the signature being different
     // every round).
     protected static boolean testMode = false;
 

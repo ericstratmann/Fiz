@@ -1,5 +1,7 @@
 package org.fiz;
 
+import javax.servlet.http.*;
+
 /**
  * Junit tests for the FormSection class.
  */
@@ -23,6 +25,19 @@ public class FormSectionTest extends junit.framework.TestCase {
 
     public void setUp() {
         cr = new ClientRequestFixture();
+
+        // Initialize things so that CSRF authentication will pass.
+        cr.getMainDataset().set("fiz_auth", "OK");
+        cr.getServletRequest().getSession(true).setAttribute(
+                "fiz.FormSection.auth", "OK");
+    }
+
+    public void test_AuthenticationError() {
+        Error e = new FormSection.AuthenticationError();
+        assertEquals("exception message",
+                "this form contains an invalid or missing " +
+                "authentication token; most likely the page is stale " +
+                "and needs to be refreshed", e.getMessage());
     }
 
     public void test_constructor_defaultButtonStyle() {
@@ -42,6 +57,18 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("buttonStyle", "explicit", form.buttonStyle);
     }
 
+    public void test_collectFormData_authError() {
+        FormSection form = new FormSection(new Dataset("id", "form1"));
+        cr.getMainDataset().set("fiz_auth", "bogus");
+        boolean gotException = false;
+        try {
+            form.collectFormData(cr);
+        }
+        catch (FormSection.AuthenticationError e) {
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
     public void test_collectFormData_noErrors() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson"),
@@ -275,6 +302,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "enctype=\"multipart/form-data\">\n" +
                 "  <input type=\"hidden\" name=\"fiz_formId\" " +
                 "value=\"form1\" />\n" +
+                "  <input type=\"hidden\" name=\"fiz_auth\" value=\"OK\" />\n" +
                 "  <table",
                 cr.getHtml().getBody().toString(), ".*<table");
     }
@@ -291,6 +319,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "enctype=\"multipart/form-data\">\n" +
                 "  <input type=\"hidden\" name=\"fiz_formId\" " +
                 "value=\"form1\" />\n" +
+                "  <input type=\"hidden\" name=\"fiz_auth\" value=\"OK\" />\n" +
                 "  <table",
                 cr.getHtml().getBody().toString(), ".*<table");
     }
@@ -451,6 +480,62 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.unnamedRequests.get(0).getRequestData().toString());
     }
 
+    public void test_checkAuthToken_noFormToken() {
+        FormSection form = new FormSection(new Dataset("id", "form1"));
+        HttpSession session = cr.getServletRequest().getSession(true);
+        session.setAttribute("fiz.FormSection.auth", "xyzzy");
+        boolean gotException = false;
+        try {
+            form.checkAuthToken(cr);
+        }
+        catch (FormSection.AuthenticationError e) {
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_checkAuthToken_noSessionToken() {
+        FormSection form = new FormSection(new Dataset("id", "form1"));
+        cr.getMainDataset().set("fiz_auth", "xyzzy");
+        HttpSession session = cr.getServletRequest().getSession(true);
+        session.removeAttribute("fiz.FormSection.auth");
+        boolean gotException = false;
+        try {
+            form.checkAuthToken(cr);
+        }
+        catch (FormSection.AuthenticationError e) {
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_checkAuthToken_tokensMatch() {
+        FormSection form = new FormSection(new Dataset("id", "form1"));
+        cr.getMainDataset().set("fiz_auth", "xyzzy");
+        HttpSession session = cr.getServletRequest().getSession(true);
+        session.setAttribute("fiz.FormSection.auth", "xyzzy");
+        boolean gotException = false;
+        try {
+            form.checkAuthToken(cr);
+        }
+        catch (FormSection.AuthenticationError e) {
+            gotException = true;
+        }
+        assertEquals("exception didn't happen", false, gotException);
+    }
+    public void test_checkAuthToken_tokensDontMatch() {
+        FormSection form = new FormSection(new Dataset("id", "form1"));
+        cr.getMainDataset().set("fiz_auth", "xyzzy");
+        HttpSession session = cr.getServletRequest().getSession(true);
+        session.setAttribute("fiz.FormSection.auth", "xyzzy2");
+        boolean gotException = false;
+        try {
+            form.checkAuthToken(cr);
+        }
+        catch (FormSection.AuthenticationError e) {
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+
     public void test_clearOldElementErrors() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1"));
@@ -470,6 +555,26 @@ public class FormSectionTest extends junit.framework.TestCase {
         cr.setClientRequestType(ClientRequest.Type.POST);
         form.clearOldElementErrors(cr);
         assertEquals("javascript response", null, cr.jsCode);
+    }
+
+    public void test_getAuthToken_useExistingToken() {
+        FormSection form = new FormSection(new Dataset("id", "form1"));
+        HttpSession session = cr.getServletRequest().getSession(true);
+        session.setAttribute("fiz.FormSection.auth", "xyzzy");
+        assertEquals("pre-existing token value", "xyzzy",
+                form.getAuthToken(cr));
+    }
+    public void test_getAuthToken_makeNewToken() {
+        FormSection.testMode = true;
+        FormSection form = new FormSection(new Dataset("id", "form1"));
+        HttpSession session = cr.getServletRequest().getSession(true);
+        session.removeAttribute("fiz.FormSection.auth");
+        String token = form.getAuthToken(cr);
+        String source = new String(StringUtil.decode4to3(token, 0,
+                token.length()));
+        assertEquals("token source", "**fake auth**", source);
+        assertEquals("cached token", token, session.getAttribute(
+                "fiz.FormSection.auth"));
     }
 
     public void test_getHelpText() {

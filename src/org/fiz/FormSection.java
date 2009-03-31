@@ -1,5 +1,9 @@
 package org.fiz;
 
+import java.io.*;
+import javax.crypto.*;
+import javax.servlet.http.*;
+
 /**
  * A FormSection displays a collection of text entries and/or other controls
  * that allow the user to input data and then submit the result.  FormSections
@@ -114,6 +118,21 @@ public class FormSection extends Section {
         }
     }
 
+    /**
+     * This error is thrown when a form is posted without a proper
+     * authenticator.
+     */
+    public static class AuthenticationError extends Error {
+        /**
+         * Construct a AuthenticationError.
+         */
+        public AuthenticationError() {
+            super("this form contains an invalid or missing authentication " +
+                    "token; most likely the page is stale and needs to be " +
+                    "refreshed");
+        }
+    }
+
     // The following variables are copies of constructor arguments.  See
     // the constructor documentation for details.
     protected FormElement[] elements;
@@ -149,6 +168,12 @@ public class FormSection extends Section {
     // errors get cleared no more than once during each invocation of the
     // {@code post} method.
     protected boolean oldElementErrorsCleared;
+
+    // The following variable is set to true during some tests; this
+    // causes cryptographic authentication code to be bypassed, using
+    // instead a single fixed signature (so that tests don't have to
+    // worry about the signature being different every round).
+    protected static boolean testMode = false;
 
     /**
      * Construct a FormSection.
@@ -186,6 +211,10 @@ public class FormSection extends Section {
      *                             display information about the error.
      */
     public Dataset collectFormData(ClientRequest cr) {
+        // First, make sure that the form has a valid CSRF-preventing
+        // authentication token.
+        checkAuthToken(cr);
+
         // Give each of the form elements a chance to collect and transform
         // the data for which it is responsible.
         Dataset postData = new Dataset();
@@ -308,6 +337,8 @@ public class FormSection extends Section {
         //   details.
         // * Create a hidden form element containing the form's id; we
         //   will need it in order to generate responses to form submissions.
+        // * Create a second hidden form element containing a session-specific
+        //   token that prevents CSRF attacks.
         Template.expand("\n<!-- Start FormSection @id -->\n" +
                 "<div id=\"@(id)_target\" style=\"display:none;\"></div>\n" +
                 "<form id=\"@id\" class=\"@class?{FormSection}\" " +
@@ -315,8 +346,10 @@ public class FormSection extends Section {
                 "action=\"@postUrl?{post}\" method=\"post\" " +
                 "enctype=\"multipart/form-data\">\n" +
                 "  <input type=\"hidden\" name=\"fiz_formId\" " +
-                "value=\"@id\" />\n",
-                properties, out);
+                "value=\"@id\" />\n" +
+                "  <input type=\"hidden\" name=\"fiz_auth\" " +
+                "value=\"@1\" />\n",
+                properties, out, getAuthToken(cr));
         innerHtml(cr, data, out);
         Template.expand("</form>\n" +
                 "<!-- End FormSection @id -->\n",
@@ -410,6 +443,27 @@ public class FormSection extends Section {
     }
 
     /**
+     * This method is called when processing form data to ensure that the
+     * submitted form contained a special authentication value.  If not,
+     * the form submission could have been forged via CSRF, so we generate an
+     * error.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @throws AuthenticationError The form did not contain a valid
+     *                             authentication token.
+     */
+    protected void checkAuthToken(ClientRequest cr)
+            throws AuthenticationError {
+        String formToken = cr.getMainDataset().check("fiz_auth");
+        String sessionToken = (String) cr.getServletRequest().getSession(true).
+                getAttribute("fiz.FormSection.auth");
+        if ((formToken == null) || (sessionToken == null) ||
+                !(formToken.equals(sessionToken))) {
+            throw new AuthenticationError();
+        }
+    }
+
+    /**
      * This method generates an AJAX action to clear any old error messages
      * attached to form elements from previous failed post operations.
      * This method makes sure that we only clear the messages once per
@@ -423,6 +477,52 @@ public class FormSection extends Section {
                     properties);
             oldElementErrorsCleared = true;
         }
+    }
+
+    /**
+     * Return an authentication string unique to this session, which
+     * can be used as the value of a hidden form element to prevent
+     * cross-site request forgery (CSRF).
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @return                     A string containing the CSRF
+     *                             authenticator.
+     */
+    protected String getAuthToken(ClientRequest cr) {
+        // Implementation notes:
+        // * We cache the value of the authentication token in the
+        //   session so it doesn't need to be recomputed for each form.
+        // * There is no need to synchronize over access to the session;
+        //   it's possible that multiple requests for the same session
+        //   could be running concurrently, and both try to create the
+        //   cached token, but they will both create exactly the same
+        //   value so there is no race condition.
+        // First, check to see if we have a cached value.
+        HttpSession session = cr.getServletRequest().getSession(true);
+        Object o = session.getAttribute("fiz.FormSection.auth");
+        if (o != null) {
+            return (String) o;
+        }
+
+        // No cached value, so we have to generate one.
+        byte[] macBytes;
+        try {
+            if (testMode) {
+                // Special mode for some tests: generate a fixed signature.
+                macBytes = "**fake auth**".getBytes("UTF-8");
+            } else {
+                macBytes = cr.getMac().doFinal(session.getId().getBytes(
+                        "UTF-8"));
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new InternalError(
+                    "FormSection.getAuthToken couldn't convert to UTF-8");
+        }
+        StringBuilder buffer = new StringBuilder();
+        StringUtil.encode3to4(macBytes, buffer);
+        String token = buffer.toString();
+        session.setAttribute("fiz.FormSection.auth", token);
+        return token;
     }
 
     /**

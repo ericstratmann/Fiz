@@ -394,7 +394,7 @@ public class ClientRequest {
     /**
      * Returns a Mac object specific to the session for this request,
      * which can be used to cryptographically sign data to prevent
-     * tampering by this session and replay in other sessions.
+     * tampering by this session or replay in other sessions.
      * @return                     An HMAC-SHA256 Mac object.
      */
     public Mac getMac() {
