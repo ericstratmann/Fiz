@@ -742,6 +742,12 @@ public class DatasetTest extends junit.framework.TestCase {
                 Dataset.DesiredType.STRING, Dataset.Quantity.FIRST_ONLY));
     }
 
+	public void test_lookup_withOneArgument() {
+        Dataset d = new Dataset("a", "a_value", "b", "b_value");
+        assertEquals("existing value", "b_value", d.lookup("b"));
+        assertEquals("nonexistent value", null, d.lookup("bogus"));
+	}
+
     public void test_lookup_withExtraArgument() {
         ArrayList<Object> out = new ArrayList<Object>();
         out.add("First value");
@@ -769,6 +775,18 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("result value", "Bob, Alice",
                 StringUtil.join((ArrayList) result, ", "));
     }
+
+    public void test_lookupPath_withOneArgument() {
+        Dataset d = YamlDataset.newStringInstance(
+                "children:\n" +
+                "  - name: Bob\n" +
+                "  - name: Alice\n");
+        Object result = d.lookupPath("children.name");
+        assertEquals("result class", "String",
+                result.getClass().getSimpleName());
+        assertEquals("result value", "Bob", result);
+    }
+
     public void test_lookupPath_withExtraArgument() {
         ArrayList<Object> out = new ArrayList<Object>();
         out.add("First value");

@@ -835,6 +835,21 @@ public class Dataset implements Cloneable {
         return collectResults(value, wanted, quantity, null);
     }
 
+	
+    /**
+     * This is a general-purpose method to find the value associated
+     * with a given key. The value must be present in the top level of the 
+	 * dataset (i.e., {@code key} is not a path; use lookupPath if it is).
+	 * DesiredType is set to ANY and Quantity to FIRST_ONLY.
+     * @param key                  Name of the desired value.
+     * @return                     The return value is null if no matching
+     *                             value is found. Otherwise it is an Object
+	 *                             which may be either a String or a Dataset.
+     */
+    public Object lookup(String key) {
+		return lookup(key, DesiredType.ANY, Quantity.FIRST_ONLY);
+    }
+
     /**
      * This is a general-purpose method to find the value(s) associated
      * with a given key, intended primarily for use by other methods such
@@ -900,6 +915,24 @@ public class Dataset implements Cloneable {
             Quantity quantity) {
         return lookupPathHelper(path, 0, map, wanted, quantity, null);
     }
+
+    /**
+     * This is a general-purpose method to find a value associated with
+     * a hierarchical path. DesiredType is set to ANY and Quantity to 
+	 * FIRST_ONLY.
+     * @param path                 A sequence of keys separated by dots.
+     *                             For example, {@code a.b.c} refers to a value
+     *                             {@code c} contained in a nested dataset
+     *                             {@code b} contained in a dataset {@code a}
+     *                             contained in the current dataset.
+     * @return                     The return value is null if no matching
+     *                             value is found. Otherwise it is an Object
+	 *                             which may be either a String or a Dataset.
+     */
+	public Object lookupPath(String path) {
+        return lookupPathHelper(path, 0, map, DesiredType.ANY,
+                Quantity.FIRST_ONLY, null);
+	}
 
     /**
      * This is a general-purpose method to find one or more values associated
