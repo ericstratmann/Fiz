@@ -44,7 +44,7 @@ Fiz.FormSection.prototype.clearElementErrors = function() {
 /**
  * This function is invoked as an Ajax response to display an error message
  * in the diagnostic row for the form element whose id is {@code id}, and
- * also to add class "formError" to the main row for the element.
+ * also add class "formError" to the main row for the element.
  * @param id                       Identifies a particular form element; used
  *                                 as the base of various HTML element ids.
  * @param html                     HTML to use as the body of the diagnostic

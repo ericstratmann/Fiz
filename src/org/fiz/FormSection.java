@@ -258,7 +258,7 @@ public class FormSection extends Section {
      */
     public void elementError(ClientRequest cr, Dataset errorData,
             String elementId) {
-        // Generate  HTML for the error message.
+        // Generate HTML for the error message.
         StringBuilder html = new StringBuilder(100);
         String templateName = properties.check("elementErrorStyle");
         if (templateName == null) {
@@ -390,7 +390,7 @@ public class FormSection extends Section {
         // If there are any element-specific messages currently displayed
         // because of a previous post, undisplay them.
         clearOldElementErrors(cr);
-        
+
         // Collect the form's data, issue a request to the data manager,
         // and wait for it to complete.
         anyElementErrors = false;
