@@ -300,8 +300,6 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "onsubmit=\"return Fiz.ids.form1.submit();\" " +
                 "action=\"x/y\" method=\"post\" " +
                 "enctype=\"multipart/form-data\">\n" +
-                "  <input type=\"hidden\" name=\"fiz_formId\" " +
-                "value=\"form1\" />\n" +
                 "  <input type=\"hidden\" name=\"fiz_auth\" value=\"OK\" />\n" +
                 "  <table",
                 cr.getHtml().getBody().toString(), ".*<table");
@@ -317,8 +315,6 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "onsubmit=\"return Fiz.ids.form1.submit();\" " +
                 "action=\"post\" method=\"post\" " +
                 "enctype=\"multipart/form-data\">\n" +
-                "  <input type=\"hidden\" name=\"fiz_formId\" " +
-                "value=\"form1\" />\n" +
                 "  <input type=\"hidden\" name=\"fiz_auth\" value=\"OK\" />\n" +
                 "  <table",
                 cr.getHtml().getBody().toString(), ".*<table");
@@ -837,11 +833,10 @@ public class FormSectionTest extends junit.framework.TestCase {
     }
 
     public void test_sendFormResponse() {
-        cr.getMainDataset().set("fiz_formId", "ab\"<$&");
         FormSection.sendFormResponse(cr, "x = \"abc<&>\";");
         assertEquals("form response Javascript",
                 "window.parent.Fiz.FormSection.handleResponse(" +
-                "\"ab\\\"<$&\", \"x = \\\"abc<&>\\\";\");\n",
+                "\"x = \\\"abc<&>\\\";\");\n",
                 cr.getHtml().jsCode.toString());
     }
 }

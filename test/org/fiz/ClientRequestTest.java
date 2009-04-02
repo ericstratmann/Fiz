@@ -184,11 +184,10 @@ public class ClientRequestTest extends junit.framework.TestCase {
         ServletResponseFixture response =
                 ((ServletResponseFixture)cr.getServletResponse());
         cr.setClientRequestType(ClientRequest.Type.POST);
-        cr.getMainDataset().set("fiz_formId", "abc");
         cr.evalJavascript("if (x < y) alert(\"error!\");");
         cr.finish();
         TestUtil.assertMatchingSubstring("response",
-                "Fiz.FormSection.handleResponse(\"abc\", " +
+                "Fiz.FormSection.handleResponse(" +
                 "\"if (x < y) alert(\\\"error!\\\");\");",
                 response.toString(), "Fiz.FormSection[^\n]*");
     }
@@ -761,6 +760,79 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "field1: field1_value\n" +
                 "field2: field2_value\n", cr.getMainDataset().toString());
     }
+    public void test_readMultipartFormData_uploadTempDirectory() {
+        cr.clearData();                 // Discard default info from fixture.
+        cr.mainDataset = new Dataset();
+        (new File("_test1_")).mkdir();
+        Config.setDataset("main", new Dataset("uploadTempDirectory",
+                "_test1_"));
+        cr.testSizeThreshold = 5;
+        servletRequest.setParameters();
+        servletRequest.contentType = "multipart/form-data, boundary=xyzzy";
+        servletRequest.setInput(
+                "--xyzzy\r\n" +
+                "Content-Disposition: form-data; name=\"first\"; " +
+                "filename=\"file1.txt\"\r\n" +
+                "Content-Type: text/plain\r\n" +
+                "\r\n" +
+                "Please write this file to disk.\r\n" +
+                "--xyzzy--\r\n");
+        cr.readMultipartFormData();
+        assertEquals("files in temp directory", 1,
+                (new File("_test1_")).list().length);
+        TestUtil.deleteTree("_test1_");
+    }
+    public void test_readMultipartFormData_bogusUploadMaxSize() {
+        cr.clearData();                 // Discard default info from fixture.
+        cr.mainDataset = new Dataset();
+        Config.setDataset("main", new Dataset("uploadMaxSize", "xyz"));
+        servletRequest.setParameters();
+        servletRequest.contentType = "multipart/form-data, boundary=xyzzy";
+        servletRequest.setInput(
+                "--xyzzy\r\n" +
+                "Content-Disposition: form-data; name=\"first\"; " +
+                "filename=\"file1.txt\"\r\n" +
+                "Content-Type: text/plain\r\n" +
+                "\r\n" +
+                "Line 1 is much much too long\r\n" +
+                "--xyzzy--\r\n");
+        boolean gotException = false;
+        try {
+            cr.readMultipartFormData();
+        }
+        catch (InternalError e) {
+            assertEquals("uploadMaxSize element in main configuration " +
+                    "dataset has bad value \"xyz\": must be an integer",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_readMultipartFormData_fileUploadMaxSize() {
+        cr.clearData();                 // Discard default info from fixture.
+        cr.mainDataset = new Dataset();
+        Config.setDataset("main", new Dataset("uploadMaxSize", "5"));
+        servletRequest.setParameters();
+        servletRequest.contentType = "multipart/form-data, boundary=xyzzy";
+        servletRequest.setInput(
+                "--xyzzy\r\n" +
+                "Content-Disposition: form-data; name=\"first\"; " +
+                "filename=\"file1.txt\"\r\n" +
+                "Content-Type: text/plain\r\n" +
+                "\r\n" +
+                "Line 1 is much much too long\r\n" +
+                "--xyzzy--\r\n");
+        boolean gotException = false;
+        try {
+            cr.readMultipartFormData();
+        }
+        catch (UserError e) {
+            assertEquals("uploaded file exceeded length limit of 5 bytes",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
     public void test_readMultipartFormData_multipleValuesForName() {
         cr.clearData();                 // Discard default info from fixture.
         cr.mainDataset = new Dataset();
@@ -830,7 +902,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
         }
         catch (InternalError e) {
             assertEquals("exception message", "error reading multi-part " +
-                    "form data: Stream ended unexpectedly",
+                    "form data: stream ended unexpectedly",
                     e.getMessage());
             gotException = true;
         }

@@ -24,3 +24,11 @@ searchPackages: "org.fiz"
 # overrides any value specified below.
 # debug: 1
 
+# Maximum allowable size for an uploaded file.
+# uploadMaxSize: 10000000
+
+# Temporary directory in which to store large uploaded files (best if
+# this directory is on the same disk as the ultimate destination for
+# uploads, so that the files can be renamed to their final location
+# without copying)
+# uploadTempDirectory:

@@ -70,6 +70,8 @@ test("FormSection_submit", function() {
     var form = new Fiz.FormSection("form1");
 
     assertEqual(true, form.submit(), "return value");
+    assertEqual(form, Fiz.FormSection.currentForm,
+            "Fiz.FormSection.currentForm");
     assertEqual("<iframe name=\"form1_iframe\"></iframe>",
             div1.innerHTML, "HTML for iframe");
     assertEqual("form1_iframe", form1.target, "form1.target");
@@ -80,7 +82,8 @@ test("FormSection_handleResponse", function() {
     Fiz.ids.form1.handleResponse2 = function(script) {
         window.testLog = "handleResponse2 argument: " + script;
     }
-    Fiz.FormSection.handleResponse("form1", "window.xyzzy += 3;");
+    Fiz.FormSection.currentForm = Fiz.ids.form1;
+    Fiz.FormSection.handleResponse("window.xyzzy += 3;");
     jsunit.setTimeoutArg();
     assertEqual("handleResponse2 argument: window.xyzzy += 3;",
             window.testLog, "log information");

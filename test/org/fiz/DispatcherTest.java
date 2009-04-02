@@ -1,6 +1,8 @@
 package org.fiz;
+
 import javax.servlet.*;
 import java.util.*;
+import org.apache.log4j.*;
 
 /**
  * Junit tests for the Dispatcher class.
@@ -160,19 +162,43 @@ public class DispatcherTest extends junit.framework.TestCase {
                 new ServletResponseFixture());
         assertEquals("error message", null, dispatcher.basicMessage);
     }
+    public void test_service_exception_dontLogUserError() {
+        StringAppender appender = new StringAppender();
+        dispatcher.logger = Logger.getRootLogger();
+        dispatcher.logger.removeAllAppenders();
+        dispatcher.logger.addAppender(appender);
+        dispatcher.logger.setLevel(Level.WARN);
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest1/userError"), new ServletResponseFixture());
+        assertEquals("log message", "",
+                appender.log.toString());
+    }
     public void test_service_exception_logMessage() {
+        StringAppender appender = new StringAppender();
+        dispatcher.logger = Logger.getRootLogger();
+        dispatcher.logger.removeAllAppenders();
+        dispatcher.logger.addAppender(appender);
         dispatcher.service(new ServletRequestFixture("/dispatcherTest1/error"),
                 new ServletResponseFixture());
         assertEquals("error message", "error in method",
                 dispatcher.basicMessage);
-        String message = dispatcher.fullMessage.replaceAll("\\r\\n", "\n");
-        TestUtil.assertSubstring("error message",
+        String message = appender.log.toString().replaceAll("\\r\\n", "\n");
+        TestUtil.assertSubstring("log message",
                 "unhandled exception for URL \"/x/y/z?a=b&c=d\":\n" +
                 "java.lang.Error: error in method\n" +
                 "\tat org.fiz.DispatcherTest1Interactor.error",
                 message);
     }
-    public void test_service_exception_ajaxRequest() {
+    public void test_service_exception_ajaxUserError() {
+        ServletResponseFixture response = new ServletResponseFixture();
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest1/ajaxUserError"), response);
+        assertEquals("AJAX response", "Fiz.clearBulletin();\n" +
+                "Fiz.addBulletinMessage(\"bulletinError\", " +
+                "\"Ajax user error\");\n",
+                response.toString());
+    }
+    public void test_service_exception_ajaxInternalError() {
         ServletResponseFixture response = new ServletResponseFixture();
         dispatcher.service(new ServletRequestFixture(
                 "/dispatcherTest2/ajaxBogus"), response);
@@ -183,15 +209,26 @@ public class DispatcherTest extends junit.framework.TestCase {
                 "DispatcherTest2Interactor\");\n",
                 response.toString());
     }
-    public void test_service_exception_postRequest() {
+    public void test_service_exception_postUserError() {
+        ServletResponseFixture response = new ServletResponseFixture();
+        ServletRequestFixture request = new ServletRequestFixture(
+                "/dispatcherTest1/postUserError");
+        request.parameterMap = new Hashtable<String,String>();
+        dispatcher.service(request, response);
+        TestUtil.assertMatchingSubstring("Response Javascript",
+                "window.parent.Fiz.FormSection.handleResponse(" +
+                "\"Fiz.clearBulletin();\\nFiz.addBulletinMessage(\\\"" +
+                "bulletinError\\\", \\\"Post user error\\\");\\n\");",
+                response.toString(), "window.parent.Fiz[^\n]*");
+    }
+    public void test_service_exception_postInternalError() {
         ServletResponseFixture response = new ServletResponseFixture();
         ServletRequestFixture request = new ServletRequestFixture(
                 "/dispatcherTest2/postBogus");
         request.parameterMap = new Hashtable<String,String>();
-        request.parameterMap.put("fiz_formId", "xyzzy");
         dispatcher.service(request, response);
         TestUtil.assertMatchingSubstring("Response Javascript",
-                "window.parent.Fiz.FormSection.handleResponse(\"xyzzy\", " +
+                "window.parent.Fiz.FormSection.handleResponse(" +
                 "\"Fiz.clearBulletin();\\nFiz.addBulletinMessage(\\\"" +
                 "bulletinError\\\", \\\"uncaughtPost: unsupported URL " +
                 "&quot;/x/y/z&quot;: couldn't find method &quot;postBogus" +
@@ -311,9 +348,11 @@ public class DispatcherTest extends junit.framework.TestCase {
         ArrayList<String> names = new ArrayList<String>();
         names.addAll(dispatcher.methodMap.keySet());
         Collections.sort(names);
-        assertEquals("dispatcherTest1/ajaxIncCount, dispatcherTest1/error, " +
+        assertEquals("dispatcherTest1/ajaxIncCount, " +
+                "dispatcherTest1/ajaxUserError, dispatcherTest1/error, " +
                 "dispatcherTest1/handledError, dispatcherTest1/incCount, " +
-                "dispatcherTest1/postTest, dispatcherTest1/resetCount",
+                "dispatcherTest1/postTest, dispatcherTest1/postUserError, " +
+                "dispatcherTest1/resetCount, dispatcherTest1/userError",
                 StringUtil.join(names, ", "));
     }
     public void test_findMethod_methodNotFound() {

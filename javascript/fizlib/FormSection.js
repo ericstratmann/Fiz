@@ -24,6 +24,10 @@ Fiz.FormSection = function(id) {
     this.errorElements = new Array();
 }
 
+// The following variable refers to the most recent Fiz.FormSection
+// to be submitted.  It is used to handle the subsequent response.
+Fiz.FormSection.currentForm = null;
+
 /**
  * If there are any element-specific error messages displayed in this
  * form, undisplay them.
@@ -80,6 +84,7 @@ Fiz.FormSection.prototype.submit = function() {
     // Different browsers exhibit this unpleasant behavior in slightly
     // different ways, but this solution, making the iframe as transient
     // as possible, seems to work on all of them.
+    Fiz.FormSection.currentForm = this;
     var div = document.getElementById(this.id + "_target");
     div.innerHTML = "<iframe name=\"" + this.id + "_iframe\"></iframe>";
     var form = document.getElementById(this.id);
@@ -98,12 +103,13 @@ Fiz.FormSection.prototype.submit = function() {
  *                                 All of the server's desired actions are
  *                                 encoded in the script.
  */
-Fiz.FormSection.handleResponse = function(formId, script) {
+Fiz.FormSection.handleResponse = function(script) {
     // It isn't safe to handle the form response right now, while the nested
     // iframe is on the call stack .  Do all the work from a timer event,
     // which will have its own call stack.
-    setTimeout(function() {Fiz.ids[formId].handleResponse2(script);},
-            0);
+    setTimeout(function() {
+            Fiz.FormSection.currentForm.handleResponse2(script);
+        }, 0);
 }
 
 /**

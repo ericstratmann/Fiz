@@ -30,12 +30,18 @@ public class DispatcherTest1Interactor extends Interactor {
         count++;
         isAjax = cr.isAjax();
     }
+    public void ajaxUserError(ClientRequest cr) {
+        throw new UserError("ajax user error");
+    }
     public void incCount(ClientRequest cr) {
         count++;
         isAjax = cr.isAjax();
     }
     public void postTest(ClientRequest cr) {
         requestType = cr.getClientRequestType();
+    }
+    public void postUserError(ClientRequest cr) {
+        throw new UserError("post user error");
     }
     public void resetCount(ClientRequest cr) {
         count = 0;
@@ -46,6 +52,9 @@ public class DispatcherTest1Interactor extends Interactor {
     public void handledError(ClientRequest cr) {
         throw new TestError(new Dataset("message", "error handled OK",
                 "name", "Alice"));
+    }
+    public void userError(ClientRequest cr) {
+        throw new UserError("test user error");
     }
     private void privateMethod(ClientRequest cr) {
     }

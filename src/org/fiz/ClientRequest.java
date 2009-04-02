@@ -130,6 +130,10 @@ public class ClientRequest {
     // The following variable is used for log4j-based logging.
     protected static Logger logger = Logger.getLogger("org.fiz.ClientRequest");
 
+    // If the following variable is nonzero, then all uploaded files larger
+    // than this will be written temporarily to disk.  Used for testing.
+    int testSizeThreshold = 0;
+
     /**
      * Constructs a ClientRequest object.  Typically invoked by the
      * getRequest method of an Interactor object.
@@ -270,9 +274,8 @@ public class ClientRequest {
      * to complete the transmission of the response back to the client.
      */
     public void finish() {
-        // Cleanup any uploaded files (this frees in-memory storage
-        // for uploads faster than waiting for garbage collection?
-        // or does it?).
+        // Cleanup any uploaded files (this temporary file space allocated
+        // for uploads faster than waiting for garbage collection).
         if (uploads != null) {
             for (FileItem upload: uploads.values()) {
                 upload.delete();
@@ -1002,7 +1005,26 @@ public class ClientRequest {
      */
     protected void readMultipartFormData() {
         DiskFileItemFactory factory = new DiskFileItemFactory();
+        String tempDir = Config.getDataset("main").check("uploadTempDirectory");
+        if (tempDir != null) {
+            factory.setRepository(new File(tempDir));
+        }
+        if (testSizeThreshold != 0) {
+            factory.setSizeThreshold(testSizeThreshold);
+        }
         ServletFileUpload upload = new ServletFileUpload(factory);
+        String maxSize = Config.getDataset("main").check("uploadMaxSize");
+        if (maxSize != null) {
+            try {
+                upload.setFileSizeMax(new Long(maxSize));
+            }
+            catch (NumberFormatException e) {
+                throw new InternalError(String.format(
+                        "uploadMaxSize element in main configuration " +
+                        "dataset has bad value \"%s\": must be an integer",
+                        maxSize));
+            }
+        }
         try {
             for (Object o: upload.parseRequest(servletRequest)) {
                 FileItem item = (FileItem) o;
@@ -1038,9 +1060,13 @@ public class ClientRequest {
                 }
             }
         }
+        catch (FileUploadBase.FileSizeLimitExceededException e) {
+            throw new UserError(String.format("uploaded file exceeded " +
+                    "length limit of %d bytes", upload.getFileSizeMax()));
+        }
         catch (FileUploadException e) {
             throw new InternalError("error reading multi-part form data: " +
-                    e.getMessage());
+                    StringUtil.lcFirst(e.getMessage()));
         }
     }
 

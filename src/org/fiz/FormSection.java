@@ -335,9 +335,7 @@ public class FormSection extends Section {
         //   receives responses to form submits.  See the documentation
         //   for the Javascript function Fiz.FormSection.submit for
         //   details.
-        // * Create a hidden form element containing the form's id; we
-        //   will need it in order to generate responses to form submissions.
-        // * Create a second hidden form element containing a session-specific
+        // * Create a hidden form element containing a session-specific
         //   token that prevents CSRF attacks.
         Template.expand("\n<!-- Start FormSection @id -->\n" +
                 "<div id=\"@(id)_target\" style=\"display:none;\"></div>\n" +
@@ -345,8 +343,6 @@ public class FormSection extends Section {
                 "onsubmit=\"return Fiz.ids.@id.submit();\" " +
                 "action=\"@postUrl?{post}\" method=\"post\" " +
                 "enctype=\"multipart/form-data\">\n" +
-                "  <input type=\"hidden\" name=\"fiz_formId\" " +
-                "value=\"@id\" />\n" +
                 "  <input type=\"hidden\" name=\"fiz_auth\" " +
                 "value=\"@1\" />\n",
                 properties, out, getAuthToken(cr));
@@ -706,8 +702,7 @@ public class FormSection extends Section {
         // form.  Fortunately, there should be a value "fiz_formId" in
         // the form's data.
         cr.getHtml().includeJavascript(
-                "window.parent.Fiz.FormSection.handleResponse(" +
-                "\"@1\", \"@2\");\n", cr.getMainDataset().get("fiz_formId"),
+                "window.parent.Fiz.FormSection.handleResponse(\"@1\");\n",
                 javascript);
 
     }

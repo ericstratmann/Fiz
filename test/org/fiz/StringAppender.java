@@ -13,6 +13,9 @@ public class StringAppender implements Appender {
     public StringBuilder log = new StringBuilder();
 
     public void doAppend(LoggingEvent event) {
+        if (log.length() != 0) {
+            log.append('\n');
+        }
         log.append(event.getMessage().toString());
     }
 

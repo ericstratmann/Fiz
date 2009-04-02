@@ -301,30 +301,43 @@ public class Dispatcher extends HttpServlet {
                 return;
             }
 
-            // Print details about the error to the log.
+            // Print details about the error to the log (unless this error
+            // was caused by incorrect user behavior).
             StringWriter sWriter= new StringWriter();
             basicMessage = cause.getMessage();
-            cause.printStackTrace(new PrintWriter(sWriter));
-            fullMessage = "unhandled exception for URL \""
-                    + Util.getUrlWithQuery(request) + "\":\n"
-                    + sWriter.toString();
-            logger.error(fullMessage);
+            if (!(cause instanceof UserError)) {
+                cause.printStackTrace(new PrintWriter(sWriter));
+                fullMessage = "unhandled exception for URL \""
+                        + Util.getUrlWithQuery(request) + "\":\n"
+                        + sWriter.toString();
+                logger.error(fullMessage);
+            }
 
             // If this is an AJAX or post request then return the error
             // message in a protocol-specific fashion.
             if (requestType == ClientRequest.Type.AJAX) {
-                cr.addMessageToBulletin(
-                        Config.getPath("styles", "uncaught.ajax"),
-                        new Dataset("message", basicMessage),
-                        "bulletinError");
+                if (cause instanceof UserError) {
+                    cr.addMessageToBulletin(StringUtil.ucFirst(basicMessage),
+                            null, "bulletinError");
+                } else {
+                    cr.addMessageToBulletin(
+                            Config.getPath("styles", "uncaught.ajax"),
+                            new Dataset("message", basicMessage),
+                            "bulletinError");
+                }
                 cr.finish();
                 return;
             }
             if (requestType == ClientRequest.Type.POST) {
-                cr.addMessageToBulletin(
-                        Config.getPath("styles", "uncaught.post"),
-                        new Dataset("message", basicMessage),
-                        "bulletinError");
+                if (cause instanceof UserError) {
+                    cr.addMessageToBulletin(StringUtil.ucFirst(basicMessage),
+                            null, "bulletinError");
+                } else {
+                    cr.addMessageToBulletin(
+                            Config.getPath("styles", "uncaught.post"),
+                            new Dataset("message", basicMessage),
+                            "bulletinError");
+                }
                 cr.finish();
                 return;
             }
