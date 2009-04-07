@@ -19,15 +19,23 @@ public class TabSectionTest extends junit.framework.TestCase {
     }
 
     public void test_constructor() {
-        TabSection section = new TabSection(new Dataset("a", "1", "b", "2"),
+        TabSection section = new TabSection(new Dataset("id", "xyzzy",
+                "a", "1", "b", "2"),
                 new Dataset("id", "1"), new Dataset("id", "2"));
-        assertEquals("configuration properties", "a: 1\n" +
-                "b: 2\n",
+        assertEquals("configuration properties", "a:  1\n" +
+                "b:  2\n" +
+                "id: xyzzy\n",
                 section.properties.toString());
         assertEquals("tab descriptions", "id: 1\n" +
                 "--------\n" +
                 "id: 2\n",
                 StringUtil.join(section.tabs, "--------\n"));
+    }
+    public void test_constructor_defaultId() {
+        TabSection section = new TabSection(new Dataset("a", "1"));
+        assertEquals("configuration properties", "a:  1\n" +
+                "id: tabs\n",
+                section.properties.toString());
     }
 
     public void test_clearCache() {
@@ -56,7 +64,7 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "/blank.gif\" alt=\"\" /></td>\n" +
                 "    <td class=\"left\"><img src=\"/fizlib/images" +
                 "/blank.gif\" alt=\"\" /></td>\n" +
-                "    <td class=\"mid\" id=\"section12.first\">" +
+                "    <td class=\"mid\" id=\"section12_first\">" +
                 "<a href=\"/a/b\"><div>First</div></a></td>\n" +
                 "    <td class=\"right\"><img src=\"/fizlib/images" +
                 "/blank.gif\" alt=\"\" /></td>\n" +
@@ -64,7 +72,7 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "/blank.gif\" alt=\"\" /></td>\n" +
                 "    <td class=\"leftSelected\"><img src=\"/fizlib/images" +
                 "/blank.gif\" alt=\"\" /></td>\n" +
-                "    <td class=\"midSelected\" id=\"section12.second\">" +
+                "    <td class=\"midSelected\" id=\"section12_second\">" +
                 "<a href=\"/a/c\"><div>Second</div></a></td>\n" +
                 "    <td class=\"rightSelected\"><img src=\"/fizlib" +
                 "/images/blank.gif\" alt=\"\" /></td>\n" +
@@ -72,7 +80,7 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "/blank.gif\" alt=\"\" /></td>\n" +
                 "    <td class=\"left\"><img src=\"/fizlib/images" +
                 "/blank.gif\" alt=\"\" /></td>\n" +
-                "    <td class=\"mid\" id=\"section12.third\">" +
+                "    <td class=\"mid\" id=\"section12_third\">" +
                 "<a href=\"/xyz\"><div>Third</div></a></td>\n" +
                 "    <td class=\"right\"><img src=\"/fizlib/images" +
                 "/blank.gif\" alt=\"\" /></td>\n" +
@@ -83,27 +91,16 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "<!-- End TabSection section12 -->\n",
                 cr.getHtml().getBody().toString());
     }
-    public void test_html_noSelectorProperty() {
+    public void test_html_defaultSelector() {
         TabSection section = new TabSection(new Dataset("id", "section12"),
-                new Dataset("id", "first", "text", "label1",
-                "url", "/a/b"));
+                new Dataset("id", "first", "text", "label1", "url", "/a/b"),
+                new Dataset("id", "second", "text", "Second", "url", "/a/c"));
+        cr.getMainDataset().set("currentTabId", "second");
         cr.showSections(section);
         TestUtil.assertXHTML(cr.getHtml().getBody().toString());
-        TestUtil.assertSubstring("first tab selected",
-                "<td class=\"midSelected\" id=\"section12.first\">" +
-                "<a href=\"/a/b\"><div>label1",
-                cr.getHtml().getBody().toString());
-    }
-    public void test_html_selectorNameNonexistent() {
-        TabSection section = new TabSection(new Dataset("id", "section12",
-                "selector", "bogusSelector"),
-                new Dataset("id", "first", "text", "label1",
-                "url", "/a/b"));
-        cr.showSections(section);
-        TestUtil.assertXHTML(cr.getHtml().getBody().toString());
-        TestUtil.assertSubstring("first tab selected",
-                "<td class=\"midSelected\" id=\"section12.first\">" +
-                "<a href=\"/a/b\"><div>label1",
+        TestUtil.assertSubstring("second tab selected",
+                "<td class=\"midSelected\" id=\"section12_second\">" +
+                "<a href=\"/a/c\"><div>Second",
                 cr.getHtml().getBody().toString());
     }
     public void test_html_noRequest() {
@@ -170,21 +167,15 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "<table id=\"section12\" class=\"testClass\"",
                 cr.getHtml().getBody().toString());
     }
-    public void test_html_defaultForSelectedTab() {
+    public void test_html_noSelectedTab() {
         TabSection section = new TabSection(new Dataset("id", "section12"),
                 new Dataset("id", "first", "text", "label1",
-                "url", "/a/b"),
-                new Dataset("id", "second", "text", "label2",
                 "url", "/a/b"));
         cr.showSections(section);
         TestUtil.assertXHTML(cr.getHtml().getBody().toString());
-        TestUtil.assertSubstring("first tab selected",
-                "<td class=\"midSelected\" id=\"section12.first\">" +
+        TestUtil.assertSubstring("first tab not selected",
+                "<td class=\"mid\" id=\"section12_first\">" +
                 "<a href=\"/a/b\"><div>label1",
-                cr.getHtml().getBody().toString());
-        TestUtil.assertSubstring("second tab not selected",
-                "<td class=\"mid\" id=\"section12.second\">" +
-                "<a href=\"/a/b\"><div>label2",
                 cr.getHtml().getBody().toString());
     }
     public void test_html_templateExpansionForUrl() {
@@ -206,7 +197,7 @@ public class TabSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getJsFiles());
         TestUtil.assertSubstring("onclick handler",
                 "<a href=\"#\" onclick=\"Fiz.TabSection.selectTab" +
-                "(&quot;section12.first&quot;); window.xyz=&quot;&lt;" +
+                "(&quot;section12_first&quot;); window.xyz=&quot;&lt;" +
                 "\\&quot;&gt;&quot;; return false;\">",
                 cr.getHtml().getBody().toString());
     }
@@ -217,11 +208,11 @@ public class TabSectionTest extends junit.framework.TestCase {
         section.html(cr);
         TestUtil.assertSubstring("onclick handler",
                 "<a href=\"#\" onclick=\"Fiz.TabSection.selectTab" +
-                "(&quot;section12.first&quot;); " +
+                "(&quot;section12_first&quot;); " +
                 "void new Fiz.Ajax({url: &quot;a/b/Alice&quot;});;",
                 cr.getHtml().getBody().toString());
     }
-    
+
     public void test_getTemplate_usedCachedCopy() {
         TabSection.setTemplate("cached TabSection template");
         assertEquals("getTemplate result", "cached TabSection template",

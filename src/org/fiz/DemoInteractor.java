@@ -183,11 +183,11 @@ public class DemoInteractor extends Interactor {
         html.setTitle("TabSection Demo");
         cr.showSections(
                 new TemplateSection("<h1>Sample TabSection</h1>\n"),
-                new TabSection(new Dataset("id", "tabs", "selector", "tab"),
+                new TabSection(new Dataset(),
                         new Dataset("id", "t1", "text", "Inventory",
-                                "url", "tabSection?tab=t1"),
+                                "url", "tabSection?currentTabId=t1"),
                         new Dataset("id", "t2", "text", "Orders",
-                                "url", "tabSection?tab=t2"),
+                                "url", "tabSection?currentTabId=t2"),
                         new Dataset("id", "t3", "text", "Accounts",
                                 "ajaxUrl", "ajaxTab?tab=t3"),
                         new Dataset("id", "t4", "text", "Shippers",
@@ -196,9 +196,9 @@ public class DemoInteractor extends Interactor {
                                 "= 'You clicked on tab \"t4\", which caused " +
                                 "this text to be updated by Javascript.'"),
                         new Dataset("id", "t5", "text", "Suppliers",
-                                "url", "tabSection?tab=t5")),
+                                "url", "tabSection?currentTabId=t5")),
                 new TemplateSection("<p id=\"text\">The currently selected " +
-                        "tab has id \"@tab?{??}\"</p>\n"));
+                        "tab has id \"@currentTabId?{??}\"</p>\n"));
     }
 
     /**

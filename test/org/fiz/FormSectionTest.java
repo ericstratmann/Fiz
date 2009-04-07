@@ -40,6 +40,12 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "and needs to be refreshed", e.getMessage());
     }
 
+    public void test_constructor_defaultId() {
+        FormSection form = new FormSection(
+                new Dataset());
+        assertEquals("id variable", "form", form.id);
+        assertEquals("id property", "form", form.properties.get("id"));
+    }
     public void test_constructor_defaultButtonStyle() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson"),

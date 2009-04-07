@@ -33,10 +33,10 @@ import javax.servlet.http.*;
  *                   with the same name followed by "-bulletin", it is expanded
  *                   and the resulting HTML is displayed in the bulletin.
  *                   Defaults to "FormSection.error".
- *   id:             (required) Used as the {@code id} attribute for the
+ *   id:             (optional) Used as the {@code id} attribute for the
  *                   HTML form element that displays the FormSection and
  *                   for various other purposes.  Must be unique among all
- *                   id's for the page.
+ *                   id's for the page.  Defaults to {@code form}.
  *   initialValues:  (optional) A nested dataset providing initial values
  *                   to display in the form.  This property is used only
  *                   if the {@code request} property is omitted; the values
@@ -185,13 +185,17 @@ public class FormSection extends Section {
     public FormSection(Dataset properties, FormElement ... elements) {
         this.properties = properties;
         this.elements = elements;
+        id = properties.check("id");
+        if (id == null) {
+            id = "form";
+            properties.set("id", "form");
+        }
         buttonStyle = properties.check("buttonStyle");
         if (buttonStyle == null) {
             buttonStyle = "FormSection.button";
         }
         helpConfig = Config.getDataset("help");
-        nestedHelp = helpConfig.checkChild(properties.get("id"));
-        id = properties.get("id");
+        nestedHelp = helpConfig.checkChild(id);
     }
 
     /**

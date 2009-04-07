@@ -20,20 +20,20 @@ public class Demo2Interactor extends Interactor {
     public void main(ClientRequest cr) {
         Html html = cr.getHtml();
         html.setTitle("Simple Fiz Demonstration");
-        cr.getMainDataset().set("tab", "students");
+        cr.getMainDataset().set("currentTabId", "students");
         Section sections[] = {
                 new TemplateSection("<h1>Your University Online</h1>\n"),
-                new TabSection(new Dataset("id", "tabs", "selector", "tab"),
+                new TabSection(new Dataset(),
                         new Dataset("id", "faculty", "text", "Faculty",
-                                "url", "other?tab=faculty"),
+                                "url", "other?currentTabId=faculty"),
                         new Dataset("id", "students", "text", "Students",
                                 "url", "main"),
                         new Dataset("id", "courses", "text", "Courses",
-                                "url", "other?tab=courses"),
+                                "url", "other?currentTabId=courses"),
                         new Dataset("id", "admin", "text", "Administration",
-                                "url", "other?tab=admin"),
+                                "url", "other?currentTabId=admin"),
                         new Dataset("id", "life", "text", "Campus Life",
-                                "url", "other?tab=life")),
+                                "url", "other?currentTabId=life")),
                 new TemplateSection("<h2>Current Students</h2>\n"),
                 new TableSection(
                     new Dataset("request", "demo.getStudents"),
@@ -44,7 +44,7 @@ public class Demo2Interactor extends Interactor {
                     new Column("GPA", "@gpa")),
                 new TemplateSection("<h2>Enter New Student</h2>\n"),
                 new FormSection(
-                    new Dataset("id", "form1", "postUrl", "post"),
+                    new Dataset("postUrl", "post"),
                     new EntryFormElement(new Dataset("id", "last",
                             "label", "Last name:")),
                     new EntryFormElement(new Dataset("id", "first",
@@ -88,17 +88,17 @@ public class Demo2Interactor extends Interactor {
         html.setTitle("Simple Fiz Demonstration");
         cr.showSections(
                 new TemplateSection("<h1>Your University Online</h1>\n"),
-                new TabSection(new Dataset("id", "tabs", "selector", "tab"),
+                new TabSection(new Dataset(),
                         new Dataset("id", "faculty", "text", "Faculty",
-                                "url", "other?tab=faculty"),
+                                "url", "other?currentTabId=faculty"),
                         new Dataset("id", "students", "text", "Students",
                                 "url", "main"),
                         new Dataset("id", "courses", "text", "Courses",
-                                "url", "other?tab=courses"),
+                                "url", "other?currentTabId=courses"),
                         new Dataset("id", "admin", "text", "Administration",
-                                "url", "other?tab=admin"),
+                                "url", "other?currentTabId=admin"),
                         new Dataset("id", "life", "text", "Campus Life",
-                                "url", "other?tab=life")),
+                                "url", "other?currentTabId=life")),
                 new TemplateSection("<p>The contents of this tab have not " +
                         "yet been implemented.</p>\n")
         );
@@ -112,7 +112,7 @@ public class Demo2Interactor extends Interactor {
      */
     public void post(ClientRequest cr) {
         FormSection form = new FormSection(
-                new Dataset("id", "form1"),
+                new Dataset(),
                 new EntryFormElement(new Dataset("id", "last",
                         "label", "Last name:")),
                 new EntryFormElement(new Dataset("id", "first",

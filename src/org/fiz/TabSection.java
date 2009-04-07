@@ -10,9 +10,9 @@ package org.fiz;
  *   class:          (optional) Class attribute to use for the {@code <table>}
  *                   element containing the section.  Defaults to
  *                   {@code TabSection}.
- *   id:             (required) Used as the {@code id} attribute for the
+ *   id:             (optional) Used as the {@code id} attribute for the
  *                   {@code <table>} element containing the section.  Must
- *                   be unique in the page.
+ *                   be unique in the page; defaults to {@code tabs}.
  *   request:        (optional) This property is either the name of a request
  *                   in the {@code dataRequests} configuration dataset or
  *                   a nested dataset containing arguments for a DataRequest.
@@ -21,9 +21,7 @@ package org.fiz;
  *                   tabs.
  *   selector:       (optional) Name of an entry in the main dataset, whose
  *                   value identifies the selected tab by giving its
- *                   {@code id}.  If this property is omitted or if the
- *                   indicated value doesn't exist then the first tab will be
- *                   selected.
+ *                   {@code id}.  Defaults to {@code currentTabId}.
  *   style:          (optional) Selects one of several different ways of
  *                   displaying tabs; must correspond to the name of a
  *                   nested dataset in the {@code tabSections} configuration
@@ -71,6 +69,9 @@ public class TabSection extends Section{
     public TabSection(Dataset properties, Dataset ... tabs) {
         this.properties = properties;
         this.tabs = tabs;
+        if (properties.check("id") == null) {
+            properties.set("id", "tabs");
+        }
     }
 
     /**
@@ -101,9 +102,10 @@ public class TabSection extends Section{
         // Get information about which tab is selected.
         String selected = null;
         String selector = properties.check("selector");
-        if (selector != null) {
-            selected = cr.getMainDataset().check(selector);
+        if (selector == null) {
+            selector = "currentTabId";
         }
+        selected = cr.getMainDataset().check(selector);
 
         // Collect the data that will be available for templates, including
         // the response to the section's request, if there was one.
@@ -144,12 +146,9 @@ public class TabSection extends Section{
         // spacer to the right of all of the tabs.
         for (Dataset tab: tabs) {
             String tabId = tab.get("id");
-            if (selected == null) {
-                selected = tabId;
-            }
-            String suffix = (tabId.equals(selected)) ?
+            String suffix = ((selected != null) && (tabId.equals(selected))) ?
                     "Selected" : "";
-            tabId = sectionId + "." + tabId;
+            tabId = sectionId + "_" + tabId;
 
             // IE quirk: IE doesn't display borders around empty cells,
             // which causes problems for the side strips and the spacers.
@@ -182,7 +181,7 @@ public class TabSection extends Section{
 
                 // For Javascript and AJAX actions we need to call
                 // Javascript code to modify the DOM so that the new selected
-                // will appear selected (no need for this in the URL case
+                // tab will appear selected (no need for this in the URL case
                 // because an entirely new page will be displayed).
                 Template.expand("Fiz.TabSection.selectTab(\"@1\"); ",
                         javascript, Template.SpecialChars.JAVASCRIPT, tabId);
