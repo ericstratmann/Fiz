@@ -1,19 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
-This is the controlling file used by Ant to manage builds and tests
-for the Fiz framework.
--->
+    This is the controlling file used by Ant to manage builds and tests
+    for the Fiz framework.
+  -->
 <project name="fiz" default="javadoc" basedir=".">
-
     <target name="clean" description="Remove all generated files">
-        <delete dir="out"/>
+        <delete dir="../out"/>
+        
     </target>
-
+    
     <target name="compile" description="Compile from source">
         <mkdir dir="${classdir}"/>
         <javac srcdir="src" destdir="${classdir}" classpathref="classpath" />
     </target>
+    
+    <target name="test-compile" depends="compile"
+            description="Compile unit tests"> 
+        <mkdir dir="${testclassdir}"/>
+        <javac destdir="${testclassdir}" srcdir="test"> 
+            <classpath refid="classpath.test"/> 
+        </javac> 
+    </target>
+    
+    <target name="test" depends="compile,test-compile"
+            description="Execute unit tests" >
+        <junit fork="yes">
+            <classpath refid="classpath.test" /> 
+            <formatter type="brief" usefile="false"/>
+            
+            <batchtest>
+                <fileset dir="${testclassdir}">
+                    <include name="**/*Test.class"/>
+                </fileset>
+            </batchtest>
+            
+        </junit>
+    </target>
+
 
     <target name="dist" description="Create a distribution"
             depends="compile, javadoc">
@@ -22,13 +45,13 @@ for the Fiz framework.
         <!-- Classes and libraries -->
         <mkdir dir="${distdir}/web/WEB-INF/lib"/>
         <jar destfile="${distdir}/web/WEB-INF/lib/fiz.jar"
-                basedir="${classdir}"/>
+             basedir="${classdir}"/>
         <copy todir="${distdir}/web/WEB-INF/lib">
             <fileset dir="${libdir}"/>
         </copy>
         <mkdir dir="${distdir}/web/WEB-INF/classes"/>
         <copy todir="${distdir}/web/WEB-INF/classes"
-                file="src/log4j.properties"/>
+              file="src/log4j.properties"/>
 
         <!-- Other run-time files needed by Fiz -->
         <mkdir dir="${distdir}/web/WEB-INF/fiz/config"/>
@@ -72,7 +95,7 @@ for the Fiz framework.
         </copy>
         <copy todir="${distdir}/src">
             <fileset dir="." includes="build.xml, Fiz.iml,
-                    Fiz.ipr, Fiz.iws javadoc.css" />
+                                       Fiz.ipr, Fiz.iws javadoc.css" />
         </copy>
 
         <!-- Create archives -->
@@ -115,6 +138,9 @@ for the Fiz framework.
     <!-- The directory in which Java classes are compiled. -->
     <property name="classdir" value="../out/classes" />
 
+    <!-- The directory in which Java test classes are compiled. -->
+    <property name="testclassdir" value="../out/tests" />
+
     <path id="classpath">
         <pathelement location="${libdir}/commons-fileupload-1.2.1.jar" />
         <pathelement location="${libdir}/commons-io-1.4.jar" />
@@ -124,7 +150,14 @@ for the Fiz framework.
         <pathelement location="${libdir}/servlet.jar"/>
     </path>
 
+    <path id="classpath.test">
+        <pathelement location="${libdir}/junit.jar" />
+        <pathelement location="${classdir}" />
+        <pathelement location="${testclassdir}" />
+        <path refid="classpath" />
+    </path>
+
     <taskdef name="jslint" classname="net.happygiraffe.jslint.ant.JSLintTask"
-             classpath="${libdir}/jslint4java-1.2.1.jar"/>
-    
+             classpath="${libdir}/jslint4java-1.2.1.jar"/>-
+
 </project>
