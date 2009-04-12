@@ -1,42 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
-    This is the controlling file used by Ant to manage builds and tests
-    for the Fiz framework.
-  -->
+This is the controlling file used by Ant to manage builds and tests
+for the Fiz framework.
+-->
 <project name="fiz" default="javadoc" basedir=".">
+
     <target name="clean" description="Remove all generated files">
-        <delete dir="../out"/>
-        
+        <delete dir="${outdir}"/>
     </target>
-    
+
     <target name="compile" description="Compile from source">
         <mkdir dir="${classdir}"/>
         <javac srcdir="src" destdir="${classdir}" classpathref="classpath" />
     </target>
-    
+
     <target name="test-compile" depends="compile"
-            description="Compile unit tests"> 
+            description="Compile unit tests">
         <mkdir dir="${testclassdir}"/>
-        <javac destdir="${testclassdir}" srcdir="test"> 
-            <classpath refid="classpath.test"/> 
-        </javac> 
+        <javac destdir="${testclassdir}" srcdir="test">
+            <classpath refid="classpath.test"/>
+        </javac>
     </target>
-    
+
     <target name="test" depends="compile,test-compile"
             description="Execute unit tests" >
         <junit fork="yes">
-            <classpath refid="classpath.test" /> 
+            <classpath refid="classpath.test" />
             <formatter type="brief" usefile="false"/>
-            
+
             <batchtest>
                 <fileset dir="${testclassdir}">
                     <include name="**/*Test.class"/>
                 </fileset>
             </batchtest>
-            
+
         </junit>
     </target>
-
 
     <target name="dist" description="Create a distribution"
             depends="compile, javadoc">
@@ -45,13 +45,13 @@
         <!-- Classes and libraries -->
         <mkdir dir="${distdir}/web/WEB-INF/lib"/>
         <jar destfile="${distdir}/web/WEB-INF/lib/fiz.jar"
-             basedir="${classdir}"/>
+                basedir="${classdir}"/>
         <copy todir="${distdir}/web/WEB-INF/lib">
             <fileset dir="${libdir}"/>
         </copy>
         <mkdir dir="${distdir}/web/WEB-INF/classes"/>
         <copy todir="${distdir}/web/WEB-INF/classes"
-              file="src/log4j.properties"/>
+                file="src/log4j.properties"/>
 
         <!-- Other run-time files needed by Fiz -->
         <mkdir dir="${distdir}/web/WEB-INF/fiz/config"/>
@@ -95,7 +95,7 @@
         </copy>
         <copy todir="${distdir}/src">
             <fileset dir="." includes="build.xml, Fiz.iml,
-                                       Fiz.ipr, Fiz.iws javadoc.css" />
+                    Fiz.ipr, Fiz.iws javadoc.css" />
         </copy>
 
         <!-- Create archives -->
@@ -106,7 +106,7 @@
 
     <target name="javadoc" depends="compile">
         <javadoc sourcepath="src"
-                 destdir="../doc"
+                 destdir="${docdir}"
                  public="true"
                  Windowtitle="Fiz documentation"
                  docletpath="${classdir}"
@@ -116,7 +116,7 @@
                 <pathelement location="C:/cygwin/usr/local/tools/i686_win32/jdk1.6.0_01/lib/tools.jar" />
             </classpath>
         </javadoc>
-        <concat destfile="../doc/stylesheet.css" append="true">
+        <concat destfile="${docdir}/stylesheet.css" append="true">
             <filelist dir="." files="javadoc.css"/>
         </concat>
     </target>
@@ -129,17 +129,177 @@
         </jslint>
     </target>
 
-    <!-- The directory in which distributions are created. -->
-    <property name="distdir" value="../out/dist" />
+    <target name="build-installer" description="Creates the Fiz installer"
+            depends="compile, javadoc">
+        <delete dir="${installerdir}"/>
 
-    <!-- The directory containing Java libraries (.jar files). -->
-    <property name="libdir" value="../lib" />
+        <!-- Ant scripts -->
+        <mkdir dir="${installerdir}/antscripts"/>
+        <copy todir="${installerdir}/antscripts">
+            <fileset dir="antscripts"/>
+        </copy>
 
-    <!-- The directory in which Java classes are compiled. -->
-    <property name="classdir" value="../out/classes" />
+        <!-- Executable scripts -->
+        <mkdir dir="${installerdir}/bin"/>
+        <copy todir="${installerdir}/bin">
+            <fileset dir="bin"/>
+        </copy>
+
+        <!-- Source files -->
+        <mkdir dir="${installerdir}/src"/>
+        <copy todir="${installerdir}/src">
+            <fileset dir="src" />
+        </copy>
+        <copy todir="${installerdir}">
+            <filelist dir="." files="build.xml, javadoc.css" />
+        </copy>
+
+        <mkdir dir="${installerdir}/test"/>
+        <copy todir="${installerdir}/test">
+            <fileset dir="test" />
+        </copy>
+
+        <!-- Classes and libraries -->
+        <mkdir dir="${installerdir}/lib"/>
+        <manifest file="MANIFEST.MF">
+            <attribute name="Built-By" value="${user.name}"/>
+            <attribute name="Implementation-Title" value="Fiz Core"/>
+            <attribute name="Implementation-Version" value="${version}"/>
+            <attribute name="Implementation-Vendor"
+                       value="Stanford University"/>
+        </manifest>
+        <jar destfile="${installerdir}/lib/fiz.jar" basedir="${classdir}"
+                manifest="MANIFEST.MF"/>
+        <copy todir="${installerdir}/lib">
+            <fileset dir="${libdir}"/>
+        </copy>
+        <mkdir dir="${installerdir}/web/WEB-INF/classes"/>
+        <copy todir="${installerdir}/web/WEB-INF/classes"
+                file="src/log4j.properties"/>
+
+        <!-- Other run-time files needed by Fiz -->
+        <mkdir dir="${installerdir}/web/WEB-INF/fiz/config"/>
+        <copy todir="${installerdir}/web/WEB-INF/fiz/config">
+            <fileset dir="web/WEB-INF/fiz/config"/>
+        </copy>
+        <mkdir dir="${installerdir}/web/WEB-INF/fiz/css"/>
+        <copy todir="${installerdir}/web/WEB-INF/fiz/css">
+            <fileset dir="web/WEB-INF/fiz/css"/>
+        </copy>
+        <mkdir dir="${installerdir}/javascript"/>
+        <copy todir="${installerdir}/javascript">
+            <fileset dir="javascript"/>
+        </copy>
+        <mkdir dir="${installerdir}/web/fizlib"/>
+        <copy todir="${installerdir}/web/fizlib">
+            <fileset dir="web/fizlib"/>
+        </copy>
+        <mkdir dir="${installerdir}/web/WEB-INF/demo"/>
+        <copy todir="${installerdir}/web/WEB-INF/demo">
+            <fileset dir="web/WEB-INF/demo"/>
+        </copy>
+        <copy todir="${installerdir}/web/WEB-INF" file="web/WEB-INF/web.xml"/>
+
+        <!-- Application specific files -->
+        <mkdir dir="${installerdir}/app"/>
+        <copy todir="${installerdir}/app">
+            <fileset dir="app"/>
+        </copy>
+
+        <!-- Documentation -->
+        <mkdir dir="${installerdir}/javadoc"/>
+        <copy todir="${installerdir}/javadoc">
+            <fileset dir="${docdir}"/>
+        </copy>
+
+        <!-- Create archives -->
+        <zip destfile="${installerdir}/fiz.zip" basedir="${installerdir}" />
+    </target>
+
+    <target name="package"
+            description="Packages the Fiz distribution so that it can be uploaded to the community website"
+            depends="build-installer">
+        <delete dir="${packagedir}"/>
+
+        <!-- Documentation -->
+        <mkdir dir="${packagedir}/doc"/>
+        <copy todir="${packagedir}/doc">
+            <fileset dir="${docdir}"/>
+        </copy>
+        <zip destfile="${packagedir}/doc.zip" basedir="${packagedir}" />
+        <delete dir="${packagedir}/doc"/>
+
+        <!-- Installer -->
+        <copy todir="${packagedir}">
+            <fileset file="${installerdir}/fiz.zip"/>
+        </copy>
+
+        <!-- Create archives -->
+        <zip destfile="${packagedir}/fiz.pkg" basedir="${packagedir}" />
+    </target>
+
+    <target name="install" description="Installs Fiz" depends="checkOS">
+		<antcall target="${install.target}"/>
+    </target>
+
+	<target name="checkOS">
+		<condition property="install.target" value="install-windows">
+			<os family="windows"/>
+		</condition>
+		<condition property="install.target" value="install-mac">
+			<os family="mac"/>
+		</condition>
+		<condition property="install.target" value="install-unix">
+			<os family="unix"/>
+		</condition>
+	</target>
+
+	<target name="install-windows" description="OS specific target for Windows">
+        <replace file="bin/fiz.bat" token="@@FIZ_HOME" value="${user.dir}"/>
+        <replace file="bin/fiz.bat" token="@@FIZ_REPO" value="${fizrepo}"/>
+	</target>
+
+	<target name="install-mac" description="OS specific target for MacOS">
+        <replace file="bin/fiz" token="@@FIZ_HOME" value="${user.dir}"/>
+        <replace file="bin/fiz" token="@@FIZ_REPO" value="${fizrepo}"/>
+        <chmod file="bin/fiz" perm="ugo+x"/>
+	</target>
+
+	<target name="install-unix" description="OS specific target for Unix">
+        <replace file="bin/fiz" token="@@FIZ_HOME" value="${user.dir}"/>
+        <replace file="bin/fiz" token="@@FIZ_REPO" value="${fizrepo}"/>
+        <chmod file="bin/fiz" perm="ugo+x"/>
+	</target>
+
+    <!-- The version number that is embedded in the fiz.jar library file -->
+    <property name="version" value="1.0"/>
+
+    <!-- The directory containing Java libraries (.jar files) -->
+    <property name="libdir" value="lib"/>
+
+    <!-- The directory for the files generated by the build -->
+    <property name="outdir" value="out"/>
+
+    <!-- The directory in which distributions are created -->
+    <property name="distdir" value="${outdir}/dist"/>
+
+    <!-- The directory in which Java classes are compiled -->
+    <property name="classdir" value="${outdir}/classes"/>
 
     <!-- The directory in which Java test classes are compiled. -->
-    <property name="testclassdir" value="../out/tests" />
+    <property name="testclassdir" value="${outdir}/tests" />
+
+    <!-- The directory in which Javadocs are created -->
+    <property name="docdir" value="${outdir}/javadoc"/>
+
+    <!-- The directory in which the Fiz installer is created -->
+    <property name="installerdir" value="${outdir}/installer"/>
+
+    <!-- The directory in which the Fiz platform is packaged for upload to the
+    server -->
+    <property name="packagedir" value="${outdir}/package"/>
+
+    <property name="fizrepo" value="http://localhost:8080/FizCore"/>
 
     <path id="classpath">
         <pathelement location="${libdir}/commons-fileupload-1.2.1.jar" />
@@ -158,6 +318,6 @@
     </path>
 
     <taskdef name="jslint" classname="net.happygiraffe.jslint.ant.JSLintTask"
-             classpath="${libdir}/jslint4java-1.2.1.jar"/>-
+             classpath="${libdir}/jslint4java-1.2.1.jar"/>
 
 </project>

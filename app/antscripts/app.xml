@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- This file contains the definitions of targets used in the application's
+build.xml file. -->
+<project>
+
+    <target name="clean" description="Remove all generated files">
+        <delete dir="out"/>
+    </target>
+
+    <target name="compile" description="Compile from source">
+        <mkdir dir="${classdir}"/>
+        <javac srcdir="src" destdir="${classdir}" classpathref="classpath" />
+    </target>
+
+    <target name="war" description="Create WAR file" depends="compile">
+        <war destfile="out/${ant.project.name}.war"
+             webxml="web/WEB-INF/web.xml">
+            <lib dir="${libdir}"/>
+            <classes dir="${classdir}"/>
+        </war>
+    </target>
+
+    <!-- The directory containing Java libraries (.jar files). -->
+    <property name="libdir" value="lib" />
+
+    <!-- The directory in which Java classes are compiled. -->
+    <property name="classdir" value="out/classes" />
+
+    <path id="classpath">
+        <pathelement location="${libdir}/commons-fileupload-1.2.1.jar" />
+        <pathelement location="${libdir}/commons-io-1.4.jar" />
+        <pathelement location="${libdir}/fiz.jar" />
+        <pathelement location="${libdir}/jyaml.jar" />
+        <pathelement location="${libdir}/log4j.jar" />
+        <pathelement location="${libdir}/servlet.jar"/>
+    </path>
+
+</project>

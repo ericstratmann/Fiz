@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<project name="Fiz version" default="version">
+
+    <target name="version">
+
+        <script language="javascript"><![CDATA[
+        prj = self.getProject();
+        fizJarPath = prj.getProperty("fiz.jar.path");
+        file = new java.io.File(fizJarPath);
+        jar = new java.util.jar.JarFile(file);
+        name = java.util.jar.Attributes.Name.IMPLEMENTATION_VERSION;
+        version = jar.getManifest().getMainAttributes().getValue(name);
+        version = (version == null)? "<not-found>": version;
+        java.lang.System.out.println("Fiz Platform version:  " + version);
+    ]]></script>
+
+    </target>
+
+</project>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+This ant script contains targets to upgrade a Fiz application to a different
+version of the Fiz platform.
+-->
+<project name="Upgrade a Fiz application" basedir="."
+         default="upgrade">
+
+    <target name="upgrade"
+            description="Upgrades the Fiz application to the version of Fiz installed on the machine">
+
+        <!-- ant scripts -->
+        <mkdir dir="${appdir}/antscripts"/>
+        <copy todir="${appdir}/antscripts" overwrite="true">
+            <filelist dir="${fizhome}/app/antscripts"
+                    files="app.xml, upgrade.xml"/>
+        </copy>
+
+        <!-- Sync Fiz files with those in the Fiz installation -->
+        <mkdir dir="${appdir}/javascript/fizlib"/>
+        <sync todir="${appdir}/javascript/fizlib" overwrite="true">
+            <fileset dir="${fizhome}/javascript/fizlib"/>
+        </sync>
+
+        <mkdir dir="${appdir}/web/fizlib"/>
+        <sync todir="${appdir}/web/fizlib" overwrite="true">
+            <fileset dir="${fizhome}/web/fizlib"/>
+        </sync>
+
+        <mkdir dir="${appdir}/web/WEB-INF/fiz"/>
+        <sync todir="${appdir}/web/WEB-INF/fiz" overwrite="true">
+            <fileset dir="${fizhome}/web/WEB-INF/fiz" />
+        </sync>
+
+        <mkdir dir="${appdir}/web/WEB-INF/lib"/>
+        <copy todir="${appdir}/web/WEB-INF/lib" overwrite="true">
+            <filelist dir="${fizhome}/web/WEB-INF/lib"
+                     files="commons-fileupload-1.2.1.jar
+                     commons-io-1.4.jar
+                     fiz.jar
+                     jyaml.jar
+                     log4j.jar
+                     mysql-connector-java-5.1.7-bin.jar
+                     servlet.jar" />
+        </copy>
+
+    </target>
+
+    <target name="upgradetoversion"
+            description="Upgrades the Fiz application to a specified version of Fiz">
+
+        <!-- Fetch the correct version of Fiz from the server -->
+        <get src="${fizrepository}/${version}/fiz.zip"
+             dest="${appdir}/fiz-${version}.zip"/>
+
+        <!-- Unpack the Fiz installation -->
+        <mkdir dir="${appdir}/fiz-${version}"/>
+        <unzip src="${appdir}/fiz-${version}.zip"
+               dest="${appdir}/fiz-${version}"/>
+
+        <antcall target="upgrade">
+            <param name="fizhome" value="${appdir}/fiz-${version}"/>
+        </antcall>
+        
+        <!-- Clean up -->
+        <delete file="${appdir}/fiz-${version}.zip"/>
+        <delete dir="${appdir}/fiz-${version}"/>
+        
+    </target>
+
+    <property name="appdir" value=".."/>
+
+</project>

@@ -1,0 +1,4 @@
+This directory can contain application specific configuration files or override
+configuration datasets that are part of the Fiz framework.  Configuration
+datasets are managed by the Fiz "Config" class; see that class for more
+information.

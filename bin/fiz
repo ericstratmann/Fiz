@@ -1,0 +1,84 @@
+#! /bin/sh
+
+FIZ_HOME=@@FIZ_HOME
+FIZ_REPO=@@FIZ_REPO
+
+print_usage()
+{
+    echo "Usage: fiz <subcommand> [args]\n\n\
+Subcommands:\n\
+\thelp\t\tPrint this message and exit.\n\
+\tversion\t\tPrint the version of the Fiz platform or an application.
+\tcreate\t\tCreate a new Fiz application.\n\
+\tfetch\t\tFetch a new version of the Fiz platform.
+\tupgrade\t\tUpgrade a Fiz application.\n"
+    return
+}
+
+absolute_path()
+{
+    case "$1" in
+	/*) 
+	    abs="$1"
+	    ;;
+	*) 
+	    abs="$PWD/$1"
+	    ;;
+    esac
+
+    echo $abs
+}
+
+if [ $# -lt 1 ]; then
+    echo "Type 'fiz help' for usage."
+    exit 1
+fi
+
+case "$1" in
+    "help")
+	print_usage
+	;;
+    "create")
+	if [ $# -ne 2 ]; then
+	    print_usage
+	    exit 1
+	fi
+	dest_dir=`absolute_path $2`
+	ant -buildfile $FIZ_HOME/antscripts/create.xml -Dfizhome="$FIZ_HOME" -Ddestdir="$dest_dir"
+	;;
+    "fetch")
+	if [ $# -ne 3 ]; then
+	    print_usage
+	    exit 1
+	fi
+	dest_dir=`absolute_path $3`
+	ant -buildfile $FIZ_HOME/antscripts/fetch.xml -Dfizrepository="$FIZ_REPO" -Dversion="$2" -Ddestdir="$dest_dir"
+	;;
+    "upgrade")
+	if [ $# -eq 1 ]; then
+	    ant -buildfile antscripts/upgrade.xml -Dfizhome="$FIZ_HOME"
+	elif [ $# -eq 2 ]; then
+	    ant -buildfile antscripts/upgrade.xml upgradetoversion -Dfizrepository="$FIZ_REPO" -Dversion="$2"
+	else 
+	    print_usage
+	    exit 1
+	fi
+	;;
+    "version")
+	if [ $# -eq 1 ]; then
+	    ant -buildfile $FIZ_HOME/antscripts/version.xml -Dfiz.jar.path="$FIZ_HOME/lib/fiz.jar"
+	elif [ $# -eq 2 ]; then
+	    abs_path=`absolute_path $2`
+	    ant -buildfile $FIZ_HOME/antscripts/version.xml -Dfiz.jar.path="$abs_path/lib/fiz.jar"
+	else
+	    print_usage
+	    exit 1
+	fi
+	;;
+    *)
+	print_usage
+	exit 1
+	;;
+esac
+
+exit 0

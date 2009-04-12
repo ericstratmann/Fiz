@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+This ant script creates a new Fiz application
+-->
+<project name="Create new Fiz application" default="create" basedir=".">
+
+    <target name="create"
+            description="Creates a new Fiz application with a given name"
+            depends="checkexists">
+
+        <basename property="appname" file="${destdir}"/>
+
+        <!-- Create a directory for the application -->
+        <mkdir dir="${destdir}"/>
+
+        <!-- Copy over application specific files -->
+        <sync todir="${destdir}" includeemptydirs="true">
+            <fileset dir="${fizhome}/app"/>
+        </sync>
+
+        <replace file="${destdir}/build.xml"
+                 token="@@APPLICATION_NAME" value="${appname}"/>
+
+        <!-- Files that are not application specific -->
+        <mkdir dir="${destdir}/javascript/fizlib"/>
+        <copy todir="${destdir}/javascript/fizlib">
+            <fileset dir="${fizhome}/javascript/fizlib"/>
+        </copy>
+        
+        <mkdir dir="${destdir}/lib"/>
+        <copy todir="${destdir}/lib">
+            <filelist dir="${fizhome}/lib"
+                     files="commons-fileupload-1.2.1.jar
+                     commons-io-1.4.jar
+                     fiz.jar
+                     jyaml.jar
+                     log4j.jar
+                     mysql-connector-java-5.1.7-bin.jar
+                     servlet.jar" />
+        </copy>
+
+        <mkdir dir="${destdir}/src"/>
+        <copy todir="${destdir}/src">
+            <fileset file="${fizhome}/src/log4j.properties" />
+        </copy>
+
+        <mkdir dir="${destdir}/web/fizlib"/>
+        <copy todir="${destdir}/web/fizlib">
+            <fileset dir="${fizhome}/web/fizlib"/>
+        </copy>
+
+        <mkdir dir="${destdir}/web/WEB-INF"/>
+        <copy todir="${destdir}/web/WEB-INF"
+              file="${fizhome}/web/WEB-INF/web.xml"/>
+
+        <mkdir dir="${destdir}/web/WEB-INF/config"/>
+        <mkdir dir="${destdir}/web/WEB-INF/css"/>
+
+        <mkdir dir="${destdir}/web/WEB-INF/fiz"/>
+        <copy todir="${destdir}/web/WEB-INF/fiz">
+            <fileset dir="${fizhome}/web/WEB-INF/fiz" />
+        </copy>
+
+    </target>
+
+    <!-- This target checks if a directory with the same name as the application
+    already exists and fails if it does. -->
+    <target name="checkexists"
+            description="Checks if a directory with the same name as the application already exists">
+        <available file="${destdir}" property="appdirexists"/>
+        <fail message="A directory with the given name already exists."
+              if="appdirexists"/>
+    </target>
+
+</project>
