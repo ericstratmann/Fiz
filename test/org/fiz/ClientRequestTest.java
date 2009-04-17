@@ -974,5 +974,11 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("main dataset", "name: Bob\n",
                 cr.getMainDataset().toString());
     }
+
+    public void test_uniqueId() {
+        assertEquals("First Id", cr.uniqueId("foo"), "foo0");
+        assertEquals("Second Id", cr.uniqueId("foo"), "foo1");
+        assertEquals("Different base", cr.uniqueId("bar"), "bar0");
+    }
 }
 

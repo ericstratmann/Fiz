@@ -134,6 +134,9 @@ public class ClientRequest {
     // than this will be written temporarily to disk.  Used for testing.
     int testSizeThreshold = 0;
 
+	// Used to generate unique ids. Records last id used for each string
+	protected HashMap<String, Integer> idsMap = new HashMap<String, Integer>();
+
     /**
      * Constructs a ClientRequest object.  Typically invoked by the
      * getRequest method of an Interactor object.
@@ -1104,5 +1107,23 @@ public class ClientRequest {
         if (contentType.startsWith("text/fiz")) {
             readAjaxData();
         }
+    }
+
+    /**
+     * Creates a unique (to the request) id given a base string. For example,
+     * repeated calls will return foo0, foo1, etc.
+     * @param base                   Base name for Id string
+     */
+    public String uniqueId(String base) {
+        int lastVal;
+        
+        if (idsMap.containsKey(base)) {
+            lastVal = idsMap.get(base) + 1;
+        } else {
+            lastVal = 0;
+        }
+        
+        idsMap.put(base, lastVal);
+        return base + Integer.toString(lastVal);
     }
 }
