@@ -1,0 +1,6 @@
+This folder contains those files that are only used by Fiz web applications.
+They are copied into the web application's directory when a new web application
+is either created or upgraded. The directory structure under this folder
+matches that of a Fiz web application. This helps in avoiding any name conflicts
+and also relieves us of having to remember the correct locations for these
+files.
