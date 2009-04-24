@@ -12,6 +12,10 @@ application -->
         <ant antfile="${antscriptsdir}/app.xml" target="compile"/>
     </target>
 
+    <target name="build" description="Build the web application">
+        <ant antfile="${antscriptsdir}/app.xml" target="build"/>
+    </target>
+
     <target name="war" description="Create WAR file" depends="compile">
         <ant antfile="${antscriptsdir}/app.xml" target="war"/>
     </target>

@@ -8,6 +8,7 @@ for the Fiz framework.
 
     <target name="clean" description="Remove all generated files">
         <delete dir="${outdir}"/>
+        <delete dir="${docdir}"/>
     </target>
 
     <target name="compile" description="Compile from source">
@@ -213,7 +214,9 @@ for the Fiz framework.
         </copy>
 
         <!-- Create archives -->
-        <zip destfile="${installerdir}/fiz.zip" basedir="${installerdir}" />
+        <zip destfile="${installerdir}/../fiz-${version}.zip">
+            <zipfileset dir="${installerdir}" prefix="fiz-${version}"/>
+        </zip>
     </target>
 
     <target name="package"
@@ -221,21 +224,20 @@ for the Fiz framework.
             depends="build-installer">
         <delete dir="${packagedir}"/>
 
+        <mkdir dir="${packagedir}"/>
+
         <!-- Documentation -->
-        <mkdir dir="${packagedir}/doc"/>
-        <copy todir="${packagedir}/doc">
-            <fileset dir="${docdir}"/>
-        </copy>
-        <zip destfile="${packagedir}/doc.zip" basedir="${packagedir}" />
-        <delete dir="${packagedir}/doc"/>
+        <zip destfile="${packagedir}/fiz-doc-${version}.zip">
+            <zipfileset dir="${docdir}" prefix="fiz-doc-${version}"/>
+        </zip>
 
         <!-- Installer -->
         <copy todir="${packagedir}">
-            <fileset file="${installerdir}/fiz.zip"/>
+            <fileset file="${installerdir}/../fiz-${version}.zip"/>
         </copy>
 
         <!-- Create archives -->
-        <zip destfile="${packagedir}/fiz.pkg" basedir="${packagedir}" />
+        <zip destfile="${packagedir}/fiz-${version}.pkg" basedir="${packagedir}" />
     </target>
 
     <target name="install" description="Installs Fiz" depends="checkOS">
@@ -293,7 +295,7 @@ for the Fiz framework.
     <property name="docdir" value="${outdir}/javadoc"/>
 
     <!-- The directory in which the Fiz installer is created -->
-    <property name="installerdir" value="${outdir}/installer"/>
+    <property name="installerdir" value="${outdir}/installer/fiz-${version}"/>
 
     <!-- The directory in which the Fiz platform is packaged for upload to the
     server -->

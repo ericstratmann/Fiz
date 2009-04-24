@@ -13,11 +13,40 @@ build.xml file. -->
         <javac srcdir="src" destdir="${classdir}" classpathref="classpath" />
     </target>
 
+    <target name="build" description="Build the web application"
+            depends="compile">
+        <delete dir="out/${appname}"/>
+
+        <mkdir dir="out/${appname}"/>
+        <copy todir="out/${appname}/fizlib">
+            <fileset dir="web/fizlib"/>
+            <fileset dir="javascript/fizlib"/>
+        </copy>
+        <copy todir="out/${appname}/WEB-INF">
+            <fileset dir="web/WEB-INF"/>
+        </copy>
+        <copy todir="out/${appname}/WEB-INF/lib">
+            <fileset dir="lib"/>
+        </copy>
+        <copy todir="out/${appname}/WEB-INF/classes">
+            <fileset dir="${classdir}"/>
+        </copy>
+    </target>
+
     <target name="war" description="Create WAR file" depends="compile">
-        <war destfile="out/${ant.project.name}.war"
+        <war destfile="out/${appname}.war"
              webxml="web/WEB-INF/web.xml">
             <lib dir="${libdir}"/>
             <classes dir="${classdir}"/>
+            <fileset dir="javascript">
+                <include name="fizlib/**"/>
+            </fileset>
+            <fileset dir="web">
+                <include name="fizlib/**"/>
+            </fileset>
+            <webinf dir="web/WEB-INF">
+                <exclude name="web.xml"/>
+            </webinf>
         </war>
     </target>
 
@@ -26,6 +55,9 @@ build.xml file. -->
 
     <!-- The directory in which Java classes are compiled. -->
     <property name="classdir" value="out/classes" />
+
+    <!-- The name of the web application -->
+    <property name="appname" value="${ant.project.name}"/>
 
     <path id="classpath">
         <pathelement location="${libdir}/commons-fileupload-1.2.1.jar" />

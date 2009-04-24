@@ -6,13 +6,12 @@ This ant script contains targets to fetch a new version of Fiz
 <project name="Downloads a new version of Fiz" basedir="."
          default="fetch">
 
-    <target name="fetch"
-            description="Fetches a specific version of Fiz">
+    <target name="fetch" description="Fetches a specific version of Fiz">
 
         <mkdir dir="${destdir}"/>
 
         <!-- Fetch the required version of Fiz from the server -->
-        <get src="${fizrepository}/${version}/fiz.zip"
+        <get src="${fizrepository}/${version}/fiz-${version}.zip"
              dest="${destdir}/fiz-${version}.zip"/>
         <unzip src="${destdir}/fiz-${version}.zip"
                dest="${destdir}"/>
@@ -21,5 +20,9 @@ This ant script contains targets to fetch a new version of Fiz
         <delete file="${destdir}/fiz-${version}.zip"/>
 
     </target>
+
+    <!-- By default the new Fiz version is unpacked at the same level as the
+    original installation -->
+    <property name="destdir" value="${fizhome}/.."/>
 
 </project>

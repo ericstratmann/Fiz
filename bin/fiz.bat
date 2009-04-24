@@ -20,7 +20,15 @@ goto end
 
 :fetch
 call :numargs %*
-if %COUNT% NEQ 3 goto printUsage
+if %COUNT%==2 goto fetchToDefaultDir 
+if %COUNT%==3 goto fetchToDestDir
+goto printUsage
+
+:fetchToDestDir
+ant -buildfile %FIZ_HOME%\antscripts\fetch.xml -Dfizrepository="%FIZ_REPO%" -Dversion="%~2"
+goto end
+
+:fetchToDestDir
 set DEST_DIR=%~f3
 ant -buildfile %FIZ_HOME%\antscripts\fetch.xml -Dfizrepository="%FIZ_REPO%" -Dversion="%~2" -Ddestdir="%DEST_DIR%"
 goto end
@@ -72,4 +80,5 @@ goto numargsloop
 	echo    create   Create a new Fiz application.
 	echo    upgrade  Upgrade Fiz or an application.
 	echo.
+
 :end

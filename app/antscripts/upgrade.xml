@@ -12,10 +12,9 @@ version of the Fiz platform.
 
         <!-- ant scripts -->
         <mkdir dir="${appdir}/antscripts"/>
-        <copy todir="${appdir}/antscripts" overwrite="true">
-            <filelist dir="${fizhome}/app/antscripts"
-                    files="app.xml, upgrade.xml"/>
-        </copy>
+        <sync todir="${appdir}/antscripts" overwrite="true">
+            <fileset dir="${fizhome}/app/antscripts"/>
+        </sync>
 
         <!-- Sync Fiz files with those in the Fiz installation -->
         <mkdir dir="${appdir}/javascript/fizlib"/>
@@ -51,13 +50,12 @@ version of the Fiz platform.
             description="Upgrades the Fiz application to a specified version of Fiz">
 
         <!-- Fetch the correct version of Fiz from the server -->
-        <get src="${fizrepository}/${version}/fiz.zip"
+        <get src="${fizrepository}/${version}/fiz-${version}.zip"
              dest="${appdir}/fiz-${version}.zip"/>
 
         <!-- Unpack the Fiz installation -->
-        <mkdir dir="${appdir}/fiz-${version}"/>
         <unzip src="${appdir}/fiz-${version}.zip"
-               dest="${appdir}/fiz-${version}"/>
+               dest="${appdir}"/>
 
         <antcall target="upgrade">
             <param name="fizhome" value="${appdir}/fiz-${version}"/>
