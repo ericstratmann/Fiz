@@ -18,7 +18,7 @@ package org.fiz;
 
 public class HiddenFormElement extends FormElement {
     /**
-     * Construct an HiddenFormElement from an identifierl.
+     * Construct an HiddenFormElement from an identifier.
      * @param id                   Value for the element's {@code id}
      *                             property.
      */
