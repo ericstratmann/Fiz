@@ -24,8 +24,8 @@ if %COUNT%==2 goto fetchToDefaultDir
 if %COUNT%==3 goto fetchToDestDir
 goto printUsage
 
-:fetchToDestDir
-ant -buildfile %FIZ_HOME%\antscripts\fetch.xml -Dfizrepository="%FIZ_REPO%" -Dversion="%~2"
+:fetchToDefaultDir
+ant -buildfile %FIZ_HOME%\antscripts\fetch.xml -Dfizrepository="%FIZ_REPO%" -Dfizhome="%FIZ_HOME%" -Dversion="%~2"
 goto end
 
 :fetchToDestDir
@@ -71,14 +71,25 @@ set /a COUNT+=1
 goto numargsloop
 
 :printUsage
-    echo Usage: fiz [create;upgrade;check]
+	echo Usage: fiz ^<subcommand^> [options] [args]
 	echo.
-	echo Options:
+	echo Subcommands:
 	echo.
 	echo    help     Print this message and exit.
-	echo    version  Print the version of the Fiz platform or an appliction.
-	echo    create   Create a new Fiz application.
-	echo    upgrade  Upgrade Fiz or an application.
+	echo    version  Print the version of the Fiz platform or a Fiz application.
+	echo             To print the version of a specific Fiz installation or a 
+	echo             Fiz application, provide the path to the root directory of 
+	echo             that intallation or application. Otherwise, the version of 
+	echo             the default Fiz installation is printed.
+	echo    create   Create a new Fiz application. Provide the path to 
+	echo             application's directory.
+	echo    fetch    Fetch and unpack a new version of the Fiz platform. Provide 
+	echo             the version number of specific version you want fetch, and 
+	echo             optionally a destination directory for the new installation.
+	echo    upgrade  Upgrade the Fiz-specific files of an application to a 
+	echo             specific version. Provide the version number of the specific 
+	echo             version of Fiz and run this command at the root directory of 
+	echo             the application.
 	echo.
 
 :end
