@@ -130,6 +130,44 @@ for the Fiz framework.
         </jslint>
     </target>
 
+    <!-- Builds a demo application that showcases some of the default
+    sections that come with Fiz -->
+    <target name="build-demo" description="Builds the Fiz demo application"
+            depends="compile">
+        <delete dir="${demodir}"/>
+
+        <!-- Classes and libraries -->
+        <mkdir dir="${demodir}/WEB-INF/lib"/>
+        <jar destfile="${demodir}/WEB-INF/lib/fiz.jar"
+                basedir="${classdir}"/>
+        <copy todir="${demodir}/WEB-INF/lib">
+            <fileset dir="${libdir}"/>
+        </copy>
+        <mkdir dir="${demodir}/WEB-INF/classes"/>
+        <copy todir="${demodir}/WEB-INF/classes"
+                file="src/log4j.properties"/>
+
+        <!-- Other run-time files needed by Fiz -->
+        <mkdir dir="${demodir}/WEB-INF/fiz/config"/>
+        <copy todir="${demodir}/WEB-INF/fiz/config">
+            <fileset dir="web/WEB-INF/fiz/config"/>
+        </copy>
+        <mkdir dir="${demodir}/WEB-INF/fiz/css"/>
+        <copy todir="${demodir}/WEB-INF/fiz/css">
+            <fileset dir="web/WEB-INF/fiz/css"/>
+        </copy>
+        <mkdir dir="${demodir}/fizlib"/>
+        <copy todir="${demodir}/fizlib">
+            <fileset dir="javascript/fizlib"/>
+            <fileset dir="web/fizlib"/>
+        </copy>
+        <mkdir dir="${demodir}/WEB-INF/demo"/>
+        <copy todir="${demodir}/WEB-INF/demo">
+            <fileset dir="web/WEB-INF/demo"/>
+        </copy>
+        <copy todir="${demodir}/WEB-INF" file="web/WEB-INF/web.xml"/>
+    </target>
+
     <target name="build-installer" description="Creates the Fiz installer"
             depends="compile, javadoc">
         <delete dir="${installerdir}"/>
@@ -285,6 +323,9 @@ for the Fiz framework.
     <!-- The directory in which distributions are created -->
     <property name="distdir" value="${outdir}/dist"/>
 
+    <!-- The directory in which the demo application is created -->
+    <property name="demodir" value="${outdir}/demo"/>
+
     <!-- The directory in which Java classes are compiled -->
     <property name="classdir" value="${outdir}/classes"/>
 
@@ -301,7 +342,7 @@ for the Fiz framework.
     server -->
     <property name="packagedir" value="${outdir}/package"/>
 
-    <property name="fizrepo" value="http://localhost:8080/FizCore"/>
+    <property name="fizrepo" value="http://fiz.stanford.edu:8083/FizCore"/>
 
     <path id="classpath">
         <pathelement location="${libdir}/commons-fileupload-1.2.1.jar" />
