@@ -58,8 +58,8 @@ public class CheckboxImage implements Formatter {
 	 * 							above for the supported values.
 	 */
 	
-	public CheckboxImage(Dataset properties, String ... falseVals) {
-		this(properties, new ArrayList<String>(Arrays.asList(falseVals)));
+	public CheckboxImage(Dataset properties, String ... falseValues) {
+		this(properties, new ArrayList<String>(Arrays.asList(falseValues)));
 	}
 
 	/**

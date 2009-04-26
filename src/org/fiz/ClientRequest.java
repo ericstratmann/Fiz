@@ -1113,6 +1113,7 @@ public class ClientRequest {
      * Creates a unique (to the request) id given a base string. For example,
      * repeated calls will return foo0, foo1, etc.
      * @param base                   Base name for Id string
+     * @return                       A string containing a unique id.
      */
     public String uniqueId(String base) {
         int lastVal;
