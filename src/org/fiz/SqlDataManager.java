@@ -81,8 +81,11 @@ import org.apache.log4j.*;
  */
 
 public class SqlDataManager extends DataManager {
-    // The following variable holds the URL describing this connection.
+    // The following variables hold configuration properties passed
+    // to the constructor.
     protected String serverUrl;
+    protected String user;
+    protected String password;
 
     // The following variable refers to a Connection that we use to
     // communicate with the database server.
@@ -106,6 +109,10 @@ public class SqlDataManager extends DataManager {
     protected static Logger logger = Logger.getLogger(
             "org.fiz.SqlDataManager");
 
+    // The following variable counts the number of times we have successfully
+    // reopened the database connection; used primarily for testing.
+    protected static int reopens = 0;
+
     /**
      * Construct a SqlDataManager using a dataset containing configuration
      * parameters.
@@ -115,6 +122,8 @@ public class SqlDataManager extends DataManager {
      */
     public SqlDataManager(Dataset config) {
         serverUrl = config.get("serverUrl");
+        user = config.get("user");
+        password = config.get("password");
         try {
             Class.forName(config.get("driverClass"));
         }
@@ -124,7 +133,7 @@ public class SqlDataManager extends DataManager {
         }
         try {
             connection = DriverManager.getConnection(serverUrl,
-                    config.get("user"), config.get("password"));
+                    user, password);
             logger.info("SQLDataManager connected to \"" + serverUrl + "\"");
         }
         catch (SQLException e) {
@@ -140,13 +149,16 @@ public class SqlDataManager extends DataManager {
      * @param table                Name of the table to be emptied.
      */
     public void clearTable(String table) {
-        try {
-            Statement statement = connection.createStatement();
-            statement.execute("DELETE FROM " + table);
-            statement.close();
-        }
-        catch (SQLException e) {
-            throw new SqlError(e, "in clearTable");
+        while (true) {
+            try {
+                Statement statement = connection.createStatement();
+                statement.execute("DELETE FROM " + table);
+                statement.close();
+                return;
+            }
+            catch (SQLException e) {
+                handleError(e, "in clearTable");
+            }
         }
     }
 
@@ -160,16 +172,19 @@ public class SqlDataManager extends DataManager {
      *                             in the column given by {@code column}.
      */
     public void delete(String tableName, String column, String value) {
-        try {
-            PreparedStatement statement = connection.prepareStatement(
-                    "DELETE FROM " + tableName + " WHERE " +
-                    column + " = ?");
-            statement.setString(1, value);
-            statement.executeUpdate();
-            statement.close();
-        }
-        catch (SQLException e) {
-            throw new SqlError(e, "in delete");
+        while (true) {
+            try {
+                PreparedStatement statement = connection.prepareStatement(
+                        "DELETE FROM " + tableName + " WHERE " +
+                        column + " = ?");
+                statement.setString(1, value);
+                statement.executeUpdate();
+                statement.close();
+                return;
+            }
+            catch (SQLException e) {
+                handleError(e, "in delete");
+            }
         }
     }
 
@@ -185,21 +200,22 @@ public class SqlDataManager extends DataManager {
      *                             by the query.
      */
     public Dataset find(String tableName, String column, String value) {
-        try {
-            PreparedStatement statement = connection.prepareStatement(
-                    "SELECT * FROM " + tableName + " WHERE " +
-                    column + " = ?;");
-            statement.clearParameters();
-            statement.setString(1, value);
-            ResultSet rs = statement.executeQuery();
-            Dataset result = getResults(rs);
-            statement.close();
-            return result;
+        while (true) {
+            try {
+                PreparedStatement statement = connection.prepareStatement(
+                        "SELECT * FROM " + tableName + " WHERE " +
+                        column + " = ?;");
+                statement.clearParameters();
+                statement.setString(1, value);
+                ResultSet rs = statement.executeQuery();
+                Dataset result = getResults(rs);
+                statement.close();
+                return result;
+            }
+            catch (SQLException e) {
+                handleError(e, "in find");
+            }
         }
-        catch (SQLException e) {
-            throw new SqlError(e, "in find");
-        }
-
     }
 
     /**
@@ -213,15 +229,17 @@ public class SqlDataManager extends DataManager {
      * @throws SqlError            The database server reported a problem.
      */
     public Dataset findWithSql(String sql) {
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet rs = statement.executeQuery(sql);
-            Dataset result = getResults(rs);
-            statement.close();
-            return result;
-        }
-        catch (SQLException e) {
-            throw new SqlError(e, "in findWithSql");
+        while (true) {
+            try {
+                Statement statement = connection.createStatement();
+                ResultSet rs = statement.executeQuery(sql);
+                Dataset result = getResults(rs);
+                statement.close();
+                return result;
+            }
+            catch (SQLException e) {
+                handleError(e, "in findWithSql");
+            }
         }
     }
 
@@ -237,23 +255,25 @@ public class SqlDataManager extends DataManager {
      * @throws SqlError            The database server reported a problem.
      */
     public Dataset findWithSql(String template, Dataset data) {
-        try {
-            ArrayList<String> parameters = new ArrayList<String>();
-            String sql = Template.expandSql(template, data, parameters);
-            PreparedStatement statement = connection.prepareStatement(sql);
-            statement.clearParameters();
-            int i = 1;
-            for (String value : parameters) {
-                statement.setString(i, value);
-                i++;
+        while (true) {
+            try {
+                ArrayList<String> parameters = new ArrayList<String>();
+                String sql = Template.expandSql(template, data, parameters);
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.clearParameters();
+                int i = 1;
+                for (String value : parameters) {
+                    statement.setString(i, value);
+                    i++;
+                }
+                ResultSet rs = statement.executeQuery();
+                Dataset result = getResults(rs);
+                statement.close();
+                return result;
             }
-            ResultSet rs = statement.executeQuery();
-            Dataset result = getResults(rs);
-            statement.close();
-            return result;
-        }
-        catch (SQLException e) {
-            throw new SqlError(e, "in findWithSql");
+            catch (SQLException e) {
+                handleError(e, "in findWithSql");
+            }
         }
     }
 
@@ -268,39 +288,42 @@ public class SqlDataManager extends DataManager {
      * @throws SqlError            The database server reported a problem.
      */
     public void insert(String tableName, Dataset row) {
-        try {
-            ArrayList<String> names = getValidColumns(tableName, row);
+        while (true) {
+            try {
+                ArrayList<String> names = getValidColumns(tableName, row);
 
-            // Create the SQL query string, with ?'s as placeholders
-            // for variables.
-            StringBuffer sql = new StringBuffer();
-            sql.setLength(0);
-            sql.append("INSERT INTO ");
-            sql.append(tableName);
-            sql.append(" (");
-            sql.append(StringUtil.join(names, ", "));
-            sql.append(") VALUES (");
-            String field = "?";
-            for (int i = 0, length = names.size(); i < length; i++) {
-                sql.append(field);
-                field = ", ?";
-            }
-            sql.append(");");
+                // Create the SQL query string, with ?'s as placeholders
+                // for variables.
+                StringBuffer sql = new StringBuffer();
+                sql.setLength(0);
+                sql.append("INSERT INTO ");
+                sql.append(tableName);
+                sql.append(" (");
+                sql.append(StringUtil.join(names, ", "));
+                sql.append(") VALUES (");
+                String field = "?";
+                for (int i = 0, length = names.size(); i < length; i++) {
+                    sql.append(field);
+                    field = ", ?";
+                }
+                sql.append(");");
 
-            // Create the statement and supply values for the ?'s.
-            PreparedStatement statement = connection.prepareStatement(
-                    sql.toString());
-            statement.clearParameters();
-            int i = 1;
-            for (String name : names) {
-                statement.setString(i, row.get(name));
-                i++;
+                // Create the statement and supply values for the ?'s.
+                PreparedStatement statement = connection.prepareStatement(
+                        sql.toString());
+                statement.clearParameters();
+                int i = 1;
+                for (String name : names) {
+                    statement.setString(i, row.get(name));
+                    i++;
+                }
+                statement.executeUpdate();
+                statement.close();
+                return;
             }
-            statement.executeUpdate();
-            statement.close();
-        }
-        catch (SQLException e) {
-            throw new SqlError(e, "in insert");
+            catch (SQLException e) {
+                handleError(e, "in insert");
+            }
         }
     }
 
@@ -406,42 +429,45 @@ public class SqlDataManager extends DataManager {
      */
     public void update(String tableName, String column, String value,
             Dataset newValues) {
-        try {
-            ArrayList<String> names = getValidColumns(tableName, newValues);
+        while (true) {
+            try {
+                ArrayList<String> names = getValidColumns(tableName, newValues);
 
-            // Create the SQL query string, with ?'s as placeholders
-            // for variables.
-            StringBuffer sql = new StringBuffer();
-            sql.setLength(0);
-            sql.append("UPDATE ");
-            sql.append(tableName);
-            sql.append (" SET ");
-            String separator = "";
-            for (String name : names) {
-                sql.append(separator);
-                sql.append(name);
-                sql.append(" = ?");
-                separator = ", ";
-            }
-            sql.append(" WHERE ");
-            sql.append(column);
-            sql.append(" = ?;");
+                // Create the SQL query string, with ?'s as placeholders
+                // for variables.
+                StringBuffer sql = new StringBuffer();
+                sql.setLength(0);
+                sql.append("UPDATE ");
+                sql.append(tableName);
+                sql.append (" SET ");
+                String separator = "";
+                for (String name : names) {
+                    sql.append(separator);
+                    sql.append(name);
+                    sql.append(" = ?");
+                    separator = ", ";
+                }
+                sql.append(" WHERE ");
+                sql.append(column);
+                sql.append(" = ?;");
 
-            // Create the statement and supply values for the ?'s.
-            PreparedStatement statement = connection.prepareStatement(
-                    sql.toString());
-            statement.clearParameters();
-            int i = 1;
-            for (String name : names) {
-                statement.setString(i, newValues.get(name));
-                i++;
+                // Create the statement and supply values for the ?'s.
+                PreparedStatement statement = connection.prepareStatement(
+                        sql.toString());
+                statement.clearParameters();
+                int i = 1;
+                for (String name : names) {
+                    statement.setString(i, newValues.get(name));
+                    i++;
+                }
+                statement.setString(i, value);
+                statement.executeUpdate();
+                statement.close();
+                return;
             }
-            statement.setString(i, value);
-            statement.executeUpdate();
-            statement.close();
-        }
-        catch (SQLException e) {
-            throw new SqlError(e, "in update");
+            catch (SQLException e) {
+                handleError(e, "in update");
+            }
         }
     }
 
@@ -451,16 +477,19 @@ public class SqlDataManager extends DataManager {
      * @param sqlStatements        Any number of SQL statements.
      */
     public void updateWithSql(String ... sqlStatements) {
-        try {
-            Statement statement = connection.createStatement();
-            for (String sql : sqlStatements) {
-                statement.addBatch(sql);
+        while (true) {
+            try {
+                Statement statement = connection.createStatement();
+                for (String sql : sqlStatements) {
+                    statement.addBatch(sql);
+                }
+                statement.executeBatch();
+                statement.close();
+                return;
             }
-            statement.executeBatch();
-            statement.close();
-        }
-        catch (SQLException e) {
-            throw new SqlError(e, "in updateWithSql");
+            catch (SQLException e) {
+                handleError(e, "in updateWithSql");
+            }
         }
     }
 
@@ -473,21 +502,24 @@ public class SqlDataManager extends DataManager {
      *                             {@code template}.
      */
     public void updateWithSql(String template, Dataset data) {
-        try {
-            ArrayList<String> parameters = new ArrayList<String>();
-            PreparedStatement statement = connection.prepareStatement(
-                    Template.expandSql(template, data, parameters));
-            statement.clearParameters();
-            int i = 1;
-            for (String value : parameters) {
-                statement.setString(i, value);
-                i++;
+        while (true) {
+            try {
+                ArrayList<String> parameters = new ArrayList<String>();
+                PreparedStatement statement = connection.prepareStatement(
+                        Template.expandSql(template, data, parameters));
+                statement.clearParameters();
+                int i = 1;
+                for (String value : parameters) {
+                    statement.setString(i, value);
+                    i++;
+                }
+                statement.executeUpdate();
+                statement.close();
+                return;
             }
-            statement.executeUpdate();
-            statement.close();
-        }
-        catch (SQLException e) {
-            throw new SqlError(e, "in updateWithSql");
+            catch (SQLException e) {
+                handleError(e, "in updateWithSql");
+            }
         }
     }
 
@@ -617,5 +649,53 @@ public class SqlDataManager extends DataManager {
             }
         }
         return names;
+    }
+
+    /**
+     * This method is invoked whenever an SQLException occurs in the
+     * data manager.  It serves two purposes.  First, it can transparently
+     * recover from certain kinds of errors (such as connection closures);
+     * in this case it returns, and the caller should retry its operation.
+     * If the area is not recoverable then this method turns the
+     * SQLException into a Fiz SqlError to abort the request; in this case
+     * the method throws the new exception and does not return.
+     * @param exception            Exception that caused an operation to
+     *                             fail.
+     * @param context              Information about where the error
+     *                             occurred, such as "in findWithSql";
+     *                             used for generating error messages.
+     */
+    protected void handleError(SQLException exception, String context) {
+        // The only error we can recover from is a closed connection;
+        // this could happen if the database server is restarted, or if it
+        // closed our connection because it was idle too long.  In this
+        // case, just reopen the connection and let the caller try again.
+        boolean closed = false;
+        try {
+            closed = connection.isClosed();
+        }
+        catch (SQLException e) {
+            // Just log this exception and go on as if the connection
+            // was closed.
+            logger.error("SqlDataManager.handleError couldn't check " +
+                    "connection state: " + e.getMessage());
+        }
+        if (closed) {
+            try {
+                connection = DriverManager.getConnection(serverUrl,
+                        user, password);
+                reopens++;
+                return;
+            }
+            catch (SQLException e) {
+                throw new InternalError ("SqlDataManager.handleError " +
+                        "couldn't reconnect with server at \"" + serverUrl +
+                        "\": " + e.getMessage());
+            }
+        }
+
+        // We can't recover from this error, so convert it to an SqlError,
+        // which makes it easier to unwind the entire request.
+        throw new SqlError(exception, context);
     }
 }

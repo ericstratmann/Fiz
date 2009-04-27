@@ -44,6 +44,17 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         }
     }
 
+    // Utility method to close the current database connection.
+    protected void closeConnection() {
+        try {
+            manager.connection.close();
+            manager.reopens = 0;
+        }
+        catch (SQLException e) {
+            // Ignore exceptions.
+        }
+    }
+
     public void test_sanityCheck() {
         Dataset out = manager.findWithSql("SELECT * FROM people;");
         assertEquals("retrieved rows",
@@ -72,6 +83,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         boolean gotException = false;
         try {
             new SqlDataManager(new Dataset("serverUrl", "urlabc",
+                    "user", "test", "password", "test",
                     "driverClass", "com.bogus.missing"));
         }
         catch (InternalError e) {
@@ -106,7 +118,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         Dataset out = manager.findWithSql("SELECT * FROM states;");
         assertEquals("retrieved rows", "", out.toString());
     }
-    public void test_clearTable_SqlError() {
+    public void test_clearTable_fatalError() {
         boolean gotException = false;
         try {
             manager.clearTable("bogus");
@@ -119,6 +131,14 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
+    }
+    public void test_clearTable_retriableError() {
+        manager.insert("states", new Dataset("name", "Virginia"));
+        closeConnection();
+        manager.clearTable("states");
+        Dataset out = manager.findWithSql("SELECT * FROM states;");
+        assertEquals("retrieved rows", "", out.toString());
+        assertEquals("count of reopens", 1, manager.reopens);
     }
 
     public void test_delete() {
@@ -136,7 +156,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
                 "    capital: Denver\n" +
                 "    name:    Colorado\n", out.toString());
     }
-    public void test_delete_SqlError() {
+    public void test_delete_fatalError() {
         boolean gotException = false;
         try {
             manager.delete("bogus", "first", "Alice");
@@ -148,6 +168,24 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
+    }
+
+    public void test_delete_retriableError() {
+        manager.clearTable("states");
+        manager.insert("states", new Dataset("name", "California",
+                "capital", "Sacramento", "id", "442"));
+        manager.insert("states", new Dataset("name", "California",
+                "capital", "Palo Alto", "id", "443"));
+        manager.insert("states", new Dataset("name", "Colorado",
+                "capital", "Denver", "id", "999"));
+        closeConnection();
+        manager.delete("states", "name", "California");
+        Dataset out = manager.findWithSql("SELECT name, capital FROM states;");
+        assertEquals("table after deletion",
+                "record:\n" +
+                "    capital: Denver\n" +
+                "    name:    Colorado\n", out.toString());
+        assertEquals("count of reopens", 1, manager.reopens);
     }
 
     public void test_find() {
@@ -166,7 +204,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
                 "    state:  California\n" +
                 "    weight: 130\n", out.toString());
     }
-    public void test_find_SqlError() {
+    public void test_find_fatalError() {
         boolean gotException = false;
         try {
             Dataset out = manager.find("bogus", "first", "Alice");
@@ -179,6 +217,18 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
+    public void test_find_retriableError() {
+        closeConnection();
+        Dataset out = manager.find("people", "first", "Alice");
+        assertEquals("retrieved rows", "record:\n" +
+                "    age:    24\n" +
+                "    first:  Alice\n" +
+                "    id:     1\n" +
+                "    last:   Adams\n" +
+                "    state:  California\n" +
+                "    weight: 115\n", out.toString());
+        assertEquals("count of reopens", 1, manager.reopens);
+    }
 
     public void test_findWithSql() {
         Dataset out = manager.findWithSql("SELECT first, last FROM people " +
@@ -189,7 +239,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
                 "  - first: Carol\n" +
                 "    last:  Collins\n", out.toString());
     }
-    public void test_findWithSql_SqlError() {
+    public void test_findWithSql_fatalError() {
         boolean gotException = false;
         try {
             manager.findWithSql("SELECT * FROM bogusTable;");
@@ -202,6 +252,17 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
+    public void test_findWithSql_retriableError() {
+        closeConnection();
+        Dataset out = manager.findWithSql("SELECT first, last FROM people " +
+                "WHERE state = 'California';");
+        assertEquals("retrieved rows", "record:\n" +
+                "  - first: Alice\n" +
+                "    last:  Adams\n" +
+                "  - first: Carol\n" +
+                "    last:  Collins\n", out.toString());
+        assertEquals("count of reopens", 1, manager.reopens);
+    }
 
     public void test_findWithSql_withTemplate() {
         Dataset out = manager.findWithSql("SELECT first, last FROM people " +
@@ -211,6 +272,17 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         assertEquals("retrieved rows", "record:\n" +
                 "    first: Alice\n" +
                 "    last:  Adams\n", out.toString());
+    }
+    public void test_findWithSql_withTemplate_retriableError() {
+        closeConnection();
+        Dataset out = manager.findWithSql("SELECT first, last FROM people " +
+                "WHERE state = @state AND first = @first;",
+                new Dataset("table", "people", "state", "California",
+                "first", "Alice"));
+        assertEquals("retrieved rows", "record:\n" +
+                "    first: Alice\n" +
+                "    last:  Adams\n", out.toString());
+        assertEquals("count of reopens", 1, manager.reopens);
     }
 
     public void test_insert() {
@@ -227,7 +299,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
                 "  - capital: \"\"\n" +
                 "    name:    Colorado\n", out.toString());
     }
-    public void test_insert_SqlError() {
+    public void test_insert_fatalError() {
         boolean gotException = false;
         try {
             manager.insert("people", new Dataset("id", "1"));
@@ -239,6 +311,22 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
+    }
+    public void test_insert_retriableError() {
+        manager.clearTable("states");
+        manager.insert("states", new Dataset("name", "California",
+                "capital", "Sacramento", "id", "442",
+                "bogus", "ignore this"));
+        closeConnection();
+        manager.insert("states", new Dataset("name", "Colorado"));
+        Dataset out = manager.findWithSql("SELECT name, capital FROM states;");
+        assertEquals("retrieved rows",
+                "record:\n" +
+                "  - capital: Sacramento\n" +
+                "    name:    California\n" +
+                "  - capital: \"\"\n" +
+                "    name:    Colorado\n", out.toString());
+        assertEquals("count of reopens", 1, manager.reopens);
     }
 
     public void test_startRequests_multipleRequests() {
@@ -494,26 +582,21 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
     }
 
     public void test_update() {
+        manager.clearTable("states");
         manager.updateWithSql(
-                "INSERT INTO people (first, last, state, age) " +
-                "VALUES ('Edward', 'Eckstein', 'Wyoming', 22);",
-                "INSERT INTO people (first, last, state, age) " +
-                "VALUES ('Frank', 'Eckstein', 'Montana', 24);");
-        manager.update ("people", "last", "Eckstein", new Dataset(
-                "state", "Mississippi", "age", "40", "bogus1", "99"));
-        Dataset out = manager.findWithSql("SELECT first, last, state, age " +
-                "FROM people WHERE last = 'Eckstein';");
-        assertEquals("modified rows", "record:\n" +
-                "  - age:   40\n" +
-                "    first: Edward\n" +
-                "    last:  Eckstein\n" +
-                "    state: Mississippi\n" +
-                "  - age:   40\n" +
-                "    first: Frank\n" +
-                "    last:  Eckstein\n" +
-                "    state: Mississippi\n", out.toString());
+                "INSERT INTO states (name, capital) " +
+                "VALUES ('Virginia', 'Richmond');",
+                "INSERT INTO states (name, capital) " +
+                "VALUES ('California', 'Sacramento');");
+        manager.update ("states", "capital", "Sacramento", new Dataset(
+                "capital", "Berkeley", "bogus1", "99"));
+        Dataset out = manager.findWithSql("SELECT name, capital " +
+                "FROM states WHERE name = 'California';");
+        assertEquals("modified row", "record:\n" +
+                "    capital: Berkeley\n" +
+                "    name:    California\n", out.toString());
     }
-    public void test_update_SqlError() {
+    public void test_update_fatalError() {
         boolean gotException = false;
         try {
             manager.update ("people", "bogus", "bogus", new Dataset(
@@ -528,20 +611,36 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
+    public void test_update_retriableError() {
+        manager.clearTable("states");
+        manager.updateWithSql(
+                "INSERT INTO states (name, capital) " +
+                "VALUES ('Virginia', 'Richmond');",
+                "INSERT INTO states (name, capital) " +
+                "VALUES ('California', 'Sacramento');");
+        closeConnection();
+        manager.update ("states", "capital", "Sacramento", new Dataset(
+                "capital", "Berkeley", "bogus1", "99"));
+        Dataset out = manager.findWithSql("SELECT name, capital " +
+                "FROM states WHERE name = 'California';");
+        assertEquals("modified rows", "record:\n" +
+                "    capital: Berkeley\n" +
+                "    name:    California\n", out.toString());
+        assertEquals("count of reopens", 1, manager.reopens);
+    }
 
     public void test_updateWithSql_multipleUpdates() {
+        manager.clearTable("states");
         manager.updateWithSql(
-                "INSERT INTO people (first, last, state) " +
-                "VALUES ('David', 'Williams', 'Oregon');",
-                "UPDATE people SET state = 'Utah' WHERE first = 'David';");
-        Dataset out = manager.findWithSql("SELECT first, last, state " +
-                "FROM people WHERE first = 'David';");
+                "INSERT INTO states (name, capital) " +
+                "VALUES ('Michigan', 'Lansing');",
+                "UPDATE states SET name = 'Illinois' WHERE name = 'Michigan';");
+        Dataset out = manager.findWithSql("SELECT name, capital FROM states;");
         assertEquals("retrieved row", "record:\n" +
-                "    first: David\n" +
-                "    last:  Williams\n" +
-                "    state: Utah\n", out.toString());
+                "    capital: Lansing\n" +
+                "    name:    Illinois\n", out.toString());
     }
-    public void test_updateWithSql_SqlError() {
+    public void test_updateWithSql_fatalError() {
         boolean gotException = false;
         try {
             manager.updateWithSql("UPDATE bogusTable;");
@@ -555,19 +654,33 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
+    public void test_updateWithSql_multipleUpdates_retriableError() {
+        manager.clearTable("states");
+        closeConnection();
+        manager.updateWithSql(
+                "INSERT INTO states (name, capital) " +
+                "VALUES ('Michigan', 'Lansing');",
+                "UPDATE states SET name = 'Illinois' WHERE name = 'Michigan';");
+        Dataset out = manager.findWithSql("SELECT name, capital FROM states;");
+        assertEquals("retrieved row", "record:\n" +
+                "    capital: Lansing\n" +
+                "    name:    Illinois\n", out.toString());
+        assertEquals("count of reopens", 1, manager.reopens);
+    }
 
     public void test_updateWithSql_withTemplate() {
+        manager.clearTable("states");
+        manager.insert("states", new Dataset("name", "Georgia",
+                "capital", "Atlanta"));
         manager.updateWithSql(
-                "UPDATE people SET state = @state WHERE first = @first;",
-                new Dataset("state", "West Virginia", "first", "David"));
-        Dataset out = manager.findWithSql("SELECT first, last, state " +
-                "FROM people WHERE first = 'David';");
+                "UPDATE states SET name = @state WHERE capital = @capital;",
+                new Dataset("state", "West Virginia", "capital", "Atlanta"));
+        Dataset out = manager.findWithSql("SELECT name, capital FROM states;");
         assertEquals("retrieved row", "record:\n" +
-                "    first: David\n" +
-                "    last:  Williams\n" +
-                "    state: West Virginia\n", out.toString());
+                "    capital: Atlanta\n" +
+                "    name:    West Virginia\n", out.toString());
     }
-    public void test_updateWithSql_withTemplate_SqlError() {
+    public void test_updateWithSql_withTemplate_fatalError() {
         boolean gotException = false;
         try {
             manager.updateWithSql("UPDATE @table;",
@@ -581,6 +694,19 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
+    }
+    public void test_updateWithSql_withTemplate_retriableError() {
+        manager.clearTable("states");
+        manager.insert("states", new Dataset("name", "Georgia",
+                "capital", "Atlanta"));
+        closeConnection();
+        manager.updateWithSql(
+                "UPDATE states SET name = @state WHERE capital = @capital;",
+                new Dataset("state", "West Virginia", "capital", "Atlanta"));
+        Dataset out = manager.findWithSql("SELECT name, capital FROM states;");
+        assertEquals("retrieved row", "record:\n" +
+                "    capital: Atlanta\n" +
+                "    name:    West Virginia\n", out.toString());
     }
 
     @SuppressWarnings("unchecked")
@@ -672,5 +798,36 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         Collections.sort(names);
         assertEquals("valid columns", "first, id, last",
                 StringUtil.join(names, ", "));
+    }
+
+    public void test_handleError_reopenConnection() throws SQLException {
+        // Close the connection, then try to reopen it twice: the first
+        // time will fail because we changed the user name to something
+        // incorrect; the second time it should work.
+        closeConnection();
+        String oldUser = manager.user;
+        manager.user = "bogusUser";
+        boolean gotException = false;
+        try {
+                manager.handleError(new SQLException("fake exception"),
+                        "in test");
+        }
+        catch (InternalError e) {
+            assertEquals("error message",
+                    "SqlDataManager.handleError couldn't reconnect with " +
+                    "server at \"jdbc:mysql://localhost:3306/test\": " +
+                    "Access denied for user 'bogusUser'@'localhost' " +
+                    "(using password: YES)",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+        assertEquals("connection open", true, manager.connection.isClosed());
+
+        // Reset the username and try again..
+        manager.user = oldUser;
+        manager.handleError(new SQLException("fake exception"),
+                "in test");
+        assertEquals("connection open", false, manager.connection.isClosed());
     }
 }
