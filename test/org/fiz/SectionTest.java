@@ -12,6 +12,8 @@ public class SectionTest extends junit.framework.TestCase {
         public void html(ClientRequest cr){}
     }
 
+    // No unit tests for addDataRequests, because it doesn't do anything.
+
     public void test_checkId() {
         Section section = new SectionFixture(null);
         assertEquals("properties null", null, section.checkId());
@@ -52,21 +54,5 @@ public class SectionTest extends junit.framework.TestCase {
     public void test_getId_idExists() {
         Section section = new SectionFixture(new Dataset("id", "id44"));
         assertEquals("id value exists", "id44", section.getId());
-    }
-
-    public void test_registerRequests() {
-        ClientRequest cr = new ClientRequestFixture();
-        Section section = new SectionFixture(null);
-        section.registerRequests(cr);
-        assertEquals("registered request names (no properties)", "",
-                cr.getRequestNames());
-        assertTrue("dataRequest value null", section.dataRequest == null);
-
-        section.properties = new Dataset("request", "getState");
-        section.registerRequests(cr);
-        assertEquals("registered request names", "getState",
-                cr.getRequestNames());
-        assertEquals("dataRequest manager", "file",
-                section.dataRequest.getRequestData().get("manager"));
     }
 }

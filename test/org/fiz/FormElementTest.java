@@ -15,6 +15,8 @@ public class FormElementTest extends junit.framework.TestCase {
         }
     }
 
+    // No tests for addDataRequests: it doesn't do anything.
+
     public void test_constructor() {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "4815162342", "name", "Alice"));
@@ -72,15 +74,6 @@ public class FormElementTest extends junit.framework.TestCase {
         element.labelHtml(null, new Dataset("name", "<Bob>", "age", "30"),
                 out);
         assertEquals("generated HTML", "", out.toString());
-    }
-
-    public void test_registerRequests() {
-        ClientRequest cr = new ClientRequestFixture();
-        FormElementFixture element = new FormElementFixture(new Dataset(
-                "id", "age"));
-        element.registerRequests(cr, "xyz");
-        assertEquals("registered request names", "",
-                cr.getRequestNames());
     }
 
     public void test_responsibleFor() {

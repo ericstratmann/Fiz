@@ -149,7 +149,7 @@ public class DispatcherTest extends junit.framework.TestCase {
         ServletResponseFixture response = new ServletResponseFixture();
         dispatcher.service(new ServletRequestFixture("/dispatcherTest2/ajaxBogus"),
                 response);
-        assertEquals("AJAX response", "Fiz.clearBulletin();\n" +
+        assertEquals("AJAX response",
                 "Fiz.addBulletinMessage(\"bulletinError\", \"uncaughtAjax: " +
                 "unsupported URL &quot;/x/y/z&quot;: couldn't find method " +
                 "&quot;ajaxBogus&quot; with proper signature in class " +
@@ -193,7 +193,7 @@ public class DispatcherTest extends junit.framework.TestCase {
         ServletResponseFixture response = new ServletResponseFixture();
         dispatcher.service(new ServletRequestFixture(
                 "/dispatcherTest1/ajaxUserError"), response);
-        assertEquals("AJAX response", "Fiz.clearBulletin();\n" +
+        assertEquals("AJAX response",
                 "Fiz.addBulletinMessage(\"bulletinError\", " +
                 "\"Ajax user error\");\n",
                 response.toString());
@@ -202,7 +202,7 @@ public class DispatcherTest extends junit.framework.TestCase {
         ServletResponseFixture response = new ServletResponseFixture();
         dispatcher.service(new ServletRequestFixture(
                 "/dispatcherTest2/ajaxBogus"), response);
-        assertEquals("AJAX response", "Fiz.clearBulletin();\n" +
+        assertEquals("AJAX response",
                 "Fiz.addBulletinMessage(\"bulletinError\", \"uncaughtAjax: " +
                 "unsupported URL &quot;/x/y/z&quot;: couldn't find method " +
                 "&quot;ajaxBogus&quot; with proper signature in class " +
@@ -217,7 +217,7 @@ public class DispatcherTest extends junit.framework.TestCase {
         dispatcher.service(request, response);
         TestUtil.assertMatchingSubstring("Response Javascript",
                 "window.parent.Fiz.FormSection.handleResponse(" +
-                "\"Fiz.clearBulletin();\\nFiz.addBulletinMessage(\\\"" +
+                "\"Fiz.addBulletinMessage(\\\"" +
                 "bulletinError\\\", \\\"Post user error\\\");\\n\");",
                 response.toString(), "window.parent.Fiz[^\n]*");
     }
@@ -229,7 +229,7 @@ public class DispatcherTest extends junit.framework.TestCase {
         dispatcher.service(request, response);
         TestUtil.assertMatchingSubstring("Response Javascript",
                 "window.parent.Fiz.FormSection.handleResponse(" +
-                "\"Fiz.clearBulletin();\\nFiz.addBulletinMessage(\\\"" +
+                "\"Fiz.addBulletinMessage(\\\"" +
                 "bulletinError\\\", \\\"uncaughtPost: unsupported URL " +
                 "&quot;/x/y/z&quot;: couldn't find method &quot;postBogus" +
                 "&quot; with proper signature in class " +

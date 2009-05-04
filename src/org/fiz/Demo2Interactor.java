@@ -11,6 +11,11 @@ public class Demo2Interactor extends Interactor {
     protected static Logger logger = Logger.getLogger(
             "org.fiz.Demo2Interactor");
 
+    // Use this data manager for reading datasets from demo.yaml in the
+    // demo directory.
+    FileDataManager fileDataManager = new FileDataManager(
+            Config.get("main", "home") + "/WEB-INF/demo");
+
     /**
      * Main URL entry point; displays a page containing some tabs, a table,
      * and a form.
@@ -21,6 +26,8 @@ public class Demo2Interactor extends Interactor {
         Html html = cr.getHtml();
         html.setTitle("Simple Fiz Demonstration");
         cr.getMainDataset().set("currentTabId", "students");
+        cr.addDataRequest("students",
+                fileDataManager.newReadRequest("demo.yaml", "students"));
         Section sections[] = {
                 new TemplateSection("<h1>Your University Online</h1>\n"),
                 new TabSection(new Dataset(),
@@ -36,7 +43,7 @@ public class Demo2Interactor extends Interactor {
                                 "url", "other?currentTabId=life")),
                 new TemplateSection("<h2>Current Students</h2>\n"),
                 new TableSection(
-                    new Dataset("request", "demo.getStudents"),
+                    new Dataset("request", "students"),
                     new Column("Name",
                             new Link("@last, @first", "student?id=@id")),
                     new Column("Student Id", "@id"),
@@ -153,8 +160,7 @@ public class Demo2Interactor extends Interactor {
                 "gpa");
             anyErrors = true;
         }
-        if (!anyErrors) {
-            form.clearOldElementErrors(cr);
+        if (!anyErrors && (gpa.equals("4.0"))) {
             cr.addErrorsToBulletin((new Dataset("message",
                     "The response for the \"New Student\" form has " +
                     "not been implemented yet.")));

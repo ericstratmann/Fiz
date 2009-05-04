@@ -1,6 +1,7 @@
 package org.fiz;
 import java.io.*;
 import java.lang.reflect.*;
+import java.util.*;
 import javax.servlet.http.*;
 
 /**
@@ -11,6 +12,48 @@ import javax.servlet.http.*;
 public final class Util {
     // No constructor: this class only has a static methods.
     private Util() {}
+
+    // The following hash table maps from the string name of a class
+    // (as passed to {@code findClass}) to the corresponding Class
+    // object.
+    protected static HashMap<String,Class> classCache
+            = new HashMap<String,Class>();
+
+    // The following class is used to hold information about methods in
+    // methodCache.
+    protected static class MethodInfo {
+        Method method;             // Handle that may be used to invoke
+                                   // the method.
+        Class<?>[] argClasses;     // Classes of the arguments expected by
+                                   // this method.
+        MethodInfo next;           // Next record corresponding to the same
+                                   // method name, but with different arguments
+                                   // (null means end of list).
+    }
+
+    // The following hash table records method lookups previously
+    // performed by {@code findMethod}.  Keys in the table are
+    // {@code classAndMethod} arguments to {@code findMethod};
+    // each value is the head of a list of MethodInfo objects
+    // for methods with that name.
+    protected static HashMap<String,MethodInfo> methodCache
+            = new HashMap<String,MethodInfo>();
+
+    // Counts the number of times findMethod couldn't find what it wanted in
+    // methodCache; used for testing.
+    protected static int methodCacheMisses;
+
+    /**
+     * Discards all cached information, so that it will be regenerated
+     * the next time is needed.  Typically invoked during debugging
+     * sessions to flush caches on every request, so that modifications
+     * to the source code are reflected immediately in the system under
+     * test.
+     */
+    public static synchronized void clearCache() {
+        classCache.clear();
+        methodCache.clear();
+    }
 
     /**
      * Copy all of the data from one stream to another, stopping when the
@@ -48,24 +91,27 @@ public final class Util {
     }
 
     /**
-     * Find the class corresponding to particular name; if the name
-     * doesn't exist and doesn't contain any dot separators, also search
-     * in various packages defined by the {@code searchPackages} value
-     * in the {@code main} configuration dataset.
+     * Find the class corresponding to particular name; if the name doesn't
+     * exist, also search in various packages defined by the
+     * {@code searchPackages} value in the {@code main} configuration
+     * dataset.
      * @param className            Name of the desired class.
      * @return                     The Class object corresponding to
      *                             {@code className}, or null if no such class
      *                             could be found.
      */
-    public static Class findClass(String className) {
-        Class<?> cl = null;
+    public static synchronized Class findClass(String className) {
+        Class<?> cl = classCache.get(className);
+        if (cl != null) {
+            return cl;
+        }
         try {
             cl = Class.forName(className);
         }
         catch (ClassNotFoundException e) {
-            // Just keep going if the class could be found.
+            // Just keep going if the class could not be found.
         }
-        if ((cl == null) && (className.indexOf('.') < 0)) {
+        if (cl == null) {
             // Couldn't find the given name; try prepending various package
             // names provided by configuration information.
             Dataset config = Config.getDataset("main");
@@ -77,9 +123,13 @@ public final class Util {
                         break;
                     }
                     catch (ClassNotFoundException e) {
+                        continue;
                     }
                 }
             }
+        }
+        if (cl != null) {
+            classCache.put(className, cl);
         }
         return cl;
     }
@@ -112,6 +162,77 @@ public final class Util {
     }
 
     /**
+     * Given the string name of a static method and a set of arguments,
+     * find the method.  Keep a cache of previously looked up methods to
+     * speed up this process.
+     * @param classAndMethod       String of the form "class.method"; the
+     *                             class may contain internal "."s, and is
+     *                             looked up using the path mechanism
+     *                             implemented by findClass.
+     * @param methodArgs           Zero or more arguments to pass to the
+     *                             method.  The types of the arguments will
+     *                             be used to select the method, if the
+     *                             class provides multiple methods by the
+     *                             same name.
+     * @return                     A Java object describing the method,
+     *                             or null if no matching method could be
+     *                             found.
+     */
+
+    public static synchronized Method findMethod(String classAndMethod,
+            Object... methodArgs) {
+        // First check the cache to see if we have seen this method
+        // previously.
+        MethodInfo old = methodCache.get(classAndMethod);
+        cachedMethods: for (MethodInfo info = old; info != null; info = info.next) {
+            if (methodArgs.length != info.argClasses.length) {
+                continue;
+            }
+            for (int i = 0; i < methodArgs.length; i++) {
+                if (info.argClasses[i] != methodArgs[i].getClass()) {
+                    continue cachedMethods;
+                }
+            }
+            // Found the matching method!
+            return info.method;
+        }
+
+        // We haven't seen this method before.  First, separate the class
+        // name and method name.
+        methodCacheMisses++;
+        int i = classAndMethod.lastIndexOf('.');
+        if (i < 0) {
+            throw new InternalError("illegal method name \"" +
+                    classAndMethod + "\" in Util.findMethod " +
+                    "(no \".\" separator)");
+        }
+        String className = classAndMethod.substring(0, i);
+        String methodName = classAndMethod.substring(i+1);
+        Class<?> cl = findClass(className);
+        if (cl == null) {
+            return null;
+        }
+
+        // Find a method with the right signature.
+        MethodInfo info = new MethodInfo();
+        info.argClasses = new Class<?>[methodArgs.length];
+        for (i = 0; i < methodArgs.length; i++) {
+            info.argClasses[i] = methodArgs[i].getClass();
+        }
+        try {
+            info.method = cl.getMethod(methodName, info.argClasses);
+        }
+        catch (Exception e) {
+            return null;
+        }
+
+        // Add information about this new method to the cache.
+        info.next = old;
+        methodCache.put(classAndMethod, info);
+        return info.method;
+    }
+
+    /**
      * This method re-creates the full URL for an incoming request,
      * including the query string.
      * @param request                 Information about the request.
@@ -125,6 +246,49 @@ public final class Util {
             return url;
         }
         return url + "?" + query;
+    }
+
+    /**
+     * Given the string name of a static method and a set of arguments,
+     * find the method, invoke it, and return its result.
+     * @param classAndMethod       String of the form "class.method"; the
+     *                             class may contain internal "."s, and is
+     *                             looked up using the path mechanism
+     *                             implemented by findClass.
+     * @param methodArgs           Zero or more arguments to pass to the
+     *                             method.  The types of the arguments will
+     *                             be used to select the method, if the
+     *                             class provides multiple methods by the
+     *                             same name.
+     * @return                     Whatever is returned by the method.
+     */
+    public static Object invokeStaticMethod (String classAndMethod,
+            Object... methodArgs) {
+        // Find a static method with the right signature.
+        Method method = findMethod(classAndMethod, methodArgs);
+        if (method == null) {
+            throw new InternalError("can't find method \"" +
+                    classAndMethod +
+                    "\" with matching arguments (Util.invokeStaticMethod)");
+        }
+        if ((method.getModifiers() & Modifier.STATIC) == 0) {
+            throw new InternalError("method \"" + classAndMethod +
+                    "\" isn't static (Util.invokeStaticMethod)");
+        }
+
+        // Invoke the method.
+        try {
+            return method.invoke(null, methodArgs);
+        }
+        catch (Exception e) {
+            Throwable cause = e.getCause();
+            if (cause == null) {
+                cause = e;
+            }
+            throw new InternalError("exception in method \"" +
+                    classAndMethod + "\" invoked by Util.invokeStaticMethod: " +
+                    StringUtil.lcFirst(cause.getMessage()));
+        }
     }
 
     /**
@@ -156,11 +320,8 @@ public final class Util {
 
         // Make sure that class has the right type.
         if (requiredType != null) {
-            Class<?> desiredClass;
-            try {
-                desiredClass = Class.forName(requiredType);
-            }
-            catch (ClassNotFoundException e) {
+            Class<?> desiredClass = findClass(requiredType);
+            if (desiredClass == null) {
                 throw new ClassNotFoundError(requiredType);
             }
             if (!desiredClass.isAssignableFrom(cl)) {
@@ -174,7 +335,7 @@ public final class Util {
         try {
             Class<?>[] argClasses = new Class<?>[constructorArgs.length];
             for (int i = 0; i < constructorArgs.length; i++) {
-                argClasses[i] = constructorArgs [i].getClass();
+                argClasses[i] = constructorArgs[i].getClass();
             }
             constructor = cl.getConstructor(argClasses);
         }

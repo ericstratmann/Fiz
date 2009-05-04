@@ -15,3 +15,8 @@
     padding: 1px 3px 1px 3px;
     margin: 0px;
 }
+
+.EntryFormElement:focus {
+    border: @accentBorder;
+    background: @activeBackground;
+}

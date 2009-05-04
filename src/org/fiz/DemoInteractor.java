@@ -27,8 +27,29 @@ public class DemoInteractor extends Interactor {
     // performance statistics were reset.
     int baseGcInvocations = 0;
 
+    // Use this data manager for reading datasets from demo.yaml in the
+    // demo directory.
+    FileDataManager fileDataManager = new FileDataManager(
+            Config.get("main", "home") + "/WEB-INF/demo");
+
+    // Datasets that supply results for raw data requests.
+    Dataset formData = new Dataset("name", "Bill", "age", "41",
+            "height", "73", "weight", "195",
+            "saying", "Line 1\nLine 2\n<Line 3>\n", "fruit", "grape",
+            "notify", "all", "state", "California", "mascot", "Spartans");
+    Dataset fruitInfo = new Dataset(
+            "fruit", new Dataset("name", "Apple", "value", "Apple"),
+            "fruit", new Dataset("name", "Banana", "value", "banana"),
+            "fruit", new Dataset("name", "Grape", "value", "grape"),
+            "fruit", new Dataset("name", "Kiwi", "value", "kiwi"),
+            "fruit", new Dataset("name", "Peach", "value", "peach"),
+            "fruit", new Dataset("name", "Pear", "value", "pear"),
+            "fruit", new Dataset("name", "Raspberry", "value", "raspberry"),
+            "fruit", new Dataset("name", "Strawberry", "value", "strawberry"),
+            "fruit", new Dataset("name", "Watermelon", "value", "watermelon"));
+
     FormSection sideBySideForm = new FormSection(
-            new Dataset("id", "form1", "request", "demo.getFormData",
+            new Dataset("id", "form1", "request", "getFormData",
                     "postUrl", "postSideBySide"),
             new EntryFormElement(new Dataset("id", "name",
                     "label", "Name:", "help", "Enter customer name here")),
@@ -87,7 +108,7 @@ public class DemoInteractor extends Interactor {
                     "<div class=\"heading\">Optional Information</div>")),
             new SelectFormElement(new Dataset("id", "fruit",
                     "label", "Favorite fruits:",
-                    "choiceRequest", "demo.getFruits",
+                    "choiceRequest", "getFruits",
                     "multiple", "multiple",
                     "height", "5",
                     "choiceName", "fruit")),
@@ -98,7 +119,7 @@ public class DemoInteractor extends Interactor {
             );
 
     FormSection verticalForm = new FormSection(
-            new Dataset("id", "form2", "request", "demo.getFormData",
+            new Dataset("id", "form2", "request", "getFormData",
                     "layout", "vertical", "postUrl", "postVertical"),
             new EntryFormElement(new Dataset("id", "name",
                     "label", "Name:", "help", "Enter employee name here")),
@@ -110,7 +131,7 @@ public class DemoInteractor extends Interactor {
                     "extra", "U.S. citizen")),
             new SelectFormElement(new Dataset("id", "fruit",
                     "label", "Favorite fruit:",
-                    "choiceRequest", "demo.getFruits",
+                    "choiceRequest", "getFruits",
                     "choiceName", "fruit")),
             new TextAreaFormElement(new Dataset("id", "saying",
                     "label", "Favorite saying:", "rows", "3"))
@@ -157,6 +178,8 @@ public class DemoInteractor extends Interactor {
         Html html = cr.getHtml();
         html.setTitle("FormSection Demo");
         html.includeCssFile("demo/form.css");
+        cr.addDataRequest("getFormData", RawDataManager.newRequest(formData));
+        cr.addDataRequest("getFruits", RawDataManager.newRequest(fruitInfo));
         cr.showSections(
                 new TemplateSection("<h1>Side-By-Side Form</h1>\n"),
                 sideBySideForm,
@@ -222,12 +245,20 @@ public class DemoInteractor extends Interactor {
         Html html = cr.getHtml();
         html.setTitle("TableSection Demos");
         html.includeCssFile("demo/shoppingCart.css");
+        cr.addDataRequest("people", fileDataManager.newReadRequest("demo.yaml",
+                "people"));
+        cr.addDataRequest("noData", fileDataManager.newReadRequest("demo.yaml",
+                "empty"));
+        cr.addDataRequest("error", fileDataManager.newReadRequest("demo.yaml",
+                "bogus.nonexistent"));
+        cr.addDataRequest("cart", fileDataManager.newReadRequest("demo.yaml",
+                "shoppingCart"));
         cr.showSections(
                 new TemplateSection("<h1>TableSection Demos</h1>\n"),
 
                 new TemplateSection("<h2>Basic table:</h2>\n"),
                 new TableSection(
-                    new Dataset("request", "demo.getPeople"),
+                    new Dataset("request", "people"),
                     new Column("Name", "@name"),
                     new Column("Age", "{{@age}}"),
                     new Column("Height", "{{@height}}"),
@@ -236,7 +267,7 @@ public class DemoInteractor extends Interactor {
 
                 new TemplateSection("<h2>Table with no data:</h2>\n"),
                 new TableSection(
-                    new Dataset("request", "demo.noData"),
+                    new Dataset("request", "noData"),
                     new Column("Name", "@name"),
                     new Column("Age", "{{@age}}"),
                     new Column("Height", "{{@height}}"),
@@ -245,7 +276,7 @@ public class DemoInteractor extends Interactor {
 
                 new TemplateSection("<h2>Error in data request:</h2>\n"),
                 new TableSection(
-                    new Dataset("request", "demo.error"),
+                    new Dataset("request", "error"),
                     new Column("Name", "@name"),
                     new Column("Age", "{{@age}}"),
                     new Column("Height", "{{@height}}"),
@@ -254,7 +285,7 @@ public class DemoInteractor extends Interactor {
 
                 new TemplateSection("<h2>Simple shopping cart:</h2>\n"),
                 new TableSection(
-                    new Dataset("request", "demo.getCart", "noHeader", "true",
+                    new Dataset("request", "cart", "noHeader", "true",
                             "class", "shoppingCart", "lastRowClass", "last"),
                     new Column("Item", "@item"),
                     new Column("Price", "@price"))
@@ -277,11 +308,11 @@ public class DemoInteractor extends Interactor {
         for (Dataset d : stats) {
             statsDataset.addChild("record", d);
         }
+        cr.addDataRequest("stats", RawDataManager.newRequest(statsDataset));
         cr.showSections(
                 new TemplateSection("<h1>Timer Statistics</h1>\n"),
                 new TableSection(
-                    RawDataManager.setRequest(new Dataset(), "request",
-                            statsDataset),
+                    new Dataset("request", "stats"),
                     new Column("Timer", "@name"),
                     new Column("Count", "@intervals"),
                     new Column("Avg (ms)", "@average"),
@@ -306,7 +337,7 @@ public class DemoInteractor extends Interactor {
     }
 
     /**
-     * Displays a page demonstrating the TableSection class.
+     * Displays a page demonstrating the TreeSection class.
      * @param cr                   Overall information about the client
      *                             request being serviced.
      */
@@ -321,7 +352,8 @@ public class DemoInteractor extends Interactor {
         }
         cr.showSections(
                 new TemplateSection("<h1>TreeSection Demo</h1>\n" +
-                        "<div id=\"p1\"><p>Current edge style: @edgeStyle?{treeSolid}</p></div>\n" +
+                        "<div id=\"p1\"><p>Current edge style: " +
+                        "@edgeStyle?{treeSolid}</p></div>\n" +
                         "<p><a href=\"tree?edgeFamily=treeSolid\">Change " +
                         "edge style to treeSolid</a><br />\n" +
                         "<a href=\"tree?edgeFamily=treeDotted\">Change " +
@@ -329,9 +361,58 @@ public class DemoInteractor extends Interactor {
                         "<a href=\"tree?edgeFamily=treeNoLines\">Change " +
                         "edge style to treeNoLines</a></p>\n"),
                 new TreeSection(
-                    new Dataset("id", "tree1", "request", "demo.tree",
-                            "edgeFamily", edgeFamily))
+                    new Dataset("id", "tree1", "requestFactory",
+                            "DemoInteractor.treeRequest", "edgeFamily",
+                            edgeFamily))
         );
+    }
+
+    /**
+     * Creates a DataRequest that returns the contents of a node in the
+     * TreeSection demonstration.
+     * @param name                 Name of the parent node whose children
+     *                             are needed.
+     * @return                     DataRequest whose response contains
+     *                             information about all of the children of
+     *                              by gone for that I the I{@code name}.
+     */
+    public static DataRequest treeRequest(String name) {
+        Dataset data = YamlDataset.newStringInstance(
+                "top:\n" +
+                "    record:\n" +
+                "        - text:       Alice\n" +
+                "        - text:       Bill\n" +
+                "          name:       bill\n" +
+                "          expandable: 1\n" +
+                "        - text:       Carol\n" +
+                "          name:       carol\n" +
+                "          expandable: 1\n" +
+                "        - text:       David\n" +
+                "bill:\n" +
+                "    record:\n" +
+                "        - text:       Ellen\n" +
+                "          name:       ellen\n" +
+                "          expandable: 1\n" +
+                "        - text:       Frank\n" +
+                "        - text:       Grace\n" +
+                "carol:\n" +
+                "    record:\n" +
+                "        - text:       Harry\n" +
+                "        - text:       Ian\n" +
+                "        - text:       Juliet\n" +
+                "ellen:\n" +
+                "    record:\n" +
+                "        - text:       Kurt\n" +
+                "        - text:       Leslie\n" +
+                "        - text:       Michael\n" +
+                "          name:       top\n" +
+                "          expandable: 1"
+
+        );
+        if (name.length() == 0) {
+            return RawDataManager.newRequest(data.getChild("top"));
+        }
+        return RawDataManager.newRequest(data.getChild(name));
     }
 
     public void ajaxClearStats(ClientRequest cr) {
@@ -363,14 +444,30 @@ public class DemoInteractor extends Interactor {
         } else {
             logger.info("No file upload with this submission");
         }
-        sideBySideForm.post(cr, (main.get("state").length() == 0) ?
-                "demo.formError1" : "demo.formError2");
-
+        Dataset formData = sideBySideForm.collectFormData(cr);
+        if (formData.get("state").length() == 0) {
+            sideBySideForm.displayErrors(cr, new Dataset("culprit", "name",
+                    "message",
+                    "User doesn't exist; this is a very long message " +
+                    "just to see what happens.  Does the line wrap, or " +
+                    "doesn't it?  In order to find out, there needs to be " +
+                    "lots and lots of text in the error message.  Also, " +
+                    "here are some special characters: <&>!\"\""));
+        } else {
+            sideBySideForm.displayErrors(cr, new Dataset("culprit", "name",
+                    "message", "User doesn't exist"),
+                    new Dataset("message",
+                    "An error occurred that isn't associated " +
+                    "with a particular form element, so this " +
+                    "message should appear in the bulletin."));
+        }
     }
 
     public void postVertical(ClientRequest cr) {
         Dataset main = cr.getMainDataset();
         logger.info("Posted dataset:\n" + main.toString());
-        verticalForm.post(cr, "demo.formError3");
+        verticalForm.displayErrors(cr, new Dataset("culprit", "fruit",
+                "message", "You have chosen an exceptionally bad " +
+                "tasting fruit; please pick another."));
     }
 }

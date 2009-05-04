@@ -43,6 +43,24 @@ public abstract class FormElement implements Formatter {
     }
 
     /**
+     * This method is invoked during the first phase of rendering a page,
+     * in case the FormElement needs to create custom requests of its own
+     * (as opposed to requests already provided for it by the Interactor).
+     * If so, this method creates the requests and passes them to
+     * {@code cr.addDataRequest}.  This method provides a default
+     * implementation that does nothing, which is appropriate for most
+     * FormElements.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @param empty                True means no request was provided to
+     *                             the enclosing form, which means that the
+     *                             form should start off empty.
+     */
+    public void addDataRequests(ClientRequest cr, boolean empty) {
+        // Do nothing.
+    }
+
+    /**
      * Invoked by FormSection when a form has been posted: prepares data
      * for inclusion in the update request for the form.  Normally this
      * consists of checking for a value in {@code in} whose name is the same
@@ -134,27 +152,6 @@ public abstract class FormElement implements Formatter {
             Template.expand(template, data, out);
         }
         return true;
-    }
-
-    /**
-     * This method is invoked during the first phase of rendering a page;
-     * it calls {@code cr.registerDataRequest} for each of the
-     * DataRequests needed by this form element to provide initial values
-     * for data it will display.  The enclosing FormSection already
-     * registers an overall request for the entire form {@code formRequest}
-     * and makes that data available to each of the elements; normally that
-     * is sufficient.  Hence this method provides a default, which is to do
-     * nothing.  If a FormElement needs additional data it can override
-     * this message to request it.
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     * @param formRequest          Name of the overall request that the
-     *                             form will issue to retrieve initial values,
-     *                             or null if the form is supposed to start
-     *                             off empty.
-     */
-    public void registerRequests(ClientRequest cr, String formRequest) {
-        // Do nothing.
     }
 
     /**

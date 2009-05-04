@@ -97,16 +97,13 @@ public class ClientRequest {
     // file provided for that form element.
     protected HashMap<String,FileItem> uploads = null;
 
-    // Hash table that maps from the {@code name} argument passed to
-    // {@code registerDataRequest} to the DataRequest that was returned
-    // for that name.  Used to detect duplicate requests and share a single
-    // DataRequest between them.
+    // The following table each track of all named DataRequests.  Keys
+    // are the names passed to {@code addDataRequest}, and the values
+    // are the corresponding DataRequests.
     protected HashMap<String,DataRequest> namedRequests =
             new HashMap<String,DataRequest>();
 
-    // Keeps track of all of the DataRequests that were passed explicitly to
-    // {@code registerDataRequest} (i.e., all of the registered DataRequests
-    // that aren't in the {@code namedRequests} table).
+    // Keeps track of all unnamed DataRequests.
     protected ArrayList<DataRequest> unnamedRequests =
             new ArrayList<DataRequest>();
 
@@ -116,11 +113,6 @@ public class ClientRequest {
     // The following variable accumulates Javascript code passed to the
     // evalJavascript method, if there is any.
     protected StringBuilder jsCode = null;
-
-    // The following variable indicates whether any messages have been added
-    // to the bulletin during this request (it's used to clear the bulletin
-    // before the first message is added).
-    protected boolean anyBulletinMessages = false;
 
     // If returnFile has been invoked, the following variables record
     // information about the file to be returned at the end of the request.
@@ -160,6 +152,28 @@ public class ClientRequest {
     }
 
     /**
+     * Associate a DataRequest with this ClientRequest and give it a
+     * name that can be used to look up the request later.
+     * @param name                 Name for the DataRequest; typically used
+     *                             by Sections to find requests created for
+     *                             them by the Interactor.
+     * @param request              DataRequest to associate with {@code name}.
+     */
+    public void addDataRequest(String name, DataRequest request) {
+        namedRequests.put(name, request);
+    }
+
+    /**
+     * Associate an unnamed DataRequest with this ClientRequest.  Typically
+     * unnamed requests are created by Sections for their own internal use.
+     * @param request              DataRequest to associate with this
+     *                             ClientRequest.
+     */
+    public void addDataRequest(DataRequest request) {
+        unnamedRequests.add(request);
+    }
+
+    /**
      * Expands a template to generate HTML and adds it to the bulletin
      * as a new message.  If this is the first message added to the bulletin
      * for this request, any previous bulletin contents are cleared.  This
@@ -181,10 +195,6 @@ public class ClientRequest {
         getHtml().includeJsFile("fizlib/Fiz.js");
         String html = Template.expand(template, data);
         StringBuilder javascript = new StringBuilder();
-        if (!anyBulletinMessages) {
-            javascript.append("Fiz.clearBulletin();\n");
-            anyBulletinMessages = true;
-        }
         Template.expand("Fiz.addBulletinMessage(\"@1\", \"@2\");\n",
                 javascript, Template.SpecialChars.JAVASCRIPT, divClass, html);
         evalJavascript(javascript);
@@ -277,8 +287,8 @@ public class ClientRequest {
      * to complete the transmission of the response back to the client.
      */
     public void finish() {
-        // Cleanup any uploaded files (this temporary file space allocated
-        // for uploads faster than waiting for garbage collection).
+        // Cleanup any uploaded files (this frees temporary file space
+        // allocated for uploads faster than waiting for garbage collection).
         if (uploads != null) {
             for (FileItem upload: uploads.values()) {
                 upload.delete();
@@ -352,12 +362,15 @@ public class ClientRequest {
                     StringUtil.lcFirst(e.getMessage()));
             return;
         }
-        if (jsCode != null) {
-            if (requestType == Type.AJAX) {
+        if (requestType == Type.AJAX) {
+            if (jsCode != null) {
                 writer.append(jsCode);
-            } else if (requestType == Type.POST) {
-                FormSection.sendFormResponse(this, jsCode);
             }
+        } else if (requestType == Type.POST) {
+            // For post requests always send *some* Javascript, even if it is
+            // an empty string; this is needed to trigger housekeeping code
+            // in the browser such as clearing old error messages.
+            FormSection.sendFormResponse(this, (jsCode != null) ? jsCode : "");
         }
 
         if (requestType != Type.AJAX) {
@@ -383,6 +396,22 @@ public class ClientRequest {
      */
     public Type getClientRequestType() {
         return requestType;
+    }
+
+    /**
+     * Given the name for a DataRequest that was previously added to this
+     * ClientRequest using {@code addDataRequest}, return the DataRequest.
+     * If no such request exists, an InternalError is generated.
+     * @param name                 Name for the desired request.
+     * @return                     DataRequest corresponding to {@code name}.
+     */
+    public DataRequest getDataRequest(String name) {
+        DataRequest request = namedRequests.get(name);
+        if (request == null) {
+            throw new InternalError("couldn't find data request named \"" +
+                    name + "\"");
+        }
+        return request;
     }
 
     /**
@@ -504,7 +533,7 @@ public class ClientRequest {
 
     /**
      * Generate a string containing the names of all of the DataRequests
-     * registered so far for this ClientRequests.  This method is used
+     * registered so far for this ClientRequest.  This method is used
      * primarily for testing
      * @return                     A string containing names of all of the
      *                             named requests registered so far, in
@@ -623,82 +652,6 @@ public class ClientRequest {
             evalJavascript(Template.expand("document.location.href = \"@1\";\n",
                     Template.SpecialChars.JAVASCRIPT, url));
         }
-    }
-
-    /**
-     * Create a new DataRequest based on the name of an entry in the
-     * {@code dataRequests} configuration dataset, and associate it with
-     * this ClientRequest so that it will be started by the
-     * {@code startDataRequests} method.  This method is typically invoked
-     * by the {@code registerDataRequests} methods of Sections to specify
-     * the data they will need in order to display themselves.
-     * @param name                 Symbolic name for the request; must
-     *                             correspond to a template in the
-     *                             {@code dataRequests} configuration dataset.
-     *                             Values from the main dataset for this
-     *                             request will be used to expand the template.
-     * @return                     The DataRequest corresponding to
-     *                             {@code name}.  If this method is invoked
-     *                             multiple times with the same {@code name},
-     *                             all of the invocations will share the same
-     *                             DataRequest.
-     */
-    public DataRequest registerDataRequest(String name) {
-        DataRequest result = namedRequests.get(name);
-        if (result == null) {
-            result = new DataRequest(name, getMainDataset());
-            namedRequests.put(name, result);
-        }
-        return result;
-    }
-
-    /**
-     * Given a DataRequest created by the caller, associate it with this
-     * ClientRequest so that it will be started by the
-     * {@code startDataRequests} method.  This method is typically invoked
-     * by the {@code registerDataRequests} methods of Sections to specify
-     * the data they will need in order to display themselves.
-     * created the DataRequest; it will not be shared with any other Section.
-     * @param request              DataRequest that will retrieve data needed
-     *                             by the caller.
-     * @return                     {@code request}.
-     */
-    public DataRequest registerDataRequest(DataRequest request) {
-        unnamedRequests.add(request);
-        return request;
-    }
-
-    /**
-     * Create a DataRequest based on an element of a dataset, and associate
-     * it with this  ClientRequest so that it will be started by the
-     * {@code startDataRequests} method.  If the dataset element named by
-     * {@code d} and {@code path} is a string, then a (potentially shared)
-     * DataRequest is created in the same way as if the string had been
-     * passed directly to {@code registerDataRequest}.  If the dataset element
-     * is a nested dataset, then its contents are used directly as the
-     * arguments for the request.
-     * @param d                    Dataset whose contents will be used to
-     *                             create a DataRequest.
-     * @param path                 Specifies the path to an element
-     *                             within {@code d}.  If there is no such
-     *                             element in the dataset then no DataRequest
-     *                             is created.
-     * @return                     The DataRequest corresponding to
-     *                             {@code d} and {@code path}, or  null if
-     *                             {@code path} doesn't exist.
-     */
-    public DataRequest registerDataRequest(Dataset d, String path) {
-        Object value = d.lookupPath(path, Dataset.DesiredType.ANY,
-                Dataset.Quantity.FIRST_ONLY);
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof String) {
-            return registerDataRequest((String) value);
-        }
-        DataRequest request = new DataRequest((Dataset) value);
-        unnamedRequests.add(request);
-        return request;
     }
 
     /**
@@ -849,31 +802,10 @@ public class ClientRequest {
      */
     public void showSections(Section ... sections) {
         for (Section section : sections) {
-            section.registerRequests(this);
+            section.addDataRequests(this);
         }
-        startDataRequests();
         for (Section section : sections) {
             section.html(this);
-        }
-    }
-
-    /**
-     * Begin processing all of the DataRequests that have been registered
-     * so far.  This method is typically invoked after all of the Sections
-     * in a page have had a chance to register their requests; delaying
-     * the start of the requests until now allows the requests to be
-     * processed concurrently and/or batched.
-     */
-    public void startDataRequests() {
-        if (unnamedRequests.size() > 0) {
-            // If we have both named and unnamed requests, combined them
-            // into a single collection to pass to DataRequest.start().
-            for (DataRequest request : namedRequests.values()) {
-                unnamedRequests.add(request);
-            }
-            DataRequest.start(unnamedRequests);
-        } else {
-            DataRequest.start(namedRequests.values());
         }
     }
 
@@ -914,14 +846,13 @@ public class ClientRequest {
         int lastId = idsAndSections.length - 2;
 
         // This method operates in 2 passes, much like showSections:
-        // the first pass registers of data requests, which can then
+        // the first pass registers data requests, which can then
         // execute in parallel.  The second pass generates the HTML
         // and the Ajax actions.
         for (int i = 0; i <= lastId; i += 2) {
             Section section = (Section) idsAndSections[i+1];
-            section.registerRequests(this);
+            section.addDataRequests(this);
         }
-        startDataRequests();
         for (int i = 0; i <= lastId; i += 2) {
             String id = (String) idsAndSections[i];
             Section section = (Section) idsAndSections[i+1];
@@ -1117,13 +1048,13 @@ public class ClientRequest {
      */
     public String uniqueId(String base) {
         int lastVal;
-        
+
         if (idsMap.containsKey(base)) {
             lastVal = idsMap.get(base) + 1;
         } else {
             lastVal = 0;
         }
-        
+
         idsMap.put(base, lastVal);
         return base + Integer.toString(lastVal);
     }

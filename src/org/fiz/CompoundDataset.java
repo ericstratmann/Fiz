@@ -421,7 +421,7 @@ public class CompoundDataset extends Dataset {
 
     /**
      * Returns a count of the number of component data sets in this
-     * CompoundedDataset.
+     * CompoundDataset.
      * @return                     Number of component datasets in this
      *                             dataset.
      */

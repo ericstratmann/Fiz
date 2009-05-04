@@ -5,7 +5,7 @@ package org.fiz;
  * a single template.  TemplateSections support the following constructor
  * properties:
  *
- * errorStyle:       (optional) If an error occurs in {@code request} then
+ *   errorStyle:     (optional) If an error occurs in {@code request} then
  *                   this property contains the name of a template in the
  *                   {@code styles} dataset, which is expanded with the
  *                   error data and the main dataset.  The resulting HTML
@@ -19,11 +19,10 @@ package org.fiz;
  *                   If this property has specified that it takes precedence
  *                   over {@code template}.  Expanded in the same way as
  *                   {@code request}.
- *   request:        (optional) Specifies a DataRequest that will supply
- *                   data for use by {@code template} (either the name of
- *                   a request in the {@code dataRequests} configuration
- *                   dataset or a nested dataset containing the request's
- *                   arguments directly).
+ *   request:        (optional) The name of a data request registered by
+ *                   the caller with ClientRequest.addDataRequest.  The
+ *                   dataset returned by this request is used when
+ *                   expanding the template.
  *   template:       (optional) Template that will generate HTML for the
  *                   section.  If {@code request} is specified then the
  *                   template is expanded in the context of the response
@@ -79,8 +78,15 @@ public class TemplateSection extends Section {
     @Override
     public void html(ClientRequest cr) {
         Dataset data;
-        if (dataRequest != null) {
-            Dataset response= dataRequest.getResponseData();
+        String requestName;
+        if (properties != null) {
+            requestName = properties.check("request");
+        } else {
+            requestName = null;
+        }
+        if (requestName != null) {
+            DataRequest dataRequest = cr.getDataRequest(requestName);
+            Dataset response = dataRequest.getResponseData();
             if (response == null) {
                 // There was an error fetching our data; display
                 // appropriate error information.

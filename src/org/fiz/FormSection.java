@@ -51,18 +51,17 @@ import javax.servlet.http.*;
  *                   is sent to this URL.  The caller must ensure that
  *                   this URL is implemented by an Interactor.  Defaults
  *                   to {@code post}.
- *   request:        (optional) Specifies a DataRequest that will supply
- *                   initial values to display in the FormSection (either
- *                   the name of a request in the {@code dataRequests}
- *                   configuration dataset or a nested dataset containing
- *                   the request's arguments directly).  If the response to
- *                   the request contains a {@code record} nested dataset,
- *                   then the contents of that nested dataset will be used
- *                   to provide the form's initial data.  If there is no
- *                   {@code record} nested dataset then the top-level contents
- *                   of the results are used for the form's initial data.
- *                   If this property is omitted the form will initially be
- *                   empty.
+ *   request:        (optional) Name of a DataRequest that will supply
+ *                   initial values to display in the FormSection.  The
+ *                   request is created by the caller and registered in
+ *                   the ClientRequest by calling ClientRequest.addDataRequest.
+ *                   If the response to the request contains a {@code record}
+ *                   nested dataset, then the contents of that nested dataset
+ *                   will be used to provide the form's initial data.  If
+ *                   there is no {@code record} nested dataset then the
+ *                   top-level contents of the results are used for the
+ *                   form's initial data. If this property is omitted the
+ *                   form will initially be empty.
  *
  * When a Fiz form is posted, the form response is targeted at a hidden
  * iframe, not the main window.  This means that the post methods for a
@@ -164,11 +163,6 @@ public class FormSection extends Section {
     // method.
     protected boolean anyElementErrors;
 
-    // The following variable is used to make sure old form element
-    // errors get cleared no more than once during each invocation of the
-    // {@code post} method.
-    protected boolean oldElementErrorsCleared;
-
     // The following variable is set to true during some tests; this
     // causes cryptographic authentication code to be bypassed, using
     // instead a single fixed signature (so that tests don't have to
@@ -196,6 +190,22 @@ public class FormSection extends Section {
         }
         helpConfig = Config.getDataset("help");
         nestedHelp = helpConfig.checkChild(id);
+    }
+
+    /**
+     * This method is invoked during the first phase of rendering a page to
+     * create any special requests needed for the form;  we don't need any
+     * such requests, but our component form elements might, so we call the
+     * {@code cr.addDataRequests} method in each of the elements.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    @Override
+    public void addDataRequests(ClientRequest cr) {
+        boolean empty = (properties.check("request") == null);
+        for (FormElement element : elements) {
+            element.addDataRequests(cr, empty);
+        }
     }
 
     /**
@@ -247,6 +257,35 @@ public class FormSection extends Section {
     }
 
     /**
+     * When errors occur that are related to a form (such as when handling
+     * a form post), this method is invoked to display information about
+     * the errors.  This method assumes the form has already been displayed
+     * in the browser; it returns Javascript to the browser, which will
+     * update the form and/or the page's bulletin.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @param errorData            One or more Datasets describing errors.
+     */
+    public void displayErrors(ClientRequest cr, Dataset... errorData) {
+        for (Dataset error : errorData) {
+            String culprit = error.check("culprit");
+            boolean foundCulprit = false;
+            if (culprit != null) {
+                for (FormElement element : elements) {
+                    if (element.responsibleFor(culprit)) {
+                        elementError(cr, error, element.getId());
+                        foundCulprit = true;
+                        break;
+                    }
+                }
+            }
+            if (!foundCulprit) {
+                cr.addErrorsToBulletin(error);
+            }
+        }
+    }
+
+    /**
      * When an error is detected in form data and the problem can be traced
      * to a particular form element, this method is invoked to generate
      * AJAX actions to display information about the error next to the form
@@ -279,7 +318,6 @@ public class FormSection extends Section {
                     "One or more of the input fields are invalid; " +
                     "see details below."));
             anyElementErrors = true;
-            clearOldElementErrors(cr);
         }
 
         // Invoke a Javascript method, passing it information about
@@ -305,8 +343,10 @@ public class FormSection extends Section {
 
         // Create a dataset that provides access to the initial values
         // for the form elements.
+        String requestName = properties.check("request");
         Dataset data;
-        if (dataRequest != null) {
+        if (requestName != null) {
+            DataRequest dataRequest = cr.getDataRequest(requestName);
             Dataset response = dataRequest.getResponseData();
             if (response == null) {
                 // An error occurred in the request.
@@ -362,87 +402,6 @@ public class FormSection extends Section {
     }
 
     /**
-     * Interactors invoke this method when a form is posted.  This
-     * method invokes {@code requestName}, including in the request the data
-     * from the form, and handles errors that occur along the way (e.g.,
-     * if there is an error related to data in the form then an Ajax
-     * response will be generated to display an error message in the form).
-     * @param cr                   Overall information about the client
-     *                             request being serviced; must be an
-     *                             Ajax request.
-     * @param requestName          Name of the DataRequest to invoke
-     *                             using the form's data; must be defined
-     *                             in the {@code dataRequests} configuration
-     *                             dataset.
-     * @return                     The dataset containing the result from
-     *                             {@code requestName}.
-     * @throws PostError           Thrown if {@code requestName} returns
-     *                             an error or if form elements found some
-     *                             of the submitted data to be invalid.  This
-     *                             method will handle the error by scheduling
-     *                             various Ajax responses to display error
-     *                             information in the form;  the error is
-     *                             thrown to abort any remaining processing
-     *                             of the request.
-     */
-    public Dataset post(ClientRequest cr, String requestName)
-            throws PostError {
-        // If there are any element-specific messages currently displayed
-        // because of a previous post, undisplay them.
-        clearOldElementErrors(cr);
-
-        // Collect the form's data, issue a request to the data manager,
-        // and wait for it to complete.
-        anyElementErrors = false;
-        oldElementErrorsCleared = false;
-        DataRequest request = new DataRequest(requestName,
-                cr.getMainDataset());
-        request.getRequestData().createChild("record", collectFormData(cr));
-        Dataset responseData = request.getResponseData();
-        if (responseData != null) {
-            return responseData;
-        }
-
-        // One or more errors occurred while processing the request.  If an
-        // error can be attributed to a particular form element, display an
-        // error message next to the culprit.  Otherwise display the error
-        // message in the bulletin.
-        Dataset[] errors = request.getErrorData();
-        for (Dataset errorData : errors) {
-            String culprit = errorData.check("culprit");
-            boolean foundCulprit = false;
-            if (culprit != null) {
-                for (FormElement element : elements) {
-                    if (element.responsibleFor(culprit)) {
-                        elementError(cr, errorData, element.getId());
-                        foundCulprit = true;
-                        break;
-                    }
-                }
-            }
-            if (!foundCulprit) {
-                cr.addErrorsToBulletin(errorData);
-            }
-        }
-        throw new PostError(errors);
-    }
-
-    /**
-     * This method is invoked during the first phase of rendering a page;
-     * it calls {@code cr.registerDataRequest} for each of the
-     * DataRequests needed by this section to gather data to be displayed.
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     */
-    @Override
-    public void registerRequests(ClientRequest cr) {
-        dataRequest = cr.registerDataRequest(properties, "request");
-        for (FormElement element : elements) {
-            element.registerRequests(cr, properties.check("request"));
-        }
-    }
-
-    /**
      * This method is called when processing form data to ensure that the
      * submitted form contained a special authentication value.  If not,
      * the form submission could have been forged via CSRF, so we generate an
@@ -460,22 +419,6 @@ public class FormSection extends Section {
         if ((formToken == null) || (sessionToken == null) ||
                 !(formToken.equals(sessionToken))) {
             throw new AuthenticationError();
-        }
-    }
-
-    /**
-     * This method generates an AJAX action to clear any old error messages
-     * attached to form elements from previous failed post operations.
-     * This method makes sure that we only clear the messages once per
-     * called to the {@code post} method.
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     */
-    protected void clearOldElementErrors(ClientRequest cr) {
-        if (!oldElementErrorsCleared) {
-            cr.evalJavascript("Fiz.ids.@id.clearElementErrors();\n",
-                    properties);
-            oldElementErrorsCleared = true;
         }
     }
 
@@ -682,12 +625,11 @@ public class FormSection extends Section {
         }
         out.append("      <div class=\"control\">");
         element.html(cr, data, out);
-        out.append("</div>\n      ");
 
         // Create an extra <div> underneath the control for displaying
         // error messages pertaining to this form element.
         Template.expand(diagnosticTemplate, out, id, elementId);
-        out.append("\n    </td></tr>\n");
+        out.append("</div>\n    </td></tr>\n");
     }
 
     /**

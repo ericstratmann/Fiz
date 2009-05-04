@@ -23,12 +23,9 @@ import java.util.*;
  *   choice:         (optional) Default location for the choice datasets, if
  *                   neither the {@code choiceRequest} nor the
  *                   {@code choiceName} property is specified.
- *   choiceRequest:  (optional) Specifies a DataRequest whose result will
- *                   contain the choices (either the name of a request in
- *                   the {@code dataRequests} configuration dataset or a
- *                   nested dataset containing the request's arguments
- *                   directly).  If this property is omitted then the
- *                   choices must be present in the properties.
+ *   choiceRequest:  (optional) Name of a DataRequest whose result will
+ *                   contain the choices.  If this property is omitted
+ *                   then the choices must be present in the properties.
  *   choiceName:     (optional) The name of the nested datasets (either in
  *                   the properties or in the result of the data request
  *                   specified by {@code choiceRequest}) containing the
@@ -62,11 +59,6 @@ import java.util.*;
  */
 
 public class SelectFormElement extends FormElement {
-    // If the {@code choiceRequest} property is specified for this form
-    // element, then the following variable provides a reference to the
-    // corresponding DataRequest.
-    DataRequest choiceRequest = null;
-
     // Value of the {@code multiple} property.
     String multiple;
 
@@ -142,12 +134,14 @@ public class SelectFormElement extends FormElement {
         if (choiceName == null) {
             choiceName = "choice";
         }
-        if (choiceRequest != null) {
-            Dataset responseData = choiceRequest.getResponseData();
+        String choiceRequestName = properties.check("choiceRequest");
+        if (choiceRequestName != null) {
+            DataRequest request = cr.getDataRequest(choiceRequestName);
+            Dataset responseData = request.getResponseData();
             if (responseData == null) {
                 // The request to get the choices failed; display an error
                 // message and use an empty list of choices.
-                cr.addErrorsToBulletin(choiceRequest.getErrorData());
+                cr.addErrorsToBulletin(request.getErrorData());
                 choices = new ArrayList<Dataset>();
             } else {
                 choices = responseData.getChildren(choiceName);
@@ -171,19 +165,5 @@ public class SelectFormElement extends FormElement {
                     choice, out, selected);
         }
         out.append("</select>\n<!-- End SelectFormElement @id -->\n");
-    }
-
-    /**
-     * This method is invoked during the first phase of rendering a page;
-     * it calls {@code cr.registerDataRequest} for the request given by
-     * the {@code choiceRequest} property, if that property has been
-     * specified..
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     * @param formRequest          Not used.
-     */
-    @Override
-    public void registerRequests(ClientRequest cr, String formRequest) {
-        choiceRequest = cr.registerDataRequest(properties, "choiceRequest");
     }
 }

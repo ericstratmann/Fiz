@@ -64,6 +64,27 @@ public class CompoundSection extends Section implements TableLayoutContainer {
     }
 
     /**
+     * This method is invoked during the first phase of rendering a page;
+     * it simply reflects the call through to the {@code cr.addDataRequests}
+     * methods of all our children.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    @Override
+    public void addDataRequests(ClientRequest cr) {
+        // No data is needed for this section, but we need to give each
+        // of our children a chance to add its own custom requests.
+        for (Section child: children) {
+            child.addDataRequests(cr);
+        }
+        if (extraChildren != null) {
+            for (Section child: extraChildren) {
+                child.addDataRequests(cr);
+            }
+        }
+    }
+
+    /**
      * This method is invoked during the final phase of rendering a page;
      * it generates HTML for this section and appends it to the Html
      * object associated with {@code cr}.
@@ -166,27 +187,6 @@ public class CompoundSection extends Section implements TableLayoutContainer {
         }
         Template.expand("<!-- End CompoundSection {{@id}} -->\n",
                 properties, out);
-    }
-
-    /**
-     * This method is invoked during the first phase of rendering a page;
-     * it calls {@code cr.registerDataRequest} for each of the
-     * DataRequests needed by this section to gather data to be displayed.
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     */
-    @Override
-    public void registerRequests(ClientRequest cr) {
-        // No data is needed for this section, but we need to give each
-        // of our children a chance to register its requests.
-        for (Section child: children) {
-            child.registerRequests(cr);
-        }
-        if (extraChildren != null) {
-            for (Section child: extraChildren) {
-                child.registerRequests(cr);
-            }
-        }
     }
 
     /**

@@ -2,236 +2,78 @@ package org.fiz;
 import java.util.*;
 
 /**
- * FileDataManager allows files containing datasets to be accessed using
- * the DataManager/DataRequest mechanism.  It is intended primarily for
- * testing (to eliminate the need for a "real" data manager) but may have
- * other uses also.
- * <p>
- * The configuration dataset for a FileDataManager contains the
- * following values:
- *   class:            (required) The name of this class.
- *   pathTemplate:     (required) Template that is expanded in the context
- *                     of the main configuration dataset to produce a list
- *                     of directories (separated by commas) that will be
- *                     searched for dataset files specified in requests.
- *                     Typically "@home" is used in the path to generate
- *                     directory names that are descendents of the run-time
- *                     home directory.
- * <p>
- * The following fields are defined for requests:
- *   request:  (required) Specifies the operation to be performed; must be
- *             one of the following:
- *             create:   Create a new dataset at the location specified
- *                       by {@code file} and {@code name}, overwriting
- *                       any previously existing dataset, if there was one.
- *                       Returns nothing.
- *             read:     Returns the target dataset.
- *             update:   For each value in {@code values} replace the
- *                       corresponding value in the target dataset, or create
- *                       a new value in the target dataset if there was not
- *                       one previously.  The target dataset must already
- *                       exist.  Returns nothing.
- *             delete:   Delete the target dataset.  Returns nothing.  If
- *                       {@code data} is omitted this request removes all
- *                       elements in the top-level dataset but retains the
- *                       dataset and file.
- *             error:    Generates an error, using the target dataset
- *                       as the error information to return.  If the target
- *                       dataset is a list of datasets, then all of them
- *                       are returned as errors.
- *   file:     (required) Name of the file containing the desired dataset.
- *             If the file already exists then it must contain a
- *             dataset in a supported format.  The file name is looked up
- *             using the search path of directories defined by the
- *             {@code path} entry in the configuration dataset.
- *   name:     (optional) Specifies the path of the target dataset within
- *             the file.  If omitted, the request will operate on the
- *             top-level dataset (i.e., the entire file).
- *   values:   For {@code create} and {@code update} requests this
- *             is a nested dataset containing values to replace those
- *             in the target dataset.  Ignored for other requests.
- * <p>
- * Note: this class is thread-safe: it is safe for multiple threads to
- * issue concurrent requests for the same file.
+ * FileDataManager is a Fiz data manager that provides access to
+ * files whose contents are datasets.  It is intended primarily for
+ * testing, but may have other uses also.
  */
-
-public class FileDataManager extends DataManager {
-    /**
-     * RequestAbortedError is thrown when an area in a request has
-     * been detected and request.setError has already been called; all
-     * that remains is to unwind our handling of the request.
-     */
-    protected static class RequestAbortedError extends Error {
-        /**
-         * Construct a RequestAbortedError.
-         */
-        public RequestAbortedError() {
-            super();
-        }
-    }
-
-    // The following object is used to locate datasets.
+public class FileDataManager {
+    // The following object contains a collection of directory names
+    // in which we will search for files.
     protected String[] path;
 
-    // The following hash table maps from the {@code file} parameter in
-    // a request to the main-memory-cached copy of the corresponding dataset.
+    // The following hash table maps from a file name to the
+    // main-memory-cached copy of the corresponding dataset.
     protected HashMap<String,Dataset> datasetCache
             = new HashMap<String,Dataset>();
 
     /**
-     * Construct a FileDataManager using a dataset containing configuration
-     * parameters.
-     * @param config               Parameters for this data manager;
-     *                             see top-level class documentation
-     *                             for supported values.
+     * Construct a FileDataManager that will look for files using a
+     * given path.
+     * @param path                 Each argument is the name of a
+     *                             directory.  When looking up files,
+     *                             the file is looked up in each of these
+     *                             directories in order (first existing
+     *                             file wins).
      */
-    public FileDataManager(Dataset config) {
-        StringBuilder expandedPath = new StringBuilder();
-        Template.expand(config.get("pathTemplate"), Config.getDataset("main"),
-                expandedPath, Template.SpecialChars.NONE);
-        path = StringUtil.split(expandedPath.toString(), ',');
+    public FileDataManager(String ... path) {
+        this.path = path;
     }
 
     /**
      * Flushes all datasets that have been cached in memory, so that they
      * will be reread from disk the next time they are needed.
+     * TODO: add mechanism for clearing caches in data managers.
      */
-    @Override
     public void clearCache() {
         datasetCache.clear();
     }
 
     /**
-     * This method is invoked by DataRequest.startRequests to process
-     * one or more requests for this data manager.  The requests are
-     * processed synchronously, so that they are all complete before
-     * this method returns.
-     * @param requests             DataRequest objects describing the
-     *                             requests to be processed.
+     * Create a new dataset in a file, or overwrite an existing dataset
+     * if it already exists.
+     * @param file                 Name of the file containing the dataset.
+     * @param path                 Path of the desired dataset within the file.
+     * @param values               New contents for the dataset given by
+     *                             {@code file} and {@code path}.
+     * @return                     A DataRequest that will carry out the
+     *                             create operation; its response will be an
+     *                             empty dataset.
      */
-    @Override
-    public synchronized void startRequests(Collection<DataRequest> requests) {
-        for (DataRequest request : requests) {
-            Dataset parameters = request.getRequestData();
-            String operation = null;
-            try {
-                operation = parameters.get("request");
-                if (operation.equals("create")) {
-                    createOperation(request, parameters);
-                } else if (operation.equals("read")) {
-                    readOperation(request, parameters);
-                } else if (operation.equals("update")) {
-                    updateOperation(request, parameters);
-                } else if (operation.equals("delete")) {
-                    deleteOperation(request, parameters);
-                } else if (operation.equals("error")) {
-                    errorOperation(request, parameters);
-                } else {
-                    request.setError(new Dataset("message",
-                            "unknown request \"" + operation +
-                            "\" for FileDataManager; must be create, " +
-                            "read, update, delete, or error"));
-                }
-            }
-            catch (Dataset.MissingValueError e) {
-                request.setError(new Dataset("message",
-                        "FileDataManager " +
-                        ((operation != null) ? ("\"" + operation + "\" ") : "") +
-                        "request didn't contain required " +
-                        "parameter \"" + e.getMissingKey() + "\""));
-            }
-            catch (RequestAbortedError e) {
-                // Nothing to do here; error information has already
-                // been recorded.
-            }
-            catch (Error e) {
-                request.setError(new Dataset("message",
-                        "internal error in FileDataManager " +
-                        ((operation != null) ? ("\"" + operation + "\" ") : "") +
-                        "request: " + StringUtil.lcFirst(e.getMessage())));
-            }
-        }
-    }
-
-    /**
-     * This method implements the "create" request.  Upon return the request
-     * has been completed with either a response or an error.
-     * @param request              The request being serviced.
-     * @param parameters           The input dataset for the request.
-     */
-    protected void createOperation(DataRequest request, Dataset parameters) {
-        Dataset root = loadDataset(parameters.get("file"));
-        Dataset target = root;
-        String path = parameters.check("name");
-        if (path != null) {
-            target = root.createChildPath(path);
-        }
+    public DataRequest newCreateRequest(String file, String path,
+            Dataset values) {
+        Dataset root = loadDataset(file);
+        Dataset target = root.createChildPath(path);
         target.clear();
-        target.copyFrom(parameters.getChild("values"));
+        target.copyFrom(values);
         root.writeFile(root.getFileName(), null);
+        DataRequest request = new DataRequest("file.create");
         request.setComplete(new Dataset());
+        return request;
     }
 
     /**
-     * This method implements the "error" request.  Upon return the request
-     * has been completed with either an error.
-     * @param request              The request being serviced.
-     * @param parameters           The input dataset for the request.
+     * Delete a dataset in a file.
+     * @param file                 Name of the file containing the dataset.
+     * @param path                 Path of the desired dataset within the
+     *                             file; null means use the top-level
+     *                             dataset in the file.
+     * @return                     A DataRequest that will carry out the
+     *                             delete operation; its response will be an
+     *                             empty dataset.
      */
-    protected void errorOperation(DataRequest request, Dataset parameters) {
-        Dataset d = loadDataset(parameters.get("file"));
-
-        String path = parameters.check("name");
-        if ((path == null) || (path.length() == 0)) {
-            request.setError(d);
-            return;
-        }
-        ArrayList<Dataset> errors = d.getChildrenPath(path);
-        if (errors.size() == 0) {
-            request.setError (new Dataset("message", "nested dataset \"" +
-                    path + "\" doesn't exist", "culprit", "name"));
-            throw new RequestAbortedError();
-        }
-        request.setError(errors);
-    }
-
-    /**
-     * This method implements the "read" request.  Upon return the request
-     * has been completed with either a response or an error.
-     * @param request              The request being serviced.
-     * @param parameters           The input dataset for the request.
-     */
-    protected void readOperation(DataRequest request, Dataset parameters) {
-        Dataset d = loadDataset(parameters.get("file"));
-        Dataset target = findNestedDataset(d, parameters.check("name"),
-                request);
-        request.setComplete(target);
-    }
-
-    /**
-     * This method implements the "update" request.  Upon return the request
-     * has been completed with either a response or an error.
-     * @param request              The request being serviced.
-     * @param parameters           The input dataset for the request.
-     */
-    protected void updateOperation(DataRequest request, Dataset parameters) {
-        Dataset root = loadDataset(parameters.get("file"));
-        Dataset target = findNestedDataset(root, parameters.check("name"),
-                request);
-        target.copyFrom(parameters.getChild("values"));
-        root.writeFile(root.getFileName(), null);
-        request.setComplete(new Dataset());
-    }
-
-    /**
-     * This method implements the "delete" request.  Upon return the request
-     * has been completed with either a response or an error.
-     * @param request              The request being serviced.
-     * @param parameters           The input dataset for the request.
-     */
-    protected void deleteOperation(DataRequest request, Dataset parameters) {
-        Dataset d = loadDataset(parameters.get("file"));
-        String path = parameters.check("name");
+    public DataRequest newDeleteRequest(String file, String path) {
+        DataRequest request = new DataRequest("file.delete");
+        Dataset d = loadDataset(file);
         if (path != null) {
             d.deletePath(path);
         } else {
@@ -239,6 +81,55 @@ public class FileDataManager extends DataManager {
         }
         d.writeFile(d.getFileName(), null);
         request.setComplete(new Dataset());
+        return request;
+    }
+
+    /**
+     * Read a nested dataset from a file.
+     * @param file                 Name of the file containing the dataset.
+     * @param path                 Path of the desired dataset within the
+     *                             file; null means use the top-level
+     *                             dataset in the file.
+     * @return                     A DataRequest whose response will be the
+     *                             desired dataset.
+     */
+    public DataRequest newReadRequest(String file, String path) {
+        Dataset d = loadDataset(file);
+        DataRequest request = new DataRequest("file.read");
+        Dataset target = findNestedDataset(d, path, request);
+        if (target != null) {
+            request.setComplete(target);
+        }
+        return request;
+    }
+
+    /**
+     * Replace one or more values within an existing dataset in a file.
+     * This method differs from newCreateRequest in that existing values
+     * in the target dataset are retained unless overwritten by entries
+     * in the {@code values} argument.
+     * @param file                 Name of the file containing the dataset.
+     * @param path                 Path of the desired dataset within the file.
+     *                             Null refers to the top-level dataset.
+     * @param values               Each of the values in this dataset will be
+     *                             copied to the dataset given by {@code file}
+     *                             and {@code path}, replacing any existing
+     *                             values by the same names.
+     * @return                     A DataRequest that will carry out the
+     *                             delete operation; its response will be an
+     *                             empty dataset.
+     */
+    public DataRequest newUpdateRequest(String file, String path,
+            Dataset values) {
+        DataRequest request = new DataRequest("file.update");
+        Dataset root = loadDataset(file);
+        Dataset target = findNestedDataset(root, path,  request);
+        if (target != null) {
+            target.copyFrom(values);
+            root.writeFile(root.getFileName(), null);
+            request.setComplete(new Dataset());
+        }
+        return request;
     }
 
     /**
@@ -268,11 +159,14 @@ public class FileDataManager extends DataManager {
      *                             the top-level dataset.
      * @param request              The DataRequest we are processing; used
      *                             to return error information.
-     * @return                     Dataset named by {@code path}.
+     * @return                     Dataset named by {@code path}, or
+     *                             null if no such dataset could be
+     *                             found (in which case an error has
+     *                             already been recorded for {@code request}.
      */
     protected Dataset findNestedDataset(Dataset root, String path,
             DataRequest request) {
-        if ((path == null) || (path.length() == 0)) {
+        if (path == null) {
             return root;
         }
         try {
@@ -280,8 +174,8 @@ public class FileDataManager extends DataManager {
         }
         catch (Dataset.MissingValueError e) {
             request.setError (new Dataset("message", "nested dataset \"" +
-                    path + "\" doesn't exist", "culprit", "name"));
-            throw new RequestAbortedError();
+                    path + "\" doesn't exist", "culprit", "path"));
+            return null;
         }
     }
 }

@@ -11,7 +11,7 @@ import org.apache.log4j.*;
  * entry point for handling requests.  Its main job is to pick another class
  * and method to handle the request, based on information in the URL, and
  * invoke that method.  This class also serves as a last-ditch handler
- * for errors that occur during the request.  Dispatcher should be
+ * for errors that occur during the request.  This class should be
  * invisible to Fiz applications.
  */
 public class Dispatcher extends HttpServlet {
@@ -168,9 +168,9 @@ public class Dispatcher extends HttpServlet {
     public static void clearCaches() {
         Config.clearCache();
         Css.clearCache();
-        DataManager.clearCaches();
         Html.clearJsDependencyCache();
         TabSection.clearCache();
+        Util.clearCache();
     }
 
     /**
@@ -192,7 +192,6 @@ public class Dispatcher extends HttpServlet {
         interactorMap.clear();
 
         // Clean up all of the other Fiz modules.
-        DataManager.destroyAll();
     }
 
     /**

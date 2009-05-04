@@ -13,9 +13,6 @@ public class ClientRequestFixture extends ClientRequest {
                 new ServletResponseFixture());
         Config.init("test/testData/WEB-INF/config", "web/WEB-INF/fiz/config");
         Css.init("web/WEB-INF/fiz/css");
-        DataManager.destroyAll();
-        DataManagerFixture.clearLogs();
-        DataManager.logger.setLevel(Level.ERROR);
 
         // Create the Html object specially so it will find Javascript files.
         html = new Html(null);

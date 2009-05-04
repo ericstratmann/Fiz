@@ -6,8 +6,8 @@ import org.apache.log4j.*;
 
 /**
  * SqlDataManager provides access to SQL databases using JDBC.
- * <p>
- * The configuration dataset for a SqlDataManager may contain any of the
+ *
+ * The configuration properties for an SqlDataManager may contain any of the
  * following values:
  *   driverClass:      (required) Name of the class that implements the
  *                      JDBC driver for the target database, such as
@@ -20,67 +20,9 @@ import org.apache.log4j.*;
  *   password:         (required) Password associated with {@code user}.
  *   user:             (required) Name of the user under which database
  *                     operations should be performed.
- * <p>
- * DataRequests for SqlDataManager must contain a {@code request} value
- * that selects an operation to perform; it must be one of the values
- * listed below.  Based on {@code request}, additional DataRequest values
- * are required or supported:
- *   clearTable:       Remove all rows from a dataset table.
- *       table:        (required) The name of the table to clear.
- *   delete:           Removed from a table all rows with a particular value
- *                     in a particular column.
- *       table:        (required) The name of the table.
- *       column:       (required) The name of a column in {@code table}.
- *       value:        (required) Delete all rows with this value
- *                      for {@code column}.
- *   find:             Find all the rows in a table with a given value
- *                     in a given column.  The result dataset contains
- *                     one nested dataset (named {@code record}) for each
- *                     matching row.
- *       table:        (required) The name of the table.
- *       column:       (required) The name of a column in {@code table}.
- *       value:        (required) Desired value for {@code column}.
- *   findWithSql:      Issue a SQL query and returned a dataset containing
- *                     one nested dataset (named {@code record}) for each
- *                     record returned.
- *       sql:          (required) The SQL query to issue.  This is a
- *                     template, which is expanded using information in
- *                     {@code queryData}.
- *       queryData:    (optional) Nested dataset containing values
- *                     referenced by {@code sql}.  Can be omitted if
- *                     {@code sql} doesn't specify any substitutions.
- *   insert:           Add one or more new rows to a table.
- *       table:        (required) The name of the table.
- *       record:       (optional) Nested dataset containing values for
- *                     the new row.  If there are multiple datasets with
- *                     the name {@code record}, that one new row is a
- *                     inserted for each dataset.  If this parameter is
- *                     omitted then the values for the new row must be
- *                     supplied in the top-level request dataset (i.e. at
- *                     the same level as {@code table}).
- *   update:           Modify the contents of all rows in a table that
- *                     have a given value in a given column.
- *       table:        (required) The name of a table.
- *       column:       (required) The name of a column in {@code table}.
- *       value:        (required) Desired value for {@code column}.
- *       record:       (optional) Nested dataset containing new values
- *                     for the rows selected by {@code table}, {@code column},
- *                     and {@code value}.  Only the columns selected by
- *                     the contents of {@code record} are updated.  If this
- *                     parameter is omitted then the values to update are
- *                     taken from the top-level request dataset: any values
- *                     whose names match columns in {@code table} are used.
- *   updateWithSql:    Issue a SQL update command.  The result is an empty
- *                     dataset.
- *       sql:          (required) The SQL update statement.  This is a
- *                     template, which is expanded using information in
- *                     {@code queryData}.
- *       queryData:    (optional) Nested dataset containing values
- *                     referenced by {@code sql}.  Can be omitted if
- *                     {@code sql} doesn't specify any substitutions.
  */
 
-public class SqlDataManager extends DataManager {
+public class SqlDataManager {
     // The following variables hold configuration properties passed
     // to the constructor.
     protected String serverUrl;
@@ -105,6 +47,14 @@ public class SqlDataManager extends DataManager {
     // containing information about the table.
     protected HashMap<String,TableInfo> tables = null;
 
+    // The following variables refer to the first and last entries in a
+    // linked list of SQLRequests waiting to be processed.  The first entry
+    // in the list is currently being processed; it is not removed from
+    // the list until it has been completed.  If {@code firstRequest} is
+    // null it means that the list is empty.
+    protected SqlRequest firstRequest = null;
+    protected SqlRequest lastRequest = null;
+
     // The following variable is used for log4j-based logging.
     protected static Logger logger = Logger.getLogger(
             "org.fiz.SqlDataManager");
@@ -114,22 +64,77 @@ public class SqlDataManager extends DataManager {
     protected static int reopens = 0;
 
     /**
+     * The following class is used as a superclass for all of the request
+     * types implemented by this data manager; it holds common fields
+     * that allow some functions such as error reporting and scheduling
+     * to be centralized.
+     */
+    protected static abstract class SqlRequest extends DataRequest
+            implements Runnable {
+        // Controlling data manager for this request; filled in by the
+        // {@code schedule} method.
+        protected SqlDataManager manager;
+
+        // Next in a list of pending data requests for this manager.  We
+        // only execute one request at a time, so if multiple requests
+        // are issued at the same time they get queued here.
+        protected SqlRequest next = null;
+    }
+
+    /**
+     * An instance of the following class is invoked asynchronously to
+     * run all of the requests on the queue.  It returns only when the
+     * queue is empty.
+     */
+    protected static class RequestRunner implements Runnable {
+        protected SqlDataManager manager;
+        public RequestRunner(SqlDataManager manager) {
+            this.manager = manager;
+        }
+        public void run() {
+            for (SqlRequest request = manager.firstRequest; request != null;
+                    request = manager.popList()) {
+                try {
+                    request.run();
+                }
+                catch (SqlError e) {
+                    SqlDataManager.logger.error(e.getMessage());
+                    request.setError(new Dataset("message", e.getMessage()));
+                }
+                catch (Throwable e) {
+                    String name = request.getName();
+                    if (name == null) {
+                        name = "unknown SqlDataManager";
+                    }
+                    String message = e.getClass().getSimpleName() +
+                            " exception in " + name + " data request: " +
+                            StringUtil.lcFirst(e.getMessage());
+                    SqlDataManager.logger.error(e.getMessage());
+                    request.setError(new Dataset("message", message));
+                }
+            }
+
+        }
+    }
+    protected RequestRunner runner = new RequestRunner(this);
+
+    /**
      * Construct a SqlDataManager using a dataset containing configuration
-     * parameters.
-     * @param config               Parameters for this data manager;
-     *                             see top-level class documentation
+     * properties.
+     * @param properties           Configuration properties for this data
+     *                             manager; see top-level class documentation
      *                             for supported values.
      */
-    public SqlDataManager(Dataset config) {
-        serverUrl = config.get("serverUrl");
-        user = config.get("user");
-        password = config.get("password");
+    public SqlDataManager(Dataset properties) {
+        serverUrl = properties.get("serverUrl");
+        user = properties.get("user");
+        password = properties.get("password");
         try {
-            Class.forName(config.get("driverClass"));
+            Class.forName(properties.get("driverClass"));
         }
         catch (ClassNotFoundException e) {
             throw new InternalError("SqlDataManager couldn't load driver " +
-                    "class \"" + config.get("driverClass") + "\"");
+                    "class \"" + properties.get("driverClass") + "\"");
         }
         try {
             connection = DriverManager.getConnection(serverUrl,
@@ -144,6 +149,20 @@ public class SqlDataManager extends DataManager {
         collectMetadata();
     }
 
+    // For each of the operations supported by this data manager there are
+    // two methods and a class:
+    // * The first method, such as {@code insert}, carries out the operation
+    //   immediately and synchronously.
+    // * The class, with a name such as {@code InsertRequest}, is a
+    //   DataRequest that stores the arguments for the operation.  It is
+    //   used to schedule the operation for asynchronous execution.  The
+    //   {@code run} method in this class invokes the first method above to
+    //   carry out the operation.
+    // * The second method, with a name such as {@code newInsertRequest},
+    //   takes the same arguments as the first method, but creates an
+    //   object of class, schedules that object for execution, and returns
+    //   the object immediately to the caller.
+
     /**
      * Remove all of the rows from a table.
      * @param table                Name of the table to be emptied.
@@ -157,13 +176,36 @@ public class SqlDataManager extends DataManager {
                 return;
             }
             catch (SQLException e) {
-                handleError(e, "in clearTable");
+                handleError(e, "in SqlDataManager.clearTable");
             }
         }
     }
 
+    protected static class ClearTableRequest extends SqlRequest {
+        protected String table;
+        public ClearTableRequest(String table) {
+            this.table = table;
+        }
+        public void run() {
+            manager.clearTable(table);
+            setComplete(new Dataset());
+        }
+    }
+
     /**
-     * Delete all of the rows in a table that have a particular value in a
+     * Create a data request that will remove all of the rows from a table.
+     * @param table                Name of the table to be emptied.
+     * @return                     A DataRequest object; this request
+     *                             will remove all of the rows from the table.
+     */
+    public SqlRequest newClearTableRequest(String table) {
+        SqlRequest request = new ClearTableRequest(table);
+        schedule(request);
+        return request;
+    }
+
+    /**
+     * Delete all of the rows in a table with a particular value in a
      * particular column.
      * @param tableName            Name of the table to modify.
      * @param column               Name of the column whose value selects the
@@ -183,9 +225,40 @@ public class SqlDataManager extends DataManager {
                 return;
             }
             catch (SQLException e) {
-                handleError(e, "in delete");
+                handleError(e, "in SqlDataManager.delete");
             }
         }
+    }
+
+    protected static class DeleteRequest extends SqlRequest {
+        protected String table, column, value;
+        public DeleteRequest(String table, String column, String value) {
+            this.table = table;
+            this.column = column;
+            this.value = value;
+        }
+        public void run() {
+            manager.delete(table, column, value);
+            setComplete(new Dataset());
+        }
+    }
+
+    /**
+     * Create a data request that will delete all of the rows in a
+     * table with a particular value in a particular column.
+     * @param tableName            Name of the table to modify.
+     * @param column               Name of the column whose value selects the
+     *                             row(s) to be deleted.
+     * @param value                Delete all rows that have this value
+     *                             in the column given by {@code column}.
+     * @return                     A DataRequest object; this request
+     *                             will performed for deletion operation.
+     */
+    public SqlRequest newDeleteRequest(String tableName, String column,
+            String value) {
+        SqlRequest request = new DeleteRequest(tableName, column, value);
+        schedule(request);
+        return request;
     }
 
     /**
@@ -213,9 +286,42 @@ public class SqlDataManager extends DataManager {
                 return result;
             }
             catch (SQLException e) {
-                handleError(e, "in find");
+                handleError(e, "in SqlDataManager.find");
             }
         }
+    }
+
+    protected static class FindRequest extends SqlRequest {
+        protected String tableName;
+        protected String column;
+        protected String value;
+        public FindRequest(String tableName, String column,
+                String value) {
+            this.tableName = tableName;
+            this.column = column;
+            this.value = value;
+        }
+        public void run() {
+            setComplete(manager.find(tableName, column, value));
+        }
+    }
+
+    /**
+     * Create a data request that will find all of the rows in a table with
+     * a particular value in a particular column.
+     * @param tableName            Name of the table in which to search.
+     * @param column               Name of a column in the table.
+     * @param value                Return all rows that have this value in
+     *                             the column given by {@code column}.
+     * @return                     A DataRequest whose result will be a dataset
+     *                             containing one child named {@code record}
+     *                             for each record returned by the query.
+     */
+    public SqlRequest newFindRequest(String tableName, String column,
+            String value) {
+        SqlRequest request = new FindRequest(tableName, column, value);
+        schedule(request);
+        return request;
     }
 
     /**
@@ -238,9 +344,34 @@ public class SqlDataManager extends DataManager {
                 return result;
             }
             catch (SQLException e) {
-                handleError(e, "in findWithSql");
+                handleError(e, "in SqlDataManager.findWithSql");
             }
         }
+    }
+
+    protected static class FindWithSqlRequest extends SqlRequest {
+        protected String sql;
+        public FindWithSqlRequest(String sql) {
+            this.sql = sql;
+        }
+        public void run() {
+            setComplete(manager.findWithSql(sql));
+        }
+    }
+
+    /**
+     * Create a data request that will retrieve records from the database
+     * using a raw SQL string for the query.
+     * @param sql                  SQL query that will return zero or more
+     *                             records.
+     * @return                     A DataRequest whose result will be a dataset
+     *                             containing one child named {@code record}
+     *                             for each record returned by the query.
+     */
+    public SqlRequest newFindWithSqlRequest(String sql) {
+        SqlRequest request = new FindWithSqlRequest(sql);
+        schedule(request);
+        return request;
     }
 
     /**
@@ -272,9 +403,38 @@ public class SqlDataManager extends DataManager {
                 return result;
             }
             catch (SQLException e) {
-                handleError(e, "in findWithSql");
+                handleError(e, "in SqlDataManager.findWithSql");
             }
         }
+    }
+
+    protected static class FindWithSqlTemplateRequest extends SqlRequest {
+        protected String template;
+        protected Dataset data;
+        public FindWithSqlTemplateRequest(String template, Dataset data) {
+            this.template = template;
+            this.data = data;
+        }
+        public void run() {
+            setComplete(manager.findWithSql(template, data));
+        }
+    }
+
+    /**
+     * Create a data request that will retrieve records from the database
+     * using a raw SQL string for the query.
+     * @param template             Template for an SQL query that will return
+     *                             zero or more records.
+     * @param data                 Contains data values to substitute into
+     *                             {@code template}.
+     * @return                     A DataRequest whose result will be a dataset
+     *                             containing one child named {@code record}
+     *                             for each record returned by the query.
+     */
+    public SqlRequest newFindWithSqlRequest(String template, Dataset data) {
+        SqlRequest request = new FindWithSqlTemplateRequest(template, data);
+        schedule(request);
+        return request;
     }
 
     /**
@@ -322,95 +482,40 @@ public class SqlDataManager extends DataManager {
                 return;
             }
             catch (SQLException e) {
-                handleError(e, "in insert");
+                handleError(e, "in SqlDataManager.insert");
             }
         }
     }
 
-    /**
-     * This method is invoked by DataRequest.startRequests to process
-     * one or more requests for this data manager.  The requests are
-     * processed synchronously, so they are all complete before this
-     * method returns.
-     * @param requests             DataRequest objects describing the
-     *                             requests to be processed.
-     */
-    @Override
-    public void startRequests(Collection<DataRequest> requests) {
-        for (DataRequest request : requests) {
-            Dataset parameters = request.getRequestData();
-            String operation = null;
-            try {
-                operation = parameters.get("request");
-                if (operation.equals("clearTable")) {
-                    clearTable(parameters.get("table"));
-                    request.setComplete();
-                } else if (operation.equals("delete")) {
-                    delete(parameters.get("table"), parameters.get("column"),
-                            parameters.get("value"));
-                    request.setComplete();
-                } else if (operation.equals("find")) {
-                    request.setComplete(find(parameters.get("table"),
-                            parameters.get("column"),
-                            parameters.get("value")));
-                } else if (operation.equals("findWithSql")) {
-                    request.setComplete(findWithSql(parameters.get("sql"),
-                            parameters.checkChild("queryData")));
-                } else if (operation.equals("insert")) {
-                    ArrayList<Dataset> records = parameters.getChildren(
-                            "record");
-                    if (records.size() == 0) {
-                        insert(parameters.get("table"), parameters);
-                    } else {
-                        for (Dataset record : records) {
-                            insert(parameters.get("table"), record);
-                        }
-                    }
-                    request.setComplete();
-                } else if (operation.equals("update")) {
-                    Dataset record = parameters.checkChild("record");
-                    if (record == null) {
-                        record = parameters;
-                    }
-                    update(parameters.get("table"), parameters.get("column"),
-                            parameters.get("value"), record);
-                    request.setComplete();
-                } else if (operation.equals("updateWithSql")) {
-                    updateWithSql(parameters.get("sql"),
-                            parameters.checkChild("queryData"));
-                    request.setComplete();
-                } else {
-                    request.setError(new Dataset("message",
-                            "unknown request \"" + operation +
-                            "\" for SqlDataManager; must be clearTable, " +
-                            "delete, find, findWithSql, insert, update, " +
-                            "or updateWithSql"));
-                }
-            }
-            catch (Dataset.MissingValueError e) {
-                request.setError(new Dataset("message",
-                        "SqlDataManager " +
-                        ((operation != null) ? ("\"" + operation + "\" ") : "") +
-                        "request didn't contain required " +
-                        "parameter \"" + e.getMissingKey() + "\""));
-            }
-            catch (SqlError e) {
-                String message = "SQL error in SqlDataManager \"" +
-                        operation + "\" request: " +
-                        StringUtil.lcFirst(e.getCause().getMessage());
-                logger.error(message);
-                request.setError(new Dataset("message", message));
-            }
-            catch (Error e) {
-                String message = "internal error in SqlDataManager" +
-                        operation + "\" request: " +
-                        ((operation != null) ?
-                        ("\"" + operation + "\" ") : "") +
-                        "request: " + StringUtil.lcFirst(e.getMessage());
-                logger.error(message);
-                request.setError(new Dataset("message", message));
-            }
+    protected static class InsertRequest extends SqlRequest {
+        protected String tableName;
+        protected Dataset row;
+        public InsertRequest(String tableName, Dataset row) {
+            this.tableName = tableName;
+            this.row = row;
         }
+        public void run() {
+            manager.insert(tableName, row);
+            setComplete(new Dataset());
+        }
+    }
+
+    /**
+     * Create a data request that will add a row to an existing table,
+     * where the data for a new row is specified by a Dataset.
+     * @param tableName            Name of the table in which the new rows
+     *                             are to be created.
+     * @param row                  Contains values for the new row (any values
+     *                             that do not correspond to columns in
+     *                             {@code tableName} are ignored).
+     * @return                     A DataRequest that will carry out the
+     *                             operation asynchronously.  Its result will
+     *                             be an empty Dataset.
+     */
+    public SqlRequest newInsertRequest(String tableName, Dataset row) {
+        SqlRequest request = new InsertRequest(tableName, row);
+        schedule(request);
+        return request;
     }
 
     /**
@@ -466,9 +571,51 @@ public class SqlDataManager extends DataManager {
                 return;
             }
             catch (SQLException e) {
-                handleError(e, "in update");
+                handleError(e, "in SqlDataManager.update");
             }
         }
+    }
+
+    protected static class UpdateRequest extends SqlRequest {
+        protected String tableName, column, value;
+        protected Dataset newValues;
+        public UpdateRequest(String tableName, String column, String value,
+            Dataset newValues) {
+            this.tableName = tableName;
+            this.column = column;
+            this.value = value;
+            this.newValues = newValues;
+        }
+        public void run() {
+            manager.update(tableName, column, value, newValues);
+            setComplete(new Dataset());
+        }
+    }
+
+    /**
+     * Create a data request that will modify one or more rows in a
+     * particular table, where the rows to be modified are those with a
+     * particular value in a particular column.
+     * @param tableName            Name of the table to be modified.
+     * @param column               Name of the column that will be checked
+     *                             to select the rows to be modified.
+     * @param value                All rows whose {@code column} value
+     *                             equals this will be modified.
+     * @param newValues            Contains new values to store in all
+     *                             of the rows matching {@code column} and
+     *                             {@code value}.  Any value whose name
+     *                             does not represent a column in
+     *                             {@code table} is ignored.
+     * @return                     A DataRequest that will carry out the
+     *                             operation asynchronously.  Its result will
+     *                             be an empty Dataset.
+     */
+    public SqlRequest newUpdateRequest(String tableName, String column,
+            String value, Dataset newValues) {
+        SqlRequest request = new UpdateRequest(tableName, column, value,
+                newValues);
+        schedule(request);
+        return request;
     }
 
     /**
@@ -488,9 +635,34 @@ public class SqlDataManager extends DataManager {
                 return;
             }
             catch (SQLException e) {
-                handleError(e, "in updateWithSql");
+                handleError(e, "in SqlDataManager.updateWithSql");
             }
         }
+    }
+
+    protected static class UpdateWithSqlRequest extends SqlRequest {
+        protected String[] sqlStatements;
+        public UpdateWithSqlRequest(String ... sqlStatements) {
+            this.sqlStatements = sqlStatements;
+        }
+        public void run() {
+            manager.updateWithSql(sqlStatements);
+            setComplete(new Dataset());
+        }
+    }
+
+    /**
+     * Create a data request that will make a database update (i.e., no
+     * return data) using one or more raw SQL statements.
+     * @param sqlStatements        Any number of SQL statements.
+     * @return                     A DataRequest that will carry out the
+     *                             operation asynchronously.  Its result will
+     *                             be an empty Dataset.
+     */
+    public SqlRequest newUpdateWithSqlRequest(String ... sqlStatements) {
+        SqlRequest request = new UpdateWithSqlRequest(sqlStatements);
+        schedule(request);
+        return request;
     }
 
     /**
@@ -518,7 +690,53 @@ public class SqlDataManager extends DataManager {
                 return;
             }
             catch (SQLException e) {
-                handleError(e, "in updateWithSql");
+                handleError(e, "in SqlDataManager.updateWithSql");
+            }
+        }
+    }
+
+    protected static class UpdateWithSqlTemplateRequest extends SqlRequest {
+        protected String template;
+        protected Dataset data;
+        public UpdateWithSqlTemplateRequest(String template, Dataset data) {
+            this.template = template;
+            this.data = data;
+        }
+        public void run() {
+            manager.updateWithSql(template, data);
+            setComplete(new Dataset());
+        }
+    }
+
+    /**
+     * Create a data request that will make a database update (i.e.,
+     * no return data) using a template for an SQL statement.
+     * @param template             Template for an SQL statement (all the
+     *                             usual "@" facilities of templates).
+     * @param data                 Contains values to substitute into
+     *                             {@code template}.
+     * @return                     A DataRequest that will carry out the
+     *                             operation asynchronously.  Its result will
+     *                             be an empty Dataset.
+     */
+    public SqlRequest newUpdateWithSqlRequest(String template,
+            Dataset data) {
+        SqlRequest request = new UpdateWithSqlTemplateRequest(template, data);
+        schedule(request);
+        return request;
+    }
+
+    /**
+     * Wait for all outstanding data requests for this data manager to
+     * finish processing.  This method is used primarily for testing.
+     */
+    public synchronized void waitForCompletion () {
+        while (firstRequest != null) {
+            try {
+                wait();
+            }
+            catch (InterruptedException e) {
+                // Ignore this exception.
             }
         }
     }
@@ -697,5 +915,40 @@ public class SqlDataManager extends DataManager {
         // We can't recover from this error, so convert it to an SqlError,
         // which makes it easier to unwind the entire request.
         throw new SqlError(exception, context);
+    }
+
+    /**
+     * This method is invoked upon completion of a queued SQLRequest.
+     * It removes that request from the front of the queue and returns
+     * the next request, if there is one.
+     * @return                     The next request to process, or null if
+     *                             there is none.
+     */
+    protected synchronized SqlRequest popList() {
+        firstRequest = firstRequest.next;
+        if (firstRequest == null) {
+            notifyAll();
+        }
+        return firstRequest;
+    }
+
+    /**
+     * This method arranges for a request to be executed asynchronously.
+     * If the execution of the request causes an uncaught exception,
+     * it is handled here and converted to an error response on the request.
+     * @param request              Contains information about the operation
+     *                             to perform.
+     */
+    protected synchronized void schedule(SqlRequest request) {
+        request.manager = this;
+        if (firstRequest == null) {
+            firstRequest = lastRequest = request;
+
+            // TODO: use a thread pool so we don't have to create a new thread for each page.
+            new Thread(runner).start();
+        } else {
+            lastRequest.next = request;
+            lastRequest = request;
+        }
     }
 }

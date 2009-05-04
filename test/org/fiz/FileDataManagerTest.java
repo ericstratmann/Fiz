@@ -10,18 +10,8 @@ import org.apache.log4j.Level;
 public class FileDataManagerTest extends junit.framework.TestCase {
     protected FileDataManager manager = null;
     public void setUp() {
-        Config.setDataset("main", new Dataset());
-        DataManager.logger.setLevel(Level.ERROR);
         (new File("_testData_")).mkdir();
-        manager = new FileDataManager(new Dataset("pathTemplate",
-                "bogus,_testData_"));
-        Config.setDataset("dataManagers", YamlDataset.newStringInstance(
-                "test:\n" +
-                "  class: FileDataManager\n" +
-                "  pathTemplate: \"bogus,_testData_\"\n"));
-        Config.setDataset("main", YamlDataset.newStringInstance(
-                "searchPackages: org.fiz\n"));
-        DataManager.destroyAll();
+        manager = new FileDataManager("bogus", "_testData_");
     }
 
     public void tearDown() {
@@ -29,12 +19,9 @@ public class FileDataManagerTest extends junit.framework.TestCase {
     }
 
     public void test_constructor() {
-        Config.setDataset("main", new Dataset("home", "/a/b/c",
-                "test", "<test>, xyz"));
-        manager = new FileDataManager(new Dataset("pathTemplate",
-                "@home/myDir, /demo/@test"));
+        manager = new FileDataManager("abc", "xyz", "first/second");
         assertEquals("path size", 3, manager.path.length);
-        assertEquals("expanded path", "/a/b/c/myDir, /demo/<test>, xyz",
+        assertEquals("path", "abc, xyz, first/second",
                 StringUtil.join(manager.path, ", "));
     }
 
@@ -48,208 +35,16 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 manager.datasetCache.size());
     }
 
-    public void test_startRequests_create() throws IOException {
-        TestUtil.writeFile("_testData_/test.yml",
-                "child:\n" +
-                "  name: Alice\n" +
-                "  age: 21\n");
-        DataRequest request = new DataRequest(YamlDataset.newStringInstance(
-                "manager: test\n" +
-                "request: create\n" +
-                "file: test\n" +
-                "name: child2\n" +
-                "values:\n" +
-                "  age: 36\n" +
-                "  height: 65\n"));
-        ArrayList<DataRequest> requests = new ArrayList<DataRequest>();
-        requests.add(request);
-        manager.startRequests(requests);
-        assertEquals("error dataset", null, request.getErrorData());
-        assertEquals("response", "", request.getResponseData().toString());
-        assertEquals("dataset file",
-                "child:\n" +
-                "    age:  21\n" +
-                "    name: Alice\n" +
-                "child2:\n" +
-                "    age:    36\n" +
-                "    height: 65\n",
-                Util.readFile("_testData_/test.yml").toString());
-    }
-    public void test_startRequests_read() {
-        TestUtil.writeFile("_testData_/test.yml",
-                "first: abc\n" +
-                "level1:\n" +
-                "  x: 47\n" +
-                "  y: 58\n" +
-                "second: def\n" +
-                "third: ghi\n");
-        DataRequest request1 = new DataRequest(new Dataset("manager", "test",
-                "request", "read", "file", "test"));
-        DataRequest request2 = new DataRequest(new Dataset("manager", "test",
-                "request", "read", "file", "test", "name", "level1"));
-        ArrayList<DataRequest> requests = new ArrayList<DataRequest>();
-        requests.add(request1);
-        requests.add(request2);
-        manager.startRequests(requests);
-        assertEquals("response for first request",
-                "first:  abc\n" +
-                "level1:\n" +
-                "    x: 47\n" +
-                "    y: 58\n" +
-                "second: def\n" +
-                "third:  ghi\n", request1.getResponseData().toString());
-        assertEquals("response for second request",
-                "x: 47\n" +
-                "y: 58\n", request2.getResponseData().toString());
-    }
-    public void test_startRequests_update() throws IOException {
-        TestUtil.writeFile("_testData_/test.yml",
-                "child:\n" +
-                "  name: Alice\n" +
-                "  age: 21\n");
-        DataRequest request = new DataRequest(YamlDataset.newStringInstance(
-                "manager: test\n" +
-                "request: update\n" +
-                "file: test\n" +
-                "values:\n" +
-                "  age: 36\n"));
-        assertEquals("response", "", request.getResponseData().toString());
-        assertEquals("error dataset", null, request.getErrorData());
-        assertEquals("dataset file",
-                "age: 36\n" +
-                "child:\n" +
-                "    age:  21\n" +
-                "    name: Alice\n",
-                Util.readFile("_testData_/test.yml").toString());
-    }
-    public void test_startRequests_delete() throws IOException {
-        TestUtil.writeFile("_testData_/test.yml",
-                "child:\n" +
-                "  name: Alice\n" +
-                "  grandchild:\n" +
-                "    name: Bill\n" +
-                "  age: 21\n");
-        DataRequest request = new DataRequest(YamlDataset.newStringInstance(
-                "manager: test\n" +
-                "request: delete\n" +
-                "file: test\n" +
-                "name: child.grandchild\n"));
-        assertEquals("response", "", request.getResponseData().toString());
-        assertEquals("error dataset", null, request.getErrorData());
-        assertEquals("dataset file",
-                "child:\n" +
-                "    age:  21\n" +
-                "    name: Alice\n",
-                Util.readFile("_testData_/test.yml").toString());
-    }
-    public void test_startRequests_error() {
-        TestUtil.writeFile("_testData_/test.yml",
-                "first: abc\n" +
-                "error1:\n" +
-                "  message: 7.9 earthquake\n" +
-                "  culprit: San Andreas\n" +
-                "second: def\n" +
-                "third: ghi\n");
-        DataRequest request1 = new DataRequest(new Dataset("manager", "test",
-                "request", "error", "file", "test"));
-        DataRequest request2 = new DataRequest(new Dataset("manager", "test",
-                "request", "error", "file", "test", "name", "error1"));
-        ArrayList<DataRequest> requests = new ArrayList<DataRequest>();
-        requests.add(request1);
-        requests.add(request2);
-        manager.startRequests(requests);
-        assertEquals("response for first request",
-                "error1:\n" +
-                "    culprit: San Andreas\n" +
-                "    message: 7.9 earthquake\n" +
-                "first:  abc\n" +
-                "second: def\n" +
-                "third:  ghi\n", request1.getErrorData()[0].toString());
-        assertEquals("response for second request",
-                "culprit: San Andreas\n" +
-                "message: 7.9 earthquake\n",
-                request2.getErrorData()[0].toString());
-    }
-    public void test_startRequests_unknownOperation() {
-        DataRequest request = new DataRequest(new Dataset("manager", "test",
-                "request", "bogus"));
-        ArrayList<DataRequest> requests = new ArrayList<DataRequest>();
-        requests.add(request);
-        manager.startRequests(requests);
-        assertEquals("response", null, request.getResponseData());
-        assertEquals("error information",
-                "message: \"unknown request \\\"bogus\\\" for " +
-                "FileDataManager; must be create, read, update, " +
-                "delete, or error\"\n",
-                request.getErrorData()[0].toString());
-    }
-    public void test_startRequests_missingParameter_operationNonNull() {
-        DataRequest request = new DataRequest(new Dataset("manager", "test",
-                "request", "read"));
-        ArrayList<DataRequest> requests = new ArrayList<DataRequest>();
-        requests.add(request);
-        manager.startRequests(requests);
-        assertEquals("response", null, request.getResponseData());
-        assertEquals("error information",
-                "message: FileDataManager \"read\" request didn't " +
-                "contain required parameter \"file\"\n",
-                request.getErrorData()[0].toString());
-    }
-    public void test_startRequests_missingParameter_operationNull() {
-        DataRequest request = new DataRequest(new Dataset("manager", "test"));
-        ArrayList<DataRequest> requests = new ArrayList<DataRequest>();
-        requests.add(request);
-        manager.startRequests(requests);
-        assertEquals("response", null, request.getResponseData());
-        assertEquals("error information",
-                "message: FileDataManager request didn't contain required " +
-                "parameter \"request\"\n", request.getErrorData()[0].toString());
-    }
-    public void test_startRequests_unknownError() {
-        DataRequest request = new DataRequest(new Dataset("manager", "test",
-                "request", "read", "file", "test", "name", "a/b/c"));
-        ArrayList<DataRequest> requests = new ArrayList<DataRequest>();
-        requests.add(request);
-        manager.startRequests(requests);
-        assertEquals("response", null, request.getResponseData());
-        assertEquals("error information",
-                "internal error in FileDataManager \"read\" request: " +
-                "couldn't find dataset file \"test\" in path (\"bogus\", " +
-                "\"_testData_\")",
-                request.getErrorData()[0].get("message"));
-    }
-
-    public void test_createOperation_modifyRoot() throws IOException {
+    public void test_newCreateRequest() throws FileNotFoundException {
         TestUtil.writeFile("_testData_/test.yml",
                 "first: abc\n" +
                 "second: def\n" +
-                "third: ghi\n");
-        Dataset parameters = YamlDataset.newStringInstance(
-                "file: test\n" +
-                "values:\n" +
-                "  first: 123\n" +
-                "  new: 456\n");
-        DataRequest request = new DataRequest(new Dataset());
-        manager.createOperation(request, parameters);
-        assertEquals("response", "", request.getResponseData().toString());
-        assertEquals("dataset file", "first: 123\n" +
-                "new:   456\n",
-                Util.readFile("_testData_/test.yml").toString());
-    }
-    public void test_createOperation_modifyNested() throws IOException {
-        TestUtil.writeFile("_testData_/test.yml",
-                "first: abc\n" +
-                "second: def\n" +
-                "third: ghi\n");
-        Dataset parameters = YamlDataset.newStringInstance(
-                "file: test\n" +
-                "name: level1.level2\n" +
-                "values:\n" +
-                "  first: 123\n" +
-                "  new: 456\n");
-        DataRequest request = new DataRequest(new Dataset());
-        manager.createOperation(request, parameters);
-        assertEquals("response", "", request.getResponseData().toString());
+                "third: ghi\n" +
+                "level1: 123\n");
+        DataRequest request = manager.newCreateRequest("test",
+                "level1.level2", new Dataset("first", "123", "new", "456"));
+        assertEquals("empty response dataset", "",
+                request.getResponseOrAbort().toString());
         assertEquals("dataset file", "first:  abc\n" +
                 "level1:\n" +
                 "    level2:\n" +
@@ -259,61 +54,49 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "third:  ghi\n",
                 Util.readFile("_testData_/test.yml").toString());
     }
-
-    public void test_errorOperation_basics() {
+    public void test_newCreateRequest_clearExisting()
+            throws FileNotFoundException {
         TestUtil.writeFile("_testData_/test.yml",
                 "first: abc\n" +
-                "error1:\n" +
-                "  - message: Name not in database\n" +
-                "    culprit: name\n" +
-                "  - message: error33\n" +
                 "second: def\n" +
-                "third: ghi\n");
-        DataRequest request = new DataRequest(new Dataset("manager", "test"));
-        manager.errorOperation(request, new Dataset("file", "test",
-                "name", "error1"));
-        assertEquals("response", "culprit: name\n" +
-                "message: Name not in database\n",
-                request.getErrorData()[0].toString());
-        assertEquals("response", "message: error33\n",
-                request.getErrorData()[1].toString());
-    }
-    public void test_errorOperation_noPath() {
-        TestUtil.writeFile("_testData_/test.yml",
-                "message: error33\n" +
-                "second: def\n");
-        DataRequest request = new DataRequest(new Dataset("manager", "test"));
-        manager.errorOperation(request, new Dataset("file", "test",
-                "name", ""));
-        assertEquals("response", "message: error33\n" +
-                "second:  def\n",
-                request.getErrorData()[0].toString());
-        manager.errorOperation(request, new Dataset("file", "test"));
-        assertEquals("response", "message: error33\n" +
-                "second:  def\n",
-                request.getErrorData()[0].toString());
+                "level1:\n" +
+                "  level2:\n" +
+                "    name: Alice\n" +
+                "    age: 26\n");
+        DataRequest request = manager.newCreateRequest("test",
+                "level1.level2", new Dataset("first", "123", "new", "456"));
+        assertEquals("dataset file", "first:  abc\n" +
+                "level1:\n" +
+                "    level2:\n" +
+                "        first: 123\n" +
+                "        new:   456\n" +
+                "second: def\n",
+                Util.readFile("_testData_/test.yml").toString());
     }
 
-    public void test_errorOperation_cantFindDataset() {
+    public void test_newDeleteRequest_deleteRoot() throws IOException {
         TestUtil.writeFile("_testData_/test.yml",
-                "first: abc\n");
-        DataRequest request = new DataRequest(new Dataset("manager", "test"));
-        boolean gotException = false;
-        try {
-            manager.errorOperation(request, new Dataset("file", "test",
-                    "name", "first.second"));
-        }
-        catch (FileDataManager.RequestAbortedError e) {
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-        assertEquals("error dataset",
-                "culprit: name\n" +
-                "message: nested dataset \"first.second\" doesn't exist\n",
-                request.getErrorData()[0].toString());
+                "child:\n" +
+                "  name: Alice\n" +
+                "  age: 21\n");
+        DataRequest request = manager.newDeleteRequest("test", null);
+        assertEquals("response", "", request.getResponseData().toString());
+        assertEquals("dataset file", "",
+                Util.readFile("_testData_/test.yml").toString());
+    }
+    public void test_newDeleteRequest_deleteNested() throws IOException {
+        TestUtil.writeFile("_testData_/test.yml",
+                "child:\n" +
+                "  name: Alice\n" +
+                "  age: 21\n" +
+                "country: USA");
+        DataRequest request =  manager.newDeleteRequest("test", "child");
+        assertEquals("response", "", request.getResponseData().toString());
+        assertEquals("dataset file", "country: USA\n",
+                Util.readFile("_testData_/test.yml").toString());
     }
 
-    public void test_readOperation() {
+    public void test_newReadRequest() {
         TestUtil.writeFile("_testData_/test.yml",
                 "first: abc\n" +
                 "level1:\n" +
@@ -321,17 +104,23 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "  y: 58\n" +
                 "second: def\n" +
                 "third: ghi\n");
-        DataRequest request = new DataRequest(new Dataset("manager", "test"));
-        manager.readOperation(request, new Dataset("file", "test"));
-        assertEquals("response", "first:  abc\n" +
-                "level1:\n" +
-                "    x: 47\n" +
-                "    y: 58\n" +
+        DataRequest request = manager.newReadRequest("test", "level1");
+        assertEquals("response", "x: 47\n" +
+                "y: 58\n", request.getResponseData().toString());
+    }
+    public void test_newReadRequest_nonexistentDataset() {
+        TestUtil.writeFile("_testData_/test.yml",
+                "first: abc\n" +
                 "second: def\n" +
-                "third:  ghi\n", request.getResponseData().toString());
+                "third: ghi\n");
+        DataRequest request = manager.newReadRequest("test",
+                "level1.level2");
+        assertEquals("error information", "culprit: path\n" +
+                "message: nested dataset \"level1.level2\" doesn't exist\n",
+                request.getErrorData()[0].toString());
     }
 
-    public void test_updateOperation_modifyRoot() throws IOException {
+    public void test_newUpdateRequest_modifyRoot() throws IOException {
         TestUtil.writeFile("_testData_/test.yml",
                 "first: abc\n" +
                 "second: def\n");
@@ -340,15 +129,15 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "values:\n" +
                 "  first: 123\n" +
                 "  new: 456\n");
-        DataRequest request = new DataRequest(new Dataset());
-        manager.updateOperation(request, parameters);
+        DataRequest request = manager.newUpdateRequest("test", null,
+                new Dataset("first", "123", "new", "456"));
         assertEquals("response", "", request.getResponseData().toString());
         assertEquals("dataset file", "first:  123\n" +
                 "new:    456\n" +
                 "second: def\n",
                 Util.readFile("_testData_/test.yml").toString());
     }
-    public void test_updateOperation_modifyNested() throws IOException {
+    public void test_newUpdateRequest_modifyNested() throws IOException {
         TestUtil.writeFile("_testData_/test.yml",
                 "child:\n" +
                 "  name: Alice\n" +
@@ -359,8 +148,8 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "values:\n" +
                 "  age: 36\n" +
                 "  height: 65\n");
-        DataRequest request = new DataRequest(new Dataset());
-        manager.updateOperation(request, parameters);
+        DataRequest request = manager.newUpdateRequest("test", "child",
+                new Dataset("age", "36", "height", "65"));
         assertEquals("response", "", request.getResponseData().toString());
         assertEquals("dataset file", "child:\n" +
                 "    age:    36\n" +
@@ -368,60 +157,22 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "    name:   Alice\n",
                 Util.readFile("_testData_/test.yml").toString());
     }
-    public void test_updateOperation_nonexistentChild() throws IOException {
+    public void test_newUpdateRequest_nonexistentChild() throws FileNotFoundException {
         TestUtil.writeFile("_testData_/test.yml",
                 "child:\n" +
                 "  name: Alice\n" +
                 "  age: 21\n");
-        DataRequest request = new DataRequest(YamlDataset.newStringInstance(
-                "manager: test\n" +
-                "request: update\n" +
-                "file: test\n" +
-                "name: child.grandchild\n" +
-                "values:\n" +
-                "  age: 36\n" +
-                "  height: 65\n"));
-        ArrayList<DataRequest> requests = new ArrayList<DataRequest>();
-        requests.add(request);
-        manager.startRequests(requests);
+        DataRequest request = manager.newUpdateRequest("test",
+                "child.grandchild", new Dataset("age", "36"));
         assertEquals("response", null, request.getResponseData());
         assertEquals("error dataset",
-                "culprit: name\n" +
+                "culprit: path\n" +
                 "message: nested dataset \"child.grandchild\" doesn't exist\n",
                 request.getErrorData()[0].toString());
         assertEquals("dataset file not modified",
                 "child:\n" +
                 "  name: Alice\n" +
                 "  age: 21\n",
-                Util.readFile("_testData_/test.yml").toString());
-    }
-
-    public void test_deleteOperation_deleteRoot() throws IOException {
-        TestUtil.writeFile("_testData_/test.yml",
-                "child:\n" +
-                "  name: Alice\n" +
-                "  age: 21\n");
-        Dataset parameters = YamlDataset.newStringInstance(
-                "file: test\n");
-        DataRequest request = new DataRequest(new Dataset());
-        manager.deleteOperation(request, parameters);
-        assertEquals("response", "", request.getResponseData().toString());
-        assertEquals("dataset file", "",
-                Util.readFile("_testData_/test.yml").toString());
-    }
-    public void test_deleteOperation_deleteNested() throws IOException {
-        TestUtil.writeFile("_testData_/test.yml",
-                "child:\n" +
-                "  name: Alice\n" +
-                "  age: 21\n" +
-                "country: USA");
-        Dataset parameters = YamlDataset.newStringInstance(
-                "file: test\n" +
-                "name: child\n");
-        DataRequest request = new DataRequest(new Dataset());
-        manager.deleteOperation(request, parameters);
-        assertEquals("response", "", request.getResponseData().toString());
-        assertEquals("dataset file", "country: USA\n",
                 Util.readFile("_testData_/test.yml").toString());
     }
 
@@ -450,8 +201,6 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "second: def\n");
         assertEquals("returned dataset", root,
                 manager.findNestedDataset(root, null, null));
-        assertEquals("returned dataset", root,
-                manager.findNestedDataset(root, "", null));
     }
     public void test_findNestedDataset_useDescendent() {
         Dataset root = YamlDataset.newStringInstance(
@@ -467,17 +216,10 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         Dataset root = YamlDataset.newStringInstance(
                 "first: abc\n" +
                 "second: def\n");
-        DataRequest request = new DataRequest(new Dataset());
-        boolean gotException = false;
-        try {
-            manager.findNestedDataset(root, "level1.level2", request);
-        }
-        catch (FileDataManager.RequestAbortedError e) {
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
+        DataRequest request = new DataRequest("test");
+        manager.findNestedDataset(root, "level1.level2", request);
         assertEquals("error dataset",
-                "culprit: name\n" +
+                "culprit: path\n" +
                 "message: nested dataset \"level1.level2\" doesn't exist\n",
                 request.getErrorData()[0].toString());
     }

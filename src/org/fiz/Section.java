@@ -21,10 +21,20 @@ public abstract class Section {
     // be null.
     protected Dataset properties = null;
 
-    // The following variable refers to the data request for this section,
-    // or null if there is none.
-
-    protected DataRequest dataRequest = null;
+    /**
+     * This method is invoked during the first phase of rendering a page,
+     * in case the Section needs to create custom requests of its own (as
+     * opposed to requests already provided for it by the Interactor).
+     * If so, this method creates the requests and passes them to
+     * {@code cr.addDataRequest}.  This method provides a default
+     * implementation that does nothing, which is appropriate for most
+     * Sections.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    public void addDataRequests(ClientRequest cr) {
+        // By default, do nothing.
+    }
 
     /**
      * Return the {@code id} property for this section, or null if no
@@ -59,25 +69,8 @@ public abstract class Section {
     }
 
     /**
-     * This method is invoked during the first phase of rendering a page;
-     * it calls {@code cr.registerDataRequest} for each of the
-     * DataRequests needed by this section to gather data to be displayed.
-     * This default implementation checks for a {@code request} configuration
-     * property and uses it to create a request, if it exists.  A pointer
-     * to the request is stored in the {@code dataRequest} member of the
-     * Section object.
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     */
-    public void registerRequests(ClientRequest cr) {
-        if (properties != null) {
-            dataRequest = cr.registerDataRequest(properties, "request");
-        }
-    }
-
-    /**
      * This method is invoked during the final phase of rendering a page;
-     * it generates HTML for this section and append it to the Html
+     * it generates HTML for this section and appends it to the Html
      * object associated with {@code request}.
      * @param cr                   Overall information about the client
      *                             request being serviced; HTML should get appended to

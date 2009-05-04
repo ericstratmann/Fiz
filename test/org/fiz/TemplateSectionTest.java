@@ -7,12 +7,17 @@ import java.io.*;
  */
 public class TemplateSectionTest extends junit.framework.TestCase {
     protected ClientRequest cr;
+    protected Dataset state = new Dataset("name", "California",
+            "country", "USA", "population", "37,000,000",
+            "capital", "Sacramento", "nearestOcean", "Pacific",
+            "governor", "Schwarzenegger");
 
     public void setUp() {
         cr = new ClientRequestFixture();
     }
 
     public void test_constructor_withDataset() {
+        cr.addDataRequest("getState", RawDataManager.newRequest(state));
         cr.showSections(new TemplateSection(
                 new Dataset("request", "getState",
                 "template", "@name's capital: @capital")));
@@ -33,6 +38,7 @@ public class TemplateSectionTest extends junit.framework.TestCase {
     }
 
     public void test_constructor_withTwoStrings() {
+        cr.addDataRequest("getState", RawDataManager.newRequest(state));
         cr.showSections(new TemplateSection("getState",
                 "capital: @capital, height: @height"));
         assertEquals("generated HTML", "capital: Sacramento, height: 66",
@@ -40,6 +46,8 @@ public class TemplateSectionTest extends junit.framework.TestCase {
     }
 
     public void test_html_errorInRequest() {
+        cr.addDataRequest("error", RawDataManager.newError(new Dataset(
+                "message", "sample <error>", "value", "47")));
         Config.setDataset("styles", new Dataset("test111",
                 "error for @name: @message"));
         cr.showSections(new TemplateSection(new Dataset(
@@ -51,6 +59,8 @@ public class TemplateSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
     }
     public void test_html_errorInRequest_defaultHandler() {
+        cr.addDataRequest("error", RawDataManager.newError(new Dataset(
+                "message", "sample <error>", "value", "47")));
         Config.setDataset("styles", new Dataset("TemplateSection",
                 new Dataset("error", "error: @message")));
         cr.showSections(new TemplateSection("error",
@@ -59,6 +69,7 @@ public class TemplateSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
     }
     public void test_html_withRequest() {
+        cr.addDataRequest("getState", RawDataManager.newRequest(state));
         cr.showSections(new TemplateSection("getState",
                 "name: @name, height: @height"));
         assertEquals("generated HTML", "name: California, height: 66",

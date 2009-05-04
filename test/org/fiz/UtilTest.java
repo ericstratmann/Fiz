@@ -1,11 +1,54 @@
 package org.fiz;
 import java.io.*;
+import java.lang.reflect.*;
 
 /**
  * Junit tests for the Util class.
  */
 
 public class UtilTest extends junit.framework.TestCase {
+    // The following classes used for testing invokeStaticMethod.
+    protected static class Test {
+        public static String checkDataset(Dataset d, String key) {
+            return d.check(key);
+        }
+        public static String checkDataset(Dataset d, Dataset d2) {
+            return d2.check("name");
+        }
+        public static String checkDataset(Dataset d) {
+            return d.check("name");
+        }
+        public String foo(String s) {
+            return "abc";
+        }
+        public static void throwError(String message) {
+            throw new InternalError(message);
+        }
+    }
+
+    public void test_clearCache_classCache() {
+        Config.setDataset("main", new Dataset("searchPackages",
+                "org.fiz"));
+        Class result = Util.findClass("Dataset");
+        assertEquals("cache successfully loaded", "org.fiz.Dataset",
+                result.getName());
+        Config.setDataset("main", new Dataset());
+        result = Util.findClass("Dataset");
+        assertEquals("path bogus, but cache valid", "org.fiz.Dataset",
+                result.getName());
+        Util.clearCache();
+        result = Util.findClass("Dataset");
+        assertEquals("cache flush so lookup fails", null, result);
+    }
+    public void test_clearCache_methodCache() {
+        Util.methodCache.clear();
+        Util.methodCacheMisses = 0;
+        Method method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+                new Dataset(), "age");
+        assertEquals("cache size before clearing", 1, Util.methodCache.size());
+        Util.clearCache();
+        assertEquals("cache size after clearing", 0, Util.methodCache.size());
+    }
 
     public void test_copyStream() throws IOException {
         StringReader in = new StringReader("01234567890abcdefg");
@@ -47,7 +90,20 @@ public class UtilTest extends junit.framework.TestCase {
                 Util.deleteTree("_test"));
     }
 
+    public void test_findClass_returnCachedValue() {
+        Util.clearCache();
+        Config.setDataset("main", new Dataset("searchPackages",
+                "org.fiz"));
+        Class result = Util.findClass("Dataset");
+        assertEquals("cache successfully loaded", "org.fiz.Dataset",
+                result.getName());
+        Config.setDataset("main", new Dataset());
+        result = Util.findClass("Dataset");
+        assertEquals("path bogus, but cache valid", "org.fiz.Dataset",
+                result.getName());
+    }
     public void test_findClass_classNameWorksImmediately() {
+        Util.clearCache();
         Class result = Util.findClass("org.fiz.Dataset");
         assertEquals("name of result class", "org.fiz.Dataset",
                 result.getName());
@@ -82,6 +138,90 @@ public class UtilTest extends junit.framework.TestCase {
         TestUtil.deleteTree("_test_.x");
     }
 
+    public void test_findMethod_basics() {
+        Util.methodCache.clear();
+        Util.methodCacheMisses = 0;
+        Method method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+                new Dataset(), "age");
+        assertEquals("name of method", "checkDataset", method.getName());
+    }
+    public void test_findMethod_presentInCache() {
+        Util.methodCache.clear();
+        Util.methodCacheMisses = 0;
+        Method method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+                new Dataset(), "age");
+        assertEquals("name of method", "checkDataset", method.getName());
+        assertEquals("cache misses", 1, Util.methodCacheMisses);
+        method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+                new Dataset(), "age");
+        assertEquals("name of method", "checkDataset", method.getName());
+        assertEquals("cache misses", 1, Util.methodCacheMisses);
+    }
+    public void test_findMethod_sameNameDifferentArguments()
+            throws IllegalAccessException, InvocationTargetException{
+        Util.methodCache.clear();
+        Util.methodCacheMisses = 0;
+
+        // Lookup up three different methods: same name, but different
+        // #'s and/or types of arguments.
+        Method method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+                new Dataset(), "age");
+        assertEquals("# arguments", 2, method.getParameterTypes().length);
+        assertEquals("cache misses", 1, Util.methodCacheMisses);
+        method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+                new Dataset());
+        assertEquals("# arguments", 1, method.getParameterTypes().length);
+        assertEquals("cache misses", 2, Util.methodCacheMisses);
+        method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+                new Dataset(), new Dataset());
+        assertEquals("# arguments", 2, method.getParameterTypes().length);
+        assertEquals("cache misses", 3, Util.methodCacheMisses);
+
+        // Now lookup each method, and invoke it to make sure we got the
+        // right variant in each case.
+        method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+                new Dataset(), "age");
+        assertEquals("method result", "28", method.invoke(null,
+                new Dataset("name", "Alice", "age", "28"), "age"));
+        assertEquals("cache misses", 3, Util.methodCacheMisses);
+        method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+                new Dataset());
+        assertEquals("method result", "Alice", method.invoke(null,
+                new Dataset("name", "Alice", "age", "28")));
+        assertEquals("cache misses", 3, Util.methodCacheMisses);
+        method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+                new Dataset(), new Dataset());
+        assertEquals("method result", "Bill", method.invoke(null,
+                new Dataset("name", "Alice"), new Dataset("name", "Bill")));
+        assertEquals("cache misses", 3, Util.methodCacheMisses);
+    }
+    public void test_findMethod_badSyntaxInMethodName() {
+        boolean gotException = false;
+        try {
+            Util.findMethod("bogusName");
+        }
+        catch (InternalError e) {
+            assertEquals("exception message",
+                    "illegal method name \"bogusName\" in Util.findMethod " +
+                    "(no \".\" separator)",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_findMethod_noSuchClass() {
+        Method method = Util.findMethod("bogus.get", "abc");
+        assertEquals("null return value", null, method);
+    }
+    public void test_findMethod_noSuchMethod() {
+        Method method = Util.findMethod("Dataset.bogusMethod", "abc");
+        assertEquals("null return value", null, method);
+    }
+    public void test_findMethod_foundIt() {
+        Method method = Util.findMethod("Dataset.get", "abc");
+        assertEquals("successful return", "get", method.getName());
+    }
+
     public void test_getUriAndQuery() {
         ServletRequestFixture request = new ServletRequestFixture();
         request.uri = "/a/b";
@@ -93,15 +233,66 @@ public class UtilTest extends junit.framework.TestCase {
                 Util.getUrlWithQuery(request));
     }
 
+    public void test_invokeStaticMethod_basics() {
+        assertEquals("result", "34",
+                Util.invokeStaticMethod("org.fiz.UtilTest$Test.checkDataset",
+                new Dataset("name", "Alice", "age", "34"), "age"));
+    }
+    public void test_invokeStaticMethod_cantFindMethod() {
+        boolean gotException = false;
+        try {
+            Util.invokeStaticMethod("Dataset.bogusMethod");
+        }
+        catch (InternalError e) {
+            assertEquals("exception message",
+                    "can't find method \"Dataset.bogusMethod\" with " +
+                    "matching arguments (Util.invokeStaticMethod)",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_invokeStaticMethod_methodNotStatic() {
+        Config.setDataset("main", new Dataset("searchPackages", "org.fiz"));
+        boolean gotException = false;
+        try {
+            Util.invokeStaticMethod("UtilTest$Test.foo", "abc");
+        }
+        catch (InternalError e) {
+            assertEquals("exception message",
+                    "method \"UtilTest$Test.foo\" isn't static " +
+                    "(Util.invokeStaticMethod)",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_invokeStaticMethod_methodThrowsError() {
+        Config.setDataset("main", new Dataset("searchPackages", "org.fiz"));
+        boolean gotException = false;
+        try {
+            Util.invokeStaticMethod("UtilTest$Test.throwError",
+                    "sample error message");
+        }
+        catch (InternalError e) {
+            assertEquals("exception message",
+                    "exception in method \"UtilTest$Test.throwError\" " +
+                    "invoked by Util.invokeStaticMethod: sample error message",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+
     public void test_newInstance_classNotFound() {
         Config.setDataset("main", new Dataset());
         boolean gotException = false;
         try {
-            Util.newInstance("Dataset", null);
+            Util.newInstance("BogusClass", null);
         }
         catch (ClassNotFoundError e) {
             assertEquals("exception message",
-                    "couldn't find class \"Dataset\"",
+                    "couldn't find class \"BogusClass\"",
                     e.getMessage());
             gotException = true;
         }

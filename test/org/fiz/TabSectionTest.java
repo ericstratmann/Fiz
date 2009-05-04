@@ -113,12 +113,11 @@ public class TabSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
     }
     public void test_html_useResultOfRequest() {
+        cr.addDataRequest("data", RawDataManager.newRequest(
+                new Dataset("name", "Alice", "age", "44")));
         TabSection section = new TabSection(YamlDataset.newStringInstance(
                 "id:      section12\n" +
-                "request:\n" +
-                "  manager: raw\n" +
-                "  result:\n" +
-                "    age: 44\n"),
+                "request: data\n"),
                 new Dataset("id", "first", "text", "Name: @name, age: @age",
                 "url", "/a/b"));
         cr.showSections(section);

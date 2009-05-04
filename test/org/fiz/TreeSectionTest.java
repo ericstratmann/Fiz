@@ -1,6 +1,5 @@
 package org.fiz;
 
-import java.io.*;
 import java.util.*;
 
 /**
@@ -8,16 +7,16 @@ import java.util.*;
  */
 public class TreeSectionTest extends junit.framework.TestCase {
     protected ClientRequest cr;
+    protected static class RequestFactory  {
+        public static DataRequest request(String nodeName) {
+            return RawDataManager.newRequest(new Dataset(
+                "parent", nodeName, "record", new Dataset(
+                "name", "child1", "text", "Child #1")));
+        }
+    }
 
     public void setUp() {
         cr = new ClientRequestFixture();
-        Config.setDataset("dataRequests", YamlDataset.newStringInstance(
-                "treeInfo:\n" +
-                "  manager: raw\n" +
-                "  result:\n" +
-                "     record:\n" +
-                "       - name: child1\n" +
-                "         text: Child #1\n"));
         Config.setDataset("styles", YamlDataset.newStringInstance(
                 "TreeSection:\n" +
                 "  leaf: \"leaf: @name\"\n" +
@@ -35,17 +34,29 @@ public class TreeSectionTest extends junit.framework.TestCase {
 
     public void test_constructor_noRequestProperty() {
         TreeSection tree = new TreeSection(new Dataset("id", "1234",
-                "request", "getInfo"));
-        assertEquals("properties dataset", "id:      1234\n" +
-                "request: getInfo\n",
+                "requestFactory", "getInfo"));
+        assertEquals("properties dataset", "id:             1234\n" +
+                "requestFactory: getInfo\n",
                 tree.properties.toString());
+    }
+
+    public void test_addDataRequests() {
+        TreeSection tree = new TreeSection(new Dataset("id", "1234",
+                "requestFactory",
+                "org.fiz.TreeSectionTest$RequestFactory.request"));
+        tree.addDataRequests(cr);
+        assertEquals("properties dataset", "parent: \"\"\n" +
+                "record:\n" +
+                "    name: child1\n" +
+                "    text: \"Child #1\"\n",
+                cr.unnamedRequests.get(0).getResponseData().toString());
     }
 
     public void test_ajaxExpand() {
         cr.setReminder("TreeSection.row", new Dataset(
                 "name", "node16", "id", "tree1_2"));
         cr.setReminder("TreeSection", new Dataset("id", "tree1",
-                "request", "treeInfo"));
+                "requestFactory", "TreeSectionTest$RequestFactory.request"));
         TreeSection.ajaxExpand(cr);
         assertEquals("Ajax javascript action",
                 "Fiz.ids[\"tree1_2\"].expand(\"<table cellspacing=\\\"0\\\" " +
@@ -62,8 +73,8 @@ public class TreeSectionTest extends junit.framework.TestCase {
 
     public void test_html_basics() {
         TreeSection tree = new TreeSection(new Dataset("id", "tree1",
-                "request", "treeInfo"));
-        tree.registerRequests(cr);
+                "requestFactory", "TreeSectionTest$RequestFactory.request"));
+        tree.addDataRequests(cr);
         tree.html(cr);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start TreeSection tree1 -->\n" +
@@ -81,8 +92,9 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
         assertEquals("accumulated Javascript",
                 "Fiz.Reminder.reminders[\"tree1\"] = " +
-                "\"24.JHB9AM69@,7:GY68T5G<EIB*47.11.TreeSection(2.id5." +
-                "tree1\\n7.request8.treeInfo)\";\n",
+                "\"24.JHB9AM69@,7:GY68T5G<EIB*86.11.TreeSection(" +
+                "2.id5.tree1\\n14.requestFactory" +
+                "38.TreeSectionTest$RequestFactory.request)\";\n",
                  cr.getHtml().jsCode.toString());
         TestUtil.assertSubstring("CSS file names", "TreeSection.css",
                 cr.getHtml().getCssFiles());
@@ -94,21 +106,25 @@ public class TreeSectionTest extends junit.framework.TestCase {
         TreeSection tree = new TreeSection(new Dataset("class", "foo",
                 "edgeFamily", "edge16", "id", "tree1",
                 "leafStyle", "TreeSection.node",
-                "nodeStyle", "TreeSection.leaf", "request", "treeInfo"));
-        tree.registerRequests(cr);
+                "nodeStyle", "TreeSection.leaf",
+                "requestFactory", "TreeSectionTest$RequestFactory.request"));
+        tree.addDataRequests(cr);
         tree.html(cr);
         assertEquals("accumulated Javascript",
                 "Fiz.Reminder.reminders[\"tree1\"] = \"24.JHB9AM69@," +
-                "7:GY68T5G<EIB*144.11.TreeSection(5.class3.foo\\n" +
+                "7:GY68T5G<EIB*183.11.TreeSection(5.class3.foo\\n" +
                 "10.edgeFamily6.edge16\\n2.id5.tree1\\n" +
                 "9.leafStyle16.TreeSection.node\\n" +
-                "9.nodeStyle16.TreeSection.leaf\\n7.request8.treeInfo)\";\n",
+                "9.nodeStyle16.TreeSection.leaf\\n" +
+                "14.requestFactory" +
+                "38.TreeSectionTest$RequestFactory.request)\";\n",
                  cr.getHtml().jsCode.toString());
     }
     public void test_html_explicitClass() {
         TreeSection tree = new TreeSection(new Dataset("id", "tree1",
-                "request", "treeInfo", "class", "xyzzy"));
-        tree.registerRequests(cr);
+                "requestFactory", "TreeSectionTest$RequestFactory.request",
+                "class", "xyzzy"));
+        tree.addDataRequests(cr);
         tree.html(cr);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start TreeSection tree1 -->\n" +

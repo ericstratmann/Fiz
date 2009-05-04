@@ -29,18 +29,34 @@ import java.util.*;
  *                   be used as the class for the bottom row in the table.
  *                   This can be used to display the bottom row differently,
  *                   e.g. for totals.
+ *                   TODO: eliminate this property and just set the last row's class automatically.
  *   noHeader:       (optional) If this property is defined, then the
  *                   header row for the table will not be displayed, even
  *                   if some of the columns offer header information.
  *                   Regardless of this property, the header row will be
  *                   omitted if none of the columns generate header info.
- *   request:        (required) Specifies a DataRequest that will supply
- *                   data to display in the TableSection (either the name
- *                   of a request in the {@code dataRequests} configuration
- *                   dataset or a nested dataset containing the request's
- *                   arguments directly).  The response to this request must
- *                   contain one {@code record} child for each row of
- *                   the table.
+ *   request:        (required) Name of a DataRequest whose result will
+ *                   supplied data for the table.  The request is created
+ *                   by the caller and registered in the ClientRequest by
+ *                   calling ClientRequest.addDataRequest.  The response
+ *                   to this request must contain one {@code record} child
+ *                   for each row of the table; when rendering a row, the
+ *                   child dataset for that row will be passed to each of the
+ *                   Column objects.
+ *
+ * When rendering the table TableSection automatically sets {@code class}
+ * attributes for some of the elements in the table:
+ *   * The {@code <tr>} for the table's header row will have class
+ *     {@code header}.
+ *   * The {@code <tr>} for first non-header row in the table will
+ *     have class {@code odd}, as will every other row after that.
+ *   * The {@code <tr>} for second  non-header row in the table will
+ *     have class {@code even}, as will every other row after that.
+ *   * The {@code <tr>} for the last wrote in the table will have
+ *     class {@code last}.  This row will also have class {@code odd}
+ *     or {@code even}.
+ *   * The leftmost {@code <td>} for each row will have class {@code first}.
+ *   * The rightmost {@code <td>} for each row will have class {@code last}.
  */
 public class TableSection extends Section {
     // The following variables are copies of constructor arguments.  See
@@ -135,6 +151,8 @@ public class TableSection extends Section {
         }
 
         // Body rows.
+        DataRequest dataRequest = cr.getDataRequest(
+                properties.get("request"));
         Dataset response = dataRequest.getResponseData();
         if (response == null) {
             // The request generated an error.  Display information about
@@ -187,21 +205,6 @@ public class TableSection extends Section {
         // End.
         Template.expand("</table>\n<!-- End TableSection {{@id}} -->\n",
                 properties, out);
-    }
-
-    /**
-     * This method is invoked during the first phase of rendering a page;
-     * it calls {@code cr.registerDataRequest} for each of the
-     * DataRequests needed by this section to gather data to be displayed.
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     */
-    @Override
-    public void registerRequests(ClientRequest cr) {
-        dataRequest = cr.registerDataRequest(properties, "request");
-        if (dataRequest == null) {
-            throw new Dataset.MissingValueError("request");
-        }
     }
 
     /**

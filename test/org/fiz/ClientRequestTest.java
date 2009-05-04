@@ -10,32 +10,63 @@ import org.apache.log4j.*;
  */
 
 public class ClientRequestTest extends junit.framework.TestCase {
+    protected static class SectionFixture extends TemplateSection {
+        public static StringBuilder log = new StringBuilder();
+        public SectionFixture(String s1) {
+            super(s1);
+        }
+        public SectionFixture(String s1, String s2) {
+            super(s1, s2);
+        }
+        public SectionFixture(Dataset d) {
+            super(d);
+        }
+        public void addDataRequests(ClientRequest cr) {
+            log.append("data request \"" +
+                    ((properties != null) ? properties.get("request")
+                    : "none") + "\";");
+        }
+    }
+
     protected ServletRequestFixture servletRequest;
     protected ClientRequestFixture cr;
+    protected Dataset state = new Dataset("name", "California",
+            "country", "USA", "population", "37,000,000",
+            "capital", "Sacramento", "nearestOcean", "Pacific",
+            "governor", "Schwarzenegger");
 
     public void setUp() {
         cr = new ClientRequestFixture();
         servletRequest = (ServletRequestFixture) cr.getServletRequest();
     }
 
+    public void test_addDataRequest_withName() {
+        DataRequest r1 = new DataRequest("test1");
+        DataRequest r2 = new DataRequest("test2");
+        cr.addDataRequest("request1", r1);
+        cr.addDataRequest("request2", r2);
+        assertEquals("number of named requests",
+                2, cr.namedRequests.size());
+        assertEquals("first request", r1, cr.getDataRequest("request1"));
+        assertEquals("second request", r2, cr.getDataRequest("request2"));
+    }
+
+    public void test_addDataRequest_noName() {
+        DataRequest r1 = new DataRequest("test1");
+        DataRequest r2 = new DataRequest("test2");
+        cr.addDataRequest(r1);
+        cr.addDataRequest(r2);
+        assertEquals("number of unnamed requests",
+                2, cr.unnamedRequests.size());
+        assertEquals("first request", r1, cr.unnamedRequests.get(0));
+        assertEquals("second request", r2, cr.unnamedRequests.get(1));
+    }
+
     public void test_addMessageToBulletin() {
-        // The first call should clear the existing bulletin.
         cr.addMessageToBulletin("name: @name", new Dataset("name", "<Alice>"),
                 "xyzzy");
-        assertEquals("javascript after first add",
-                "Fiz.clearBulletin();\n" +
+        assertEquals("javascript",
                 "Fiz.addBulletinMessage(\"xyzzy\", \"name: &lt;Alice&gt;\");\n",
-                cr.getHtml().jsCode.toString());
-        assertEquals("js files in Html object",
-                "fizlib/Fiz.js",
-                cr.getHtml().getJsFiles());
-
-        // The second call should add on without clearing the bulletin again.
-        cr.addMessageToBulletin("message #2", null, "class2");
-        assertEquals("javascript after second add",
-                "Fiz.clearBulletin();\n" +
-                "Fiz.addBulletinMessage(\"xyzzy\", \"name: &lt;Alice&gt;\");\n" +
-                "Fiz.addBulletinMessage(\"class2\", \"message #2\");\n",
                 cr.getHtml().jsCode.toString());
     }
 
@@ -47,7 +78,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 new Dataset("message", "second"),
                 new Dataset("message", "third"));
         assertEquals("Javascript code",
-                "Fiz.clearBulletin();\n" +
                 "Fiz.addBulletinMessage(\"bulletinError\", \"error: first\");\n" +
                 "Fiz.addBulletinMessage(\"bulletinError\", \"error: second\");\n" +
                 "Fiz.addBulletinMessage(\"bulletinError\", \"error: third\");\n",
@@ -170,6 +200,14 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "in ClientRequest.finish: getWriter failed",
                 appender.log.toString());
     }
+    public void test_finish_noJavascriptForAjax() throws IOException {
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
+        cr.setClientRequestType(ClientRequest.Type.AJAX);
+        cr.finish();
+        assertEquals("response", "",
+                response.toString());
+    }
     public void test_finish_javascriptForAjax() throws IOException {
         ServletResponseFixture response =
                 ((ServletResponseFixture)cr.getServletResponse());
@@ -179,6 +217,15 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("response",
                 "if (x < y) alert(\"error!\");",
                 response.toString());
+    }
+    public void test_finish_noJavascriptForPost() throws IOException {
+        ServletResponseFixture response =
+                ((ServletResponseFixture)cr.getServletResponse());
+        cr.setClientRequestType(ClientRequest.Type.POST);
+        cr.finish();
+        TestUtil.assertMatchingSubstring("response",
+                "Fiz.FormSection.handleResponse(\"\");",
+                response.toString(), "Fiz.FormSection[^\n]*");
     }
     public void test_finish_javascriptForPost() throws IOException {
         ServletResponseFixture response =
@@ -214,6 +261,25 @@ public class ClientRequestTest extends junit.framework.TestCase {
         cr.setClientRequestType(ClientRequest.Type.POST);
         assertEquals("POST", ClientRequest.Type.POST,
                 cr.getClientRequestType());
+    }
+
+    public void test_getDataRequest_requestExists() {
+        DataRequest r1 = new DataRequest("test1");
+        cr.addDataRequest("request1", r1);
+        assertEquals("existing request", r1, cr.getDataRequest("request1"));
+    }
+    public void test_getDataRequest_noSuchRequest() {
+        boolean gotException = false;
+        try {
+            cr.getDataRequest("bogus");
+        }
+        catch (InternalError e) {
+            assertEquals("exception message",
+                    "couldn't find data request named \"bogus\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
     }
 
     public void test_getMac() {
@@ -291,12 +357,11 @@ public class ClientRequestTest extends junit.framework.TestCase {
     public void test_getRequestNames() {
         assertEquals("no requests registered yet", "",
                 cr.getRequestNames());
-        cr.registerDataRequest("fixture1");
-        cr.registerDataRequest("fixture2");
-        cr.registerDataRequest("fixture1");
-        cr.registerDataRequest("getPeople");
-        assertEquals("names of registered requests",
-                "fixture1, fixture2, getPeople",
+        DataRequest request = RawDataManager.newRequest(new Dataset());
+        cr.addDataRequest("test1", request);
+        cr.addDataRequest("test2", request);
+        cr.addDataRequest("getPeople", request);
+        assertEquals("names of requests", "getPeople, test1, test2",
                 cr.getRequestNames());
     }
 
@@ -404,60 +469,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("javascript response",
                 "document.location.href = \"/a/\\\"b\\\"/c\";\n",
                 cr.jsCode.toString());
-    }
-
-    public void test_registerDataRequest_withName() {
-        DataRequest data1 = cr.registerDataRequest("fixture1");
-        DataRequest data2 = cr.registerDataRequest("fixture2");
-        DataRequest data3 = cr.registerDataRequest("fixture1");
-        assertEquals("count of registered requests", 2,
-                cr.namedRequests.size());
-        assertEquals("share duplicate requests", data1, data3);
-        assertEquals("contents of request", "id:      fixture2\n" +
-                "manager: fixture\n" +
-                "name:    Alice\n",
-                data2.getRequestData().toString());
-    }
-
-    public void test_registerDataRequest_withDataRequest() {
-        DataRequest data1 = cr.registerDataRequest(
-                new DataRequest(new Dataset("name", "Bill")));
-        DataRequest data2 = cr.registerDataRequest(
-                new DataRequest(new Dataset("name", "Carol")));
-        assertEquals("count of registered requests", 2,
-                cr.unnamedRequests.size());
-        assertEquals("contents of request", "name: Carol\n",
-                cr.unnamedRequests.get(1).getRequestData().toString());
-    }
-
-    public void test_registerDataRequest_withDatasetAndPath_nonexistentPath() {
-        DataRequest request = cr.registerDataRequest(
-                new Dataset("a:", "1234"), "b");
-        assertEquals("no request created", null, request);
-    }
-    public void test_registerDataRequest_withDatasetAndPath_string() {
-        DataRequest request1 = cr.registerDataRequest(
-                YamlDataset.newStringInstance("a:\n  request: fixture1\n"),
-                "a.request");
-        DataRequest request2 = cr.registerDataRequest("fixture1");
-        assertEquals("count of registered requests", 1,
-                cr.namedRequests.size());
-        assertEquals("contents of request", "id:      fixture1\n" +
-                "manager: fixture\n",
-                request1.getRequestData().toString());
-        assertEquals("request is shared", request1, request2);
-    }
-    public void test_registerDataRequest_withDatasetAndPath_dataset() {
-        DataRequest request = cr.registerDataRequest(
-                YamlDataset.newStringInstance("a:\n  request:\n" +
-                "    first: 16\n" +
-                "    second: '@99'\n"),
-                "a.request");
-        assertEquals("count of registered requests", 1,
-                cr.unnamedRequests.size());
-        assertEquals("contents of request", "first:  16\n" +
-                "second: \"@99\"\n",
-                request.getRequestData().toString());
     }
 
     public void test_saveUploadedFile_noMultipartData() {
@@ -585,33 +596,18 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_showSections() {
+        cr.addDataRequest("getState", RawDataManager.newRequest(state));
         cr.showSections(
-                new TemplateSection("first\n"),
-                new TemplateSection("getState", "second: @name\n"),
-                new TemplateSection("getState", "third: @capital\n"));
+                new SectionFixture("first\n"),
+                new SectionFixture("getState", "second: @name\n"),
+                new SectionFixture("getState", "third: @capital\n"));
+        assertEquals("addDataRequests calls", "data request \"none\";" +
+                "data request \"getState\";data request \"getState\";",
+                SectionFixture.log.toString());
         assertEquals("generated HTML", "first\n" +
                 "second: California\n" +
                 "third: Sacramento\n",
                 cr.getHtml().getBody().toString());
-        assertEquals("registered requests", "getState",
-                cr.getRequestNames());
-    }
-
-    public void test_startDataRequests_namedAndUnnamed() {
-        DataRequest data1 = cr.registerDataRequest("fixture1");
-        DataRequest data2 = cr.registerDataRequest("fixture2");
-        DataRequest data3 = cr.registerDataRequest("fixture1");
-        DataRequest data4 = cr.registerDataRequest(
-                new DataRequest(new Dataset("manager", "fixture",
-                "name", "Carol", "id", "xyzzy")));
-        cr.startDataRequests();
-        assertEquals("data manager log",
-                "fixture started xyzzy, fixture2, fixture1",
-                DataManagerFixture.getLogs());
-    }
-    public void test_startDataRequests_noRequests() {
-        cr.startDataRequests();
-        assertEquals("data manager log", "", DataManagerFixture.getLogs());
     }
 
     public void test_updateElement() {
@@ -623,19 +619,20 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_updateSections() {
-        Section section1 = new TemplateSection(new Dataset(
+        cr.addDataRequest("getState", RawDataManager.newRequest(state));
+        Section section1 = new SectionFixture(new Dataset(
                 "template", "state: @state",
-                "request", new Dataset("manager", "raw",
-                "result", new Dataset("state", "California"))
-        ));
-        Section section2 = new TemplateSection(new Dataset(
+                "request", "getState"));
+        Section section2 = new SectionFixture(new Dataset(
                 "template", "capital: @capital",
-                "request", new Dataset("manager", "raw",
-                "result", new Dataset("capital", "Sacramento"))
-        ));
+                "request", "getState"));
         cr.getHtml().getBody().append("Original text");
         cr.setClientRequestType(ClientRequest.Type.AJAX);
+        SectionFixture.log.setLength(0);
         cr.updateSections("id44", section1, "id55", section2);
+        assertEquals("calls to addDataRequests",
+                "data request \"getState\";data request \"getState\";",
+                SectionFixture.log.toString());
         assertEquals("response Javascript",
                 "document.getElementById(\"id44\").innerHTML = " +
                 "\"state: California\";\n" +

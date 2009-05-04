@@ -32,34 +32,37 @@ import java.util.*;
  *                   have children and hence can be expanded; overridden
  *                   by a {@code style} value in records returned by
  *                   {@code request}.  Defaults to {@code TreeSection.node}.
- *   request:        (required) Specifies a DataRequest that will return
- *                   information about the tree.  The constructor value
- *                   can be either the name of a template in the
- *                   {@code dataRequests} configuration dataset or a nested
- *                   dataset containing the request's arguments directly.
- *                   The values expected in the request's response are
- *                   described below.  This request will be used as-is to
- *                   fetch the top level of the tree, which is displayed
- *                   initially.  When a node in the tree is expanded, the same
- *                   request is used to fetch the children of the node, except
- *                   that the {@code name} parameter in the request is set to
- *                   the {@code name} value for the node.
+ *   requestFactory: (required) Identifies a factory method that takes a
+ *                   single String argument and returns a DataRequest whose
+ *                   response will describe the contents of a node in the
+ *                   tree.  Must have the form {@code class.method}, where
+ *                   {@code class} is a Java class name and {@code method}
+ *                   is a static method in the class.  The values expected in
+ *                   the request's response are described below.  The string
+ *                   argument to the factory method is the name of the node
+ *                   whose contents are desired (the {@code name} value from
+ *                   the record for that node, returned by a previous
+ *                   request): empty string refers to root of the tree, and
+ *                   is used to fetch the top-level nodes.
  *
- * The response to {@code request} consists of a dataset with one
- * {@code record} child for each node at the current level.  The
- * TreeSection will use the following elements, if they are present
- * in a record:
+ * The response to a DataRequest generated from {@code requestFactory} consists
+ * of a dataset with one {@code record} child for each node at the current
+ * level.  The TreeSection will use the following elements, if they are
+ * present in a record:
  *   expandable      A value of 1 means this node can be expanded (it has
  *                   children).  If this value is absent, or has any value
  *                   other than 1, then this is a leaf node.
  *   name            Must be provided if the node is expandable; this value
- *                   is used with the {@code request} constructor property
+ *                   is passed to the {@code requestFactory} method
  *                   to fetch the node's children.
  *   style           If present, specifies the style(s) to use for displaying
  *                   this node.  See below for more information on styles.
  *
+ * Additional elements besides these may be used to display the node, as
+ * determined by the style.
+ *
  * Styles are used to customize the display of tree elements in a multi-step
- * process.  The style touse for a given tree element is determined by the
+ * process.  The style to use for a given tree element is determined by the
  * {@code style} value in the record for that tree element, if there is one.
  * If there is not an explicit {@code style} for the particular element, then
  * the {@code nodeStyle} configuration property for the TreeSection is used
@@ -76,6 +79,10 @@ import java.util.*;
  * configuration dataset.
  */
 public class TreeSection extends Section implements DirectAjax {
+    // Holds the request that provides information about top-level nodes
+    // in the tree.
+    DataRequest dataRequest;
+
     /**
      * Construct a TreeSection.
      * @param properties           Contains configuration information
@@ -83,6 +90,20 @@ public class TreeSection extends Section implements DirectAjax {
      */
     public TreeSection(Dataset properties) {
         this.properties = properties;
+    }
+
+    /**
+     * This method is invoked during the first phase of rendering a page;
+     * it is used to create a data request that will provide information about
+     * the top level of the tree.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    @Override
+    public void addDataRequests(ClientRequest cr) {
+        dataRequest = (DataRequest) Util.invokeStaticMethod(
+                properties.get("requestFactory"), "");
+        cr.addDataRequest(dataRequest);
     }
 
     /**
@@ -104,8 +125,8 @@ public class TreeSection extends Section implements DirectAjax {
         // Invoke a data request to fetch information about the children of
         // the element being expanded, then generate a <table> that will
         // display the children.
-        DataRequest request = cr.registerDataRequest(sectionInfo, "request");
-        request.addParameter("name", rowInfo.get("name"));
+        DataRequest request = (DataRequest) Util.invokeStaticMethod(
+                sectionInfo.get("requestFactory"), rowInfo.get("name"));
 
         StringBuilder html = new StringBuilder();
         String id = rowInfo.get("id");
@@ -140,7 +161,7 @@ public class TreeSection extends Section implements DirectAjax {
         String id = properties.get("id");
         Reminder reminder = new Reminder(id, "TreeSection");
         reminder.addFromDataset(properties, "class", "edgeFamily", "id",
-                "leafStyle", "nodeStyle", "request");
+                "leafStyle", "nodeStyle", "requestFactory");
         reminder.flush(cr);
         if (!properties.containsKey("class")) {
             html.includeCssFile("TreeSection.css");

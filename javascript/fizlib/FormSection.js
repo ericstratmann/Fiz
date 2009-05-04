@@ -70,6 +70,7 @@ Fiz.FormSection.prototype.elementError = function(id, html) {
  *                                 proceed normally.
  */
 Fiz.FormSection.prototype.submit = function() {
+
     // Tricky stuff: the target for a form refers to an invisible
     // iframe.  When the form is submitted, the response goes to that iframe
     // rather than replacing the main window contents.  This makes
@@ -118,6 +119,10 @@ Fiz.FormSection.handleResponse = function(script) {
  * @param script                   A Javascript script to eval.
  */
 Fiz.FormSection.prototype.handleResponse2 = function(script) {
+    // Clear old error information before handling the form response.
+    this.clearElementErrors();
+    Fiz.clearBulletin();
+
     var div = document.getElementById(this.id + "_target");
     div.innerHTML = "";
     eval(script);

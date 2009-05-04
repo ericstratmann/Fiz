@@ -13,9 +13,8 @@ package org.fiz;
  *   id:             (optional) Used as the {@code id} attribute for the
  *                   {@code <table>} element containing the section.  Must
  *                   be unique in the page; defaults to {@code tabs}.
- *   request:        (optional) This property is either the name of a request
- *                   in the {@code dataRequests} configuration dataset or
- *                   a nested dataset containing arguments for a DataRequest.
+ *   request:        (optional) This property is the name of a request
+ *                   registered by the caller with ClientRequest.addDataRequest.
  *                   If this property is specified than the data from its
  *                   response is used for expanding templates in the individual
  *                   tabs.
@@ -111,10 +110,12 @@ public class TabSection extends Section{
         // the response to the section's request, if there was one.
 
         Dataset data;
-        if (dataRequest == null) {
+        String requestName = properties.check("request");
+        if (requestName == null) {
             data = cr.getMainDataset();
         } else {
-            data = new CompoundDataset(dataRequest.getResponseOrAbort(),
+            data = new CompoundDataset(
+                    cr.getDataRequest(requestName).getResponseOrAbort(),
                     cr.getMainDataset());
         }
 

@@ -6,6 +6,10 @@ import java.io.StringWriter;
  * Junit tests for the SelectFormElement class.
  */
 public class SelectFormElementTest extends junit.framework.TestCase {
+    protected Dataset fruits = new Dataset(
+            "fruit", new Dataset("name", "Peach", "value", "peach"),
+            "fruit", new Dataset("name", "Pear", "value", "pear"));
+
     public void test_constructor_checkMultiple() {
         // First constructor call should work fine.
         SelectFormElement element = new SelectFormElement(
@@ -167,11 +171,11 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         SelectFormElement element = new SelectFormElement(
                 new Dataset("id", "id11", "choiceRequest", "error"));
         ClientRequest cr = new ClientRequestFixture();
-        element.registerRequests(cr, "request");
+        cr.addDataRequest("error", RawDataManager.newError(new Dataset(
+                "message", "sample <error>", "value", "47")));
         StringBuilder out = cr.getHtml().getBody();
         element.html(cr, new Dataset(), out);
         assertEquals("Javascript for HTML",
-                "Fiz.clearBulletin();\n" +
                 "Fiz.addBulletinMessage(\"bulletinError\", " +
                 "\"bulletin: sample &lt;error&gt;\");\n",
                 cr.getHtml().jsCode.toString());
@@ -181,7 +185,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 new Dataset("id", "id11", "choiceRequest",
                         "getFruits", "choiceName", "fruit"));
         ClientRequest cr = new ClientRequestFixture();
-        element.registerRequests(cr, "request");
+        cr.addDataRequest("getFruits", RawDataManager.newRequest(fruits));
         StringBuilder out = cr.getHtml().getBody();
         element.html(cr, new Dataset(), out);
         assertEquals("generated HTML", "\n" +
@@ -240,29 +244,5 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         out.insert(0, "<form action=\"a/b/c\"><p>\n");
         out.append("</p></form>\n");
         TestUtil.assertXHTML(cr.getHtml().toString());
-    }
-    public void test_registerRequests() {
-        SelectFormElement element = new SelectFormElement(
-                YamlDataset.newStringInstance(
-                "id: id11\n" +
-                "choiceRequest:\n" +
-                "  manager: fruitSeller\n" +
-                "  type: apples\n" +
-                "choiceName: fruit\n"));
-        ClientRequest cr = new ClientRequestFixture();
-        element.registerRequests(cr, "request");
-        assertEquals("count of registered requests", 1,
-                cr.unnamedRequests.size());
-        assertEquals("contents of request", "manager: fruitSeller\n" +
-                "type:    apples\n",
-                cr.unnamedRequests.get(0).getRequestData().toString());
-    }
-    public void test_registerRequests_noRequest() {
-        SelectFormElement element = new SelectFormElement(
-                YamlDataset.newStringInstance(
-                "id: id11\n"));
-        ClientRequest cr = new ClientRequestFixture();
-        element.registerRequests(cr, "request");
-        assertEquals("registered requests", "", cr.getRequestNames());
     }
 }

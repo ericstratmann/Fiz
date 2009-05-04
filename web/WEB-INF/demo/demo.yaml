@@ -1,30 +1,8 @@
 # This file contains data that is returned by various data requests
-# used by the Demo interactor.
+# used by demonstration interactors.
 
 empty:
     dummy: 42
-
-error1:
-  culprit: name
-  message: >
-      User doesn't exist; this is a very long message just
-      to see what happens.  Does the line wrap, or doesn't it?
-      In order to find out, there needs to be lots and lots of
-      text in the error message.  Also, here are some special
-      characters: <&>!""
-
-error2:
-  - message: >
-      An error occurred that isn't associated with a particular
-      form element, so this message should appear in the bulletin.
-  - message: User doesn't exist
-    culprit: name
-
-error3:
-  culprit: fruit2
-  message: >
-      You have chosen an exceptionally bad tasting fruit;
-      please pick another.
 
 formData:
     record:
@@ -37,27 +15,6 @@ formData:
         notify: all
         state: California
         mascot: Spartans
-
-fruits:
-    fruit:
-      - name: Apple
-        value: apple
-      - name: Banana
-        value: banana
-      - name: Grape
-        value: grape
-      - name: Kiwi
-        value: kiwi
-      - name: Peach
-        value: peach
-      - name: Pear
-        value: pear
-      - name: Raspberry
-        value: raspberry
-      - name: Strawberry
-        value: strawberry
-      - name: Watermelon
-        value: watermelon
 
 people:
     record:
@@ -128,35 +85,3 @@ students:
         id:          4019329
         grad:        2012
         gpa:         3.7
-
-# Data for the demo of TreeSection (demo/tree):
-tree:
-    top:
-        record:
-            - text:       Alice
-            - text:       Bill
-              name:       tree.bill
-              expandable: 1
-            - text:       Carol
-              name:       tree.carol
-              expandable: 1
-            - text:       David
-    bill:
-        record:
-            - text:       Ellen
-              name:       tree.ellen
-              expandable: 1
-            - text:       Frank
-            - text:       Grace
-    carol:
-        record:
-            - text:       Harry
-            - text:       Ian
-            - text:       Juliet
-    ellen:
-        record:
-            - text:       Kurt
-            - text:       Leslie
-            - text:       Michael
-              name:       tree.top
-              expandable: 1

@@ -93,6 +93,16 @@ test("FormSection_handleResponse2", function() {
     document = new Document();
     var div1 = document.addElementWithId("form1_target", {innerHTML: "xxx"});
     var form = new Fiz.FormSection("form1");
+
+    // Create a bulletin message and a form diagnostic so that we can make
+    // sure they both get cleared.
+    var bulletin = document.addElementWithId("bulletin",
+            {innerHTML: "sample contents"});
+    var row2 = document.addElementWithId("div2", {className: "undefined"});
+    var div2 = document.addElementWithId("div2_diagnostic",
+            {style: {display: "none"}, innerHTML: "yyy"});
+    form.elementError("div2", "error1");
+
     window.xyzzy = 44;
     form.handleResponse2("window.xyzzy += 3;");
     assertEqual("", div1.innerHTML, "HTML for iframe");

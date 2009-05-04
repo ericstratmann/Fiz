@@ -15,13 +15,12 @@ package org.fiz;
  *                   related to this form element.
  *   label:          (optional) Template for label to display next to the
  *                   checkbox to identify the element for the user.
- *   request:        (optional) Specifies a DataRequest (either the name of
- *                   a request in the {@code dataRequests} configuration
- *                   dataset or a nested dataset containing the request's
- *                   arguments directly).  The results of the request will
- *                   be combined with the data provided by the form and
- *                   used both for expanding {@code template} and for
- *                   passing to the component elements when they are
+ *   request:        (optional) Name of a DataRequest, which must have been
+ *                   created by the caller and registered in the ClientRequest
+ *                   by calling ClientRequest.addDataRequest.  The results of
+ *                   the request will be combined with the data provided by
+ *                   the form and used both for expanding {@code template}
+ *                   and for passing to the component elements when they are
  *                   generating HTML.
  *   template:       (optional) HTML template that arranges and decorates the
  *                   component form elements.  Substitutions such as
@@ -37,10 +36,6 @@ public class CompoundFormElement extends FormElement {
     // The component FormElements that make up this element:
     protected FormElement[] components;
 
-    // The following variable refers to our data request, if the
-    // {@code request} property has been specified.  Otherwise it is null.
-    protected DataRequest request = null;
-
     /**
      * Construct a CompoundFormElement from a set of properties that define
      * its configuration.
@@ -54,6 +49,25 @@ public class CompoundFormElement extends FormElement {
             FormElement ... components) {
         super(properties);
         this.components = components;
+    }
+
+    /**
+     * This method is invoked during the first phase of rendering a page,
+     * in case the FormElement needs to create custom requests of its own
+     * (as opposed to requests already provided for it by the Interactor).
+     * If so, this method creates the requests and passes them to
+     * {@code cr.addDataRequest}.  This method just invokes the corresponding
+     * method in each of its components.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @param empty                True means no request was provided to
+     *                             the enclosing form, which means that the
+     *                             form should start off empty.
+     */
+    public void addDataRequests(ClientRequest cr, boolean empty) {
+        for (FormElement component : components) {
+            component.addDataRequests(cr, empty);
+        }
     }
 
     /**
@@ -98,7 +112,9 @@ public class CompoundFormElement extends FormElement {
             StringBuilder out) {
         // If we have our own data request, combine its output with the
         // incoming data from the form.
-        if (request != null) {
+        String requestName = properties.check("request");
+        if (requestName != null) {
+            DataRequest request = cr.getDataRequest(requestName);
             Dataset responseData = request.getResponseData();
             if (responseData == null) {
                 // The request to get the choices failed; display an error
@@ -138,26 +154,6 @@ public class CompoundFormElement extends FormElement {
         // quoted.
         Template.expand(template, data, out, Template.SpecialChars.HTML,
                 Template.SpecialChars.NONE, componentHtml);
-    }
-
-    /**
-     * This method is invoked during the first phase of rendering a page;
-     * it calls {@code cr.registerDataRequest} if the {@code request}
-     * property has been supplied for this element, and it also gives
-     * each of its components a chance to British at their own requests.
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     * @param formRequest          Name of the overall request that the
-     *                             form will issue to retrieve initial values,
-     *                             or null if the form is supposed to start
-     *                             off empty.
-     */
-    @Override
-    public void registerRequests(ClientRequest cr, String formRequest) {
-        request = cr.registerDataRequest(properties, "request");
-        for (FormElement component : components) {
-            component.registerRequests(cr, formRequest);
-        }
     }
 
     /**

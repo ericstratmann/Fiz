@@ -14,6 +14,9 @@ color:               #000000
 # Foreground color for link mouse-overs:
 activeColor:         #cc6600
 
+# Background color to use for active elements (e.g., text entry with the focus)
+activeBackground:    #f6f7f9
+
 # Dimmed versions of foreground color (either item is disabled, or we
 # need headroom to brighten up the color when the mouse passes over).
 dimColor1:           #404040

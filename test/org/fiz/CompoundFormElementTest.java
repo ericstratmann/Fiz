@@ -6,7 +6,7 @@ package org.fiz;
 public class CompoundFormElementTest extends junit.framework.TestCase {
     protected static class ElementFixture extends FormElement {
         // The following variable is used to log events such as calls to
-        // registerRequests.
+        // addDataRequests.
         protected static StringBuffer log = new StringBuffer();
 
         protected String template;
@@ -15,14 +15,19 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
             this.template = template;
         }
         @Override
+        public void addDataRequests(ClientRequest cr, boolean empty) {
+            log.append("addDataRequests " + id + " " +
+                    ((empty) ? "empty" : "not empty") + "\n");
+        }
+        @Override
         public void html(ClientRequest cr, Dataset data, StringBuilder out) {
             Template.expand(template, data, out);
         }
-        @Override
-        public void registerRequests(ClientRequest cr, String formRequest) {
-            log.append("registerRequest " + id + " " + formRequest + "\n");
-        }
     }
+
+    protected Dataset person = new Dataset(
+            "record", new Dataset("name", "David", "age", "66",
+            "height", "71", "weight", "220"));
 
     public void test_constructor() {
         CompoundFormElement element = new CompoundFormElement(
@@ -32,6 +37,23 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
         assertEquals("properties dataset", "id:       id11\n" +
                 "template: \"@1xyz@2\"\n", element.properties.toString());
         assertEquals("number of components", 2, element.components.length);
+    }
+
+    public void test_addDataRequests() {
+        // First invocation: no request from the CompoundFormElement; only
+        // its components.
+        CompoundFormElement element = new CompoundFormElement(
+                new Dataset("id", "id11"),
+                new ElementFixture("name", "name @name"),
+                new ElementFixture("age", "age @age"));
+        ClientRequest cr = new ClientRequestFixture();
+        ElementFixture.log.setLength (0);
+        element.addDataRequests(cr, true);
+        assertEquals("request names (components only)", "",
+                cr.getRequestNames());
+        assertEquals("element log", "addDataRequests name empty\n" +
+                "addDataRequests age empty\n",
+                ElementFixture.log.toString());
     }
 
     public void test_collect() throws FormSection.FormDataException {
@@ -63,13 +85,13 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
                 new ElementFixture("name", "name @name"),
                 new ElementFixture("age", "age @age"));
         ClientRequest cr = new ClientRequestFixture();
-        element.registerRequests(cr, "request");
+        cr.addDataRequest("error", RawDataManager.newError(new Dataset(
+                "message", "sample <error>", "value", "47")));
         StringBuilder out = new StringBuilder();
         element.html(cr, new Dataset("name", "Alice", "age", "35",
                 "height", "65"), out);
         assertEquals("result HTML", "name Alice, age 35", out.toString());
         assertEquals("Javascript for HTML",
-                "Fiz.clearBulletin();\n" +
                 "Fiz.addBulletinMessage(\"bulletinError\", " +
                 "\"bulletin: sample &lt;error&gt;\");\n",
                 cr.getHtml().jsCode.toString());
@@ -82,7 +104,7 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
                 new ElementFixture("name", "name @name"),
                 new ElementFixture("age", "age @age"));
         ClientRequest cr = new ClientRequestFixture();
-        element.registerRequests(cr, "request");
+        cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         StringBuilder out = new StringBuilder();
         element.html(cr, new Dataset("name", "Alice", "age", "35",
                 "state", "California"), out);
@@ -115,37 +137,6 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
         assertEquals("result HTML", "(&lt;Alice&gt;) <div class=\"xyzzy\">" +
                 "&lt;Alice&gt;</div> <div>35</div>)",
                 out.toString());
-    }
-
-    public void test_html_registerRequests() {
-        // First invocation: no request from the CompoundFormElement; only
-        // its components.
-        CompoundFormElement element = new CompoundFormElement(
-                new Dataset("id", "id11"),
-                new ElementFixture("name", "name @name"),
-                new ElementFixture("age", "age @age"));
-        ClientRequest cr = new ClientRequestFixture();
-        ElementFixture.log.setLength (0);
-        element.registerRequests(cr, "formRequest");
-        assertEquals("request names (components only)", "",
-                cr.getRequestNames());
-        assertEquals("element log", "registerRequest name formRequest\n" +
-                "registerRequest age formRequest\n",
-                ElementFixture.log.toString());
-
-        // Second invocation: the CompoundFormElement has its own request.
-        element = new CompoundFormElement(
-                new Dataset("id", "id11", "request", "getFruits"),
-                new ElementFixture("name", "name @name"),
-                new ElementFixture("age", "age @age"));
-        cr = new ClientRequestFixture();
-        ElementFixture.log.setLength (0);
-        element.registerRequests(cr, "formRequest");
-        assertEquals("request names (from CompoundDataset)", "getFruits",
-                cr.getRequestNames());
-        assertEquals("element log", "registerRequest name formRequest\n" +
-                "registerRequest age formRequest\n",
-                ElementFixture.log.toString());
     }
 
     public void test_html_responsibleFor() {

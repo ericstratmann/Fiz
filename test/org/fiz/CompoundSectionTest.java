@@ -5,6 +5,23 @@ package org.fiz;
  */
 
 public class CompoundSectionTest extends junit.framework.TestCase {
+    // The following class is a simple Section that logs calls to
+    // its addDataRequests method.
+    private static class SectionFixture extends Section {
+        // The following variable is used to log events such as calls to
+        // addDataRequests.
+        protected static StringBuffer log = new StringBuffer();
+
+        String id;
+        public SectionFixture(String id) {
+            this.id = id;
+        }
+        public void html(ClientRequest cr) {
+        }
+        public void addDataRequests(ClientRequest cr) {
+            log.append("addDataRequests " + id + "\n");
+        }
+    }
     protected ClientRequest cr;
 
     public void setUp() {
@@ -34,6 +51,20 @@ public class CompoundSectionTest extends junit.framework.TestCase {
                 section.extraChildren.get(0));
         assertEquals("second extra child", s3,
                 section.extraChildren.get(1));
+    }
+
+    public void test_addDataRequests() {
+        CompoundSection section = new CompoundSection(
+                new Dataset("id", "test44", "class", "class22",
+                "background", "#ff0000"),
+                new SectionFixture("first"));
+        section.add(new SectionFixture("second"),
+                new SectionFixture("third"));
+        section.addDataRequests(cr);
+        assertEquals("registered requests", "addDataRequests first\n" +
+                "addDataRequests second\n" +
+                "addDataRequests third\n",
+                SectionFixture.log.toString());
     }
 
     public void test_html_basics() {
@@ -111,7 +142,7 @@ public class CompoundSectionTest extends junit.framework.TestCase {
     public void test_html_layout() {
         String layout = "+-------+\n" +
                         "| first |\n" +
-                        "+-------+";        
+                        "+-------+";
         CompoundSection section = new CompoundSection(
                 new Dataset("id", "test44", "layout", layout),
                 new TemplateSection(new Dataset("id", "first",
@@ -226,18 +257,6 @@ public class CompoundSectionTest extends junit.framework.TestCase {
                 "</div>\n" +
                 "<!-- End CompoundSection -->\n",
                 html);
-    }
-
-    public void test_registerRequests() {
-        CompoundSection section = new CompoundSection(
-                new Dataset("id", "test44", "class", "class22",
-                "background", "#ff0000"),
-                new TemplateSection("getPerson", "first\n"));
-        section.add(new TemplateSection("getPeople", "second\n"),
-                new TemplateSection("getState", "third\n"));
-        section.registerRequests(cr);
-        assertEquals("registered requests", "getPeople, getPerson, getState",
-                cr.getRequestNames());
     }
 
     public void test_childHtml() {
