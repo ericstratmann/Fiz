@@ -76,5 +76,5 @@ public abstract class Section {
      *                             request being serviced; HTML should get appended to
      *                             {@code request.getHtml()}.
      */
-    public abstract void html(ClientRequest cr);
+    public abstract void render(ClientRequest cr);
 }

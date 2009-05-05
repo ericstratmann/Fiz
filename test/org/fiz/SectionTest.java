@@ -9,7 +9,7 @@ public class SectionTest extends junit.framework.TestCase {
             this.properties = properties;
         }
         @Override
-        public void html(ClientRequest cr){}
+        public void render(ClientRequest cr){}
     }
 
     // No unit tests for addDataRequests, because it doesn't do anything.

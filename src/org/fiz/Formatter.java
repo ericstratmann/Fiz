@@ -15,5 +15,5 @@ public interface Formatter {
      *                             HTML.
      * @param out                  Generated HTML is appended here.
      */
-    public void html(ClientRequest cr, Dataset data, StringBuilder out);
+    public void render(ClientRequest cr, Dataset data, StringBuilder out);
 }

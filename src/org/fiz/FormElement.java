@@ -61,6 +61,17 @@ public abstract class FormElement implements Formatter {
     }
 
     /**
+     * Return the form element property given by {@code name} if it
+     * exists; otherwise return null.
+     * @param name                 Name of the desired property.
+     * @return                     The property given by {@code name},
+     *                             or null if it doesn't exist.
+     */
+    public String checkProperty(String name) {
+        return properties.check(name);
+    }
+
+    /**
      * Invoked by FormSection when a form has been posted: prepares data
      * for inclusion in the update request for the form.  Normally this
      * consists of checking for a value in {@code in} whose name is the same
@@ -104,17 +115,6 @@ public abstract class FormElement implements Formatter {
     }
 
     /**
-     * Return the form element property given by {@code name} if it
-     * exists; otherwise return null.
-     * @param name                 Name of the desired property.
-     * @return                     The property given by {@code name},
-     *                             or null if it doesn't exist.
-     */
-    public String checkProperty(String name) {
-        return properties.check(name);
-    }
-
-    /**
      * This method is invoked during the final phase of rendering a page;
      * it generates HTML for the element.
      * @param cr                   Overall information about the client
@@ -125,7 +125,7 @@ public abstract class FormElement implements Formatter {
      * @param out                  Generated HTML is appended here.
      */
     @Override
-    public abstract void html(ClientRequest cr, Dataset data,
+    public abstract void render(ClientRequest cr, Dataset data,
             StringBuilder out);
 
     /**
@@ -145,7 +145,7 @@ public abstract class FormElement implements Formatter {
      *                             span both the label and control areas
      *                             for this element).
      */
-    public boolean labelHtml(ClientRequest cr, Dataset data,
+    public boolean renderLabel(ClientRequest cr, Dataset data,
             StringBuilder out) {
         String template = properties.check("label");
         if (template != null) {

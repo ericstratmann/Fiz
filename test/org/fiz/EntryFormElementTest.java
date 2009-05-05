@@ -14,7 +14,7 @@ public class EntryFormElementTest extends junit.framework.TestCase {
         ClientRequest cr = new ClientRequestFixture();
         EntryFormElement element = new EntryFormElement("age", "Age:");
         StringBuilder out = new StringBuilder();
-        element.html(cr, new Dataset("age", "<confidential>"), out);
+        element.render(cr, new Dataset("age", "<confidential>"), out);
         assertEquals("CSS includes", "EntryFormElement.css",
                 cr.getHtml().getCssFiles());
         assertEquals("generated HTML",
@@ -23,25 +23,25 @@ public class EntryFormElementTest extends junit.framework.TestCase {
                 "value=\"&lt;confidential&gt;\" />",
                 out.toString());
     }
-    public void test_html_explicitClass() {
+    public void test_render_explicitClass() {
         ClientRequest cr = new ClientRequestFixture();
         EntryFormElement element = new EntryFormElement(
                 new Dataset("id", "age", "label", "Age:",
                 "class", "class16"));
         StringBuilder out = new StringBuilder();
-        element.html(cr, new Dataset("age", "<confidential>"), out);
+        element.render(cr, new Dataset("age", "<confidential>"), out);
         assertEquals("generated HTML",
                 "<input type=\"text\" name=\"age\" " +
                 "class=\"class16\" value=\"&lt;confidential&gt;\" />",
                 out.toString());
     }
-    public void test_html_noValue() {
+    public void test_render_noValue() {
         ClientRequest cr = new ClientRequestFixture();
         EntryFormElement element = new EntryFormElement(
                 new Dataset("id", "age", "label", "Age:",
                 "class", "class16"));
         StringBuilder out = new StringBuilder();
-        element.html(cr, new Dataset(), out);
+        element.render(cr, new Dataset(), out);
         assertEquals("generated HTML",
                 "<input type=\"text\" name=\"age\" class=\"class16\" />",
                 out.toString());

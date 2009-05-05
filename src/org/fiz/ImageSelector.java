@@ -1,23 +1,23 @@
 package org.fiz;
 
 /**
- * An ImageSelector outputs HTML for one of several images, chosen based on a 
- * data value and a mapping dataset. 
+ * An ImageSelector outputs HTML for one of several images, chosen based on a
+ * data value and a mapping dataset.
  * <p>
  * ImageSelector supports the following properties:
  * map -	(required) A dataset of mappings. See below for format.
  * id -		(required) Name of column in dataset we are mapping to an image
  * <p>
  * The map dataset contains key - value pairs, where a key is one of the
- * possible strings we will use to select an image. A value can either be a 
- * string in which case it represents the src tag for an image, or it can be a 
+ * possible strings we will use to select an image. A value can either be a
+ * string in which case it represents the src tag for an image, or it can be a
  * Dataset which contains src and alt elements, describing the URL for the
  * image and an alt tag. Both src and alt values are expanded as templates.
- * Map recognizes one special key, which is "default". If that key exists, it 
+ * Map recognizes one special key, which is "default". If that key exists, it
  * is used to find the default image if a particular key is not found.
  */
 public class ImageSelector implements Formatter {
-	
+
 	/* Constructor properties */
     protected String id;
     protected Dataset map;
@@ -51,14 +51,14 @@ public class ImageSelector implements Formatter {
 	 * constructor and data passed into this method
      * @param cr             Overall information about the client
      *                       request being serviced.
-     * @param data           Values in this dataset are used to expand 
-	 * 						 templates. We also use {@code id} passed to the 
+     * @param data           Values in this dataset are used to expand
+	 * 						 templates. We also use {@code id} passed to the
 	 * 						 constuctor to reference a column in this row which
 	 * 						 is used to select an image to display.
      * @param out            HTML for the ImageSelector is appended here.
 	 */
-    public void html(ClientRequest cr, Dataset data, StringBuilder out) {
-		
+    public void render(ClientRequest cr, Dataset data, StringBuilder out) {
+
 		String src, alt = null;
 		String key = data.get(id);
 		Object value = map.lookup(key);
@@ -79,10 +79,10 @@ public class ImageSelector implements Formatter {
 			alt = imgData.check("alt");
 		} else {
 			throw new InternalError("ImageSelector does not support class " +
-				value.getClass().getSimpleName() + ". It only supports " + 
+				value.getClass().getSimpleName() + ". It only supports " +
 				"string and dataset values. ");
 		}
-			
+
 		if (alt == null) {
 			alt = key;
 		}

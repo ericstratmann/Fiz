@@ -113,7 +113,7 @@ public class SelectFormElement extends FormElement {
      * @param out                  Generated HTML is appended here.
      */
     @Override
-    public void html(ClientRequest cr, Dataset data,
+    public void render(ClientRequest cr, Dataset data,
             StringBuilder out) {
         // Create a HashSet that keeps track of the initially selected values.
         HashSet<String> initialSelections = new HashSet<String>();

@@ -805,7 +805,7 @@ public class ClientRequest {
             section.addDataRequests(this);
         }
         for (Section section : sections) {
-            section.html(this);
+            section.render(this);
         }
     }
 
@@ -856,7 +856,7 @@ public class ClientRequest {
         for (int i = 0; i <= lastId; i += 2) {
             String id = (String) idsAndSections[i];
             Section section = (Section) idsAndSections[i+1];
-            section.html(this);
+            section.render(this);
             updateElement(id, out.substring(oldLength));
             out.setLength(oldLength);
         }

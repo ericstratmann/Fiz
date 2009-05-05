@@ -1,7 +1,5 @@
 package org.fiz;
 
-import java.io.StringWriter;
-
 /**
  * Junit tests for the SelectFormElement class.
  */
@@ -59,7 +57,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 out.toString());
     }
 
-    public void test_html_basics() {
+    public void test_render_basics() {
         SelectFormElement element = new SelectFormElement(
                 YamlDataset.newStringInstance(
                 "id: id11\n" +
@@ -70,7 +68,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 "    value: banana\n"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
-        element.html(cr, new Dataset(), out);
+        element.render(cr, new Dataset(), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
                 "<select name=\"id11\" class=\"SelectFormElement\">\n" +
@@ -83,7 +81,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         out.append("</p></form>\n");
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_html_singleInitialValue() {
+    public void test_render_singleInitialValue() {
         SelectFormElement element = new SelectFormElement(
                 YamlDataset.newStringInstance(
                 "id: id11\n" +
@@ -94,7 +92,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 "    value: grape\n"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
-        element.html(cr, new Dataset("id11", "grape"), out);
+        element.render(cr, new Dataset("id11", "grape"), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
                 "<select name=\"id11\" class=\"SelectFormElement\">\n" +
@@ -108,7 +106,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         out.append("</p></form>\n");
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_html_multipleInitialValues() {
+    public void test_render_multipleInitialValues() {
         SelectFormElement element = new SelectFormElement(
                 YamlDataset.newStringInstance(
                 "id: id11\n" +
@@ -122,7 +120,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 "    value: grape\n"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
-        element.html(cr, YamlDataset.newStringInstance(
+        element.render(cr, YamlDataset.newStringInstance(
                 "id11:\n" +
                 "  - value:  apple\n" +
                 "  - value: grape\n"), out);
@@ -142,7 +140,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         out.append("</p></form>\n");
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_html_choiceNameProperty() {
+    public void test_render_choiceNameProperty() {
         SelectFormElement element = new SelectFormElement(
                 YamlDataset.newStringInstance(
                 "id: id11\n" +
@@ -155,7 +153,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 "    value: banana\n"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
-        element.html(cr, new Dataset(), out);
+        element.render(cr, new Dataset(), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
                 "<select name=\"id11\" class=\"SelectFormElement\">\n" +
@@ -167,27 +165,27 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         out.append("</p></form>\n");
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_html_choiceRequestError() {
+    public void test_render_choiceRequestError() {
         SelectFormElement element = new SelectFormElement(
                 new Dataset("id", "id11", "choiceRequest", "error"));
         ClientRequest cr = new ClientRequestFixture();
         cr.addDataRequest("error", RawDataManager.newError(new Dataset(
                 "message", "sample <error>", "value", "47")));
         StringBuilder out = cr.getHtml().getBody();
-        element.html(cr, new Dataset(), out);
+        element.render(cr, new Dataset(), out);
         assertEquals("Javascript for HTML",
                 "Fiz.addBulletinMessage(\"bulletinError\", " +
                 "\"bulletin: sample &lt;error&gt;\");\n",
                 cr.getHtml().jsCode.toString());
     }
-    public void test_html_choiceRequestSucceeds() {
+    public void test_render_choiceRequestSucceeds() {
         SelectFormElement element = new SelectFormElement(
                 new Dataset("id", "id11", "choiceRequest",
                         "getFruits", "choiceName", "fruit"));
         ClientRequest cr = new ClientRequestFixture();
         cr.addDataRequest("getFruits", RawDataManager.newRequest(fruits));
         StringBuilder out = cr.getHtml().getBody();
-        element.html(cr, new Dataset(), out);
+        element.render(cr, new Dataset(), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
                 "<select name=\"id11\" class=\"SelectFormElement\">\n" +
@@ -197,7 +195,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 "<!-- End SelectFormElement @id -->\n",
                 out.toString());
     }
-    public void test_html_explicitClassAndHeight() {
+    public void test_render_explicitClassAndHeight() {
         SelectFormElement element = new SelectFormElement(
                 YamlDataset.newStringInstance(
                 "id: id11\n" +
@@ -208,7 +206,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 "    value: apple\n"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
-        element.html(cr, YamlDataset.newStringInstance(
+        element.render(cr, YamlDataset.newStringInstance(
                 "id11:\n" +
                 "  - value:  apple\n" +
                 "  - value: grape\n"), out);
@@ -223,7 +221,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         out.append("</p></form>\n");
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_html_choiceHasValueButNoName() {
+    public void test_render_choiceHasValueButNoName() {
         SelectFormElement element = new SelectFormElement(
                 YamlDataset.newStringInstance(
                 "id: id11\n" +
@@ -232,7 +230,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 "  - value: 2009\n"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
-        element.html(cr, new Dataset("id 11", "2008"), out);
+        element.render(cr, new Dataset("id 11", "2008"), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
                 "<select name=\"id11\" class=\"SelectFormElement\">\n" +

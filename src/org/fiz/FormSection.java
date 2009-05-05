@@ -1,7 +1,6 @@
 package org.fiz;
 
 import java.io.*;
-import javax.crypto.*;
 import javax.servlet.http.*;
 
 /**
@@ -336,7 +335,7 @@ public class FormSection extends Section {
      *                             appended to {@code cr.getHtml()}.
      */
     @Override
-    public void html(ClientRequest cr) {
+    public void render(ClientRequest cr) {
         Html html = cr.getHtml();
         StringBuilder out = html.getBody();
         Dataset mainDataset = cr.getMainDataset();
@@ -390,7 +389,7 @@ public class FormSection extends Section {
                 "  <input type=\"hidden\" name=\"fiz_auth\" " +
                 "value=\"@1\" />\n",
                 properties, out, getAuthToken(cr));
-        innerHtml(cr, data, out);
+        renderInner(cr, data, out);
         Template.expand("</form>\n" +
                 "<!-- End FormSection @id -->\n",
                 properties, out);
@@ -507,7 +506,7 @@ public class FormSection extends Section {
      *                             main dataset).
      * @param out                  Generated HTML is appended here.
      */
-    protected void innerHtml(ClientRequest cr, Dataset data,
+    protected void renderInner(ClientRequest cr, Dataset data,
             StringBuilder out) {
         boolean anyHidden = false;
 
@@ -551,7 +550,7 @@ public class FormSection extends Section {
             for (FormElement element : elements) {
                 if (element instanceof HiddenFormElement) {
                     out.append("  ");
-                    element.html(cr, data, out);
+                    element.render(cr, data, out);
                     out.append("\n");
                 }
             }
@@ -576,7 +575,7 @@ public class FormSection extends Section {
                 id, elementId, getHelpText(element));
         int startingLength = out.length();
         out.append("      <td class=\"label\">");
-        if (!element.labelHtml(cr, data, out)) {
+        if (!element.renderLabel(cr, data, out)) {
             // This element requests that we not display any label and
             // instead let the control span both columns.  Erase the
             // information for this row and regenerate the row with
@@ -587,7 +586,7 @@ public class FormSection extends Section {
         } else {
             out.append("</td>\n      <td class=\"control\">");
         }
-        element.html(cr, data, out);
+        element.render(cr, data, out);
 
         // Create an extra <div> underneath the control for displaying
         // error messages pertaining to this form element.
@@ -616,7 +615,7 @@ public class FormSection extends Section {
         int rowStart = out.length();
         out.append("      <div class=\"label\">");
         int labelStart = out.length();
-        if (!element.labelHtml(cr, data, out)
+        if (!element.renderLabel(cr, data, out)
                 || (labelStart == out.length())) {
             // No label for this element; discard the entire row.
             out.setLength(rowStart);
@@ -624,7 +623,7 @@ public class FormSection extends Section {
             out.append("</div>\n");
         }
         out.append("      <div class=\"control\">");
-        element.html(cr, data, out);
+        element.render(cr, data, out);
 
         // Create an extra <div> underneath the control for displaying
         // error messages pertaining to this form element.

@@ -78,7 +78,7 @@ public class TextAreaFormElement extends FormElement {
      * @param out                  Generated HTML is appended here.
      */
     @Override
-    public void html(ClientRequest cr, Dataset data,
+    public void render(ClientRequest cr, Dataset data,
             StringBuilder out) {
         cr.getHtml().includeCssFile("TextAreaFormElement.css");
         Template.expand("<textarea name=\"@id\" " +

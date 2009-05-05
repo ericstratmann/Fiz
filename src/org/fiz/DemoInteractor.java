@@ -333,7 +333,7 @@ public class DemoInteractor extends Interactor {
         Link link = new Link(new Dataset("text", "Clear statistics",
                 "ajaxUrl", "/fiz/demo/ajaxClearStats"));
         body.append("<p>");
-        link.html(cr, cr.getMainDataset(), body);
+        link.render(cr, cr.getMainDataset(), body);
     }
 
     /**

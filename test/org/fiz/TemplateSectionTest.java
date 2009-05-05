@@ -45,7 +45,7 @@ public class TemplateSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
     }
 
-    public void test_html_errorInRequest() {
+    public void test_render_errorInRequest() {
         cr.addDataRequest("error", RawDataManager.newError(new Dataset(
                 "message", "sample <error>", "value", "47")));
         Config.setDataset("styles", new Dataset("test111",
@@ -58,7 +58,7 @@ public class TemplateSectionTest extends junit.framework.TestCase {
                 "error for Alice: sample &lt;error&gt;",
                 cr.getHtml().getBody().toString());
     }
-    public void test_html_errorInRequest_defaultHandler() {
+    public void test_render_errorInRequest_defaultHandler() {
         cr.addDataRequest("error", RawDataManager.newError(new Dataset(
                 "message", "sample <error>", "value", "47")));
         Config.setDataset("styles", new Dataset("TemplateSection",
@@ -68,20 +68,20 @@ public class TemplateSectionTest extends junit.framework.TestCase {
         assertEquals("generated HTML", "error: sample &lt;error&gt;",
                 cr.getHtml().getBody().toString());
     }
-    public void test_html_withRequest() {
+    public void test_render_withRequest() {
         cr.addDataRequest("getState", RawDataManager.newRequest(state));
         cr.showSections(new TemplateSection("getState",
                 "name: @name, height: @height"));
         assertEquals("generated HTML", "name: California, height: 66",
                 cr.getHtml().getBody().toString());
     }
-    public void test_html_withoutRequest() {
+    public void test_render_withoutRequest() {
         cr.showSections(new TemplateSection(
                 "name: @name, height: @height"));
         assertEquals("generated HTML", "name: Alice, height: 66",
                 cr.getHtml().getBody().toString());
     }
-    public void test_html_templateInFile() {
+    public void test_render_templateInFile() {
         (new File("_testData_/WEB-INF")).mkdirs();
         TestUtil.writeFile("_testData_/WEB-INF/template",
                 "@name is @height inches tall.");

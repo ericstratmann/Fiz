@@ -83,12 +83,12 @@ public class PasswordFormElementTest extends junit.framework.TestCase {
         assertEquals("collected dataset", "secret: xyzzy\n", out.toString());
     }
 
-    public void test_html_defaultClass() {
+    public void test_render_defaultClass() {
         ClientRequest cr = new ClientRequestFixture();
         PasswordFormElement element = new PasswordFormElement(
                 "secret", "Secret:");
         StringBuilder out = new StringBuilder();
-        element.html(cr, new Dataset("secret", "<confidential>"), out);
+        element.render(cr, new Dataset("secret", "<confidential>"), out);
         assertEquals("CSS includes", "PasswordFormElement.css",
                 cr.getHtml().getCssFiles());
         assertEquals("generated HTML",
@@ -96,12 +96,12 @@ public class PasswordFormElementTest extends junit.framework.TestCase {
                 "class=\"PasswordFormElement\" />",
                 out.toString());
     }
-    public void test_html_explicitClass() {
+    public void test_render_explicitClass() {
         ClientRequest cr = new ClientRequestFixture();
         PasswordFormElement element = new PasswordFormElement(
                 new Dataset("id", "secret", "class", "xyzzy"));
         StringBuilder out = new StringBuilder();
-        element.html(cr, new Dataset(), out);
+        element.render(cr, new Dataset(), out);
         assertEquals("generated HTML",
                 "<input type=\"password\" name=\"secret\" " +
                 "class=\"xyzzy\" />",

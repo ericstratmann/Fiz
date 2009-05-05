@@ -3,7 +3,6 @@ import java.io.*;
 import java.util.*;
 
 import org.apache.log4j.Logger;
-import org.ho.yaml.YamlEncoder;
 import org.mozilla.javascript.*;
 
 /**
@@ -66,12 +65,12 @@ public class TestInteractor extends Interactor {
         Link link = new Link(new Dataset("text", "See select value",
                 "javascript", "alert(\"Select value: \" + " +
                 "document.getElementById(\"select1\").value);"));
-        link.html(cr, cr.getMainDataset(), body);
+        link.render(cr, cr.getMainDataset(), body);
         body.append("<br />\n");
         Link link2 = new Link(new Dataset("text", "See checkbox value",
                 "javascript", "alert(\"Checkbox value: \" + " +
                 "document.getElementById(\"check1\").value);"));
-        link2.html(cr, cr.getMainDataset(), body);
+        link2.render(cr, cr.getMainDataset(), body);
     }
 
     public void showTime(ClientRequest cr) {
@@ -82,7 +81,7 @@ public class TestInteractor extends Interactor {
                 "ajaxUrl", "test/ajaxUpdateTime"));
         body.append("<h1>Ajax Demo</h1>\n" +
                 "<p>This page demonstrates a simple Ajax updater.  ");
-        link.html(cr, cr.getMainDataset(), body);
+        link.render(cr, cr.getMainDataset(), body);
         body.append(" to update the time below.</p>\n" +
                 "<p>Latest date/time from Ajax: " +
                 "<span id=\"updateMe\">None</span></p>\n");
@@ -156,14 +155,14 @@ public class TestInteractor extends Interactor {
                 "<p>", globalData, body);
         Link link = new Link(new Dataset("text", "Go to page @next",
                 "url", "link?current=@next"));
-        link.html(cr, globalData, body);
+        link.render(cr, globalData, body);
         body.append("</p>\n");
         body.append("<p>The following link uses Javascript to display " +
                 "an alert: ");
         Link link2 = new Link(new Dataset("text", "Click me",
                 "javascript",
                 "alert(\"Her name is @name, favorite saying @saying\");"));
-        link2.html(cr, globalData, body);
+        link2.render(cr, globalData, body);
         body.append("</p>\n");
         Reminder r1 = new Reminder("r1", "text", "name", "Alice",
                 "age", "28", "sibling", new Dataset("name", "Bob"),
@@ -184,16 +183,16 @@ public class TestInteractor extends Interactor {
         Link link3 = new Link(new Dataset("text", "Click here",
                 "ajaxUrl", "/fiz/test/ajaxUpdateTime"));
         body.append("<p>");
-        link3.html(cr, globalData, body);
+        link3.render(cr, globalData, body);
         body.append(" to update the time below.</p>\n" +
                 "<p>Latest date/time from Ajax: " +
                 "<span id=\"updateMe\">None</span></p>\n");
         Link link4 = new Link(new Dataset("text", "Click here.",
                 "ajaxUrl", "ajaxPerf"));
         body.append("Want to measure the round-trip latency for Ajax?  ");
-        link4.html(cr, globalData, body);
+        link4.render(cr, globalData, body);
         body.append("  Or, ");
-        Button.html(cr, new Dataset("text", "Click", "ajaxUrl", "ajaxPerf"),
+        Button.render(cr, new Dataset("text", "Click", "ajaxUrl", "ajaxPerf"),
                 new Dataset(), body);
         body.append("<span id=\"perf\"></span>\n");
     }

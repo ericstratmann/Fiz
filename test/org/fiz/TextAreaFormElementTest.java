@@ -27,25 +27,25 @@ public class TextAreaFormElementTest extends junit.framework.TestCase {
                 out.toString());
     }
 
-    public void test_html_defaultClassNoInitialValue() {
+    public void test_render_defaultClassNoInitialValue() {
         ClientRequest cr = new ClientRequestFixture();
         TextAreaFormElement element = new TextAreaFormElement(
                 "id11", "label22");
         StringBuilder out = new StringBuilder();
-        element.html(cr, new Dataset(), out);
+        element.render(cr, new Dataset(), out);
         assertEquals("HTML", "<textarea name=\"id11\" " +
                 "class=\"TextAreaFormElement\" rows=\"10\"></textarea>",
                 out.toString());
         assertEquals("CSS includes", "TextAreaFormElement.css",
                 cr.getHtml().getCssFiles());
     }
-    public void test_html_explicitClassAndRowsAndInitialValue() {
+    public void test_render_explicitClassAndRowsAndInitialValue() {
         ClientRequest cr = new ClientRequestFixture();
         TextAreaFormElement element = new TextAreaFormElement(
                 new Dataset("id", "id11", "class", "xyzzy",
                 "rows", "6"));
         StringBuilder out = new StringBuilder();
-        element.html(cr, new Dataset("id11", "Line 1\n<Line 2>\n"), out);
+        element.render(cr, new Dataset("id11", "Line 1\n<Line 2>\n"), out);
         assertEquals("HTML", "<textarea name=\"id11\" class=\"xyzzy\" " +
                 "rows=\"6\">Line 1\n" +
                 "&lt;Line 2&gt;\n" +

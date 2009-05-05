@@ -91,7 +91,7 @@ public class TabSection extends Section{
      *                             appended to {@code cr.getHtml()}.
      */
     @Override
-    public void html(ClientRequest cr) {
+    public void render(ClientRequest cr) {
         Html html = cr.getHtml();
         StringBuilder out = html.getBody();
         StringBuilder javascript = new StringBuilder();

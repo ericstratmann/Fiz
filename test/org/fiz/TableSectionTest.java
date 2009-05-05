@@ -40,7 +40,7 @@ public class TableSectionTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
     }
 
-    public void test_html_basics() {
+    public void test_render_basics() {
         cr.addDataRequest("getPeople", RawDataManager.newRequest(people));
         TableSection table = new TableSection(
                 new Dataset("request", "getPeople"),
@@ -81,7 +81,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_html_includeCss() {
+    public void test_render_includeCss() {
         cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44"));
@@ -91,7 +91,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 "TableSection.css",
                 cr.getHtml().getCssFiles());
     }
-    public void test_html_dontIncludeCss() {
+    public void test_render_dontIncludeCss() {
         cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "class", "special"));
@@ -100,7 +100,7 @@ public class TableSectionTest extends junit.framework.TestCase {
         TestUtil.assertSubstring("CSS files requested",
                 "", cr.getHtml().getCssFiles());
     }
-    public void test_html_idAndClass() {
+    public void test_render_idAndClass() {
         cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44",
@@ -108,7 +108,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 new Column("Name", "@name"),
                 new Column("Age", "@age"),
                 new Column("Weight", "@weight"));
-        table.html(cr);
+        table.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertSubstring("table prolog",
                 "<!-- Start TableSection id.44 -->\n" +
@@ -120,7 +120,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 html);
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_html_noHeader() {
+    public void test_render_noHeader() {
         cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44",
@@ -141,7 +141,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_html_header_columnIsFormatter() {
+    public void test_render_header_columnIsFormatter() {
         cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44"),
@@ -168,7 +168,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_html_header_cancelHeaderRow() {
+    public void test_render_header_cancelHeaderRow() {
         cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44"),
@@ -189,7 +189,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_html_errorInRequest() {
+    public void test_render_errorInRequest() {
         // The error template requests data from both the error report and
         // the main dataset, to make sure that both are available.
         cr.addDataRequest("error", RawDataManager.newError(new Dataset(
@@ -202,7 +202,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 new Column("Name", "@name"),
                 new Column("Age", "@age"),
                 new Column("Weight", "@weight"));
-        table.html(cr);
+        table.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertSubstring("row with empty message",
                "  <tr class=\"error\">\n" +
@@ -212,7 +212,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_html_emptyWithTemplate() {
+    public void test_render_emptyWithTemplate() {
         cr.addDataRequest("getNothing", RawDataManager.newRequest(
                 new Dataset("sample", "value")));
         TableSection table = new TableSection(
@@ -221,7 +221,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 new Column("Name", "@name"),
                 new Column("Age", "@age"),
                 new Column("Weight", "@weight"));
-        table.html(cr);
+        table.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertSubstring("row with empty message",
                "  <tr class=\"empty\">\n" +
@@ -230,7 +230,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_html_emptyUseDefaultTemplate() {
+    public void test_render_emptyUseDefaultTemplate() {
         cr.addDataRequest("getNothing", RawDataManager.newRequest(
                 new Dataset("sample", "value")));
         TableSection table = new TableSection(
@@ -238,7 +238,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 new Column("Name", "@name"),
                 new Column("Age", "@age"),
                 new Column("Weight", "@weight"));
-        table.html(cr);
+        table.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertSubstring("wrote with empty message",
                "  <tr class=\"empty\">\n" +
@@ -247,7 +247,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_html_includeMainDataset() {
+    public void test_render_includeMainDataset() {
         // This test makes sure that the data passed to each Column includes
         // both the row data and the main dataset.
         cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
@@ -271,7 +271,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_html_lastRowClass() {
+    public void test_render_lastRowClass() {
         cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         TableSection table = new TableSection(
                 new Dataset("request", "getPerson", "id", "id.44",

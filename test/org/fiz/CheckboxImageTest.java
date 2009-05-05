@@ -62,30 +62,30 @@ public class CheckboxImageTest extends junit.framework.TestCase {
 		assertEquals(true, cbs.falseValues.contains("false"));
 	}
 
-	public void test_html_keyNotFoundInDataset() {
+	public void test_render_keyNotFoundInDataset() {
 		cbs = new CheckboxImage(data);
 		testRow = new Dataset("bar", "null");
 		try {
-			cbs.html(cr, testRow, out);
+			cbs.render(cr, testRow, out);
 		} catch (Dataset.MissingValueError e) {
 			return;
 		}
 		fail("Expected exception not thrown");
 	}
 
-	public void test_html_useFalseImg() {
+	public void test_render_useFalseImg() {
 		cbs = new CheckboxImage(data, falseVals);
 		testRow = new Dataset("foo", "0");
-		cbs.html(cr, testRow, out);
+		cbs.render(cr, testRow, out);
 		assertEquals("<img src=\"cb-false.png\" alt=\"unchecked\" />",
 			out.toString());
 
 	}
 
-	public void test_html_useTrueImg() {
+	public void test_render_useTrueImg() {
 		cbs = new CheckboxImage(data, falseVals);
 		testRow = new Dataset("foo", "1");
-		cbs.html(cr, testRow, out);
+		cbs.render(cr, testRow, out);
 		assertEquals("<img src=\"cb-true.png\" alt=\"checked\" />",
 			out.toString());
 	}

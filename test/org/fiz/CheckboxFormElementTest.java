@@ -38,12 +38,12 @@ public class CheckboxFormElementTest extends junit.framework.TestCase {
                 out.toString());
     }
 
-    public void test_html_initialValueSupplied() {
+    public void test_render_initialValueSupplied() {
         ClientRequest cr = new ClientRequestFixture();
         CheckboxFormElement element = new CheckboxFormElement(
                 new Dataset("id", "id11", "trueValue", "111"));
         StringBuilder out = new StringBuilder();
-        element.html(cr, new Dataset("id11", "111"), out);
+        element.render(cr, new Dataset("id11", "111"), out);
         assertEquals("HTML", "<div class=\"CheckboxFormElement\">" +
                 "<input type=\"checkbox\" name=\"id11\" id=\"id11\" " +
                 "value=\"true\" checked=\"checked\" /></div>",
@@ -51,20 +51,20 @@ public class CheckboxFormElementTest extends junit.framework.TestCase {
         assertEquals("CSS includes", "CheckboxFormElement.css",
                 cr.getHtml().getCssFiles());
     }
-    public void test_html_explicitClassNoInitialValue() {
+    public void test_render_explicitClassNoInitialValue() {
         CheckboxFormElement element = new CheckboxFormElement(
                 new Dataset("id", "id11", "class", "xyzzy"));
         StringBuilder out = new StringBuilder();
-        element.html(new ClientRequestFixture(), new Dataset(), out);
+        element.render(new ClientRequestFixture(), new Dataset(), out);
         assertEquals("HTML", "<div class=\"xyzzy\"><input type=\"checkbox\" " +
                 "name=\"id11\" id=\"id11\" value=\"true\" /></div>",
                 out.toString());
     }
-    public void test_html_extraTemplate() {
+    public void test_render_extraTemplate() {
         CheckboxFormElement element = new CheckboxFormElement(
                 new Dataset("id", "id11", "extra", "extra: @name"));
         StringBuilder out = new StringBuilder();
-        element.html(new ClientRequestFixture(),
+        element.render(new ClientRequestFixture(),
                 new Dataset("name", "Alice"), out);
         assertEquals("HTML", "<div class=\"CheckboxFormElement\">" +
                 "<input type=\"checkbox\" name=\"id11\" id=\"id11\" " +

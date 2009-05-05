@@ -44,8 +44,9 @@ public class Button implements Formatter {
      *                             expand templates from the properties.
      * @param out                  HTML for the Button is appended here.
      */
-    public void html(ClientRequest cr, Dataset data, StringBuilder out) {
-        Button.html(cr, properties, data, out);
+    @Override
+    public void render(ClientRequest cr, Dataset data, StringBuilder out) {
+        Button.render(cr, properties, data, out);
     }
 
     /**
@@ -58,7 +59,7 @@ public class Button implements Formatter {
      *                             expand templates from the properties.
      * @param out                  HTML for the Button is appended here.
      */
-    public static void html(ClientRequest cr,  Dataset properties,
+    public static void render(ClientRequest cr,  Dataset properties,
             Dataset data, StringBuilder out) {
         StringBuilder javascript;
         String ajaxUrl = properties.check("ajaxUrl");

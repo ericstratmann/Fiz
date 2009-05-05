@@ -155,7 +155,7 @@ public class TreeSection extends Section implements DirectAjax {
      *                             appended to {@code cr.getHtml()}.
      */
     @Override
-    public void html(ClientRequest cr) {
+    public void render(ClientRequest cr) {
         Html html = cr.getHtml();
         StringBuilder out = html.getBody();
         String id = properties.get("id");

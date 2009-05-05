@@ -100,7 +100,7 @@ public class TableSection extends Section {
      *                             appended to {@code cr.getHtml()}.
      */
     @Override
-    public void html(ClientRequest cr) {
+    public void render(ClientRequest cr) {
         Html html = cr.getHtml();
         StringBuilder out = html.getBody();
         Dataset mainDataset = cr.getMainDataset();
@@ -134,7 +134,7 @@ public class TableSection extends Section {
                 int headerStart = out.length();
                 Formatter f = columns[col];
                 if (f instanceof Column) {
-                    ((Column) f).headerHtml(cr, out);
+                    ((Column) f).renderHeader(cr, out);
                 }
                 if (out.length() > headerStart) {
                     anyHeaders = true;
@@ -194,7 +194,7 @@ public class TableSection extends Section {
                     }
                     for (int col = 0; col < columns.length; col++) {
                         printTd(col, out);
-                        columns[col].html(cr, dataForRow, out);
+                        columns[col].render(cr, dataForRow, out);
                         out.append("</td>\n");
                     }
                     out.append("  </tr>\n");

@@ -66,10 +66,10 @@ public class TableLayoutTest extends junit.framework.TestCase {
                 TableLayout.layoutCache.size());
     }
 
-    public void test_html_noLayout() {
+    public void test_render_noLayout() {
         boolean gotException = false;
         try {
-            TableLayout.html(new Dataset(), container, cr);
+            TableLayout.render(new Dataset(), container, cr);
         }
         catch (Dataset.MissingValueError e) {
             assertEquals("exception message",
@@ -80,35 +80,35 @@ public class TableLayoutTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
     }
 
-    public void test_html_cache() {
+    public void test_render_cache() {
         String layout = "+----+\n" +
                         "| 1  |\n" +
                         "+----+\n";
 
         TableLayout.clearCache();
-        TableLayout.html(new Dataset("layout", layout), container, cr);
+        TableLayout.render(new Dataset("layout", layout), container, cr);
         assertEquals("layoutCache size after html", 1,
                 TableLayout.layoutCache.size());
     }
 
-    public void test_html_cacheUse() {
+    public void test_render_cacheUse() {
         String layout = "+----+\n" +
                         "| 1  |\n" +
                         "+----+\n";
         TableLayout.clearCache();
-        TableLayout.html(new Dataset("layout", layout), container, cr);
+        TableLayout.render(new Dataset("layout", layout), container, cr);
         int cacheUseCountBefore = TableLayout.cacheUseCount;
-        TableLayout.html(new Dataset("layout", layout), container, cr);
+        TableLayout.render(new Dataset("layout", layout), container, cr);
         assertEquals("Cache use count", cacheUseCountBefore + 1,
                 TableLayout.cacheUseCount);
     }
 
-    public void test_html_useIdAndClass() {
+    public void test_render_useIdAndClass() {
         String layout = "+----+\n" +
                         "| 1  |\n" +
                         "+----+\n";
         TableLayout.clearCache();
-        TableLayout.html(new Dataset("id", "abc",
+        TableLayout.render(new Dataset("id", "abc",
                 "class", "someStyle",
                 "layout", layout), container, cr);
         String html = cr.getHtml().getBody().toString();
@@ -128,7 +128,7 @@ public class TableLayoutTest extends junit.framework.TestCase {
         String layout = "+----+\n" +
                         "| 1  |\n" +
                         "+----+\n";
-        TableLayout.html(new Dataset("layout", layout), container, cr);
+        TableLayout.render(new Dataset("layout", layout), container, cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
         assertEquals("generated HTML",
@@ -158,7 +158,7 @@ public class TableLayoutTest extends junit.framework.TestCase {
                         "| 10 |1| 12 |\n" +
                         "|    |1|    |\n" +
                         "+----+-+----+";
-        TableLayout.html(new Dataset("layout", layout), container, cr);
+        TableLayout.render(new Dataset("layout", layout), container, cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
         assertEquals("generated HTML","<table cellspacing=\"0\" >\n" +
@@ -370,7 +370,7 @@ public class TableLayoutTest extends junit.framework.TestCase {
         for (String l : layouts) {
             boolean gotException = false;
             try {
-                TableLayout.html(new Dataset("layout", l), container, cr);
+                TableLayout.render(new Dataset("layout", l), container, cr);
             }
             catch (TableLayout.ParseError e) {
                 gotException = true;
@@ -398,7 +398,7 @@ public class TableLayoutTest extends junit.framework.TestCase {
                 "+-+ |\n" +
                 "|   |\n" +
                 "+---+\n",
-                
+
                 "+---+\n" +
                 "|   |\n" +
                 "| +||\n" +
@@ -573,7 +573,7 @@ public class TableLayoutTest extends junit.framework.TestCase {
         for (String l : layouts) {
             boolean gotException = false;
             try {
-                TableLayout.html(new Dataset("layout", l), container, cr);
+                TableLayout.render(new Dataset("layout", l), container, cr);
             }
             catch (TableLayout.ParseError e) {
                 gotException = true;

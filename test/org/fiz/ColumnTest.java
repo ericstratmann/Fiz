@@ -19,26 +19,26 @@ public class ColumnTest extends junit.framework.TestCase {
         assertEquals("formatter value", link, c.formatter);
     }
 
-    public void test_headerHtml() {
-        Column c = new Column ("<label>", "id44");
-        StringBuilder out = new StringBuilder();
-        c.headerHtml(null, out);
-        assertEquals("generated HTML", "&lt;label&gt;", out.toString());
-    }
-
-    public void test_html_formatter() {
+    public void test_render_formatter() {
         Link link = new Link(new Dataset("text", "click here",
                 "url", "/a/b/@name"));
         Column c = new Column ("<label>", link);
         StringBuilder out = new StringBuilder();
-        c.html(null, new Dataset("name", "Alice"), out);
+        c.render(null, new Dataset("name", "Alice"), out);
         assertEquals("generated HTML",
                 "<a href=\"/a/b/Alice\">click here</a>", out.toString());
     }
-    public void test_html_template() {
+    public void test_render_template() {
         Column c = new Column ("<label>", "@id44");
         StringBuilder out = new StringBuilder();
-        c.html(null, new Dataset("name", "Alice", "id44", "a&b"), out);
+        c.render(null, new Dataset("name", "Alice", "id44", "a&b"), out);
         assertEquals("generated HTML", "a&amp;b", out.toString());
+    }
+
+    public void test_renderHeader() {
+        Column c = new Column ("<label>", "id44");
+        StringBuilder out = new StringBuilder();
+        c.renderHeader(null, out);
+        assertEquals("generated HTML", "&lt;label&gt;", out.toString());
     }
 }

@@ -10,7 +10,7 @@ public class FormElementTest extends junit.framework.TestCase {
         public FormElementFixture(Dataset properties) {
             super(properties);
         }
-        public void html(ClientRequest cr, Dataset data, StringBuilder out) {
+        public void render(ClientRequest cr, Dataset data, StringBuilder out) {
             // Do nothing.
         }
     }
@@ -58,20 +58,20 @@ public class FormElementTest extends junit.framework.TestCase {
                 element.checkProperty("bogus"));
     }
 
-    public void test_labelHtml_withTemplate() {
+    public void test_renderLabel_withTemplate() {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "age", "label", "Age of @name:"));
         StringBuilder out = new StringBuilder();
-        element.labelHtml(null, new Dataset("name", "<Bob>", "age", "30"),
+        element.renderLabel(null, new Dataset("name", "<Bob>", "age", "30"),
                 out);
         assertEquals("generated HTML", "Age of &lt;Bob&gt;:", out.toString());
     }
 
-    public void test_labelHtml_noTemplate() {
+    public void test_renderLabel_noTemplate() {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "<age>"));
         StringBuilder out = new StringBuilder();
-        element.labelHtml(null, new Dataset("name", "<Bob>", "age", "30"),
+        element.renderLabel(null, new Dataset("name", "<Bob>", "age", "30"),
                 out);
         assertEquals("generated HTML", "", out.toString());
     }

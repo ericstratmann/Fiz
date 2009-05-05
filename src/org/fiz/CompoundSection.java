@@ -93,7 +93,7 @@ public class CompoundSection extends Section implements TableLayoutContainer {
      *                             appended to {@code cr.getHtml()}.
      */
     @Override
-    public void html(ClientRequest cr) {
+    public void render(ClientRequest cr) {
         // If there is a border for this section, then the section gets
         // rendered as a 3x3 table, with the outer cells containing the
         // border and the inner cell containing the children's sections.
@@ -133,7 +133,7 @@ public class CompoundSection extends Section implements TableLayoutContainer {
                 // First copy over the configuration properties relevant to the
                 // TableLayout.html() method.
                 Dataset layoutProperties = new Dataset("layout", layout);
-                TableLayout.html(layoutProperties, this, cr);
+                TableLayout.render(layoutProperties, this, cr);
             }
         } else if (layout != null) {
             // If a table layout was specified, expand it using the
@@ -144,7 +144,7 @@ public class CompoundSection extends Section implements TableLayoutContainer {
             Dataset layoutProperties = new Dataset("layout", layout,
                     "id", properties.check("id"),
                     "class", properties.check("class"));
-            TableLayout.html(layoutProperties, this, cr);
+            TableLayout.render(layoutProperties, this, cr);
         } else {
             Template.expand("<div {{id=\"@id\"}} {{class=\"@class\"}} " +
                     "{{style=\"background: @background;\"}}>\n",
@@ -154,11 +154,11 @@ public class CompoundSection extends Section implements TableLayoutContainer {
         if (layout == null) {
             // Give the children a chance to render themselves.
             for (Section child: children) {
-                child.html(cr);
+                child.render(cr);
             }
             if (extraChildren != null) {
                 for (Section child: extraChildren) {
-                    child.html(cr);
+                    child.render(cr);
                 }
             }
         }
@@ -200,14 +200,14 @@ public class CompoundSection extends Section implements TableLayoutContainer {
      *           request being serviced; HTML should get appended to
      *           {@code cr.getHtml()}.
      */
-    public void childHtml(String id, ClientRequest cr) {
+    public void renderChild(String id, ClientRequest cr) {
         // Search for a child Section whose id is "id".
         for (Section child : children) {
             String childId = child.checkId();
             if (childId != null && childId.equals(id)) {
                 // Found a child section with a matching id, generate Html
                 // and return.
-                child.html(cr);
+                child.render(cr);
                 return;
             }
         }
@@ -215,7 +215,7 @@ public class CompoundSection extends Section implements TableLayoutContainer {
             for (Section child : extraChildren) {
                 String childId = child.checkId();
                 if (childId != null && childId.equals(id)) {
-                    child.html(cr);
+                    child.render(cr);
                     return;
                 }
             }

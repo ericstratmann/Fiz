@@ -19,11 +19,11 @@ public class UploadFormElementTest extends junit.framework.TestCase {
         assertEquals("output dataset", "name: Bob\n", out.toString());
     }
 
-    public void test_html() {
+    public void test_render() {
         ClientRequest cr = new ClientRequestFixture();
         UploadFormElement element = new UploadFormElement("age", "Age:");
         StringBuilder out = new StringBuilder();
-        element.html(cr, new Dataset("age", "<confidential>"), out);
+        element.render(cr, new Dataset("age", "<confidential>"), out);
         assertEquals("CSS includes", "UploadFormElement.css",
                 cr.getHtml().getCssFiles());
         assertEquals("generated HTML",
@@ -31,13 +31,13 @@ public class UploadFormElementTest extends junit.framework.TestCase {
                 "class=\"UploadFormElement\" />",
                 out.toString());
     }
-    public void test_html_explicitClass() {
+    public void test_render_explicitClass() {
         ClientRequest cr = new ClientRequestFixture();
         UploadFormElement element = new UploadFormElement(
                 new Dataset("id", "age", "label", "Age:",
                 "class", "class16"));
         StringBuilder out = new StringBuilder();
-        element.html(cr, new Dataset("age", "<confidential>"), out);
+        element.render(cr, new Dataset("age", "<confidential>"), out);
         assertEquals("generated HTML",
                 "<input type=\"file\" name=\"age\" " +
                 "class=\"class16\" />",

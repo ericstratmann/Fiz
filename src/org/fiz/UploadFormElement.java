@@ -70,7 +70,7 @@ public class UploadFormElement extends FormElement {
      * @param out                  Generated HTML is appended here.
      */
     @Override
-    public void html(ClientRequest cr, Dataset data,
+    public void render(ClientRequest cr, Dataset data,
             StringBuilder out) {
         cr.getHtml().includeCssFile("UploadFormElement.css");
         Template.expand("<input type=\"file\" name=\"@id\" " +

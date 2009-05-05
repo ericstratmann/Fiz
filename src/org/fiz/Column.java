@@ -44,32 +44,32 @@ public class Column implements Formatter {
     }
 
     /**
+     * Generate HTML for this column in a particular row (everything that
+     * goes inside the {@code <td>} element).
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @param rowData              Data available for this row (typically
+     *                             a compound dataset that includes
+     *                             row-specific data and the main dataset
+     *                             for {@code cr}).
+     * @param out                  HTML gets appended here.
+     */
+    public void render(ClientRequest cr, Dataset rowData, StringBuilder out) {
+        if (formatter != null) {
+            formatter.render(cr, rowData, out);
+        } else {
+            Template.expand(template, rowData, out);
+        }
+    }
+
+    /**
      * Generate HTML for the column header (everything that goes inside
      * the {@code <td>} element).
      * @param cr                   Overall information about the client
      *                             request being serviced.
      * @param out                  HTML gets appended here.
      */
-    public void headerHtml(ClientRequest cr, StringBuilder out) {
+    public void renderHeader(ClientRequest cr, StringBuilder out) {
         Html.escapeHtmlChars(label, out);
-    }
-
-    /**
-     * Generate HTML for this column in a particular row (everything that
-     * goes inside the {@code <td>} element).
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     * @param rowData              Data available for this row (typically
- *                                 a compound dataset that includes
-     *                             row-specific data and the main dataset
-     *                             for {@code cr}).
-     * @param out                  HTML gets appended here.
-     */
-    public void html(ClientRequest cr, Dataset rowData, StringBuilder out) {
-        if (formatter != null) {
-            formatter.html(cr, rowData, out);
-        } else {
-            Template.expand(template, rowData, out);
-        }
     }
 }

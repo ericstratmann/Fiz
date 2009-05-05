@@ -108,7 +108,7 @@ public class CompoundFormElement extends FormElement {
      * @param out                  Generated HTML is appended here.
      */
     @Override
-    public void html(ClientRequest cr, Dataset data,
+    public void render(ClientRequest cr, Dataset data,
             StringBuilder out) {
         // If we have our own data request, combine its output with the
         // incoming data from the form.
@@ -129,7 +129,7 @@ public class CompoundFormElement extends FormElement {
         String template = properties.check("template");
         if (template == null) {
             for (FormElement component : components) {
-                component.html(cr, data, out);
+                component.render(cr, data, out);
             }
             return;
         }
@@ -143,7 +143,7 @@ public class CompoundFormElement extends FormElement {
             // Use {@code out} to generate the HTML for each component;
             // once the HTML has been saved in a separate string, truncate
             // {@code out} back to its original length again.
-            components[i].html(cr, data, out);
+            components[i].render(cr, data, out);
             componentHtml[i] = out.substring(outLength);
             out.setLength(outLength);
         }

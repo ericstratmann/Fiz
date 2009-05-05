@@ -135,7 +135,7 @@ public class Link implements Formatter {
      *                             expand templates from the properties.
      * @param out                  HTML for the Link is appended here.
      */
-    public void html(ClientRequest cr, Dataset data, StringBuilder out) {
+    public void render(ClientRequest cr, Dataset data, StringBuilder out) {
         boolean displayText = (displayForm != DisplayForm.ICON)
                 && (text != null);
         boolean displayIcon = (displayForm != DisplayForm.TEXT)
@@ -166,7 +166,7 @@ public class Link implements Formatter {
                     out, expandedJs);
         }
         if (confirm != null) {
-            confirmHtml(confirm, data, out);
+            renderConfirmation(confirm, data, out);
         }
         out.append(">");
 
@@ -176,7 +176,7 @@ public class Link implements Formatter {
             // it allows the text to wrap cleanly (i.e. not under the image).
             out.append("<table class=\"Link\" cellspacing=\"0\">"
                     + "<tr><td>");
-            iconHtml(cr, data, out);
+            renderIcon(cr, data, out);
             out.append("</td><td class=\"text\">");
             Template.expand(text, data, out);
             out.append("</td></tr></table>");
@@ -185,31 +185,11 @@ public class Link implements Formatter {
             Template.expand(text, data, out);
         } else {
             // Display only an image.
-            iconHtml(cr, data, out);
+            renderIcon(cr, data, out);
         }
 
         // Finish off the link.
         out.append("</a>");
-    }
-
-    /**
-     * Generate an HTML <img> element for the link's icon.
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     * @param data                 Used for expanding "alt" template.
-     * @param out                  HTML gets appended here.
-     */
-    protected void iconHtml(ClientRequest cr, Dataset data,
-            StringBuilder out) {
-        StringBuilder expandedUrl = new StringBuilder(iconUrl.length());
-        Template.expand(iconUrl, data, expandedUrl, Template.SpecialChars.URL);
-        out.append("<img class=\"Link\" src=\"");
-        Html.escapeHtmlChars(expandedUrl, out);
-        out.append("\" alt=\"");
-        if (alt != null) {
-            Template.expand(alt, data, out);
-        }
-        out.append("\" />");
     }
 
     /**
@@ -220,7 +200,7 @@ public class Link implements Formatter {
      * @param data                 Dataset for expanding the template.
      * @param out                  HTML gets appended here.
      */
-    protected void confirmHtml(String template, Dataset data,
+    protected void renderConfirmation(String template, Dataset data,
             StringBuilder out) {
         StringBuilder message = new StringBuilder();
 
@@ -236,5 +216,25 @@ public class Link implements Formatter {
         out.append(" onclick=\"");
         Html.escapeHtmlChars(code.toString(), out);
         out.append("\"");
+    }
+
+    /**
+     * Generate an HTML <img> element for the link's icon.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @param data                 Used for expanding "alt" template.
+     * @param out                  HTML gets appended here.
+     */
+    protected void renderIcon(ClientRequest cr, Dataset data,
+            StringBuilder out) {
+        StringBuilder expandedUrl = new StringBuilder(iconUrl.length());
+        Template.expand(iconUrl, data, expandedUrl, Template.SpecialChars.URL);
+        out.append("<img class=\"Link\" src=\"");
+        Html.escapeHtmlChars(expandedUrl, out);
+        out.append("\" alt=\"");
+        if (alt != null) {
+            Template.expand(alt, data, out);
+        }
+        out.append("\" />");
     }
 }

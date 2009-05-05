@@ -71,11 +71,11 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 cr.getHtml().jsCode.toString());
     }
 
-    public void test_html_basics() {
+    public void test_render_basics() {
         TreeSection tree = new TreeSection(new Dataset("id", "tree1",
                 "requestFactory", "TreeSectionTest$RequestFactory.request"));
         tree.addDataRequests(cr);
-        tree.html(cr);
+        tree.render(cr);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start TreeSection tree1 -->\n" +
                 "<table cellspacing=\"0\" class=\"TreeSection\" " +
@@ -102,14 +102,14 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "fizlib/Fiz.js, fizlib/Reminder.js, fizlib/TreeRow.js",
                 cr.getHtml().getJsFiles());
     }
-    public void test_html_propertiesForReminder() {
+    public void test_render_propertiesForReminder() {
         TreeSection tree = new TreeSection(new Dataset("class", "foo",
                 "edgeFamily", "edge16", "id", "tree1",
                 "leafStyle", "TreeSection.node",
                 "nodeStyle", "TreeSection.leaf",
                 "requestFactory", "TreeSectionTest$RequestFactory.request"));
         tree.addDataRequests(cr);
-        tree.html(cr);
+        tree.render(cr);
         assertEquals("accumulated Javascript",
                 "Fiz.Reminder.reminders[\"tree1\"] = \"24.JHB9AM69@," +
                 "7:GY68T5G<EIB*183.11.TreeSection(5.class3.foo\\n" +
@@ -120,12 +120,12 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "38.TreeSectionTest$RequestFactory.request)\";\n",
                  cr.getHtml().jsCode.toString());
     }
-    public void test_html_explicitClass() {
+    public void test_render_explicitClass() {
         TreeSection tree = new TreeSection(new Dataset("id", "tree1",
                 "requestFactory", "TreeSectionTest$RequestFactory.request",
                 "class", "xyzzy"));
         tree.addDataRequests(cr);
-        tree.html(cr);
+        tree.render(cr);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start TreeSection tree1 -->\n" +
                 "<table cellspacing=\"0\" class=\"xyzzy\" " +

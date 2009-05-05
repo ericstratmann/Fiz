@@ -16,7 +16,7 @@ public class CompoundSectionTest extends junit.framework.TestCase {
         public SectionFixture(String id) {
             this.id = id;
         }
-        public void html(ClientRequest cr) {
+        public void render(ClientRequest cr) {
         }
         public void addDataRequests(ClientRequest cr) {
             log.append("addDataRequests " + id + "\n");
@@ -67,12 +67,12 @@ public class CompoundSectionTest extends junit.framework.TestCase {
                 SectionFixture.log.toString());
     }
 
-    public void test_html_basics() {
+    public void test_render_basics() {
         CompoundSection section = new CompoundSection(
                 new Dataset("borderFamily", "a/b/c"),
                 new TemplateSection("<h1>First section</h1>\n"),
                 new TemplateSection("<h1>Second section</h1>\n"));
-        section.html(cr);
+        section.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
         assertEquals("generated HTML", "\n" +
@@ -104,11 +104,11 @@ public class CompoundSectionTest extends junit.framework.TestCase {
                 "<!-- End CompoundSection -->\n",
                 html);
     }
-    public void test_html_idProperty() {
+    public void test_render_idProperty() {
         CompoundSection section = new CompoundSection(
                 new Dataset("id", "test44", "borderFamily", "a/b/c"),
                 new TemplateSection("<h1>First section</h1>\n"));
-        section.html(cr);
+        section.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
         TestUtil.assertSubstring("display id in start comment",
@@ -118,28 +118,28 @@ public class CompoundSectionTest extends junit.framework.TestCase {
         TestUtil.assertSubstring("display id in end comment",
                 "<!-- End CompoundSection test44 -->", html);
     }
-    public void test_html_classProperty() {
+    public void test_render_classProperty() {
         CompoundSection section = new CompoundSection(
                 new Dataset("class", "class22", "borderFamily", "a/b/c"),
                 new TemplateSection("<h1>First section</h1>\n"));
-        section.html(cr);
+        section.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
         TestUtil.assertSubstring("generate class attribute for table",
                 "<table class=\"class22\" cellspacing=\"0\">", html);
     }
-    public void test_html_backgroundProperty() {
+    public void test_render_backgroundProperty() {
         CompoundSection section = new CompoundSection(
                 new Dataset("background", "#ff0000", "borderFamily", "a/b/c"),
                 new TemplateSection("<h1>First section</h1>\n"));
-        section.html(cr);
+        section.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
         TestUtil.assertSubstring("use background property",
                 "<td class=\"compoundBody\" style=\"background: #ff0000;\">",
                 html);
     }
-    public void test_html_layout() {
+    public void test_render_layout() {
         String layout = "+-------+\n" +
                         "| first |\n" +
                         "+-------+";
@@ -147,7 +147,7 @@ public class CompoundSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "test44", "layout", layout),
                 new TemplateSection(new Dataset("id", "first",
                         "template", "<h1>First section</h1>\n")));
-        section.html(cr);
+        section.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
         assertEquals("generated HTML", "\n" +
@@ -161,7 +161,7 @@ public class CompoundSectionTest extends junit.framework.TestCase {
                 "</table>\n" +
                 "<!-- End CompoundSection test44 -->\n", html);
     }
-    public void test_html_borderFamilyAndLayout() {
+    public void test_render_borderFamilyAndLayout() {
         String layout = "+-------+\n" +
                         "| first |\n" +
                         "+-------+";
@@ -171,7 +171,7 @@ public class CompoundSectionTest extends junit.framework.TestCase {
                         "layout", layout),
                 new TemplateSection(new Dataset("id", "first",
                         "template", "<h1>First section</h1>\n")));
-        section.html(cr);
+        section.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
         assertEquals("generated HTML", "\n" +
@@ -207,11 +207,11 @@ public class CompoundSectionTest extends junit.framework.TestCase {
                 "</table>\n" +
                 "<!-- End CompoundSection test44 -->\n", html);
     }
-    public void test_html_divSimple() {
+    public void test_render_divSimple() {
         CompoundSection section = new CompoundSection(
                 new Dataset(),
                 new TemplateSection("<h1>First section</h1>\n"));
-        section.html(cr);
+        section.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
         assertEquals("generated HTML", "\n" +
@@ -222,12 +222,12 @@ public class CompoundSectionTest extends junit.framework.TestCase {
                 "<!-- End CompoundSection -->\n",
                 html);
     }
-    public void test_html_divWithIdAndClassAndBackground() {
+    public void test_render_divWithIdAndClassAndBackground() {
         CompoundSection section = new CompoundSection(
                 new Dataset("id", "test44", "class", "class22",
                 "background", "#ff0000"),
                 new TemplateSection("<h1>First section</h1>\n"));
-        section.html(cr);
+        section.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
         assertEquals("generated HTML", "\n" +
@@ -239,13 +239,13 @@ public class CompoundSectionTest extends junit.framework.TestCase {
                 "<!-- End CompoundSection test44 -->\n",
                 html);
     }
-    public void test_html_renderExtraChildren() {
+    public void test_render_extraChildren() {
         CompoundSection section = new CompoundSection(
                 new Dataset(),
                 new TemplateSection("first\n"));
         section.add(new TemplateSection("second\n"),
                 new TemplateSection("third\n"));
-        section.html(cr);
+        section.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
         assertEquals("generated HTML", "\n" +
@@ -259,13 +259,13 @@ public class CompoundSectionTest extends junit.framework.TestCase {
                 html);
     }
 
-    public void test_childHtml() {
+    public void test_renderChild() {
         CompoundSection section = new CompoundSection(
                 new Dataset("id", "test44", "class", "class22",
                         "background", "#ff0000"),
                 new TemplateSection(new Dataset("id", "first",
                         "template", "<h1>First section</h1>\n")));
-        section.childHtml("first", cr);
+        section.renderChild("first", cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
         assertEquals("generated HTML", "<h1>First section</h1>\n", html);

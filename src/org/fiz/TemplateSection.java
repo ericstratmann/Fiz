@@ -76,7 +76,7 @@ public class TemplateSection extends Section {
      *                             appended to {@code cr.getHtml()}.
      */
     @Override
-    public void html(ClientRequest cr) {
+    public void render(ClientRequest cr) {
         Dataset data;
         String requestName;
         if (properties != null) {

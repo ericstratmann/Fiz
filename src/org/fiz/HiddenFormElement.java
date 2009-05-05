@@ -36,7 +36,7 @@ public class HiddenFormElement extends FormElement {
      * @param out                  Generated HTML is appended here.
      */
     @Override
-    public void html(ClientRequest cr, Dataset data,
+    public void render(ClientRequest cr, Dataset data,
             StringBuilder out) {
         Template.expand("<input type=\"hidden\" name=\"@id\" " +
                 "{{value=\"@1\"}} />",

@@ -1,7 +1,5 @@
 package org.fiz;
 
-import java.io.*;
-
 /**
  * Junit tests for the TabSection class.
  */
@@ -47,14 +45,14 @@ public class TabSectionTest extends junit.framework.TestCase {
                 TabSection.cssTemplate);
     }
 
-    public void test_html_basics() {
+    public void test_render_basics() {
         TabSection section = new TabSection(new Dataset("id", "section12",
                 "selector", "selectedTab"),
                 new Dataset("id", "first", "text", "First", "url", "/a/b"),
                 new Dataset("id", "second", "text", "Second", "url", "/a/c"),
                 new Dataset("id", "third", "text", "Third", "url", "/xyz"));
         cr.getMainDataset().set("selectedTab", "second");
-        section.html(cr);
+        section.render(cr);
         TestUtil.assertXHTML(cr.getHtml().getBody().toString());
         assertEquals("generated HTML", "\n" +
                 "<!-- Start TabSection section12 -->\n" +
@@ -91,7 +89,7 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "<!-- End TabSection section12 -->\n",
                 cr.getHtml().getBody().toString());
     }
-    public void test_html_defaultSelector() {
+    public void test_render_defaultSelector() {
         TabSection section = new TabSection(new Dataset("id", "section12"),
                 new Dataset("id", "first", "text", "label1", "url", "/a/b"),
                 new Dataset("id", "second", "text", "Second", "url", "/a/c"));
@@ -103,7 +101,7 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "<a href=\"/a/c\"><div>Second",
                 cr.getHtml().getBody().toString());
     }
-    public void test_html_noRequest() {
+    public void test_render_noRequest() {
         TabSection section = new TabSection(new Dataset("id", "section12"),
                 new Dataset("id", "first", "text", "Name: @name, age: @age",
                 "url", "/a/b"));
@@ -112,7 +110,7 @@ public class TabSectionTest extends junit.framework.TestCase {
         TestUtil.assertSubstring("tab text", "<div>Name: Alice, age: 36</div>",
                 cr.getHtml().getBody().toString());
     }
-    public void test_html_useResultOfRequest() {
+    public void test_render_useResultOfRequest() {
         cr.addDataRequest("data", RawDataManager.newRequest(
                 new Dataset("name", "Alice", "age", "44")));
         TabSection section = new TabSection(YamlDataset.newStringInstance(
@@ -125,7 +123,7 @@ public class TabSectionTest extends junit.framework.TestCase {
         TestUtil.assertSubstring("tab text", "<div>Name: Alice, age: 44</div>",
                 cr.getHtml().getBody().toString());
     }
-    public void test_html_defaultStyle() {
+    public void test_render_defaultStyle() {
         Config.setDataset("tabSections", YamlDataset.newStringInstance(
                 "testStyle:\n" +
                 "  name: testStyle\n" +
@@ -137,11 +135,11 @@ public class TabSectionTest extends junit.framework.TestCase {
         TabSection section = new TabSection(new Dataset("id", "section12"),
                 new Dataset("id", "first", "text", "Name: @name, age: @age",
                 "url", "/a/b"));
-        section.html(cr);
+        section.render(cr);
         assertEquals("generated CSS", "name: <tabGray>, border: 1px solid red",
                 cr.getHtml().css.toString());
     }
-    public void test_html_explicitStyle() {
+    public void test_render_explicitStyle() {
         Config.setDataset("tabSections", YamlDataset.newStringInstance(
                 "testStyle:\n" +
                 "  sidePadding: 2px\n" +
@@ -151,22 +149,22 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "style", "testStyle"),
                 new Dataset("id", "first", "text", "Name: @name, age: @age",
                 "url", "/a/b"));
-        section.html(cr);
+        section.render(cr);
         assertEquals("generated CSS",
                 "sidePadding: 2px, border: 1px solid red",
                 cr.getHtml().css.toString());
     }
-    public void test_html_explicitClass() {
+    public void test_render_explicitClass() {
         TabSection section = new TabSection(new Dataset("id", "section12",
                 "class", "testClass"),
                 new Dataset("id", "first", "text", "Name: @name, age: @age",
                 "url", "/a/b"));
-        section.html(cr);
+        section.render(cr);
         TestUtil.assertSubstring("class attribute",
                 "<table id=\"section12\" class=\"testClass\"",
                 cr.getHtml().getBody().toString());
     }
-    public void test_html_noSelectedTab() {
+    public void test_render_noSelectedTab() {
         TabSection section = new TabSection(new Dataset("id", "section12"),
                 new Dataset("id", "first", "text", "label1",
                 "url", "/a/b"));
@@ -177,20 +175,20 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "<a href=\"/a/b\"><div>label1",
                 cr.getHtml().getBody().toString());
     }
-    public void test_html_templateExpansionForUrl() {
+    public void test_render_templateExpansionForUrl() {
         TabSection section = new TabSection(new Dataset("id", "section12"),
                 new Dataset("id", "first", "text", "First",
                 "url", "/a/@name"));
-        section.html(cr);
+        section.render(cr);
         TestUtil.assertSubstring("generated URL", "<a href=\"/a/Alice\">",
                 cr.getHtml().getBody().toString());
     }
-    public void test_html_javascriptAction() {
+    public void test_render_javascriptAction() {
         TabSection section = new TabSection(new Dataset("id", "section12"),
                 new Dataset("id", "first", "text", "First",
                 "javascript", "window.xyz=\"@text\""));
         cr.getMainDataset().set("text", "<\">");
-        section.html(cr);
+        section.render(cr);
         assertEquals("included Javascript files",
                 "fizlib/Fiz.js, fizlib/TabSection.js",
                 cr.getHtml().getJsFiles());
@@ -200,11 +198,11 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "\\&quot;&gt;&quot;; return false;\">",
                 cr.getHtml().getBody().toString());
     }
-    public void test_html_ajaxAction() {
+    public void test_render_ajaxAction() {
         TabSection section = new TabSection(new Dataset("id", "section12"),
                 new Dataset("id", "first", "text", "First",
                 "ajaxUrl", "a/b/@name"));
-        section.html(cr);
+        section.render(cr);
         TestUtil.assertSubstring("onclick handler",
                 "<a href=\"#\" onclick=\"Fiz.TabSection.selectTab" +
                 "(&quot;section12_first&quot;); " +

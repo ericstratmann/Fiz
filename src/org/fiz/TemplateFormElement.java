@@ -43,7 +43,7 @@ public class TemplateFormElement extends FormElement {
      * @param out                  Generated HTML is appended here.
      */
     @Override
-    public void html(ClientRequest cr, Dataset data,
+    public void render(ClientRequest cr, Dataset data,
             StringBuilder out) {
         Template.expand(properties.get("template"), data, out);
     }
@@ -64,12 +64,12 @@ public class TemplateFormElement extends FormElement {
      *                             for this element.
      */
     @Override
-    public boolean labelHtml(ClientRequest cr, Dataset data,
+    public boolean renderLabel(ClientRequest cr, Dataset data,
             StringBuilder out) {
         String span = properties.check("span");
         if ((span != null) && (span.equals("true"))) {
             return false;
         }
-        return super.labelHtml(cr, data, out);
+        return super.renderLabel(cr, data, out);
     }
 }

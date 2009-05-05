@@ -14,11 +14,11 @@ public interface TableLayoutContainer {
      * the {@link org.fiz.Html} object associated with {@code cr}. If a child
      * element named {@code id} does not exist, this method just returns without
      * modifying {@code cr}.
-     * 
+     *
      * @param id        The id of the child element.
      * @param cr        Overall information about the client
      *                  request being serviced; HTML should get appended to
      *                  {@code cr.getHtml()}.
      */
-    public void childHtml(String id, ClientRequest cr); 
+    public void renderChild(String id, ClientRequest cr); 
 }
