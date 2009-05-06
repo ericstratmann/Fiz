@@ -142,13 +142,13 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
     }
 
-    public void test_childrenHtml_propertyDefaults() {
+    public void test_renderChildren_propertyDefaults() {
         StringBuilder out = new StringBuilder();
         ArrayList<Dataset> children = new ArrayList<Dataset>();
         children.add(new Dataset("name", "Alice", "id", "111",
                 "expandable", "1"));
         children.add(new Dataset("name", "Bob"));
-        TreeSection.childrenHtml(cr, new Dataset("id", "tree1"), children,
+        TreeSection.renderChildren(cr, new Dataset("id", "tree1"), children,
                 "tree1_3", out);
         assertEquals("generated HTML", "  <tr id=\"tree1_3_0\">\n" +
                 "    <td class=\"left\" style=\"background-image: url(" +
@@ -175,13 +175,13 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "  </tr>\n",
                 out.toString());
     }
-    public void test_childrenHtml_explicitProperties() {
+    public void test_renderChildren_explicitProperties() {
         StringBuilder out = new StringBuilder();
         ArrayList<Dataset> children = new ArrayList<Dataset>();
         children.add(new Dataset("name", "Alice", "id", "111",
                 "expandable", "1"));
         children.add(new Dataset("name", "Bob"));
-        TreeSection.childrenHtml(cr, new Dataset("id", "tree1",
+        TreeSection.renderChildren(cr, new Dataset("id", "tree1",
                 "edgeFamily", "edge16", "leafStyle", "TreeSection.leaf2",
                 "nodeStyle", "TreeSection.node2"), children,
                 "tree1_3", out);
@@ -210,13 +210,13 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "  </tr>\n",
                 out.toString());
     }
-    public void test_childrenHtml_javascriptForExpandableElement() {
+    public void test_renderChildren_javascriptForExpandableElement() {
         StringBuilder out = new StringBuilder();
         ArrayList<Dataset> children = new ArrayList<Dataset>();
         children.add(new Dataset("name", "Alice", "id", "111",
                 "expandable", "1"));
         children.add(new Dataset("name", "Bob"));
-        TreeSection.childrenHtml(cr, new Dataset("id", "tree1"), children,
+        TreeSection.renderChildren(cr, new Dataset("id", "tree1"), children,
                 "tree1_3", out);
         assertEquals("accumulated Javascript",
                 "Fiz.Reminder.reminders[\"tree1_3_0\"] = \"24.JHB9AM69@," +
@@ -239,12 +239,12 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "right\\\">node-expanded: Alice</td>\\n  </tr>\\n\");\n",
                  cr.getHtml().jsCode.toString());
     }
-    public void test_childrenHtml_lastRowExpandable() {
+    public void test_renderChildren_lastRowExpandable() {
         StringBuilder out = new StringBuilder();
         ArrayList<Dataset> children = new ArrayList<Dataset>();
         children.add(new Dataset("name", "Alice", "id", "111",
                 "expandable", "1"));
-        TreeSection.childrenHtml(cr, new Dataset("id", "tree1"), children,
+        TreeSection.renderChildren(cr, new Dataset("id", "tree1"), children,
                 "tree1_3", out);
         TestUtil.assertSubstring("generated HTML",
                 "<tr id=\"tree1_3_0_childRow\" style=\"display:none\">\n" +
