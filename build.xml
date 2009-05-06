@@ -114,7 +114,7 @@ for the Fiz framework.
                  doclet="org.fiz.FizDoc">
             <classpath>
                 <path refid="classpath"/>
-                <pathelement location="C:/cygwin/usr/local/tools/i686_win32/jdk1.6.0_01/lib/tools.jar" />
+                <pathelement location="C:/Program Files/Java/jdk1.6.0_13/lib/tools.jar" />
             </classpath>
         </javadoc>
         <concat destfile="${docdir}/stylesheet.css" append="true">
@@ -345,6 +345,7 @@ for the Fiz framework.
     <property name="fizrepo" value="http://fiz.stanford.edu:8083/FizCore"/>
 
     <path id="classpath">
+        <pathelement location="${libdir}/ant.jar" />
         <pathelement location="${libdir}/commons-fileupload-1.2.1.jar" />
         <pathelement location="${libdir}/commons-io-1.4.jar" />
         <pathelement location="${libdir}/js.jar" />
