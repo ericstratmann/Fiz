@@ -5,8 +5,8 @@ package org.fiz;
  * data value and a mapping dataset.
  * <p>
  * ImageSelector supports the following properties:
- * map -	(required) A dataset of mappings. See below for format.
- * id -		(required) Name of column in dataset we are mapping to an image
+ * map -    (required) A dataset of mappings. See below for format.
+ * id -     (required) Name of column in dataset we are mapping to an image
  * <p>
  * The map dataset contains key - value pairs, where a key is one of the
  * possible strings we will use to select an image. A value can either be a

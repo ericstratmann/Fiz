@@ -8,11 +8,11 @@ import java.util.*;
  * and if it is "true" another.
  *
  * CheckboxImage supports the following properties
- * id -				(required) Name of column in dataset we are using to
- * 					select an image
- * family-		 	(optional) Family name for images to display. If the
- * 					base name is x, then images x-true.png and x-false.png
- * 					must exist.  Default value is "checkbox".
+ * id -             (required) Name of column in dataset we are using to
+ *                  select an image
+ * family -         (optional) Family name for images to display. If the
+ * 	                base name is x, then images x-true.png and x-false.png
+ *                  must exist.  Default value is "checkbox".
  *
  * Additionally, if an array is passed in, it is used to define which values
  * count as false. All other values will be assumed to be true. If no array is
