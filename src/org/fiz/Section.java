@@ -5,7 +5,7 @@ package org.fiz;
  * or more Sections.  For example, one Section might display a table and
  * another a form.  It is also possible for a Section to contain multiple
  * nested Sections.
- * <p>
+ *
  * Sections are invoked to render a page in three phases.  In the first
  * phase each section indicates the data it needs to render itself by
  * specifying one or more DataRequests.  In the second phase all of the

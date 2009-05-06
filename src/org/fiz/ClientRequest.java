@@ -27,7 +27,7 @@ import org.apache.log4j.*;
  * Most of the major methods for servicing a request take a ClientRequest
  * object as their first argument; the ClientRequest is normally referred to
  * with a variable named {@code cr}.
- * <p>
+ *
  * Individual applications may have additional global data that needs to
  * be accessible throughout the application.  They can achieve this by
  * creating a subclass of ClientRequest that holds the additional data,

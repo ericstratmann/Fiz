@@ -3,18 +3,19 @@ package org.fiz;
 /**
  * An ImageSelector outputs HTML for one of several images, chosen based on a
  * data value and a mapping dataset.
- * <p>
+ *
  * ImageSelector supports the following properties:
  * map -    (required) A dataset of mappings. See below for format.
- * id -     (required) Name of column in dataset we are mapping to an image
- * <p>
- * The map dataset contains key - value pairs, where a key is one of the
- * possible strings we will use to select an image. A value can either be a
+ * id -     (required) Name of column in dataset we are mapping to an image.
+ *
+ * The {@code map} dataset contains key - value pairs, where a key is one of
+ * the possible strings we will use to select an image. A value can either be a
  * string in which case it represents the src tag for an image, or it can be a
- * Dataset which contains src and alt elements, describing the URL for the
- * image and an alt tag. Both src and alt values are expanded as templates.
- * Map recognizes one special key, which is "default". If that key exists, it
- * is used to find the default image if a particular key is not found.
+ * Dataset which contains {@code src} and {@code alt} elements, describing
+ * the URL for the image and an alt tag. Both {@code src} and {@code alt}
+ * values are expanded as templates.  Map recognizes one special key, which
+ * is {@code default}. If that key exists, it is used to find the default
+ * image if a particular key is not found.
  */
 public class ImageSelector implements Formatter {
 
