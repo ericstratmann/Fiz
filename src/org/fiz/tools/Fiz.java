@@ -857,7 +857,7 @@ public class Fiz {
             // information.
             String args = arg1;
             if (arg2 != null) {
-                args += arg2;
+                args += " " + arg2;
             }
             throw new ToolError(Command.unknown, "invalid command: " + args);
         }
