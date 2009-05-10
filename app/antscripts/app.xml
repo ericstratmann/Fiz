@@ -83,11 +83,12 @@ build.xml file. -->
     </target>
 
     <target name="ext.build.src">
+        <basename file="${ext.dir}" property="ext.name"/>        
         <!-- Execute the extension's build file -->
         <ant antfile="${ext.dir}/build.xml" target="build" inheritall="false"/>
         <!-- Invoke ext.build.bin on the build output -->
         <antcall target="ext.build.bin">
-            <param name="ext.dir" value="${ext.dir}/out/installer"/>
+            <param name="ext.dir" value="${ext.dir}/out/${ext.name}"/>
         </antcall>
     </target>
 

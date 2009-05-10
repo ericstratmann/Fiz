@@ -169,7 +169,7 @@
     <property name="testclassdir" value="${outdir}/tests" />
 
     <!-- The directory in which the installer is generated -->
-    <property name="builddir" value="${outdir}/installer"/>
+    <property name="builddir" value="${outdir}/${extname}"/>
 
     <!-- The directory in which Javadocs are created -->
     <property name="docdir" value="${outdir}/javadoc"/>
