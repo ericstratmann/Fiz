@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+This ant script contains targets to uninstall an extension
+-->
+<project name="uninstall-extension" default="uninstall" basedir=".">
+
+    <target name="uninstall">
+
+        <delete dir="${destdir}/web/WEB-INF/config/${extname}"/>
+        <delete dir="${destdir}/web/WEB-INF/css/${extname}"/>
+        <delete file="${destdir}/lib/${extname}.jar"/>
+        <delete dir="${destdir}/web/extensions/${extname}"/>
+
+    </target>
+
+</project>

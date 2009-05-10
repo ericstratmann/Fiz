@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+This ant script creates a new Fiz application
+-->
+<project name="create-extension" default="create" basedir=".">
+
+    <target name="create"
+            description="Creates a template for a Fiz extension">
+
+        <basename property="extname" file="${destdir}"/>
+
+        <!-- Create a directory for the extension -->
+        <mkdir dir="${destdir}"/>
+
+        <copy todir="${destdir}">
+            <fileset file="${fizhome}/javadoc.css"/>
+        </copy>
+
+        <!-- Copy over extension specific files -->
+        <sync todir="${destdir}" includeemptydirs="true">
+            <fileset dir="${fizhome}/ext" excludes="README"/>
+        </sync>
+        <replace file="${destdir}/build.xml"
+                 token="@@EXTENSION_NAME" value="${extname}"/>
+        <replace file="${destdir}/lib/libs.list"
+                 token="@@EXTENSION_NAME" value="${extname}"/>
+
+        <!-- Copy library files -->
+        <copy todir="${destdir}/lib">
+            <filelist dir="${fizhome}/lib"
+                      files="fiz.jar junit.jar js.jar log4j.jar"/> 
+        </copy>
+
+        <!-- Create a directory for test files -->
+        <copy todir="${destdir}/test/jsunit">
+            <fileset file="${fizhome}/test/jsunit/jsunit.js"/>
+        </copy>
+
+    </target>
+
+</project>

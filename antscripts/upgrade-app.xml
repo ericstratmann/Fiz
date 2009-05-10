@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+This ant script contains targets to upgrade a Fiz application to a different
+version of the Fiz platform.
+-->
+<project name="Upgrade a Fiz application" basedir="."
+         default="upgrade">
+
+    <target name="upgrade"
+            description="Upgrades the Fiz application to a specified version of Fiz">
+
+        <!-- Create a temporary directory in which to unpack the Fiz installer -->
+        <delete dir="${tempdir}"/>
+        <mkdir dir="${tempdir}"/>
+
+        <!-- Fetch the correct version of Fiz from the server -->
+        <get src="${fizserver}/FizCore/${version}/fiz-${version}.zip"
+             dest="${tempdir}/fiz-${version}.zip"/>
+
+        <!-- Unpack the Fiz installation -->
+        <unzip src="${tempdir}/fiz-${version}.zip"
+               dest="${tempdir}"/>
+
+        <property name="newfizdir" value="${tempdir}/fiz-${version}"/>
+
+        <!-- Sync Fiz files with those in the Fiz installation -->
+        <mkdir dir="${appdir}/antscripts"/>
+        <sync todir="${appdir}/antscripts" overwrite="true">
+            <fileset dir="${newfizdir}/app/antscripts"/>
+        </sync>
+
+        <mkdir dir="${appdir}/javascript/fizlib"/>
+        <sync todir="${appdir}/javascript/fizlib" overwrite="true">
+            <fileset dir="${newfizdir}/javascript/fizlib"/>
+        </sync>
+
+        <mkdir dir="${appdir}/web/fizlib"/>
+        <sync todir="${appdir}/web/fizlib" overwrite="true">
+            <fileset dir="${newfizdir}/web/fizlib"/>
+        </sync>
+
+        <mkdir dir="${appdir}/web/WEB-INF/fiz"/>
+        <sync todir="${appdir}/web/WEB-INF/fiz" overwrite="true">
+            <fileset dir="${newfizdir}/web/WEB-INF/fiz" />
+        </sync>
+
+        <mkdir dir="${appdir}/lib"/>
+        <copy todir="${appdir}/lib" overwrite="true">
+            <fileset dir="${newfizdir}/lib"/>
+        </copy>
+        
+        <!-- Clean up -->
+        <delete dir="${tempdir}"/>
+        
+    </target>
+
+    <property name="tempdir" value="${appdir}/fiztemp"/>
+
+</project>

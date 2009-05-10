@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+This ant script contains targets to install an extension
+-->
+<project name="install-extension" basedir=".">
+
+    <target name="install-bin-from-server">
+        <antcall target="install-from-server">
+            <param name="installer.url"
+                   value="${fizserver}/Extensions/${extname}/${version}/${extname}-bin-${version}.zip"/>
+        </antcall>
+    </target>
+
+    <target name="install-src-from-server">
+        <antcall target="install-from-server">
+            <param name="installer.url"
+                   value="${fizserver}/Extensions/${extname}/${version}/${extname}-src-${version}.zip"/>
+        </antcall>
+    </target>
+
+    <target name="install-from-server">
+        <!-- Create a temporary directory to unpack the extension -->
+        <delete dir="${tempdir}"/>
+        <mkdir dir="${tempdir}"/>
+
+        <!-- Fetch the required version of Fiz from the server -->
+        <get src="${installer.url}"
+             dest="${tempdir}/${extname}.zip"/>
+        <unzip src="${tempdir}/${extname}.zip" dest="${tempdir}"/>
+
+        <antcall target="install">
+            <param name="extdir" value="${tempdir}/${extname}"/>
+        </antcall>
+
+        <!-- Clean up -->
+        <delete dir="${tempdir}"/>
+    </target>
+
+    <target name="install-from-file"
+            description="Installs the extension from a file">
+
+        <delete dir="${tempdir}"/>
+        <mkdir dir="${tempdir}"/>
+
+        <!-- Unpack the installer -->
+        <unzip src="${extinstaller}" dest="${tempdir}"/>
+
+        <!-- Verify that this is a valid installer -->
+        <condition property="invalid.installer">
+            <resourcecount count="1" when="ne">
+                <dirset dir="${tempdir}">
+                    <depth min="0" max="0"/>
+                </dirset>
+            </resourcecount>
+        </condition>
+        <fail if="invalid.installer"
+              message="${extinstaller} is not a valid extension installer file"/>
+        <for param="ext.name">
+            <path>
+                <dirset dir="${tempdir}">
+                    <depth min="0" max="0"/>
+                </dirset>
+            </path>
+            <sequential>
+                <basename property="extname" file="@{ext.name}"/>
+            </sequential>
+        </for>
+
+        <antcall target="install">
+            <param name="extdir" value="${tempdir}/${extname}"/>
+        </antcall>
+
+        <!-- Clean up -->
+        <delete dir="${tempdir}"/>
+
+    </target>
+
+    <target name="install">
+
+        <!-- Remove the old version of the extension -->
+        <delete dir="${destdir}/${extname}"/>
+        <mkdir dir="${destdir}/${extname}"/>
+
+        <copy todir="${destdir}/${extname}">
+            <fileset dir="${tempdir}/${extname}"/>
+        </copy>
+
+    </target>
+
+    <!-- The temporary directory into which the extension will be unpacked -->
+    <property name="tempdir" value="${destdir}/fiztemp"/>
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="../lib/ant-contrib-1.0b3.jar"/>
+        </classpath>
+    </taskdef>
+    
+</project>

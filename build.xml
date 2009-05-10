@@ -39,72 +39,6 @@ for the Fiz framework.
         </junit>
     </target>
 
-    <target name="dist" description="Create a distribution"
-            depends="compile, javadoc">
-        <delete dir="${distdir}"/>
-
-        <!-- Classes and libraries -->
-        <mkdir dir="${distdir}/web/WEB-INF/lib"/>
-        <jar destfile="${distdir}/web/WEB-INF/lib/fiz.jar"
-                basedir="${classdir}"/>
-        <copy todir="${distdir}/web/WEB-INF/lib">
-            <fileset dir="${libdir}"/>
-        </copy>
-        <mkdir dir="${distdir}/web/WEB-INF/classes"/>
-        <copy todir="${distdir}/web/WEB-INF/classes"
-                file="src/log4j.properties"/>
-
-        <!-- Other run-time files needed by Fiz -->
-        <mkdir dir="${distdir}/web/WEB-INF/fiz/config"/>
-        <copy todir="${distdir}/web/WEB-INF/fiz/config">
-            <fileset dir="web/WEB-INF/fiz/config"/>
-        </copy>
-        <mkdir dir="${distdir}/web/WEB-INF/fiz/css"/>
-        <copy todir="${distdir}/web/WEB-INF/fiz/css">
-            <fileset dir="web/WEB-INF/fiz/css"/>
-        </copy>
-        <mkdir dir="${distdir}/web/fizlib"/>
-        <copy todir="${distdir}/web/fizlib">
-            <fileset dir="javascript/fizlib"/>
-            <fileset dir="web/fizlib"/>
-        </copy>
-        <mkdir dir="${distdir}/web/WEB-INF/demo"/>
-        <copy todir="${distdir}/web/WEB-INF/demo">
-            <fileset dir="web/WEB-INF/demo"/>
-        </copy>
-        <copy todir="${distdir}/web/WEB-INF" file="web/WEB-INF/web.xml"/>
-
-        <!-- Documentation -->
-        <mkdir dir="${distdir}/javadoc"/>
-        <copy todir="${distdir}/javadoc">
-            <fileset dir="../doc"/>
-        </copy>
-
-        <!-- Source files -->
-        <mkdir dir="${distdir}/src"/>
-        <copy todir="${distdir}/src/javascript">
-            <fileset dir="javascript" />
-        </copy>
-        <copy todir="${distdir}/src/src">
-            <fileset dir="src" />
-        </copy>
-        <copy todir="${distdir}/src/test">
-            <fileset dir="test" />
-        </copy>
-        <copy todir="${distdir}/src/web">
-            <fileset dir="web" />
-        </copy>
-        <copy todir="${distdir}/src">
-            <fileset dir="." includes="build.xml, Fiz.iml,
-                    Fiz.ipr, Fiz.iws javadoc.css" />
-        </copy>
-
-        <!-- Create archives -->
-        <delete dir="${distdir}/../fiz.zip"/>
-        <zip destfile="${distdir}/../fiz.zip" basedir="${distdir}" />
-
-    </target>
-
     <target name="javadoc" depends="compile">
         <javadoc sourcepath="src"
                  destdir="${docdir}"
@@ -200,7 +134,7 @@ for the Fiz framework.
 
         <!-- Classes and libraries -->
         <mkdir dir="${installerdir}/lib"/>
-        <manifest file="MANIFEST.MF">
+        <manifest file="${outdir}/MANIFEST.MF">
             <attribute name="Built-By" value="${user.name}"/>
             <attribute name="Implementation-Title" value="Fiz Core"/>
             <attribute name="Implementation-Version" value="${version}"/>
@@ -208,7 +142,7 @@ for the Fiz framework.
                        value="Stanford University"/>
         </manifest>
         <jar destfile="${installerdir}/lib/fiz.jar" basedir="${classdir}"
-                manifest="MANIFEST.MF"/>
+                manifest="${outdir}/MANIFEST.MF"/>
         <copy todir="${installerdir}/lib">
             <fileset dir="${libdir}"/>
         </copy>
@@ -245,6 +179,12 @@ for the Fiz framework.
             <fileset dir="app"/>
         </copy>
 
+        <!-- Extension specific files -->
+        <mkdir dir="${installerdir}/ext"/>
+        <copy todir="${installerdir}/ext">
+            <fileset dir="ext"/>
+        </copy>
+
         <!-- Documentation -->
         <mkdir dir="${installerdir}/javadoc"/>
         <copy todir="${installerdir}/javadoc">
@@ -252,7 +192,7 @@ for the Fiz framework.
         </copy>
 
         <!-- Create archives -->
-        <zip destfile="${installerdir}/../fiz-${version}.zip">
+        <zip destfile="${installerdir}/fiz-${version}.zip">
             <zipfileset dir="${installerdir}" prefix="fiz-${version}"/>
         </zip>
     </target>
@@ -271,7 +211,7 @@ for the Fiz framework.
 
         <!-- Installer -->
         <copy todir="${packagedir}">
-            <fileset file="${installerdir}/../fiz-${version}.zip"/>
+            <fileset file="${installerdir}/fiz-${version}.zip"/>
         </copy>
 
         <!-- Create archives -->
@@ -296,18 +236,18 @@ for the Fiz framework.
 
 	<target name="install-windows" description="OS specific target for Windows">
         <replace file="bin/fiz.bat" token="@@FIZ_HOME" value="${user.dir}"/>
-        <replace file="bin/fiz.bat" token="@@FIZ_REPO" value="${fizrepo}"/>
+        <replace file="bin/fiz.bat" token="@@SERVER_URL" value="${serverurl}"/>
 	</target>
 
 	<target name="install-mac" description="OS specific target for MacOS">
         <replace file="bin/fiz" token="@@FIZ_HOME" value="${user.dir}"/>
-        <replace file="bin/fiz" token="@@FIZ_REPO" value="${fizrepo}"/>
+        <replace file="bin/fiz" token="@@SERVER_URL" value="${serverurl}"/>
         <chmod file="bin/fiz" perm="ugo+x"/>
 	</target>
 
 	<target name="install-unix" description="OS specific target for Unix">
         <replace file="bin/fiz" token="@@FIZ_HOME" value="${user.dir}"/>
-        <replace file="bin/fiz" token="@@FIZ_REPO" value="${fizrepo}"/>
+        <replace file="bin/fiz" token="@@SERVER_URL" value="${serverurl}"/>
         <chmod file="bin/fiz" perm="ugo+x"/>
 	</target>
 
@@ -336,13 +276,13 @@ for the Fiz framework.
     <property name="docdir" value="${outdir}/javadoc"/>
 
     <!-- The directory in which the Fiz installer is created -->
-    <property name="installerdir" value="${outdir}/installer/fiz-${version}"/>
+    <property name="installerdir" value="${outdir}/installer"/>
 
     <!-- The directory in which the Fiz platform is packaged for upload to the
     server -->
     <property name="packagedir" value="${outdir}/package"/>
 
-    <property name="fizrepo" value="http://fiz.stanford.edu:8083/FizCore"/>
+    <property name="serverurl" value="http://fiz.stanford.edu"/>
 
     <path id="classpath">
         <pathelement location="${libdir}/ant.jar" />

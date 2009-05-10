@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="@@EXTENSION_NAME" default="build" basedir=".">
+
+    <target name="clean" description="Removes all generated files">
+        <delete dir="${outdir}"/>
+    </target>
+
+    <target name="compile" description="Compile from source"
+            depends="checksources" if="contains.sources">
+        <mkdir dir="${classdir}"/>
+        <javac srcdir="src" destdir="${classdir}" classpathref="classpath" />
+    </target>
+    
+    <target name="test-compile" depends="compile"
+            description="Compile unit tests">
+        <mkdir dir="${testclassdir}"/>
+        <javac destdir="${testclassdir}" srcdir="test">
+            <classpath refid="classpath"/>
+        </javac>
+    </target>
+
+    <target name="test" depends="compile,test-compile"
+            description="Execute unit tests" >
+        <junit fork="yes">
+            <classpath refid="classpath" />
+            <formatter type="brief" usefile="false"/>
+
+            <batchtest>
+                <fileset dir="${testclassdir}">
+                    <include name="**/*Test.class"/>
+                </fileset>
+            </batchtest>
+
+        </junit>
+    </target>
+
+    <target name="build" description="Builds and packages this extension"
+            depends="compile, javadoc">
+
+        <!-- Generate and copy library files -->
+        <mkdir dir="${builddir}/lib"/>
+        <manifest file="${outdir}/MANIFEST.MF">
+            <attribute name="Built-By" value="${user.name}"/>
+            <attribute name="Implementation-Title" value="${extname}"/>
+            <attribute name="Implementation-Version" value="${version}"/>
+        </manifest>
+
+        <!-- Generate the .jar file for this extension -->
+        <antcall target="jar"/>
+
+        <copy todir="${builddir}/lib">
+            <!-- libs.list contains a list of jar file names that are to be
+            included in the extension build -->
+            <fileset dir="lib">
+                <includesfile name="lib/libs.list"/>
+                <exclude name="libs.list"/>
+                <exclude name="README"/>
+            </fileset>
+        </copy>
+
+        <!-- Copy static resources used by this extension -->
+        <mkdir dir="${builddir}/static"/>
+        <copy todir="${builddir}/static">
+            <fileset dir="static" excludes="README"/>
+        </copy>
+
+        <!-- Copy config and css files used by the extension -->
+        <mkdir dir="${builddir}/config"/>
+        <copy todir="${builddir}/config">
+            <fileset dir="config" excludes="README"/>
+        </copy>
+        <mkdir dir="${builddir}/css"/>
+        <copy todir="${builddir}/css">
+            <fileset dir="css" excludes="README"/>
+        </copy>
+
+        <!-- Documentation -->
+        <ant target="package-docs"/>
+        
+        <!-- Create extension package -->
+        <zip destfile="${outdir}/${extname}-bin-${version}.zip">
+            <zipfileset dir="${builddir}" prefix="${extname}"/>
+        </zip>
+
+        <zip destfile="${outdir}/${extname}-src-${version}.zip">
+            <zipfileset dir="${builddir}" prefix="${extname}"/>
+            <zipfileset file="build.xml"/>
+            <zipfileset dir="src" prefix="${extname}/src"/>
+            <zipfileset dir="test" prefix="${extname}/test"/>
+            <zipfileset dir="lib" prefix="${extname}/lib"/>
+        </zip>
+
+        <zip destfile="${outdir}/${extname}-pkg-${version}.zip">
+            <zipfileset dir="${outdir}">
+                <include name="${extname}-bin-${version}.zip"/>
+                <include name="${extname}-src-${version}.zip"/>
+                <include name="${extname}-doc-${version}.zip"/>
+            </zipfileset>
+        </zip>
+
+    </target>
+
+    <target name="javadoc" depends="compile" if="contains.sources">
+        <javadoc destdir="${docdir}"
+                 public="true"
+                 Windowtitle="${extname} documentation"
+                 docletpath="${libdir}/fiz.jar"
+                 doclet="org.fiz.FizDoc">
+            <classpath>
+                <path refid="classpath"/>
+            </classpath>
+            <fileset dir="src">
+                <exclude name="README"/>
+            </fileset>
+        </javadoc>
+        <concat destfile="${docdir}/stylesheet.css" append="true">
+            <filelist dir="." files="javadoc.css"/>
+        </concat>
+    </target>
+
+    <!-- Generates the .jar file for this extension -->
+    <target name="jar" depends="compile" if="contains.sources">
+        <!-- Generate the .jar file for this extension -->
+        <jar destfile="${builddir}/lib/${extname}.jar" basedir="${classdir}"
+                manifest="${outdir}/MANIFEST.MF"/>
+    </target>
+
+    <!-- Conditionally packages javadoc files. Invoked only from the "build"
+     target -->
+    <target name="package-docs" if="contains.sources">
+        <mkdir dir="${builddir}/javadoc"/>
+        <copy todir="${builddir}/javadoc">
+            <fileset dir="${docdir}"/>
+        </copy>
+        <zip destfile="${outdir}/${extname}-doc-${version}.zip">
+            <zipfileset dir="${docdir}" prefix="${extname}-doc"/>
+        </zip>
+    </target>
+
+    <!-- Checks if this extension includes in any java source files -->
+    <target name="checksources">
+        <condition property="contains.sources">
+            <resourcecount when="gt" count="0">
+                <fileset dir="src">
+                    <include name="**/*.java"/>
+                </fileset>
+            </resourcecount>
+        </condition>
+    </target>
+
+    <!-- The version number of this extension -->
+    <property name="version" value="1.0.0"/>
+
+    <!-- The symbolic name of this extension. This name should be unique
+     across all Fiz extensions -->
+    <property name="extname" value="${ant.project.name}"/>
+
+    <!-- The directory containing Java libraries (.jar files) -->
+    <property name="libdir" value="lib"/>
+
+    <!-- The directory for the files generated by the build -->
+    <property name="outdir" value="out"/>
+
+    <!-- The directory in which Java classes are compiled -->
+    <property name="classdir" value="${outdir}/classes"/>
+
+    <!-- The directory in which Java test classes are compiled. -->
+    <property name="testclassdir" value="${outdir}/tests" />
+
+    <!-- The directory in which the installer is generated -->
+    <property name="builddir" value="${outdir}/installer"/>
+
+    <!-- The directory in which Javadocs are created -->
+    <property name="docdir" value="${outdir}/javadoc"/>
+    
+    <path id="classpath">
+        <fileset dir="${libdir}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+</project>

@@ -5,67 +5,141 @@ build.xml file. -->
 <project>
 
     <target name="clean" description="Remove all generated files">
-        <delete dir="out"/>
+        <delete dir="${outdir}"/>
     </target>
 
-    <target name="compile" description="Compile from source">
+    <target name="compile" description="Compile from source"
+            depends="clean-build, copy-libs, build-extensions">
         <mkdir dir="${classdir}"/>
         <javac srcdir="src" destdir="${classdir}" classpathref="classpath" />
     </target>
 
     <target name="build" description="Build the web application"
             depends="compile">
-        <delete dir="out/${appname}"/>
-
-        <mkdir dir="out/${appname}"/>
-        <copy todir="out/${appname}/fizlib">
+        <mkdir dir="${builddir}"/>
+        <copy todir="${builddir}/fizlib">
             <fileset dir="web/fizlib"/>
             <fileset dir="javascript/fizlib"/>
         </copy>
-        <copy todir="out/${appname}/WEB-INF">
-            <fileset dir="web/WEB-INF"/>
+        <copy todir="${builddir}/WEB-INF">
+            <fileset dir="web/WEB-INF">
+                <exclude name="**/README"/>
+            </fileset>
         </copy>
-        <copy todir="out/${appname}/WEB-INF/lib">
+        <copy todir="${builddir}/WEB-INF/lib">
             <fileset dir="lib"/>
         </copy>
-        <copy todir="out/${appname}/WEB-INF/classes">
+        <copy todir="${builddir}/WEB-INF/classes">
             <fileset dir="${classdir}"/>
         </copy>
     </target>
 
     <target name="war" description="Create WAR file" depends="compile">
-        <war destfile="out/${appname}.war"
-             webxml="web/WEB-INF/web.xml">
-            <lib dir="${libdir}"/>
-            <classes dir="${classdir}"/>
-            <fileset dir="javascript">
-                <include name="fizlib/**"/>
-            </fileset>
-            <fileset dir="web">
-                <include name="fizlib/**"/>
-            </fileset>
-            <webinf dir="web/WEB-INF">
-                <exclude name="web.xml"/>
-            </webinf>
+        <war destfile="${outdir}/${appname}.war">
+            <fileset dir="${builddir}"/>
         </war>
+    </target>
+
+    <target name="build-extensions">
+        <foreach target="ext.build" param="ext.dir" inheritall="true">
+            <path>
+                <dirset dir="${extensions.dir}">
+                    <depth min="0" max="0"/>
+                </dirset>
+            </path>
+        </foreach>
+    </target>
+
+    <target name="ext.build" depends="ext.check.src">
+        <antcall target="${ext.build.target}"/>
+    </target>
+
+    <target name="ext.build.bin">
+	    <basename file="${ext.dir}" property="ext.name"/>
+
+        <!-- Config files -->
+        <mkdir dir="${builddir}/WEB-INF/config/extensions/${ext.name}"/>
+        <copy todir="${builddir}/WEB-INF/config/extensions/${ext.name}">
+            <fileset dir="${ext.dir}/config"/>
+        </copy>
+
+        <!-- Css files -->
+        <mkdir dir="${builddir}/WEB-INF/config/extensions/${ext.name}"/>
+        <copy todir="${builddir}/WEB-INF/css/extensions/${ext.name}">
+            <fileset dir="${ext.dir}/css"/>
+        </copy>
+
+        <!-- Copy libraries -->
+        <mkdir dir="${builddir}/WEB-INF/lib"/>
+        <copy todir="${builddir}/WEB-INF/lib">
+            <fileset dir="${ext.dir}/lib"/>
+        </copy>
+
+        <!-- Static files -->
+        <mkdir dir="${builddir}/extensions/${ext.name}"/>
+        <copy todir="${builddir}/extensions/${ext.name}">
+            <fileset dir="${ext.dir}/static"/>
+        </copy>
+    </target>
+
+    <target name="ext.build.src">
+        <!-- Execute the extension's build file -->
+        <ant antfile="${ext.dir}/build.xml" target="build" inheritall="false"/>
+        <!-- Invoke ext.build.bin on the build output -->
+        <antcall target="ext.build.bin">
+            <param name="ext.dir" value="${ext.dir}/out/installer"/>
+        </antcall>
+    </target>
+
+    <!-- This target checks if an extension directory contains sources or
+    just binaries -->
+    <target name="ext.check.src">
+        <condition property="ext.build.target" value="ext.build.src"
+                   else="ext.build.bin">
+            <available file="${ext.dir}/build.xml"
+                       property="ext.src" value="ext.build.src"/>
+        </condition>
+    </target>
+
+    <target name="copy-libs">
+        <mkdir dir="${builddir}/lib"/>
+        <copy todir="${builddir}/lib">
+            <fileset dir="lib"/>
+        </copy>
+    </target>
+
+    <target name="clean-build">
+        <delete dir="${builddir}"/>
     </target>
 
     <!-- The directory containing Java libraries (.jar files). -->
     <property name="libdir" value="lib" />
 
+    <!-- The directory for all build output -->
+    <property name="outdir" value="out"/>
+
     <!-- The directory in which Java classes are compiled. -->
-    <property name="classdir" value="out/classes" />
+    <property name="classdir" value="${outdir}/classes" />
 
     <!-- The name of the web application -->
     <property name="appname" value="${ant.project.name}"/>
 
+    <!-- The directory in which the web application is generated -->
+    <property name="builddir" value="${outdir}/${appname}"/>
+
+    <!-- The name of the directory that contains all the extensions -->
+    <property name="extensions.dir" value="extensions"/>
+
     <path id="classpath">
-        <pathelement location="${libdir}/commons-fileupload-1.2.1.jar" />
-        <pathelement location="${libdir}/commons-io-1.4.jar" />
-        <pathelement location="${libdir}/fiz.jar" />
-        <pathelement location="${libdir}/jyaml.jar" />
-        <pathelement location="${libdir}/log4j.jar" />
-        <pathelement location="${libdir}/servlet.jar"/>
+        <fileset dir="${builddir}/lib">
+            <include name="**/*.jar"/>
+        </fileset>
     </path>
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="lib/ant-contrib-1.0b3.jar"/>
+        </classpath>
+    </taskdef>
 
 </project>
