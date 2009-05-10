@@ -103,8 +103,8 @@ build.xml file. -->
     </target>
 
     <target name="copy-libs">
-        <mkdir dir="${builddir}/lib"/>
-        <copy todir="${builddir}/lib">
+        <mkdir dir="${builddir}/WEB-INF/lib"/>
+        <copy todir="${builddir}/WEB-INF/lib">
             <fileset dir="lib"/>
         </copy>
     </target>
@@ -132,7 +132,7 @@ build.xml file. -->
     <property name="extensions.dir" value="extensions"/>
 
     <path id="classpath">
-        <fileset dir="${builddir}/lib">
+        <fileset dir="${builddir}/WEB-INF/lib">
             <include name="**/*.jar"/>
         </fileset>
     </path>
