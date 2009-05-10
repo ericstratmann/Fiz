@@ -85,7 +85,7 @@
 
         <zip destfile="${outdir}/${extname}-src-${version}.zip">
             <zipfileset dir="${builddir}" prefix="${extname}"/>
-            <zipfileset file="build.xml"/>
+            <zipfileset file="build.xml" prefix="${extname}"/>
             <zipfileset dir="src" prefix="${extname}/src"/>
             <zipfileset dir="test" prefix="${extname}/test"/>
             <zipfileset dir="lib" prefix="${extname}/lib"/>
