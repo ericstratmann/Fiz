@@ -97,6 +97,9 @@ public class TemplateSection extends Section {
                         errors[0]);
                 return;
             }
+            if (response.containsKey("record")) {
+                response = response.getChild("record");
+            }
             data = new CompoundDataset(response, cr.getMainDataset());
         } else {
             data = cr.getMainDataset();
