@@ -69,18 +69,9 @@ public class Fiz {
     }
 
     /**
-     * Defines different log levels for the tool
-     */
-    protected static class LogLevel {
-        final static int verbose = 1; // Print verbose information.
-        final static int normal = 2;  // Print summary information.
-        final static int quiet = 3;   // Print nothing except errors.
-    }
-
-    /**
      * An enumeration of all the available commands.
      */
-    protected enum Command {
+    public enum Command {
         checkCore     ("check core"),
         checkExt      ("check ext"),
         createApp     ("create app"),
@@ -112,6 +103,15 @@ public class Fiz {
         public String toString() {
             return commandStr;
         }
+    }
+
+    /**
+     * Defines different log levels for the tool
+     */
+    protected static class LogLevel {
+        final static int verbose = 1; // Print verbose information.
+        final static int normal = 2;  // Print summary information.
+        final static int quiet = 3;   // Print nothing except errors.
     }
 
     // The home directory of the default Fiz installation.
