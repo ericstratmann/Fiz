@@ -481,6 +481,13 @@ public class Fiz {
             path = fizHome + File.separator + "..";
         }
 
+        // Check that the target install directory exists.
+        File installDir = new File(path);
+        if (!installDir.isDirectory()) {
+            throw new ToolError(Command.installCore, "make sure " +
+                    installDir.getAbsolutePath() + " is a valid directory");
+        }
+
         // Check that a directory with the same version does not already exist.
         File fizInstallDir = new File(path + File.separator + "fiz-" + version);
         if (fizInstallDir.exists()) {
@@ -495,7 +502,7 @@ public class Fiz {
                 File.separator + "install-core.xml";
         HashMap<String, String> properties = new HashMap<String, String>();
         properties.put("fizserver", serverUrl);
-        properties.put("destdir", path);
+        properties.put("destdir", getCanonicalPath(path));
         properties.put("version", version);
         invokeAnt(buildFileName, "install", properties);
 
@@ -698,11 +705,10 @@ public class Fiz {
         // application. We decide this based on the presence or absence of a
         // "web" directory.
         // TODO: is this mechanism too fragile?
-        File appDir = new File(appDirPath);
-        String absolutePath = appDir.getAbsolutePath();
-        File webDir = new File(absolutePath + File.separator + "web");
+        File webDir = new File(appDirPath + File.separator + "web");
         if (!webDir.isDirectory()) {
-            throw new ToolError(Command.upgrade, "make sure " + absolutePath +
+            throw new ToolError(Command.upgrade, "make sure " +
+                    webDir.getAbsolutePath() +
                     " is the path to a valid Fiz web application, or " +
                     "extension.");
         }
@@ -712,7 +718,7 @@ public class Fiz {
                 File.separator + "upgrade-app.xml";
         HashMap<String, String> properties = new HashMap<String, String>();
         properties.put("fizserver", serverUrl);
-        properties.put("appdir", (new File(appDirPath).getAbsolutePath()));
+        properties.put("appdir", getCanonicalPath(appDirPath));
         properties.put("version", version);
         invokeAnt(buildFileName, "upgrade", properties);
 

@@ -3,8 +3,8 @@
 SERVER_URL=@@SERVER_URL
 
 if [ -z "$FIZ_HOME" ]; then
-   FIZ_HOME=@@FIZ_HOME
+   FIZ_HOME="@@FIZ_HOME"
 fi
 
-java -DFIZ_HOME="$FIZ_HOME" -DSERVER_URL="$SERVER_URL" -classpath $FIZ_HOME/lib/ant.jar:$FIZ_HOME/lib/ant-launcher.jar:$FIZ_HOME/lib/jyaml.jar:$FIZ_HOME/lib/fiz.jar org.fiz.tools.Fiz $*
+java -DFIZ_HOME="$FIZ_HOME" -DSERVER_URL="$SERVER_URL" -classpath "$FIZ_HOME"/lib/ant.jar:"$FIZ_HOME"/lib/ant-launcher.jar:"$FIZ_HOME"/lib/jyaml.jar:"$FIZ_HOME"/lib/fiz.jar org.fiz.tools.Fiz $*
 

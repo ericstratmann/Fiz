@@ -234,22 +234,26 @@ for the Fiz framework.
 		</condition>
 	</target>
 
-	<target name="install-windows" description="OS specific target for Windows">
-        <replace file="bin/fiz.bat" token="@@FIZ_HOME" value="${user.dir}"/>
+	<target name="install-windows" description="OS specific target for Windows"
+            depends="replace-tokens">
+	</target>
+
+	<target name="install-mac" description="OS specific target for MacOS"
+            depends="replace-tokens">
+        <chmod file="bin/fiz" perm="ugo+x"/>
+	</target>
+
+	<target name="install-unix" description="OS specific target for Unix"
+            depends="replace-tokens">
+        <chmod file="bin/fiz" perm="ugo+x"/>
+	</target>
+
+    <target name="replace-tokens" description="Replaces tokens in the Fiz script files">
+        <replace file="bin/fiz.bat" token="@@FIZ_HOME" value="${basedir}"/>
         <replace file="bin/fiz.bat" token="@@SERVER_URL" value="${serverurl}"/>
-	</target>
-
-	<target name="install-mac" description="OS specific target for MacOS">
-        <replace file="bin/fiz" token="@@FIZ_HOME" value="${user.dir}"/>
+        <replace file="bin/fiz" token="@@FIZ_HOME" value="${basedir}"/>
         <replace file="bin/fiz" token="@@SERVER_URL" value="${serverurl}"/>
-        <chmod file="bin/fiz" perm="ugo+x"/>
-	</target>
-
-	<target name="install-unix" description="OS specific target for Unix">
-        <replace file="bin/fiz" token="@@FIZ_HOME" value="${user.dir}"/>
-        <replace file="bin/fiz" token="@@SERVER_URL" value="${serverurl}"/>
-        <chmod file="bin/fiz" perm="ugo+x"/>
-	</target>
+    </target>
 
     <!-- The version number that is embedded in the fiz.jar library file -->
     <property name="version" value="1.0"/>
