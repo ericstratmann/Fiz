@@ -1158,7 +1158,7 @@ public class Fiz {
         System.out.println(
                 "Usage: fiz <command> [args] [options]\n" +
                         "\n" +
-                        "Type 'svn help <command>' for help on a specific command.\n" +
+                        "Type 'fiz help <command>' for help on a specific command.\n" +
                         "\n" +
                         "Available commands:\n" +
                         "    check core (chc)\n" +
@@ -1299,7 +1299,7 @@ public class Fiz {
                         "Options:\n" +
                         "    -d ARG    The path where the extension is to be installed. If this option\n" +
                         "              is not specified, the extension is installed in the directory\n" +
-                        "              in which the command is executed." +
+                        "              in which the command is executed.\n" +
                         "    -f ARG    The path to the extension's installer. Use this option to install\n" +
                         "              an extension from a file on disk instead of fetching it from the\n" +
                         "              Fiz server.\n" +
