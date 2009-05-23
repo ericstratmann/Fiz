@@ -60,7 +60,7 @@ for the Fiz framework.
         <jslint>
             <formatter type="plain" />
             <fileset dir="test/jsunit" includes="*.js" />
-            <fileset dir="javascript/fizlib" includes="*.js" />
+            <fileset dir="web/fizlib" includes="*.js" />
         </jslint>
     </target>
 
@@ -92,7 +92,6 @@ for the Fiz framework.
         </copy>
         <mkdir dir="${demodir}/fizlib"/>
         <copy todir="${demodir}/fizlib">
-            <fileset dir="javascript/fizlib"/>
             <fileset dir="web/fizlib"/>
         </copy>
         <mkdir dir="${demodir}/WEB-INF/demo"/>
@@ -158,10 +157,6 @@ for the Fiz framework.
         <mkdir dir="${installerdir}/web/WEB-INF/fiz/css"/>
         <copy todir="${installerdir}/web/WEB-INF/fiz/css">
             <fileset dir="web/WEB-INF/fiz/css"/>
-        </copy>
-        <mkdir dir="${installerdir}/javascript"/>
-        <copy todir="${installerdir}/javascript">
-            <fileset dir="javascript"/>
         </copy>
         <mkdir dir="${installerdir}/web/fizlib"/>
         <copy todir="${installerdir}/web/fizlib">
