@@ -345,21 +345,22 @@ public class Fiz {
                     "fetching information from server " + urlStr);
         }
 
+        if (result.equals("")) {
+            // There are no new versions of Fiz.
+            log(LogLevel.normal, "there are no newer versions of Fiz available");
+            return;
+        }
+
         ArrayList<Dataset> versionDataList = 
                 YamlDataset.newStringInstance(result).getChildren("record");
-        if (versionDataList.size() == 0) {
-            // There are no new versions.
-            log(LogLevel.normal, "there are no newer versions available");
-        } else {
-            log(LogLevel.quiet, "new releases since Fiz version " +
-                    versionSince + ":");
-            // Print out version information for each new new version.
-            for(Dataset versionData : versionDataList) {
-                log(LogLevel.quiet, versionData.get("version"));
-                String description = versionData.check("short_description");
-                if (description != null) {
-                    log(LogLevel.verbose, "    " + description);
-                }
+        log(LogLevel.quiet, "new releases since Fiz version " +
+                versionSince + ":");
+        // Print out version information for each new new version.
+        for(Dataset versionData : versionDataList) {
+            log(LogLevel.quiet, versionData.get("version"));
+            String description = versionData.check("short_description");
+            if (description != null) {
+                log(LogLevel.verbose, "    " + description);
             }
         }
     }
@@ -396,34 +397,38 @@ public class Fiz {
             urlStr = urlStr + "&since=" + versionSince;
         }
 
+        String result;
         try {
-            String result = openUrl(urlStr);
-            ArrayList<Dataset> versionDataList =
-                    YamlDataset.newStringInstance(result).getChildren("record");
-            if (versionDataList.size() == 0) {
-                // There are no new versions.
-                log(LogLevel.normal, "there are no newer versions available");
-            } else {
-                if (versionSince != null) {
-                    log(LogLevel.quiet, "new releases of " + extName +
-                            " since version " + versionSince + ":");
-                } else {
-                    log(LogLevel.quiet, "all available releases of " + extName +
-                            ":");
-                }
-                // Print out version information for each new new version.
-                for(Dataset versionData : versionDataList) {
-                    log(LogLevel.quiet, versionData.get("version"));
-                    String description = versionData.check("short_description");
-                    if (description != null) {
-                        log(LogLevel.verbose, "    " + description);
-                    }
-                }
-            }            
+            result = openUrl(urlStr);
         }
         catch (Exception e) {
             throw new ToolError(Command.checkExt, "error occurred while " +
                     "fetching information from server " + urlStr);
+        }
+
+        if (result.equals("")) {
+            // There are no new versions.
+            log(LogLevel.normal, "there are no newer versions of " + extName +
+                    " available");
+            return;
+        }
+        
+        ArrayList<Dataset> versionDataList =
+                YamlDataset.newStringInstance(result).getChildren("record");
+        if (versionSince != null) {
+            log(LogLevel.quiet, "new releases of " + extName +
+                    " since version " + versionSince + ":");
+        } else {
+            log(LogLevel.quiet, "all available releases of " + extName +
+                    ":");
+        }
+        // Print out version information for each new new version.
+        for(Dataset versionData : versionDataList) {
+            log(LogLevel.quiet, versionData.get("version"));
+            String description = versionData.check("short_description");
+            if (description != null) {
+                log(LogLevel.verbose, "    " + description);
+            }
         }
     }
 
