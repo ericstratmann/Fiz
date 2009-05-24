@@ -112,9 +112,9 @@ for the Fiz framework.
         </copy>
 
         <!-- Executable scripts -->
-        <mkdir dir="${installerdir}/bin"/>
-        <copy todir="${installerdir}/bin">
-            <fileset dir="bin"/>
+        <mkdir dir="${installerdir}/shellscripts"/>
+        <copy todir="${installerdir}/shellscripts">
+            <fileset dir="shellscripts"/>
         </copy>
 
         <!-- Source files -->
@@ -248,9 +248,11 @@ for the Fiz framework.
         <!-- First delete the old versions of the scripts, if any -->
         <delete file="bin/fiz.bat"/>
         <delete file="bin/fiz"/>
+        <!-- Create the bin directory in case it doesn't exist -->
+        <mkdir dir="bin"/>
         <!-- Copy the original versions -->
-        <copy file="bin/fiz.bat.in" tofile="bin/fiz.bat"/>
-        <copy file="bin/fiz.in" tofile="bin/fiz"/>
+        <copy file="shellscripts/fiz.bat.in" tofile="bin/fiz.bat"/>
+        <copy file="shellscripts/fiz.in" tofile="bin/fiz"/>
         <!-- Replace tokens -->
         <replace file="bin/fiz.bat" token="@@FIZ_HOME" value="${basedir}"/>
         <replace file="bin/fiz.bat" token="@@SERVER_URL" value="${serverurl}"/>
