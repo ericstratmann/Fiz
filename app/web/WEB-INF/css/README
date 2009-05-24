@@ -1,4 +1,0 @@
-This directory contains templates for CSS files, which are managed
-by the Fiz "Css" class.  See that class for more information. Add application
-specific CSS files to this directory or override CSS files that are part of
-the Fiz distribution.
