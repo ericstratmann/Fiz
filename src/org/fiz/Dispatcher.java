@@ -142,8 +142,10 @@ public class Dispatcher extends HttpServlet {
             logger.info("initialization parameters:" + message);
         }
 
-        Config.init(contextRoot + "/WEB-INF/config",
-                contextRoot + "/WEB-INF/fiz/config");
+        Config.init(contextRoot + "/WEB-INF/app/config",
+                contextRoot + "/WEB-INF/app/extensions",
+                contextRoot + "/WEB-INF/fiz/config",
+                contextRoot + "/WEB-INF/extensions");
         initMainConfigDataset(contextRoot);
         String debug = Config.getDataset("main").check("debug");
         clearCaches = (debug != null) && (debug.equals("1"));
@@ -151,8 +153,10 @@ public class Dispatcher extends HttpServlet {
         logger.info("main configuration dataset:\n    " +
                 Config.getDataset("main").toString().trim().replace(
                 "\n", "\n    "));
-        Css.init(contextRoot + "/WEB-INF/css",
-                contextRoot + "/WEB-INF/fiz/css");
+        Css.init(contextRoot + "/WEB-INF/app/css",
+                contextRoot + "/WEB-INF/app/extensions",
+                contextRoot + "/WEB-INF/fiz/css",
+                contextRoot + "/WEB-INF/extensions");
 
         // If you want more detailed logging, such as request URLs, uncomment
         // the following line.

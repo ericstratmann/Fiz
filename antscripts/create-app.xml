@@ -22,11 +22,6 @@ This ant script creates a new Fiz application
                  token="@@APPLICATION_NAME" value="${appname}"/>
 
         <!-- Files that are not application specific -->
-        <mkdir dir="${destdir}/javascript/fizlib"/>
-        <copy todir="${destdir}/javascript/fizlib">
-            <fileset dir="${fizhome}/javascript/fizlib"/>
-        </copy>
-        
         <mkdir dir="${destdir}/lib"/>
         <copy todir="${destdir}/lib">
             <fileset dir="${fizhome}/lib"/>
