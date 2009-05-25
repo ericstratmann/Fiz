@@ -31,9 +31,9 @@ public class DispatcherTest extends junit.framework.TestCase {
         ServletContextFixture context = new ServletContextFixture();
         ServletConfigFixture config = new ServletConfigFixture(context);
         dispatcher.init(config);
-        assertEquals("Config path", "test/testData/WEB-INF/config",
+        assertEquals("Config path", "test/testData/WEB-INF/app/config",
                 Config.getSearchPath()[0]);
-        assertEquals("Css path", "test/testData/WEB-INF/css",
+        assertEquals("Css path", "test/testData/WEB-INF/app/css",
                 Css.getSearchPath()[0]);
         assertEquals("clearCaches variable", false,
                 dispatcher.clearCaches);

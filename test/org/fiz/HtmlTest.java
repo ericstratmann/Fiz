@@ -39,8 +39,8 @@ public class HtmlTest extends junit.framework.TestCase {
     public void setUp() {
         Html.clearJsDependencyCache();
         html = new HtmlFixture();
-        Css.init("test/testData/WEB-INF/css");
-        Config.init("test/testData/WEB-INF/config");
+        Css.init("test/testData/WEB-INF/app/css");
+        Config.init("test/testData/WEB-INF/app/config");
     }
 
     public void test_clear() {
