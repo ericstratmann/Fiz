@@ -108,7 +108,7 @@ test("stateChange_errorInResponseJavascript", function() {
     ajax.stateChange();
     assertEqual("clearBulletin();addBulletinMessage(\"bulletinError\", " +
             "\"Error in Ajax request for /a/b: error in Javascript " +
-            "response (javascript/fizlib/Ajax.js(eval):1): SyntaxError: " +
+            "response (web/fizlib/Ajax.js(eval):1): SyntaxError: " +
             "syntax error\");",
             jsunit.log.replace(/\.js#\d*\(/, ".js("), "jsunit.log");
 });
@@ -128,7 +128,7 @@ test("stateChange_evalAction_syntaxError", function() {
     ajax.stateChange();
     assertEqual("clearBulletin();addBulletinMessage(\"bulletinError\", " +
             "\"Error in Ajax request for /a/b: error in Javascript " +
-            "response (javascript/fizlib/Ajax.js(eval):1): " +
+            "response (web/fizlib/Ajax.js(eval):1): " +
             "SyntaxError: syntax error\");",
             jsunit.log.replace(/\.js#\d*\(/, ".js("), "jsunit.log");
 });
@@ -140,7 +140,7 @@ test("stateChange_exceptionWithLineNumber", function() {
     ajax.stateChange();
     assertEqual("clearBulletin();addBulletinMessage(\"bulletinError\", " +
             "\"Error in Ajax request for /a/b: error in Javascript response " +
-            "(javascript/fizlib/Ajax.js(eval):1): SyntaxError: " +
+            "(web/fizlib/Ajax.js(eval):1): SyntaxError: " +
             "syntax error\");",
             jsunit.log.replace(/\.js#\d*\(/, ".js("), "jsunit.log");
 });

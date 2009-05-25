@@ -18,7 +18,7 @@
 var jsunit = {
     // Values for command-line options.
     files:             new Array(),
-    path:              ["javascript", "test/jsunit"],
+    path:              ["web", "test/jsunit"],
     quiet:             0,
 
     // Name of the file whose tests are currently executing:

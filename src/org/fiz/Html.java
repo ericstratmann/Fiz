@@ -75,7 +75,7 @@ public class Html {
             // We are running unit tests; set default values, which
             // tests may override.
             contextPath = "/servlet";
-            jsDirectory = "javascript/";
+            jsDirectory = "web/";
         }
     }
 

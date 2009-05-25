@@ -37,6 +37,13 @@ for the Fiz framework.
             </batchtest>
 
         </junit>
+        
+        <java classname="org.mozilla.javascript.tools.shell.Main">
+            <classpath refid="classpath.test" />
+            <arg value="test/jsunit/jsunit.js" />
+            <arg value="-quiet" />
+            <arg value="test/jsunit" />
+        </java>
     </target>
 
     <target name="javadoc" depends="compile">
