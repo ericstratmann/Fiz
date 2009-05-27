@@ -134,7 +134,7 @@
             <fileset dir="${docdir}"/>
         </copy>
         <zip destfile="${outdir}/${extname}-doc-${version}.zip">
-            <zipfileset dir="${docdir}" prefix="${extname}-doc"/>
+            <zipfileset dir="${docdir}" prefix="${extname}-doc-${version}"/>
         </zip>
     </target>
 
