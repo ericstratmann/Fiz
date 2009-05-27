@@ -217,7 +217,8 @@ for the Fiz framework.
         </copy>
 
         <!-- Create archives -->
-        <zip destfile="${packagedir}/fiz-${version}.pkg" basedir="${packagedir}" />
+        <zip destfile="${packagedir}/fiz-pkg-${version}.zip"
+             basedir="${packagedir}" />
     </target>
 
     <target name="install" description="Installs Fiz" depends="checkOS">
