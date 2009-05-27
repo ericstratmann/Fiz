@@ -1315,8 +1315,8 @@ public class Fiz {
                         "\n" +
                         "Examples:\n" +
                         "        fiz install ext foo -v 2.0 -d bar" + File.separator + "extensions" + "\n" +
-                        "    Installs version 2.0 of the extension named \"foo\" in the directory ." +
-                        File.separator + "bar" + File.separator + "extensions.\n"
+                        "    Installs version 2.0 of the extension named \"foo\" in the directory\n" +
+                        "    ." + File.separator + "bar" + File.separator + "extensions.\n"
         );
     }
 
