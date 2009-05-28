@@ -118,13 +118,13 @@ function parseArguments(options) {
         // Process the next argument, removing the argument name (and value,
         // if present) from the argument array.
         var option = options.shift();
-        if (option == "-help") {
+        if (option === "-help") {
             printHelp();
             quit();
         } else if (option == "-path") {
             checkOptionValue(options, option);
             jsunit.path = options.shift().split(",");
-        } else if (option == "-quiet") {
+        } else if (option === "-quiet") {
             jsunit.quiet = 1;
         } else {
             // Unknown option.
@@ -145,7 +145,7 @@ function parseArguments(options) {
  *                                 generate an error message.
  */
 function checkOptionValue(args, option) {
-    if (args.length == 0) {
+    if (args.length === 0) {
         print("Error: no value specified for \"" + option + "\" option");
         quit();
     }
@@ -241,7 +241,7 @@ function error(msg) {
  *                                 or the sub-case within a particular test.
  */
 function assertEqual(expected, actual, description) {
-    if (expected == actual) {
+    if (expected === actual) {
         return;
     }
     var message = "Error in test \"" + jsunit.currentTestName + "\"";
@@ -250,14 +250,12 @@ function assertEqual(expected, actual, description) {
     }
     message += "\nExpected value: " + expected +
             "\nActual value:   " + actual;
-    if ((expected != null) && (actual != null) &&
-            (expected.indexOf("\n") >= 0)) {
+    if (typeof expected === "string" && typeof actual === "string" &&
+            expected.indexOf("\n") >= 0) {
         // The expected result has multiple lines.  To make it
         // easier to track down problems, find the index of the first
         // difference between the strings and output information about
         // that.
-        expected = expected.toString();
-        actual = actual.toString();
         var length = expected.length;
         if (actual.length < length) {
             length = actual.length;
@@ -265,7 +263,7 @@ function assertEqual(expected, actual, description) {
         for (var i = 0; i < length; i++) {
             var c1 = expected.charAt(i);
             var c2 = actual.charAt(i);
-            if (c1 == c2) {
+            if (c1 === c2) {
                 continue;
             }
             message += "\nFirst difference at index " + i +
@@ -330,7 +328,7 @@ function setTimeout(firstArg, interval) {
  *                                 using YAML-like syntax.
  */
 function printDataset(data, prefix) {
-    if (prefix == null) {
+    if (prefix === undefined) {
         prefix = "";
     }
     return printSubtree(data, prefix, prefix);
@@ -395,7 +393,7 @@ function printSubtree(node, firstPrefix, otherPrefix) {
                 result += " ";
             }
             result += " " + value.getId() + "\n";
-        } else if ((typeof value) == "object") {
+        } else if ((typeof value) === "object") {
                 result += "\n";
                 result += printSubtree(value, otherPrefix + "    ",
                         otherPrefix + "    ");
@@ -404,7 +402,7 @@ function printSubtree(node, firstPrefix, otherPrefix) {
             for (j = name.length; j < maxLength; j++) {
                 result += " ";
             }
-            if (value.length == 0) {
+            if (value.length === 0) {
                 result += " \"\"\n";
             } else {
                 result += " " + value + "\n";
@@ -428,7 +426,7 @@ function printObject(o) {
     for (var i = 0; i < nameList.length; i++) {
         var name = nameList[i];
         var value = o[name];
-        if (((typeof value) == "function") || ((typeof value) == "object")) {
+        if (((typeof value) === "function") || ((typeof value) === "object")) {
             continue;
         }
         if (value === "") {

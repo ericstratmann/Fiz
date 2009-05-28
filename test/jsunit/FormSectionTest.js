@@ -106,5 +106,5 @@ test("FormSection_handleResponse2", function() {
     window.xyzzy = 44;
     form.handleResponse2("window.xyzzy += 3;");
     assertEqual("", div1.innerHTML, "HTML for iframe");
-    assertEqual("47", window.xyzzy, "incremented variable contents");
+    assertEqual(47, window.xyzzy, "incremented variable contents");
 });
