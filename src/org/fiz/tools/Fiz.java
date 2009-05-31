@@ -21,7 +21,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 
 /**
- * This class implements the command-line tool used to manage Fiz intallations,
+ * This class implements the command-line tool used to manage Fiz installations,
  * Fiz web applications and extensions on a computer.
  * For usage information on how the tool works, use the built-in help commands.
  * e.g. Supply {@code help} as an argument when invoking the tool.
@@ -1245,8 +1245,8 @@ public class Fiz {
                         "    Creates a new application named \"foo\" in the directory in which \n" +
                         "    the command is executed.\n" +
                         "\n" +
-                        "        fiz create app bar" + File.separator + "baz\n" +
-                        "    Creates a new application called \"baz\" in ." + File.separator + "bar.\n"
+                        "        fiz create app bar/baz\n" +
+                        "    Creates a new application called \"baz\" in ./bar.\n"
         );
     }
 
@@ -1264,8 +1264,8 @@ public class Fiz {
                         "    Creates a new extension called \"foo\" in the directory in which the\n" +
                         "    command is executed.\n" +
                         "\n" +
-                        "        fiz create ext bar" + File.separator + "baz\n" +
-                        "    Creates a new extension called \"baz\" in ." + File.separator + "bar.\n"
+                        "        fiz create ext bar/baz\n" +
+                        "    Creates a new extension called \"baz\" in ./bar.\n"
         );
     }
 
@@ -1287,8 +1287,7 @@ public class Fiz {
                         "\n" +
                         "Examples:\n" +
                         "        fiz install core 1.1 -d foo/bar\n" +
-                        "    Installs version 1.1 of Fiz in the directory ." + File.separator + "foo" +
-                        File.separator + "bar.\n"
+                        "    Installs version 1.1 of Fiz in the directory ./foo/bar.\n"
         );
     }
 
@@ -1307,16 +1306,20 @@ public class Fiz {
                         "              in which the command is executed.\n" +
                         "    -f ARG    The path to the extension's installer. Use this option to install\n" +
                         "              an extension from a file on disk instead of fetching it from the\n" +
-                        "              Fiz server.\n" +
+                        "              Fiz server. Do not supply an extension name in this case.\n" +
                         "    -s        Install the source package for the extension instead of just the\n" +
                         "              binaries.\n" +
                         "    -v ARG    The version of the extension to install. If this option is not\n" +
                         "              specified, the latest stable version is installed.\n" +
                         "\n" +
                         "Examples:\n" +
-                        "        fiz install ext foo -v 2.0 -d bar" + File.separator + "extensions" + "\n" +
+                        "        fiz install ext foo -v 2.0 -d bar/extensions\n" +
                         "    Installs version 2.0 of the extension named \"foo\" in the directory\n" +
-                        "    ." + File.separator + "bar" + File.separator + "extensions.\n"
+                        "    ./bar/extensions.\n" +
+                        "\n" +
+                        "        fiz install ext -f ../foo/bar/baz-bin-1.0.0.zip\n" +
+                        "    Installs the extension located at ../foo/bar/baz-bin-1.0.0.zip\n" +
+                        "    into the current directory.\n"
         );
     }
 
