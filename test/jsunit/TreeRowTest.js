@@ -5,13 +5,15 @@
 include("fizlib/Fiz.js");
 include("fizlib/TreeRow.js");
 
-test("TreeRow_constructor", function() {
+TreeRowTest = {};
+
+TreeRowTest.test_constructor = function() {
     var row = new Fiz.TreeRow("id 44", "html #1", "html #2");
     assertEqual("expandedHtml: html #2, id: id 44, unexpandedHtml: html #1",
             printObject(row), "object properties");
-});
+};
 
-test("TreeRow_expand", function() {
+TreeRowTest.test_expand = function() {
     // Create elements for the test to manipulate.
     document = new Document();
     var childDiv = document.addElementWithId("tree_44_childDiv",
@@ -31,9 +33,9 @@ test("TreeRow_expand", function() {
             "new HTML for child div");
     assertEqual("", childRow.style.display,
             "new display style for child row");
-});
+};
 
-test("TreeRow_unexpand", function() {
+TreeRowTest.test_unexpand = function() {
     // Create elements for the test to manipulate.
     document = new Document();
     var childRow = document.addElementWithId("tree_44_childRow",
@@ -49,9 +51,9 @@ test("TreeRow_unexpand", function() {
     assertEqual("TreeRow_replace(\"html #1\")\n", jsunit.log, "jsunit log");
     assertEqual("none", childRow.style.display,
             "new display style for child row");
-});
+};
 
-test("TreeRow_replace", function() {
+TreeRowTest.test_replace = function() {
     // Dummy up the row that will get replaced.
     var parent = document.addElementWithId("parent", {});
     var oldRow = document.addElementWithId("tree_44", {parentNode: parent});
@@ -79,4 +81,4 @@ test("TreeRow_replace", function() {
             "HTML for temporary table");
     assertEqual("sample HTML",
             parent.firstChild.innerHTML, "new contents of table row");
-});
+};

@@ -11,10 +11,11 @@ include("fizlib/FormSection.js");
 Fiz.Ajax = function(properties) {
     jsunit.log += "Fiz.Ajax url: " + properties.url + ", data:\n" +
             printDataset(properties.data, "    ");
-}
+};
 
-test("FormSection_clearElementErrors", function() {
-    document = new Document();
+FormSectionTest = {};
+
+FormSectionTest.test_clearElementErrors = function() {
     var row1 = document.addElementWithId("div1", {className: "undefined"});
     var div1 = document.addElementWithId("div1_diagnostic",
         {style: {display: "none"}, innerHTML: "xxx"});
@@ -34,10 +35,9 @@ test("FormSection_clearElementErrors", function() {
     assertEqual("", row2.className, "row2.className after call");
     assertEqual("", form.errorElements.join(", "),
             "form.errorElements after call");
-});
+};
 
-test("FormSection_elementError", function() {
-    document = new Document();
+FormSectionTest.test_elementError = function() {
     var row1 = document.addElementWithId("div1", {className: "undefined"});
     var div1 = document.addElementWithId("div1_diagnostic",
         {style: {display: "none"}, innerHTML: "xxx"});
@@ -61,10 +61,9 @@ test("FormSection_elementError", function() {
     form.elementError("div2", "error2");
     assertEqual("div1, div2", form.errorElements.join(", "),
             "form.errorElements after second call");
-});
+};
 
-test("FormSection_submit", function() {
-    document = new Document();
+FormSectionTest.test_submit = function() {
     var form1 = document.addElementWithId("form1", {target: "undefined"});
     var div1 = document.addElementWithId("form1_target", {innerHTML: "xxx"});
     var form = new Fiz.FormSection("form1");
@@ -75,9 +74,9 @@ test("FormSection_submit", function() {
     assertEqual("<iframe name=\"form1_iframe\"></iframe>",
             div1.innerHTML, "HTML for iframe");
     assertEqual("form1_iframe", form1.target, "form1.target");
-});
+};
 
-test("FormSection_handleResponse", function() {
+FormSectionTest.test_handleResponse = function() {
     Fiz.ids.form1 = new Fiz.FormSection("formxx");
     Fiz.ids.form1.handleResponse2 = function(script) {
         window.testLog = "handleResponse2 argument: " + script;
@@ -87,10 +86,9 @@ test("FormSection_handleResponse", function() {
     jsunit.setTimeoutArg();
     assertEqual("handleResponse2 argument: window.xyzzy += 3;",
             window.testLog, "log information");
-});
+};
 
-test("FormSection_handleResponse2", function() {
-    document = new Document();
+FormSectionTest.test_handleResponse2 = function() {
     var div1 = document.addElementWithId("form1_target", {innerHTML: "xxx"});
     var form = new Fiz.FormSection("form1");
 
@@ -107,4 +105,4 @@ test("FormSection_handleResponse2", function() {
     form.handleResponse2("window.xyzzy += 3;");
     assertEqual("", div1.innerHTML, "HTML for iframe");
     assertEqual(47, window.xyzzy, "incremented variable contents");
-});
+};

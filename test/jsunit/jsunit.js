@@ -80,17 +80,81 @@ function main(options) {
         }
         print(file + ":");
 
-        // Run this test file.  There doesn't seem to be any way to find out
-        // if the file could be found; Rhino just prints an error message
-        // and returns normally.
-        load(file);
-    }
 
+        runTests(file);
+    }
+    
     // Print final statistics.
     print("");
     print("Test files:   " + jsunit.numFiles);
     print("Total tests:  " + jsunit.numTests);
     print("Total errors: " + jsunit.numErrors);
+
+}
+
+/**
+ * Runs all the tests for a particular file. This function expects the file to
+ * define an object with the same name as its filename. It will run each method
+ * which begins with "test_". It will also run the setUp method before each
+ * test if it is defined and tearDown afterward.
+ *
+ * @param fileName                 File name of a test file
+ */
+function runTests(file) {
+    // Load the test file.  There doesn't seem to be any way to find out
+    // if the file could be found; Rhino just prints an error message
+    // and returns normally. 
+    load(file);
+
+    var className = getFileName(file);
+    var testClass = eval(className);
+    
+    for (var test in testClass) {
+        if (test.substr(0, test.indexOf("_") + 1) !== "test_") {
+            continue;
+        }
+        
+        jsunit.numTests++;
+        jsunit.currentTestName = test;
+        jsunit.currentTestError = false;
+        jsunit.log = "";
+        
+        if (testClass.setUp) {
+            testClass.setUp();
+        }
+
+        document = new Document(); // global
+        
+        try {
+            testClass[test]();
+        } catch (e) {
+            var where = "";
+            if (e.fileName && e.lineNumber) {
+                where = " (" + e.fileName + ":" + e.lineNumber + ")";
+            }
+            error("Exception in test \"" + test + "\"" + where + ":\n" + e);
+        }
+        if (testClass.tearDown) {
+            testClass.tearDown();
+        }
+        if (!jsunit.currentTestError && !jsunit.quiet) {
+            print(banner(name) + " PASSED");
+        }
+        
+    }
+}
+
+/*
+ * Given a path to a file, returns the name of a file without the extension
+ * or directory. For example, "some/path/FooTest.js" would become "FooTest".
+ *
+ * @param path                 Path to a file
+ */
+function getFileName(path) {
+    var noExtension = path.substr(0, path.lastIndexOf(".")) || path;
+    var noDirectory = noExtension.substr(noExtension.lastIndexOf("/") + 1);
+
+    return noDirectory;
 }
 
 /**
@@ -184,32 +248,6 @@ function banner(text) {
     return result;
 }
 
-/**
- * This function runs a single test: it is is invoked by test files.
- * It invokes {@code func}, which implements the actual test, catches
- * exceptions that happen inside {@code func}, collects statistics, and
- * prints log information.
- * @param name                     Name of the test case.
- * @param func                     Function containing the body of the test.
- */
-function test(name, func) {
-    jsunit.numTests++;
-    jsunit.currentTestName = name;
-    jsunit.currentTestError = false;
-    jsunit.log = "";
-    try {
-        func();
-    } catch (e) {
-        var where = "";
-        if (e.fileName && e.lineNumber) {
-            where = " (" + e.fileName + ":" + e.lineNumber + ")";
-        }
-        error("Exception in test \"" + name + "\"" + where + ":\n" + e);
-    }
-    if (!jsunit.currentTestError && !jsunit.quiet) {
-        print(banner(name) + " PASSED");
-    }
-}
 
 /**
  * This function is invoked when an error occurs during a test.  It prints

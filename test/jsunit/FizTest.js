@@ -4,8 +4,9 @@
 
 include("fizlib/Fiz.js");
 
-test("Fiz_addBulletinMessage_createBulletin", function() {
-    document = new Document();
+FizTest = {};
+
+FizTest.test_addBulletinMessage_createBulletin = function() {
     Fiz.addBulletinMessage("error", "Message #1");
     assertEqual("className:   bulletin\n" +
             "firstChild:  div#1\n" +
@@ -26,9 +27,9 @@ test("Fiz_addBulletinMessage_createBulletin", function() {
             "    tagName:    div\n",
             document.body.firstChild.printChildren(),
             "children of bulletin");
-});
-test("Fiz_addBulletinMessage_bulletinExists", function() {
-    document = new Document();
+};
+
+FizTest.test_addBulletinMessage_bulletinExists = function() {
     var bulletin = document.addElementWithId("bulletin", {tagName: "div"});
     Fiz.addBulletinMessage("error", "Message #1");
     assertEqual("Child #0:\n" +
@@ -39,10 +40,9 @@ test("Fiz_addBulletinMessage_bulletinExists", function() {
             "    tagName:    div\n",
             bulletin.printChildren(),
             "contents of bulletin");
-});
+};
 
-test("Fiz_clearBulletin", function() {
-    document = new Document();
+FizTest.test_clearBulletin = function() {
     var bulletin = document.addElementWithId("bulletin",
             {innerHTML: "sample contents"});
     Fiz.clearBulletin();
@@ -52,4 +52,4 @@ test("Fiz_clearBulletin", function() {
             "    display: none\n",
             bulletin.toString(),
             "contents of bulletin");
-});
+};

@@ -16,9 +16,11 @@ function getChildClasses(element) {
         separator = ", ";
     }
     return result;
-}
+};
 
-test("TabSection_selectTab", function() {
+TabSectionTest = {};
+
+TabSectionTest.test_selectTab = function() {
     document = new Document();
     var parent = new Element();
     parent.appendChild(new Element({className: "left"}));
@@ -40,8 +42,9 @@ test("TabSection_selectTab", function() {
     assertEqual("left, left, left, right, right, left, left, " +
             "leftSelected, , midSelected, , rightSelected, mid, mid, mid",
             getChildClasses(parent), "new sibling classes");
-});
-test("TabSection_selectTab_alreadySelected", function() {
+};
+
+TabSectionTest.test_selectTab_alreadySelected = function() {
     document = new Document();
     var parent = new Element();
     parent.appendChild(new Element({className: "leftSelected"}));
@@ -50,12 +53,13 @@ test("TabSection_selectTab_alreadySelected", function() {
     Fiz.TabSection.selectTab("999");
     assertEqual("leftSelected, midSelected, rightSelected",
             getChildClasses(parent), "new sibling classes");
-});
-test("TabSection_selectTab_noSiblingsToSelect", function() {
+};
+
+TabSectionTest.test_selectTab_noSiblingsToSelect = function() {
     document = new Document();
     var parent = new Element();
     parent.appendChild(document.addElementWithId("999", {className: "mid"}));
     Fiz.TabSection.selectTab("999");
     assertEqual("midSelected",
             getChildClasses(parent), "new sibling classes");
-});
+};
