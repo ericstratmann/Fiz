@@ -83,7 +83,7 @@ function main(options) {
 
         runTests(file);
     }
-    
+
     // Print final statistics.
     print("");
     print("Test files:   " + jsunit.numFiles);
@@ -103,28 +103,28 @@ function main(options) {
 function runTests(file) {
     // Load the test file.  There doesn't seem to be any way to find out
     // if the file could be found; Rhino just prints an error message
-    // and returns normally. 
+    // and returns normally.
     load(file);
 
     var className = getFileName(file);
     var testClass = eval(className);
-    
+
     for (var test in testClass) {
         if (test.substr(0, test.indexOf("_") + 1) !== "test_") {
             continue;
         }
-        
+
         jsunit.numTests++;
         jsunit.currentTestName = test;
         jsunit.currentTestError = false;
         jsunit.log = "";
-        
+
         if (testClass.setUp) {
             testClass.setUp();
         }
 
         document = new Document(); // global
-        
+
         try {
             testClass[test]();
         } catch (e) {
@@ -138,9 +138,9 @@ function runTests(file) {
             testClass.tearDown();
         }
         if (!jsunit.currentTestError && !jsunit.quiet) {
-            print(banner(name) + " PASSED");
+            print(banner(jsunit.currentTestName) + " PASSED");
         }
-        
+
     }
 }
 
