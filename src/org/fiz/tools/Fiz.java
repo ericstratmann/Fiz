@@ -657,7 +657,7 @@ public class Fiz {
      */
     protected void installExtFromFile(ArrayList<String> argList,
                                       String filePath, String installPath) {
-        if (argList.size() != 0) {
+        if (argList.size() > 1) {
             throw new ToolError(Command.installExt, "invalid usage");
         }
 
@@ -766,6 +766,7 @@ public class Fiz {
             }
 
             log(LogLevel.quiet, "Fiz version " + version);
+            log(LogLevel.quiet, "installed at " + fizHome);
             return;
         }
 
@@ -790,6 +791,29 @@ public class Fiz {
             }
 
             log(LogLevel.quiet, "Fiz version " + version);
+            log(LogLevel.quiet, "installed at " + rootDirPath);
+            return;
+        }
+
+        // Check if this is a path to an extension.
+        // Note: It is important to check for an extension before checking for
+        // an application since extensions are usually located under the 
+        // "extensions" directory of an application.
+        rootDirPath = findRootDir(path, DirType.extension);
+        if (rootDirPath != null) {
+            // This is a Fiz extension.
+            String extName = (new File(rootDirPath)).getName();
+            String version = checkJarVersion(rootDirPath + File.separator +
+                    "lib" + File.separator + extName + ".jar");
+            if (version == null) {
+                throw new ToolError(Command.version, "error occurred while " +
+                        "checking the version. Make sure " + path +
+                        " is the path to a valid Fiz installation, web " +
+                        "application, or extension.");
+            }
+
+            log(LogLevel.quiet, extName + " version " + version);
+            log(LogLevel.quiet, "extension located at " + rootDirPath);
             return;
         }
 
@@ -806,24 +830,7 @@ public class Fiz {
             }
 
             log(LogLevel.quiet, "Fiz library version " + version);
-            return;
-        }
-
-        // Check if this is a path to an extension.
-        rootDirPath = findRootDir(path, DirType.extension);
-        if (rootDirPath != null) {
-            // This is a Fiz extension.
-            String extName = (new File(rootDirPath)).getName();
-            String version = checkJarVersion(rootDirPath + File.separator + "lib" +
-                    File.separator + extName + ".jar");
-            if (version == null) {
-                throw new ToolError(Command.version, "error occurred while " +
-                        "checking the version. Make sure " + path +
-                        " is the path to a valid Fiz installation, web " +
-                        "application, or extension.");
-            }
-
-            log(LogLevel.quiet, extName + " version " + version);
+            log(LogLevel.quiet, "application located at  " + rootDirPath);
             return;
         }
 
@@ -1379,15 +1386,17 @@ public class Fiz {
                         "Type 'fiz help <command>' for help on a specific command.\n" +
                         "\n" +
                         "Available commands:\n" +
-                        "    check core (chc)\n" +
-                        "    check ext (che)\n" +
-                        "    create app (cra)\n" +
-                        "    create ext (cre)\n" +
-                        "    help (h)\n" +
-                        "    install core (ic)\n" +
-                        "    install ext (ie)\n" +
-                        "    upgrade (u)\n" +
-                        "    version (v)\n" +
+                        "    check core (chc)    Check for new versions of Fiz.\n" +
+                        "    check ext (che)     Check for new versions of an extension.\n" +
+                        "    create app (cra)    Create a new Fiz web application.\n" +
+                        "    create ext (cre)    Create a new Fiz extension.\n" +
+                        "    help (h)            Print help information for this tool.\n" +
+                        "    install core (ic)   Install a new version of Fiz.\n" +
+                        "    install ext (ie)    Install an extension.\n" +
+                        "    upgrade (u)         Upgrade a Fiz web application to use new versions of\n" +
+                        "                        the Fiz libraries.\n" +
+                        "    version (v)         Print version information for Fiz, a web application\n" +
+                        "                        or an extension.\n" +
                         "\n" +
                         "Global Options:\n" +
                         "    These are options that are applicable to all commands.\n" +
@@ -1514,9 +1523,9 @@ public class Fiz {
                         "Install a new version of the extension named <extension name>.\n" +
                         "\n" +
                         "Options:\n" +
-                        "    -d ARG    The path where the extension is to be installed. If this option\n" +
-                        "              is not specified, the extension is installed in the directory\n" +
-                        "              in which the command is executed.\n" +
+                        "    -d ARG    The path to the application for which the extension is to be\n" +
+                        "              installed. If this option is not specified, the current working\n" +
+                        "              directory is used.\n" +
                         "    -f ARG    The path to the extension's installer. Use this option to install\n" +
                         "              an extension from a file on disk instead of fetching it from the\n" +
                         "              Fiz server. Note: The <extension name> parameter need not be\n" +
@@ -1550,8 +1559,8 @@ public class Fiz {
                         "\n" +
                         "Options:\n" +
                         "    -d ARG    The path to the Fiz application that is to be upgraded.\n" +
-                        "              If a path is not specified in this way, the current working\n" +
-                        "              directory is assumed to be the root of the application.\n" +
+                        "              If this option is not specified, the current working\n" +
+                        "              directory is used.\n" +
                         "\n" +
                         "Examples:\n" +
                         "        fiz upgrade\n" +
