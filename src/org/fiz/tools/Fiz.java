@@ -8,6 +8,7 @@ import org.fiz.Dataset;
 import org.fiz.StringUtil;
 import org.fiz.YamlDataset;
 
+import javax.swing.filechooser.FileSystemView;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -112,6 +113,17 @@ public class Fiz {
         final static int verbose = 1; // Print verbose information.
         final static int normal = 2;  // Print summary information.
         final static int quiet = 3;   // Print nothing except errors.
+    }
+
+    /**
+     * This type is used by some methods to identify the 3 different kinds of
+     * objects the tool works with: Fiz core installations, Fiz applications
+     * and Fiz extensions.
+     */
+    protected enum DirType {
+        core,
+        application,
+        extension
     }
 
     // The home directory of the default Fiz installation.
@@ -528,13 +540,13 @@ public class Fiz {
         String version = null;
         // The path of the application to which this extension is to be
         // installed.
-        String installPath = null;
+        String path = null;
         // The path to the installer.
         String filePath = null;
         // Check any command line options that were specified.
         for (String key : options.keySet()) {
             if (key.equals("d")) {
-                installPath = options.get(key);
+                path = options.get(key);
             } else if (key.equals("f")) {
                 filePath = options.get(key);
             } else if (key.equals("s")) {
@@ -547,12 +559,23 @@ public class Fiz {
             }
         }
 
-        if (installPath == null) {
+        if (path == null) {
             // If no path was specified, install to the current working
             // directory.
-            installPath = ".";
+            path = ".";
         }
 
+        // Find the root directory of the Fiz application.
+        String appRootDir = findRootDir(path, DirType.application);
+        if (appRootDir == null) {
+            throw new ToolError(Command.upgrade, "make sure " + path +
+                    " is the path to a valid Fiz web application.");            
+        }
+
+        // The extension should be unpacked into the "extensions" sub-directory
+        // of the application.
+        String installPath = appRootDir + File.separator + "extensions";
+        
         if (filePath == null) {
             installExtFromServer(argList, version, installSources, installPath);
         } else {
@@ -706,14 +729,11 @@ public class Fiz {
             appDirPath = ".";
         }
 
-        // Check that this is the path to the root directory of a web
-        // application. We decide this based on the presence or absence of a
-        // "web" directory.
-        // TODO: is this mechanism too fragile?
-        File webDir = new File(appDirPath + File.separator + "web");
-        if (!webDir.isDirectory()) {
+        // Find the root directory of the Fiz application.
+        String appRootDirPath = findRootDir(appDirPath, DirType.application);
+        if (appRootDirPath == null) {
             throw new ToolError(Command.upgrade, "make sure " +
-                    webDir.getAbsolutePath() +
+                    appRootDirPath +
                     " is the path to a valid Fiz web application, or " +
                     "extension.");
         }
@@ -723,7 +743,7 @@ public class Fiz {
                 File.separator + "upgrade-app.xml";
         HashMap<String, String> properties = new HashMap<String, String>();
         properties.put("fizserver", serverUrl);
-        properties.put("appdir", getCanonicalPath(appDirPath));
+        properties.put("appdir", appRootDirPath);
         properties.put("version", version);
         invokeAnt(buildFileName, "upgrade", properties);
 
@@ -753,32 +773,18 @@ public class Fiz {
             throw new ToolError(Command.version, "invalid usage");
         }
 
+        // The path to (a subdirectory of) the Fiz installation, application,
+        // or extension.
         String path = argList.remove(0);
-        File dir;
-        try {
-            dir = (new File(path)).getCanonicalFile();
-        }
-        catch (IOException e) {
-            throw new ToolError(Command.version, "error occurred while " +
-                    "checking the version. Make sure " + path +
-                    " is the path to a valid Fiz installation, web " +
-                    "application, or extension.");
-        }
         
-        // Determine if this is a path to a Fiz installation, a Fiz web
-        // application, or an extension. We use the presence or absence of the
-        // "web" directory to decide this.
-        // TODO: Is this mechanism too fragile?
-        String absolutePath = dir.getAbsolutePath();
-        File webDir = new File(absolutePath + File.separator + "web");
-        if (webDir.isDirectory()) {
-            // This is either a Fiz installation or a Fiz web app. Both are
-            // handled the same way: print the version number in the fiz.jar
-            // library.
-            String version = checkFizVersion(absolutePath);
+        // Check if this is a path to a Fiz core installation.
+        String rootDirPath = findRootDir(path, DirType.core);
+        if (rootDirPath != null) {
+            // This is a Fiz core installation.
+            String version = checkFizVersion(rootDirPath);
             if (version == null) {
                 throw new ToolError(Command.version, "error occurred while " +
-                        "checking the version. Make sure " + absolutePath +
+                        "checking the version. Make sure " + path +
                         " is the path to a valid Fiz installation, web " +
                         "application, or extension.");
             }
@@ -787,18 +793,46 @@ public class Fiz {
             return;
         }
 
-        // This is probably an extension.
-        String extName = dir.getName();
-        String version = checkJarVersion(absolutePath + File.separator + "lib" +
-                File.separator + extName + ".jar");
-        if (version == null) {
-            throw new ToolError(Command.version, "error occurred while " +
-                    "checking the version. Make sure " + absolutePath +
-                    " is the path to a valid Fiz installation, web " +
-                    "application, or extension.");
+        // Check if this is a path to a Fiz application.
+        rootDirPath = findRootDir(path, DirType.application);
+        if (rootDirPath != null) {
+            // This is a Fiz core application.
+            String version = checkFizVersion(rootDirPath);
+            if (version == null) {
+                throw new ToolError(Command.version, "error occurred while " +
+                        "checking the version. Make sure " + path +
+                        " is the path to a valid Fiz installation, web " +
+                        "application, or extension.");
+            }
+
+            log(LogLevel.quiet, "Fiz library version " + version);
+            return;
         }
 
-        log(LogLevel.quiet, extName + " version " + version);
+        // Check if this is a path to an extension.
+        rootDirPath = findRootDir(path, DirType.extension);
+        if (rootDirPath != null) {
+            // This is a Fiz extension.
+            String extName = (new File(rootDirPath)).getName();
+            String version = checkJarVersion(rootDirPath + File.separator + "lib" +
+                    File.separator + extName + ".jar");
+            if (version == null) {
+                throw new ToolError(Command.version, "error occurred while " +
+                        "checking the version. Make sure " + path +
+                        " is the path to a valid Fiz installation, web " +
+                        "application, or extension.");
+            }
+
+            log(LogLevel.quiet, extName + " version " + version);
+            return;
+        }
+
+        // The path was not recognized as the subdirectory of a Fiz
+        // installation, application or extension.
+        throw new ToolError(Command.version, "error occurred while " +
+                "checking the version. Make sure " + path +
+                " is the path to a valid Fiz installation, web " +
+                "application, or extension.");        
     }
 
     /**
@@ -1134,6 +1168,185 @@ public class Fiz {
     }
 
     /**
+     * Tries to find the root directory of a Fiz installation given a path to
+     * one of its subdirectories (or files). It does this by checking for a
+     * particular directory structure; if it finds it, then it returns that
+     * path, otherwise it recursively moves one directory level up till it finds
+     * the correct directory structure or reaches the root of the file system.
+     *
+     * @param path    The path to a directory or file to check.
+     * @param type    The type of directory to check for.
+     * @return        The canonical path to the root directory of the containing
+     *                Fiz core installation, application or extension; or null
+     *                if such a directory could not be found.
+     */
+    protected String findRootDir(String path, DirType type) {
+        FileSystemView fsv = FileSystemView.getFileSystemView();
+        while (!isRootDir(path, type)) {
+            File f = new File(path);
+            if (fsv.isFileSystemRoot(f)) {
+                // We have reached the root directory
+                return null;
+            }
+
+            // Move up one directory
+            File parentDir = fsv.getParentDirectory(f);
+            try {
+                path = parentDir.getCanonicalPath();
+            }
+            catch (IOException e) {
+                return null;
+            }
+        }
+
+        return getCanonicalPath(path);
+    }
+
+    /**
+     * Checks if the the directory specified by {@code path} is the root
+     * directory of a Fiz core installation, Fiz application or extension.
+     * 
+     * @param path    The path to the directory to check.
+     * @param type    The type of directory to check for.
+     * @return        True if {@code path} is the root directory of (depending
+     *                on the value of {@code type}) a Fiz core installation, Fiz
+     *                application or extension.
+     */
+    protected boolean isRootDir(String path, DirType type) {
+        switch (type) {
+            case core:
+                return isFizCoreDir(path);
+            case application:
+                return isFizApplicationDir(path);
+            case extension:
+                return isFizExtensionDir(path);
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Checks if the the directory specified by {@code path} is the root
+     * directory of a Fiz core installation.
+     *
+     * @param path    The path to the directory to check.
+     * @return        True if {@code path} is the root directory of a Fiz
+     *                core installation, false otherwise.
+     */
+    protected boolean isFizCoreDir(String path) {
+        // Check for the following directory structure:
+        // antscripts/
+        // app/
+        // ext/
+        // lib/fiz.jar
+        // shellscripts/
+        // web/fizlib/
+        // web/WEB-INF/fiz
+        // web/WEB-INF/web.xml
+        // build.xml
+
+        if (!(new File(path + "/antscripts").isDirectory())) {
+            return false;
+        }
+        if (!(new File(path + "/app").isDirectory())) {
+            return false;
+        }
+        if (!(new File(path + "/ext").isDirectory())) {
+            return false;
+        }
+        if (!(new File(path + "/lib/fiz.jar").isFile())) {
+            return false;
+        }
+        if (!(new File(path + "/shellscripts").isDirectory())) {
+            return false;
+        }
+        if (!(new File(path + "/web/fizlib").isDirectory())) {
+            return false;
+        }
+        if (!(new File(path + "/web/WEB-INF/fiz").isDirectory())) {
+            return false;
+        }
+        if (!(new File(path + "/web/WEB-INF/web.xml").isFile())) {
+            return false;
+        }
+        if (!(new File(path + "/build.xml").isFile())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks if the the directory specified by {@code path} is the root
+     * directory of a Fiz application.
+     * 
+     * @param path    The path to the directory to check.
+     * @return        True if {@code path} is the root directory of a Fiz
+     *                application, false otherwise.
+     */
+    protected boolean isFizApplicationDir(String path) {
+        // Check for the following directory structure:
+        // antscripts/
+        // lib/fiz.jar
+        // src/
+        // web/fizlib/
+        // web/WEB-INF/fiz
+        // web/WEB-INF/web.xml
+        // build.xml
+
+        if (!(new File(path + "/antscripts").isDirectory())) {
+            return false;
+        }
+        if (!(new File(path + "/lib/fiz.jar").isFile())) {
+            return false;
+        }
+        if (!(new File(path + "/src").isDirectory())) {
+            return false;
+        }
+        if (!(new File(path + "/web/fizlib").isDirectory())) {
+            return false;
+        }
+        if (!(new File(path + "/web/WEB-INF/fiz").isDirectory())) {
+            return false;
+        }
+        if (!(new File(path + "/web/WEB-INF/web.xml").isFile())) {
+            return false;
+        }
+        if (!(new File(path + "/build.xml").isFile())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks if the the directory specified by {@code path} is the root
+     * directory of a Fiz extension.
+     *
+     * @param path    The path to the directory to check.
+     * @return        True if {@code path} is the root directory of a Fiz
+     *                extension, false otherwise.
+     */
+    protected boolean isFizExtensionDir(String path) {
+        // Check for the following directory structure:
+        // config/
+        // css/
+        // static/
+
+        if (!(new File(path + "/config").isDirectory())) {
+            return false;
+        }
+        if (!(new File(path + "/css").isDirectory())) {
+            return false;
+        }
+        if (!(new File(path + "/static").isDirectory())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Logs a message to std out.
      * 
      * @param l         The log level of the message. The message is printed
@@ -1306,7 +1519,8 @@ public class Fiz {
                         "              in which the command is executed.\n" +
                         "    -f ARG    The path to the extension's installer. Use this option to install\n" +
                         "              an extension from a file on disk instead of fetching it from the\n" +
-                        "              Fiz server. Do not supply an extension name in this case.\n" +
+                        "              Fiz server. Note: The <extension name> parameter need not be\n" +
+                        "              specified and is ignored in this case.\n" +
                         "    -s        Install the source package for the extension instead of just the\n" +
                         "              binaries.\n" +
                         "    -v ARG    The version of the extension to install. If this option is not\n" +

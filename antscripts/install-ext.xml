@@ -46,7 +46,8 @@ This ant script contains targets to install an extension
         <!-- Unpack the installer -->
         <unzip src="${extinstaller}" dest="${tempdir}"/>
 
-        <!-- Verify that this is a valid installer -->
+        <!-- Verify that this is a valid installer. A valid installer contains
+        only one root directory which has the same name as the extension. -->
         <condition property="invalid.installer">
             <resourcecount count="1" when="ne">
                 <dirset dir="${tempdir}">
@@ -56,6 +57,8 @@ This ant script contains targets to install an extension
         </condition>
         <fail if="invalid.installer"
               message="${extinstaller} is not a valid extension installer file"/>
+        <!-- Get the name of the root directory and store it in the property
+        "ext.name" -->
         <for param="ext.name">
             <path>
                 <dirset dir="${tempdir}">
