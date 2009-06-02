@@ -65,12 +65,12 @@ Fiz.FormSection.prototype.elementError = function(id, html) {
 
 /**
  * This method is invoked just before a form is submitted.  It creates
- * the iframe that will be used to receive the form response.
+ * the iframe that will be used to receive the form response, and also
+ * performs other bookkeeping functions.
  * @return                         Always true, so the form posting will
  *                                 proceed normally.
  */
 Fiz.FormSection.prototype.submit = function() {
-
     // Tricky stuff: the target for a form refers to an invisible
     // iframe.  When the form is submitted, the response goes to that iframe
     // rather than replacing the main window contents.  This makes
@@ -90,6 +90,15 @@ Fiz.FormSection.prototype.submit = function() {
     div.innerHTML = "<iframe name=\"" + this.id + "_iframe\"></iframe>";
     var form = document.getElementById(this.id);
     form.target = this.id + "_iframe";
+
+    // If a page id has been defined, return it as part of the form by
+    // supplying the value for a hidden form element.
+    if (Fiz.pageId) {
+        var element = document.getElementById(this.id + "_fizPageId");
+        if (element != null) {
+            element.value = Fiz.pageId;
+        }
+    }
     return true;
 }
 

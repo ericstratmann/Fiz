@@ -23,11 +23,14 @@ public class ClientRequestFixture extends ClientRequest {
         main.set("age", "36");
         main.set("height", "66");
         main.set("state", "California");
+
+        // Configure various testing values.
+        testSkipTokenCheck = true;
+        testMode = true;
     }
 
     public void clearData() {
         mainDataset = null;
-        reminders = null;
         requestDataProcessed = false;
     }
 }

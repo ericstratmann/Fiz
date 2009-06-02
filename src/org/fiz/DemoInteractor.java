@@ -178,6 +178,7 @@ public class DemoInteractor extends Interactor {
         Html html = cr.getHtml();
         html.setTitle("FormSection Demo");
         html.includeCssFile("demo/form.css");
+        cr.setPageProperty("formInfo", "Zip code: 94301");
         cr.addDataRequest("getFormData", RawDataManager.newRequest(formData));
         cr.addDataRequest("getFruits", RawDataManager.newRequest(fruitInfo));
         cr.showSections(
@@ -444,6 +445,7 @@ public class DemoInteractor extends Interactor {
         } else {
             logger.info("No file upload with this submission");
         }
+        logger.info("Page property value: " + cr.getPageProperty("formInfo"));
         Dataset formData = sideBySideForm.collectFormData(cr);
         if (formData.get("state").length() == 0) {
             sideBySideForm.displayErrors(cr, new Dataset("culprit", "name",

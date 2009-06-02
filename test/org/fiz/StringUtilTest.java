@@ -274,6 +274,16 @@ public class StringUtilTest extends junit.framework.TestCase {
 
     }
 
+    public void test_join_set() {
+        Set<String> set = new HashSet<String>();
+        set.add("abcdef");
+        set.add("xyz");
+        set.add("hijk");
+        assertEquals("basics", "abcdef, hijk, xyz", StringUtil.join(set, ", "));
+        set.clear();
+        assertEquals("no values to join", "", StringUtil.join(set, ", "));
+    }
+
     public void test_joinedLength() {
         assertEquals("basics", 20, StringUtil.joinedLength(new String[]
                 {"first", "second", "third"}, ", "));

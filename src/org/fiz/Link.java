@@ -155,7 +155,8 @@ public class Link implements Formatter {
             StringBuilder expandedJs;
             if (ajaxUrl != null) {
                 // AJAX invocation.
-                expandedJs = Ajax.invoke(cr, ajaxUrl, data);
+                expandedJs = new StringBuilder();
+                Ajax.invoke(cr, ajaxUrl, data, expandedJs);
             } else {
                 // Javascript code.
                 expandedJs = new StringBuilder(javascript.length());

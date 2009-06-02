@@ -17,6 +17,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
 
     public void setUp() {
         cr = new ClientRequestFixture();
+        ServletRequestFixture.session = null;
         Config.setDataset("styles", YamlDataset.newStringInstance(
                 "TreeSection:\n" +
                 "  leaf: \"leaf: @name\"\n" +
@@ -25,19 +26,41 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "  leaf2: \"leaf2: @name\"\n" +
                 "  node2: \"node2: @name\"\n" +
                 "  node2-expanded: \"node-expanded: @name\"\n"));
-        Reminder.testMode = true;
     }
 
-    public void tearDown() {
-        Reminder.testMode = false;
-    }
-
-    public void test_constructor_noRequestProperty() {
+    public void test_constructor_defaultProperties() {
         TreeSection tree = new TreeSection(new Dataset("id", "1234",
                 "requestFactory", "getInfo"));
-        assertEquals("properties dataset", "id:             1234\n" +
-                "requestFactory: getInfo\n",
-                tree.properties.toString());
+        assertEquals("class property", null,
+                tree.pageProperty.className);
+        assertEquals("edgeFamily property", "treeSolid",
+                tree.pageProperty.edgeFamily);
+        assertEquals("id property", "1234",
+                tree.pageProperty.id);
+        assertEquals("leafStyle property", "TreeSection.leaf",
+                tree.pageProperty.leafStyle);
+        assertEquals("nodeStyle property", "TreeSection.node",
+                tree.pageProperty.nodeStyle);
+        assertEquals("requestFactory property", "getInfo",
+                tree.pageProperty.requestFactory);
+    }
+    public void test_constructor_explicitProperties() {
+        TreeSection tree = new TreeSection(new Dataset("class", "class10",
+                "edgeFamily", "family44","id", "1234",
+                "leafStyle", "style for leaves", "nodeStyle", "style for nodes",
+                "requestFactory", "getInfo"));
+        assertEquals("class property", "class10",
+                tree.pageProperty.className);
+        assertEquals("edgeFamily property", "family44",
+                tree.pageProperty.edgeFamily);
+        assertEquals("id property", "1234",
+                tree.pageProperty.id);
+        assertEquals("leafStyle property", "style for leaves",
+                tree.pageProperty.leafStyle);
+        assertEquals("nodeStyle property", "style for nodes",
+                tree.pageProperty.nodeStyle);
+        assertEquals("requestFactory property", "getInfo",
+                tree.pageProperty.requestFactory);
     }
 
     public void test_addDataRequests() {
@@ -53,12 +76,16 @@ public class TreeSectionTest extends junit.framework.TestCase {
     }
 
     public void test_ajaxExpand() {
-        cr.setReminder("TreeSection.row", new Dataset(
-                "name", "node16", "id", "tree1_2"));
-        cr.setReminder("TreeSection", new Dataset("id", "tree1",
-                "requestFactory", "TreeSectionTest$RequestFactory.request"));
+        cr.setClientRequestType(ClientRequest.Type.AJAX);
+        TreeSection.PageProperty p = new TreeSection.PageProperty("TreeSection",
+                "treeSolid", "tree1", "TreeSection.leaf", "TreeSection.node",
+                "TreeSectionTest$RequestFactory.request");
+        p.names.put("tree1_2", "node16");
+        cr.setPageProperty("tree1",  p);
+        cr.jsCode = null;
+        cr.mainDataset = new Dataset("sectionId", "tree1", "nodeId", "tree1_2");
         TreeSection.ajaxExpand(cr);
-        assertEquals("Ajax javascript action",
+        assertEquals("Ajax javascript",
                 "Fiz.ids[\"tree1_2\"].expand(\"<table cellspacing=\\\"0\\\" " +
                 "class=\\\"TreeSection\\\" id=\\\"tree1_2\\\">\\n  " +
                 "<tr id=\\\"tree1_2_0\\\">\\n    <td class=\\\"left\\\" " +
@@ -68,7 +95,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "treeSolid-leaf.gif\\\"></td>\\n    <td " +
                 "class=\\\"right\\\">leaf: child1</td>\\n  " +
                 "</tr>\\n</table>\\n\");\n",
-                cr.getHtml().jsCode.toString());
+                cr.jsCode.toString());
     }
 
     public void test_render_basics() {
@@ -88,37 +115,18 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "    <td class=\"right\">leaf: child1</td>\n" +
                 "  </tr>\n" +
                 "</table>\n" +
-                "<!-- End TreeSection @id -->\n",
+                "<!-- End TreeSection tree1 -->\n",
                 cr.getHtml().getBody().toString());
         assertEquals("accumulated Javascript",
-                "Fiz.Reminder.reminders[\"tree1\"] = " +
-                "\"24.JHB9AM69@,7:GY68T5G<EIB*86.11.TreeSection(" +
-                "2.id5.tree1\\n14.requestFactory" +
-                "38.TreeSectionTest$RequestFactory.request)\";\n",
+                "Fiz.pageId = \"1\";\n",
                  cr.getHtml().jsCode.toString());
         TestUtil.assertSubstring("CSS file names", "TreeSection.css",
                 cr.getHtml().getCssFiles());
         assertEquals("Javascript file names",
-                "fizlib/Fiz.js, fizlib/Reminder.js, fizlib/TreeRow.js",
+                "fizlib/Fiz.js, fizlib/TreeRow.js",
                 cr.getHtml().getJsFiles());
-    }
-    public void test_render_propertiesForReminder() {
-        TreeSection tree = new TreeSection(new Dataset("class", "foo",
-                "edgeFamily", "edge16", "id", "tree1",
-                "leafStyle", "TreeSection.node",
-                "nodeStyle", "TreeSection.leaf",
-                "requestFactory", "TreeSectionTest$RequestFactory.request"));
-        tree.addDataRequests(cr);
-        tree.render(cr);
-        assertEquals("accumulated Javascript",
-                "Fiz.Reminder.reminders[\"tree1\"] = \"24.JHB9AM69@," +
-                "7:GY68T5G<EIB*183.11.TreeSection(5.class3.foo\\n" +
-                "10.edgeFamily6.edge16\\n2.id5.tree1\\n" +
-                "9.leafStyle16.TreeSection.node\\n" +
-                "9.nodeStyle16.TreeSection.leaf\\n" +
-                "14.requestFactory" +
-                "38.TreeSectionTest$RequestFactory.request)\";\n",
-                 cr.getHtml().jsCode.toString());
+        assertEquals("names of defined page properties", "tree1",
+                StringUtil.join(cr.pageState.properties.keySet(), ", "));
     }
     public void test_render_explicitClass() {
         TreeSection tree = new TreeSection(new Dataset("id", "tree1",
@@ -138,26 +146,27 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "    <td class=\"right\">leaf: child1</td>\n" +
                 "  </tr>\n" +
                 "</table>\n" +
-                "<!-- End TreeSection @id -->\n",
+                "<!-- End TreeSection tree1 -->\n",
                 cr.getHtml().getBody().toString());
     }
 
-    public void test_renderChildren_propertyDefaults() {
+    public void test_renderChildren_basics() {
         StringBuilder out = new StringBuilder();
         ArrayList<Dataset> children = new ArrayList<Dataset>();
         children.add(new Dataset("name", "Alice", "id", "111",
                 "expandable", "1"));
         children.add(new Dataset("name", "Bob"));
-        TreeSection.renderChildren(cr, new Dataset("id", "tree1"), children,
-                "tree1_3", out);
+        TreeSection.PageProperty p = new TreeSection.PageProperty("TreeSection",
+                "treeSolid", "tree1", "TreeSection.leaf", "TreeSection.node",
+                "TreeSectionTest$RequestFactory.request");
+        TreeSection.renderChildren(cr, p, children, "tree1_3", out);
         assertEquals("generated HTML", "  <tr id=\"tree1_3_0\">\n" +
                 "    <td class=\"left\" style=\"background-image: url(" +
                 "/fizlib/images/treeSolid-line.gif); background-repeat: " +
                 "repeat-y;\" onclick=\"void new Fiz.Ajax({url: &quot;" +
-                "/fiz/TreeSection/ajaxExpand&quot;, reminders: [Fiz.Reminder." +
-                "reminders[&quot;tree1&quot;], Fiz.Reminder.reminders[&quot;" +
-                "tree1_3_0&quot;]]});\"><img src=\"/fizlib/images/treeSolid-" +
-                "plus.gif\"></td>\n" +
+                "/fiz/TreeSection/ajaxExpand?sectionId=tree1&amp;" +
+                "nodeId=tree1%5f3%5f0&quot;});\">" +
+                "<img src=\"/fizlib/images/treeSolid-plus.gif\"></td>\n" +
                 "    <td class=\"right\">node: Alice</td>\n" +
                 "  </tr>\n" +
                 "  <tr id=\"tree1_3_0_childRow\" style=\"display:none\">\n" +
@@ -174,39 +183,27 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "    <td class=\"right\">leaf: Bob</td>\n" +
                 "  </tr>\n",
                 out.toString());
+        assertEquals("names in pageProperty", "tree1_3_0",
+                StringUtil.join(p.names.keySet(), ", "));
+        assertEquals("value for node", "Alice",
+                p.names.get("tree1_3_0"));
     }
-    public void test_renderChildren_explicitProperties() {
+    public void test_renderChildren_explicitStyleInChild() {
+        Config.setDataset("styles", new Dataset("xyzzy", "name: @name"));
         StringBuilder out = new StringBuilder();
         ArrayList<Dataset> children = new ArrayList<Dataset>();
         children.add(new Dataset("name", "Alice", "id", "111",
-                "expandable", "1"));
-        children.add(new Dataset("name", "Bob"));
-        TreeSection.renderChildren(cr, new Dataset("id", "tree1",
-                "edgeFamily", "edge16", "leafStyle", "TreeSection.leaf2",
-                "nodeStyle", "TreeSection.node2"), children,
-                "tree1_3", out);
+                "style", "xyzzy"));
+        TreeSection.PageProperty p = new TreeSection.PageProperty("TreeSection",
+                "treeSolid", "tree1", "TreeSection.leaf", "TreeSection.node",
+                "none");
+        TreeSection.renderChildren(cr, p, children, "tree1_3", out);
         assertEquals("generated HTML", "  <tr id=\"tree1_3_0\">\n" +
-                "    <td class=\"left\" style=\"background-image: url(" +
-                "/fizlib/images/edge16-line.gif); background-repeat: " +
-                "repeat-y;\" onclick=\"void new Fiz.Ajax({url: &quot;" +
-                "/fiz/TreeSection/ajaxExpand&quot;, reminders: [Fiz.Reminder." +
-                "reminders[&quot;tree1&quot;], Fiz.Reminder.reminders[&quot;" +
-                "tree1_3_0&quot;]]});\"><img src=\"/fizlib/images/edge16-" +
-                "plus.gif\"></td>\n" +
-                "    <td class=\"right\">node2: Alice</td>\n" +
-                "  </tr>\n" +
-                "  <tr id=\"tree1_3_0_childRow\" style=\"display:none\">\n" +
-                "    <td style=\"background-image: url(/fizlib/images/" +
-                "edge16-line.gif); background-repeat: repeat-y;\"></td>\n" +
-                "    <td><div class=\"nested\" id=\"tree1_3_0_childDiv\">" +
-                "</div></td>\n" +
-                "  </tr>\n" +
-                "  <tr id=\"tree1_3_1\">\n" +
-                "    <td class=\"left\" style=\"background-image: url(" +
-                "/fizlib/images/edge16-line.gif); background-repeat: " +
-                "no-repeat;\"><img src=\"/fizlib/images/edge16-leaf.gif\">" +
-                "</td>\n" +
-                "    <td class=\"right\">leaf2: Bob</td>\n" +
+                "    <td class=\"left\" style=\"background-image: url" +
+                "(/fizlib/images/treeSolid-line.gif); " +
+                "background-repeat: no-repeat;\">" +
+                "<img src=\"/fizlib/images/treeSolid-leaf.gif\"></td>\n" +
+                "    <td class=\"right\">name: Alice</td>\n" +
                 "  </tr>\n",
                 out.toString());
     }
@@ -216,19 +213,18 @@ public class TreeSectionTest extends junit.framework.TestCase {
         children.add(new Dataset("name", "Alice", "id", "111",
                 "expandable", "1"));
         children.add(new Dataset("name", "Bob"));
-        TreeSection.renderChildren(cr, new Dataset("id", "tree1"), children,
-                "tree1_3", out);
+        TreeSection.PageProperty p = new TreeSection.PageProperty("TreeSection",
+                "treeSolid", "tree1", "TreeSection.leaf", "TreeSection.node",
+                "none");
+        TreeSection.renderChildren(cr, p, children, "tree1_3", out);
+        String javascript = cr.getHtml().jsCode.toString();
         assertEquals("accumulated Javascript",
-                "Fiz.Reminder.reminders[\"tree1_3_0\"] = \"24.JHB9AM69@," +
-                "7:GY68T5G<EIB*49.15.TreeSection.row(2.id9.tree1_3_0\\n" +
-                "4.name5.Alice)\";\n" +
                 "Fiz.ids[\"tree1_3_0\"] = new Fiz.TreeRow(\"tree1_3_0\", " +
                 "\"  <tr id=\\\"tree1_3_0\\\">\\n    <td class=\\\"left\\\" " +
                 "style=\\\"background-image: url(/fizlib/images/treeSolid-" +
                 "line.gif); background-repeat: repeat-y;\\\" onclick=\\\"void " +
-                "new Fiz.Ajax({url: &quot;/fiz/TreeSection/ajaxExpand&quot;, " +
-                "reminders: [Fiz.Reminder.reminders[&quot;tree1&quot;], " +
-                "Fiz.Reminder.reminders[&quot;tree1_3_0&quot;]]});\\\">" +
+                "new Fiz.Ajax({url: &quot;/fiz/TreeSection/ajaxExpand?" +
+                "sectionId=tree1&amp;nodeId=tree1%5f3%5f0&quot;});\\\">" +
                 "<img src=\\\"/fizlib/images/treeSolid-plus.gif\\\"></td>\\n" +
                 "    <td class=\\\"right\\\">node: Alice</td>\\n  </tr>\\n\"," +
                 " \"  <tr id=\\\"tree1_3_0\\\">\\n    <td class=\\\"left\\\" " +
@@ -237,15 +233,17 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "Fiz.ids['tree1_3_0'].unexpand();\\\"><img src=\\\"/fizlib/" +
                 "images/treeSolid-minus.gif\\\"></td>\\n    <td class=\\\"" +
                 "right\\\">node-expanded: Alice</td>\\n  </tr>\\n\");\n",
-                 cr.getHtml().jsCode.toString());
+                 javascript.substring(javascript.indexOf("Fiz.ids")));
     }
     public void test_renderChildren_lastRowExpandable() {
         StringBuilder out = new StringBuilder();
         ArrayList<Dataset> children = new ArrayList<Dataset>();
         children.add(new Dataset("name", "Alice", "id", "111",
                 "expandable", "1"));
-        TreeSection.renderChildren(cr, new Dataset("id", "tree1"), children,
-                "tree1_3", out);
+        TreeSection.PageProperty p = new TreeSection.PageProperty("TreeSection",
+                "treeSolid", "tree1", "TreeSection.leaf", "TreeSection.node",
+                "none");
+        TreeSection.renderChildren(cr, p, children, "tree1_3", out);
         TestUtil.assertSubstring("generated HTML",
                 "<tr id=\"tree1_3_0_childRow\" style=\"display:none\">\n" +
                 "    <td></td>\n" +

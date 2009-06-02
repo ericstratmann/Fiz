@@ -526,6 +526,23 @@ public final class StringUtil {
     }
 
     /**
+     * Concatenates all of the strings in a Set, in sorted order.
+     * @param set                      Contains string values to concatenate.
+     * @param separator                Use this as a separator between the
+     *                                 strings.
+     * @return                         Concatenation of all the strings
+     *                                 in {@code set}, sorted alphabetically
+     *                                 with {@code separator} between adjacent
+     *                                 values.
+     */
+    public static String join(Set<String> set, CharSequence separator) {
+        ArrayList<String> names = new ArrayList<String>();
+        names.addAll(set);
+        Collections.sort(names);
+        return join(names, separator);
+    }
+
+    /**
      * Utility method used by {@code join}: computes the total space
      * needed to join strings, in order to avoid reallocation in the
      * StringBuilder used for the result.

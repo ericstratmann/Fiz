@@ -32,3 +32,13 @@ searchPackages: "org.fiz"
 # uploads, so that the files can be renamed to their final location
 # without copying)
 # uploadTempDirectory:
+
+# The following value determines how many recent pages have their state
+# retained by the page property mechanism.  The state for pages older than
+# this will be discarded, which will result in "Stale page" errors if the
+# user returns to that page and invokes an operation that needs the saved
+# state.  The larger you make this number, more information will be retained,
+# resulting in fewer "stale page" errors; however, larger numbers will increase
+# the size of the Web server's memory footprint, which could make the server
+# run slowly.
+maxPageStates: 10

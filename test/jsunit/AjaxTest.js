@@ -15,32 +15,33 @@ Fiz.addBulletinMessage = function(className, message) {
     jsunit.log += "addBulletinMessage(\"" + className + "\", \"" +
             message + "\");";
 }
+window.XMLHttpRequest = true;
 
-AjaxTest.test_sendRequest_urlParameterOnly = function() {
+AjaxTest.test_constructor_sendRequest_urlParameterOnly = function() {
     new Fiz.Ajax("/a/b");
     assertEqual("open(method: POST, url: /a/b, async: undefined)\n" +
             "setRequestHeader(name: Content-type, value: text/fiz; " +
             "charset=utf-8)\n" +
-            "send(message: )\n",
+            "send(message: main.())\n",
             jsunit.log, "jsunit.log");
 };
 
-AjaxTest.test_sendRequest_propertiesParameter = function() {
+AjaxTest.test_constructor_sendRequest_propertiesParameter = function() {
     ajax = new Fiz.Ajax({url: "/a/b"});
     assertEqual("/a/b", ajax.url, "url parameter");
 };
 
-AjaxTest.test_cantFindXmlHttp = function() {
+AjaxTest.test_constructor_cantFindXmlHttp = function() {
     window.XMLHttpRequest = null;
     new Fiz.Ajax({url: "/a/b"}, {name: "Alice", age: 28});
     assertEqual("clearBulletin();addBulletinMessage(\"bulletinError\", " +
             "\"Error in Ajax request for /a/b: couldn't create " +
             "XMLHttpRequest object\");",
             jsunit.log, "jsunit.log");
+    window.XMLHttpRequest = true;
 };
 
-
-AjaxTest.test_sendRequestWithData = function() {
+AjaxTest.test_constructor_sendRequestWithData = function() {
     new Fiz.Ajax({url: "/a/b", data: {name: "Alice", age: 28}});
     assertEqual("open(method: POST, url: /a/b, async: undefined)\n" +
             "setRequestHeader(name: Content-type, value: text/fiz; " +
@@ -50,28 +51,7 @@ AjaxTest.test_sendRequestWithData = function() {
             jsunit.log, "jsunit.log");
 };
 
-AjaxTest.test_sendRequestWithReminder = function() {
-    window.XMLHttpRequest = true;
-    new Fiz.Ajax({url: "/a/b", reminders: "first reminder"});
-    assertEqual("open(method: POST, url: /a/b, async: undefined)\n" +
-            "setRequestHeader(name: Content-type, value: text/fiz; " +
-            "charset=utf-8)\n" +
-            "send(message: reminder.first reminder)\n",
-            jsunit.log, "jsunit.log");
-};
-
-AjaxTest.test_multipleReminders = function() {
-    new Fiz.Ajax({url: "/a/b", reminders: ["reminder #1", "reminder #2",
-            "reminder #3"]});
-    assertEqual("open(method: POST, url: /a/b, async: undefined)\n" +
-            "setRequestHeader(name: Content-type, value: text/fiz; " +
-            "charset=utf-8)\n" +
-            "send(message: reminder.reminder #1reminder.reminder #2" +
-            "reminder.reminder #3)\n",
-            jsunit.log, "jsunit.log");
-};
-
-AjaxTest.test_setOnChangeHandler = function() {
+AjaxTest.test_constructor_setOnChangeHandler = function() {
     var ajax = new Fiz.Ajax({url: "/a/b"}, {name: "Alice", age: 28});
     jsunit.log = "";
     ajax.xmlhttp.status = 400;
@@ -80,6 +60,12 @@ AjaxTest.test_setOnChangeHandler = function() {
             "\"Error in Ajax request for /a/b: HTTP error 400: " +
             "sample status message\");",
             jsunit.log, "jsunit.log");
+};
+
+AjaxTest.test_constructor_setClearBulletin = function() {
+    Fiz.clearOldBulletin = false;
+    var ajax = new Fiz.Ajax("/a/b");
+    assertEqual(true, Fiz.clearOldBulletin, "Fiz.clearOldBulletin");
 };
 
 AjaxTest.test_stateChange_requestNotComplete = function() {
@@ -102,7 +88,6 @@ AjaxTest.test_stateChange_clearOnReadyStateChange = function() {
 };
 
 AjaxTest.test_stateChange_httpError = function() {
-    window.XMLHttpRequest = true;
     var ajax = new Fiz.Ajax({url: "/a/b"}, {name: "Alice", age: 28});
     jsunit.log = "";
     ajax.xmlhttp.status = 400;
@@ -118,7 +103,8 @@ AjaxTest.test_stateChange_errorInResponseJavascript = function() {
     jsunit.log = "";
     ajax.xmlhttp.responseText = "x(;";
     ajax.stateChange();
-    assertEqual("clearBulletin();addBulletinMessage(\"bulletinError\", " +
+    assertEqual("clearBulletin();" +
+            "addBulletinMessage(\"bulletinError\", " +
             "\"Error in Ajax request for /a/b: error in Javascript " +
             "response (web/fizlib/Ajax.js(eval):1): SyntaxError: " +
             "syntax error\");",
@@ -146,7 +132,6 @@ AjaxTest.test_stateChange_evalAction_syntaxError = function() {
 };
 
 AjaxTest.test_stateChange_exceptionWithLineNumber = function() {
-    window.XMLHttpRequest = true;
     var ajax = new Fiz.Ajax({url: "/a/b"}, {name: "Alice", age: 28});
     jsunit.log = "";
     ajax.xmlhttp.responseText = "x(;";
@@ -169,7 +154,7 @@ AjaxTest.test_stateChange_exceptionWithoutLineNumber = function() {
             jsunit.log.replace(/\.js#\d*\(/, ".js("), "jsunit.log");
 };
 
-AjaxTest.test_errorr = function() {
+AjaxTest.test_error = function() {
     document = new Document();
     var handler = new Object();
     var ajax = new Fiz.Ajax({url: "/a/b"}, {});
@@ -197,4 +182,15 @@ AjaxTest.test_serialize = function() {
 AjaxTest.test_serialize_undefinedObject = function() {
     var result = Fiz.Ajax.serialize(undefined);
     assertEqual("()", result);
+};
+
+AjaxTest.test_serialize_authAndPageId = function() {
+    Fiz.auth = "auth100";
+    Fiz.pageId = "pageId99";
+    var result = Fiz.Ajax.serialize({name: "Alice"});
+    assertEqual("(4.name5.Alice\n" +
+            "8.fiz_auth7.auth100\n" +
+            "10.fiz_pageId8.pageId99)", result);
+    Fiz.auth = null;
+    Fiz.pageId = null;
 };

@@ -1,5 +1,6 @@
 package org.fiz;
 
+import java.io.*;
 import java.util.*;
 
 /**
@@ -79,6 +80,41 @@ import java.util.*;
  * configuration dataset.
  */
 public class TreeSection extends Section implements DirectAjax {
+    // One object of the following class is stored as a page property
+    // for each TreeSection in a page: it holds data that we will need
+    // later on to process Ajax requests to expand nodes in the tree.
+    protected static class PageProperty implements Serializable {
+        // The following variables are just copies of configuration properties
+        // for the section, or null if no such property.
+        protected String className;
+        protected String edgeFamily;
+        protected String id;
+        protected String leafStyle;
+        protected String nodeStyle;
+        protected String requestFactory;
+
+        // For each expandable node that has been displayed in the table
+        // so far, there is one entry in the following structure, which maps
+        // from the node's id to the node's name, which is used to get
+        // information about the node's children.
+        protected HashMap<String,String> names = new HashMap<String,String>();
+
+        public PageProperty(String className, String edgeFamily, String id,
+                String leafStyle, String nodeStyle, String requestFactory) {
+            this.className = className;
+            this.edgeFamily = edgeFamily;
+            this.id = id;
+            this.leafStyle = leafStyle;
+            this.nodeStyle = nodeStyle;
+            this.requestFactory = requestFactory;
+        }
+    }
+
+    // Reference to the page state for this section, stored as a page
+    // property named {@code TreeSection-id}, where {@code id} is the
+    // id attribute for the section..
+    protected PageProperty pageProperty;
+
     // Holds the request that provides information about top-level nodes
     // in the tree.
     DataRequest dataRequest;
@@ -90,6 +126,19 @@ public class TreeSection extends Section implements DirectAjax {
      */
     public TreeSection(Dataset properties) {
         this.properties = properties;
+        pageProperty = new PageProperty(properties.check("class"),
+                properties.check("edgeFamily"), properties.get("id"),
+                properties.check("leafStyle"), properties.check("nodeStyle"),
+                properties.get("requestFactory"));
+        if (pageProperty.edgeFamily == null) {
+            pageProperty.edgeFamily = "treeSolid";
+        }
+        if (pageProperty.leafStyle == null) {
+            pageProperty.leafStyle = "TreeSection.leaf";
+        }
+        if (pageProperty.nodeStyle == null) {
+            pageProperty.nodeStyle = "TreeSection.node";
+        }
     }
 
     /**
@@ -102,7 +151,7 @@ public class TreeSection extends Section implements DirectAjax {
     @Override
     public void addDataRequests(ClientRequest cr) {
         dataRequest = (DataRequest) Util.invokeStaticMethod(
-                properties.get("requestFactory"), "");
+                pageProperty.requestFactory, "");
         cr.addDataRequest(dataRequest);
     }
 
@@ -111,35 +160,34 @@ public class TreeSection extends Section implements DirectAjax {
      * in a TreeSection.
      * @param cr                   Overall information about the client
      *                             request being serviced;  there must
-     *                             be {@code id} and {@code name}
+     *                             be {@code sectionId} and {@code nodeId}
      *                             values in the main dataset, which
-     *                             identify the HTML element to be updated
-     *                             and the data manager's name for the
-     *                             contents of that element.
+     *                             give the id attributes for the TreeSection
+     *                             and for the node being expanded.
      */
     public static void ajaxExpand(ClientRequest cr) {
         // Retrieve state information about the row and the overall section.
-        Dataset rowInfo = cr.getReminder("TreeSection.row");
-        Dataset sectionInfo = cr.getReminder("TreeSection");
+        Dataset main = cr.getMainDataset();
+        PageProperty pageProperty = (PageProperty)
+                cr.getPageProperty(main.get("sectionId"));
 
         // Invoke a data request to fetch information about the children of
         // the element being expanded, then generate a <table> that will
         // display the children.
+        String id = main.get("nodeId");
         DataRequest request = (DataRequest) Util.invokeStaticMethod(
-                sectionInfo.get("requestFactory"), rowInfo.get("name"));
+                pageProperty.requestFactory, pageProperty.names.get(id));
 
         StringBuilder html = new StringBuilder();
-        String id = rowInfo.get("id");
         Template.expand("<table cellspacing=\"0\" " +
-                "class=\"@class?{TreeSection}\" " +
-                "id=\"@1\">\n", sectionInfo, html, id);
-        renderChildren(cr, sectionInfo,
+                "class=\"@1?{TreeSection}\" " +
+                "id=\"@2\">\n", html, pageProperty.className, id);
+        renderChildren(cr, pageProperty,
                 request.getResponseOrAbort().getChildren("record"),
                 id, html);
         html.append("</table>\n");
 
-        // Generate a Javascript method invocation for the browser to
-        // invoke, which will instantiate the HTML.
+        // Generate a Javascript method call to instantiate the HTML.
         StringBuilder javascript = new StringBuilder(html.length() + 50);
         Template.expand("Fiz.ids[\"@1\"].expand(\"@2\");\n", javascript,
                 Template.SpecialChars.JAVASCRIPT, id, html);
@@ -156,25 +204,21 @@ public class TreeSection extends Section implements DirectAjax {
      */
     @Override
     public void render(ClientRequest cr) {
+        cr.setPageProperty(pageProperty.id, pageProperty);
         Html html = cr.getHtml();
         StringBuilder out = html.getBody();
-        String id = properties.get("id");
-        Reminder reminder = new Reminder(id, "TreeSection");
-        reminder.addFromDataset(properties, "class", "edgeFamily", "id",
-                "leafStyle", "nodeStyle", "requestFactory");
-        reminder.flush(cr);
-        if (!properties.containsKey("class")) {
+        if (pageProperty.className == null) {
             html.includeCssFile("TreeSection.css");
         }
         html.includeJsFile("fizlib/TreeRow.js");
-        Template.expand("\n<!-- Start TreeSection @id -->\n" +
-                "<table cellspacing=\"0\" class=\"@class?{TreeSection}\" " +
-                "id=\"@id\">\n", properties, out);
-        renderChildren(cr, properties,
+        Template.expand("\n<!-- Start TreeSection @1 -->\n" +
+                "<table cellspacing=\"0\" class=\"@2?{TreeSection}\" " +
+                "id=\"@1\">\n", out, pageProperty.id, pageProperty.className);
+        renderChildren(cr, pageProperty,
                 dataRequest.getResponseOrAbort().getChildren("record"),
-                id, out);
-        out.append("</table>\n" +
-                "<!-- End TreeSection @id -->\n");
+                pageProperty.id, out);
+        Template.expand("</table>\n" +
+                "<!-- End TreeSection @1 -->\n", out, pageProperty.id);
     }
 
     /**
@@ -185,8 +229,8 @@ public class TreeSection extends Section implements DirectAjax {
      * @param cr                   Overall information about the client
      *                             request being serviced; HTML will be
      *                             appended to {@code cr.getHtml()}.
-     * @param properties           Dataset containing configuration
-     *                             information for this section.
+     * @param pageProperty         State for this section, retained in the
+     *                             session for future Ajax requests.
      * @param children             Contains one dataset for each child
      *                             to display, in the order they should be
      *                             displayed.
@@ -199,25 +243,13 @@ public class TreeSection extends Section implements DirectAjax {
      *                             elements must be generated by the caller.
      */
     protected static void renderChildren(ClientRequest cr,
-            Dataset properties, ArrayList<Dataset> children,
+            PageProperty pageProperty, ArrayList<Dataset> children,
             String baseId, StringBuilder out) {
         // The following variable is used to generate an alternate (expanded)
         // style for each row.  It is declared here so that it can be reused
         // for each of the rows (minimize garbage collection).
         StringBuilder expandedRow = new StringBuilder();
 
-        String edgeFamily = properties.check("edgeFamily");
-        if (edgeFamily == null) {
-            edgeFamily = "treeSolid";
-        }
-        String leafStyle = properties.check("leafStyle");
-        if (leafStyle == null) {
-            leafStyle = "TreeSection.leaf";
-        }
-        String nodeStyle = properties.check("nodeStyle");
-        if (nodeStyle == null) {
-            nodeStyle = "TreeSection.node";
-        }
         Dataset styles = Config.getDataset("styles");
         for (int i = 0; i < children.size(); i++) {
             Dataset child = children.get(i);
@@ -234,7 +266,8 @@ public class TreeSection extends Section implements DirectAjax {
             // Compute the style to use for this child.
             String style = child.check("style");
             if (style == null) {
-                style = (expandable ? nodeStyle : leafStyle);
+                style = (expandable ? pageProperty.nodeStyle :
+                        pageProperty.leafStyle);
             }
 
             // Each child is drawn as a table row with two cells.  The
@@ -254,22 +287,23 @@ public class TreeSection extends Section implements DirectAjax {
             Template.expand("    <td class=\"left\" " +
                     "style=\"background-image: url(/fizlib/images/" +
                     "@1-line.gif); background-repeat: @2;\"",
-                    out, edgeFamily, repeat);
+                    out, pageProperty.edgeFamily, repeat);
             int midPoint = out.length();
 
             // If the element is expandable, generate an onclick handler
             // for the left cell (which will contain a "+" box).
             if (expandable) {
                 Template.expand(" onclick=\"@1\"", out,
-                    Ajax.invoke(cr, "/fiz/TreeSection/ajaxExpand", null,
-                    properties.get("id"), rowId));
+                    Ajax.invoke(cr, "/fiz/TreeSection/ajaxExpand?" +
+                    "sectionId=@1&nodeId=@2", pageProperty.id, rowId));
             }
 
             // Now display one of 2 images in the left cell: a plus if the
             // element is expandable, or a horizontal line if this is a
             // leaf node.
             Template.expand("><img src=\"/fizlib/images/@1-@2.gif\"></td>\n",
-                    out, edgeFamily, (expandable ? "plus": "leaf"));
+                    out, pageProperty.edgeFamily,
+                    (expandable ? "plus": "leaf"));
 
             // Render the cell on the right, using a template selected by
             // the style.
@@ -281,11 +315,7 @@ public class TreeSection extends Section implements DirectAjax {
             // If this element is expandable then do some additional things
             // to support expansion and unexpansion of this element.
             if (expandable) {
-                // Create a reminder with information we will need during Ajax
-                // requests to expand this child.
-                Reminder reminder = new Reminder(rowId, "TreeSection.row",
-                        "id", rowId, "name", child.get("name"));
-                reminder.flush(cr);
+                pageProperty.names.put(rowId, child.get("name"));
 
                 // Next, create a Javascript object holding two copies of
                 // the HTML for the table row: the one we just rendered (used
@@ -295,7 +325,7 @@ public class TreeSection extends Section implements DirectAjax {
                 expandedRow.append(out.substring(rowStart, midPoint));
                 Template.expand(" onclick=\"Fiz.ids['@1'].unexpand();\">" +
                         "<img src=\"/fizlib/images/@2-minus.gif\"></td>\n",
-                        expandedRow, rowId, edgeFamily);
+                        expandedRow, rowId, pageProperty.edgeFamily);
                 expandedRow.append("    <td class=\"right\">");
                 Template.expand(styles.getPath(style + "-expanded"),
                         child, expandedRow);
@@ -319,7 +349,7 @@ public class TreeSection extends Section implements DirectAjax {
                     Template.expand("    <td style=\"background-image: " +
                             "url(/fizlib/images/@1-line.gif); " +
                             "background-repeat: repeat-y;\">",
-                            out, edgeFamily);
+                            out, pageProperty.edgeFamily);
                 } else {
                     out.append("    <td>");
                 }

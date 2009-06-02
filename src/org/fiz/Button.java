@@ -64,7 +64,8 @@ public class Button implements Formatter {
         StringBuilder javascript;
         String ajaxUrl = properties.check("ajaxUrl");
         if (ajaxUrl != null) {
-            javascript = Ajax.invoke(cr, ajaxUrl, data);
+            javascript = new StringBuilder();
+            Ajax.invoke(cr, ajaxUrl, data, javascript);
         } else {
             String jsTemplate = properties.get("javascript");
             javascript = new StringBuilder(jsTemplate.length());

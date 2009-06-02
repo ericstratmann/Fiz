@@ -3,6 +3,8 @@ package org.fiz;
 import java.io.*;
 import java.util.*;
 import javax.crypto.*;
+import javax.servlet.http.*;
+
 import org.apache.log4j.*;
 
 /**
@@ -38,6 +40,23 @@ public class ClientRequestTest extends junit.framework.TestCase {
     public void setUp() {
         cr = new ClientRequestFixture();
         servletRequest = (ServletRequestFixture) cr.getServletRequest();
+    }
+
+    public void test_MissingPagePropertyError() {
+        ClientRequest.MissingPagePropertyError e =
+                new ClientRequest.MissingPagePropertyError("keyName");
+        assertEquals("exception message",
+                "couldn't find page property \"keyName\"", e.getMessage());
+    }
+
+    public void test_StalePageError() {
+        ClientRequest.StalePageError e =
+                new ClientRequest.StalePageError();
+        assertEquals("exception message",
+                "Stale page: the current page is so old that the server " +
+                "has discarded its data about the page; if you want to " +
+                "keep using this page please click on the refresh button",
+                e.getMessage());
     }
 
     public void test_addDataRequest_withName() {
@@ -84,19 +103,43 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 cr.getHtml().jsCode.toString());
     }
 
-    public void test_checkReminder() {
-        cr.clearData();                 // Discard default info from fixture.
-        servletRequest.setParameters();
-        servletRequest.contentType = "text/fiz";
-        Reminder reminder = new Reminder("id44", "name16", "name", "first",
-                "id", "66");
-        StringBuilder data = new StringBuilder("reminder.");
-        data.append(reminder.get(cr));
-        servletRequest.setInput(data.toString());
-        assertEquals("reminder exists", "id:   66\n" +
-                "name: first\n", cr.checkReminder("name16").toString());
-        assertEquals("reminder doesn't exist", null,
-                cr.checkReminder("bogus"));
+    public void test_checkAuthToken_noInputToken() {
+        HttpSession session = cr.getServletRequest().getSession(true);
+        session.setAttribute("fiz.ClientRequest.sessionToken", "xyzzy");
+        boolean gotException = false;
+        try {
+            cr.checkAuthToken();
+        }
+        catch (AuthenticationError e) {
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_checkAuthToken_tokensMatch() {
+        cr.getMainDataset().set("fiz_auth", "xyzzy");
+        HttpSession session = cr.getServletRequest().getSession(true);
+        session.setAttribute("fiz.ClientRequest.sessionToken", "xyzzy");
+        boolean gotException = false;
+        try {
+            cr.checkAuthToken();
+        }
+        catch (AuthenticationError e) {
+            gotException = true;
+        }
+        assertEquals("exception didn't happen", false, gotException);
+    }
+    public void test_checkAuthToken_tokensDontMatch() {
+        cr.getMainDataset().set("fiz_auth", "xyzzy");
+        HttpSession session = cr.getServletRequest().getSession(true);
+        session.setAttribute("fiz.ClientRequest.sessionToken", "xyzzy2");
+        boolean gotException = false;
+        try {
+            cr.checkAuthToken();
+        }
+        catch (AuthenticationError e) {
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
     }
 
     public void test_evalJavascript_normalRequest() {
@@ -113,7 +156,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 cr.getHtml().jsCode.toString());
         assertEquals("ClientRequest.jsCode", "var x = \"@value\";",
                 cr.jsCode.toString());
-        cr.evalJavascript("var y = 44;", null);
+        cr.evalJavascript("var y = 44;");
         assertEquals("ClientRequest.jsCode",
                 "var x = \"@value\";var y = 44;",
                 cr.jsCode.toString());
@@ -135,7 +178,28 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 cr.getHtml().jsCode.toString());
         assertEquals("ClientRequest.jsCode", "var x = \"<&\\n\\t>\";",
                 cr.jsCode.toString());
-        cr.evalJavascript("var y = 44;", null);
+        cr.evalJavascript("var y = 44;");
+        assertEquals("ClientRequest.jsCode",
+                "var x = \"<&\\n\\t>\";var y = 44;",
+                cr.jsCode.toString());
+    }
+
+    public void test_evalJavascript_templateWithIndexedData_normalRequest() {
+        cr.evalJavascript("var @1 = \"@2\";", "x", "<&\n\t>");
+        assertEquals("Javascript in HTML",
+                "var x = \"<&\\n\\t>\";",
+                cr.getHtml().jsCode.toString());
+        assertEquals("ClientRequest.jsCode", null, cr.jsCode);
+    }
+    public void test_evalJavascript_templateWithIndexedData_ajaxRequest() {
+        cr.setClientRequestType(ClientRequest.Type.AJAX);
+        Dataset d = new Dataset("value", "<&\n\t>");
+        cr.evalJavascript("var @1 = \"@2\";", "x", "<&\n\t>");
+        assertEquals("Javascript in HTML", "",
+                cr.getHtml().jsCode.toString());
+        assertEquals("ClientRequest.jsCode", "var x = \"<&\\n\\t>\";",
+                cr.jsCode.toString());
+        cr.evalJavascript("var y = 44;");
         assertEquals("ClientRequest.jsCode",
                 "var x = \"<&\\n\\t>\";var y = 44;",
                 cr.jsCode.toString());
@@ -252,6 +316,24 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 response.toString());
     }
 
+    public void test_getAuthToken_useExistingToken() {
+        HttpSession session = cr.getServletRequest().getSession(true);
+        session.setAttribute("fiz.ClientRequest.sessionToken", "xyzzy");
+        assertEquals("pre-existing token value", "xyzzy",
+                cr.getAuthToken());
+    }
+    public void test_getAuthToken_makeNewToken() {
+        cr.testMode = true;
+        HttpSession session = cr.getServletRequest().getSession(true);
+        session.removeAttribute("fiz.ClientRequest.sessionToken");
+        String token = cr.getAuthToken();
+        String source = new String(StringUtil.decode4to3(token, 0,
+                token.length()));
+        assertEquals("token source", "**fake auth**", source);
+        assertEquals("cached token", token, session.getAttribute(
+                "fiz.ClientRequest.sessionToken"));
+    }
+
     public void test_getClientRequestType() {
         assertEquals(" NORMAL", ClientRequest.Type.NORMAL,
                 cr.getClientRequestType());
@@ -326,32 +408,64 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "name: Alice\n", cr.getMainDataset().toString());
     }
 
-    public void test_getReminder_noSuchReminder() {
-        cr.clearData();                 // Discard default info from fixture.
-        cr.requestDataProcessed = true;
+    public void test_getPageProperty_noPageState_normalRequest() {
+        cr.pageId = "bogus";
         boolean gotException = false;
         try {
-            cr.getReminder("bogus");
+            cr.getPageProperty("bogus");
         }
-        catch (InternalError e) {
+        catch (ClientRequest.MissingPagePropertyError e) {
             assertEquals("exception message",
-                    "couldn't find reminder \"bogus\"",
-                    e.getMessage());
+                    "couldn't find page property \"bogus\"", e.getMessage());
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
     }
-    public void test_getReminder_exists() {
-        cr.clearData();                 // Discard default info from fixture.
-        servletRequest.setParameters();
-        servletRequest.contentType = "text/fiz";
-        Reminder reminder = new Reminder("id22","name16", "name", "first",
-                "id", "66");
-        StringBuilder data = new StringBuilder("reminder.");
-        data.append(reminder.get(cr));
-        servletRequest.setInput(data.toString());
-        assertEquals("reminder data", "id:   66\n" +
-                "name: first\n", cr.getReminder("name16").toString());
+    public void test_getPageProperty_noPageState_formPost() {
+        cr.pageId = "bogus";
+        cr.requestType = ClientRequest.Type.POST;
+        boolean gotException = false;
+        try {
+            cr.getPageProperty("bogus");
+        }
+        catch (ClientRequest.StalePageError e) {
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_getPageProperty_pageStateExistsButNotProperty() {
+        cr.setPageProperty("prop1", "12345");
+        boolean gotException = false;
+        try {
+            cr.getPageProperty("bogus");
+        }
+        catch (ClientRequest.MissingPagePropertyError e) {
+            assertEquals("exception message",
+                    "couldn't find page property \"bogus\"", e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_getPageProperty_success() {
+        cr.setPageProperty("prop1", "12345");
+        assertEquals("property value", "12345", cr.getPageProperty("prop1"));
+    }
+
+    public void test_setPageProperty() {
+        // First request creates the page state.
+        cr.setPageProperty("prop1", "12345");
+        assertEquals("# defined properties", 1, cr.pageState.properties.size());
+        assertEquals("value of property", "12345",
+                cr.getPageProperty("prop1").toString());
+
+        // Second request adds to the existing page state.
+        cr.setPageProperty("prop2", "999");
+        assertEquals("# defined properties", 2,
+                cr.pageState.properties.size());
+        assertEquals("value of prop1", "12345",
+                cr.getPageProperty("prop1").toString());
+        assertEquals("value of prop2", "999",
+                cr.getPageProperty("prop2").toString());
     }
 
     public void test_getRequestNames() {
@@ -515,21 +629,47 @@ public class ClientRequestTest extends junit.framework.TestCase {
         TestUtil.deleteTree("_test1_");
     }
 
-    public void test_setReminder() {
-        cr.setReminder("first", new Dataset("name", "Alice"));
-        cr.setReminder("second", new Dataset("name", "Bob"));
-        assertEquals("contents of first reminder", "name: Alice\n",
-                cr.getReminder("first").toString());
-        assertEquals("contents of second reminder", "name: Bob\n",
-                cr.getReminder("second").toString());
+    public void test_setAuthToken_alreadySet() {
+        cr.authTokenSet = true;
+        cr.setAuthToken();
+        assertEquals("no javascript generated", "",
+                cr.getHtml().jsCode.toString());
+    }
+    public void test_setAuthToken_notAlreadySet() {
+        ServletRequestFixture.session = null;
+        cr.testMode = true;
+        cr.setAuthToken();
+        assertEquals("javascript code generated",
+                "Fiz.auth = \"JHB9AM69@$6=TAF*J \";\n",
+                cr.getHtml().jsCode.toString());
     }
 
-    public void test_setRequestType() {
+    public void test_setRequestType_basics() {
         assertEquals("initially NORMAL", false, cr.isAjax());
         cr.setClientRequestType(ClientRequest.Type.AJAX);
         assertEquals("set to AJAX", true, cr.isAjax());
         cr.setClientRequestType(ClientRequest.Type.NORMAL);
         assertEquals("set to NORMAL", false, cr.isAjax());
+    }
+    public void test_setRequestType_checkToken() {
+        ClientRequest.testSkipTokenCheck = false;
+        cr.getMainDataset().set("fiz_auth", "xyzzy");
+        HttpSession session = cr.getServletRequest().getSession(true);
+        session.setAttribute("fiz.ClientRequest.sessionToken", "xyzzy");
+        cr.setClientRequestType(ClientRequest.Type.AJAX);
+        assertEquals("token checked OK", true, cr.isAjax());
+        assertEquals("authTokenSet", true, cr.authTokenSet);
+
+        // Now arrange for a token mismatch.
+        cr.getMainDataset().set("fiz_auth", "bogus");
+        boolean gotException = false;
+        try {
+            cr.setClientRequestType(ClientRequest.Type.POST);
+        }
+        catch (AuthenticationError e) {
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
     }
 
     public void test_showErrorInfo_multipleDatasets() {
@@ -643,6 +783,45 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "Original text", cr.getHtml().getBody().toString());
     }
 
+    public void test_getPageId_alreadyAvailable() {
+        cr.pageId = "12345";
+        assertEquals("page identifier", "12345", cr.getPageId());
+    }
+    public void test_getPageId_idInMainDataset() {
+        cr.getMainDataset().set("fiz_pageId", "sample16");
+        assertEquals("page identifier", "sample16", cr.getPageId());
+    }
+    public void test_getPageId_idNotInMainDataset() {
+        cr.getServletRequest().getSession(true).setAttribute(
+                "fiz.ClientRequest.lastPageId", 73);
+        assertEquals("page identifier", "74", cr.getPageId());
+    }
+    public void test_getPageId_emptyValueInMainDataset() {
+        cr.getMainDataset().set("fiz_pageId", "");
+        cr.getServletRequest().getSession(true).setAttribute(
+                "fiz.ClientRequest.lastPageId", 74);
+        assertEquals("page identifier", "75", cr.getPageId());
+    }
+    public void test_getPageId_firstPageInSession() {
+        cr.getServletRequest().getSession(true).removeAttribute(
+                "fiz.ClientRequest.lastPageId");
+        assertEquals("page identifier", "1", cr.getPageId());
+    }
+    public void test_getPageId_notFirstPage() {
+        HttpSession session = cr.getServletRequest().getSession(true);
+        session.setAttribute("fiz.ClientRequest.lastPageId", 77);
+        assertEquals("page identifier", "78", cr.getPageId());
+        assertEquals("id in session", "78", session.getAttribute(
+                "fiz.ClientRequest.lastPageId").toString());
+    }
+    public void test_getPageId_javascript() {
+        cr.getServletRequest().getSession(true).setAttribute(
+                "fiz.ClientRequest.lastPageId", 73);
+        assertEquals("page identifier", "74", cr.getPageId());
+        assertEquals("ClientRequest.jsCode", "Fiz.pageId = \"74\";\n",
+                cr.getHtml().jsCode.toString());
+    }
+
     public void test_readAjaxData_basics() {
         cr.clearData();                 // Discard default info from fixture.
         cr.mainDataset = new Dataset();
@@ -697,27 +876,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
-    }
-    public void test_readAjaxData_reminders() {
-        cr.clearData();                 // Discard default info from fixture.
-        cr.mainDataset = new Dataset();
-        servletRequest.setParameters();
-        servletRequest.contentType = "text/fiz";
-        Reminder reminder = new Reminder("id22","first", "name", "first",
-                "id", "66");
-        StringBuilder data = new StringBuilder("reminder.");
-        data.append(reminder.get(cr));
-        reminder = new Reminder("id33", "second", "name", "second",
-                "id", "88");
-        data.append("reminder.");
-        data.append(reminder.get(cr));
-        servletRequest.setInput(data.toString());
-        cr.readAjaxData();
-        assertEquals("number of reminders", 2, cr.reminders.size());
-        assertEquals("contents of first reminder", "id:   66\n" +
-                "name: first\n", cr.reminders.get("first").toString());
-        assertEquals("contents of second reminder", "id:   88\n" +
-                "name: second\n", cr.reminders.get("second").toString());
     }
     public void test_readAjaxData_unknownType() {
         cr.clearData();                 // Discard default info from fixture.

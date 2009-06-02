@@ -17,6 +17,24 @@ Fiz = Object();
 // of the Javascript object.
 Fiz.ids = Object();
 
+// The following variable identifies this page uniquely among all pages
+// generated so far in the current session. This value is returned to
+// the server in form posts and Ajax requests to connect with page
+// properties for the page.  Null means the page doesn't have an id
+// (there are no page properties defined for it yet).  This variable is
+// set when the first page properties defined for the page, either during
+// the regional rendering later on during an Ajax request or form post.
+Fiz.pageId = null;
+
+// The following variable holds an authentication token used to prevent
+// CSRF attacks during form posts and Ajax requests.  The value is set
+// by the Java method ClientRequest.setAuthToken; null means that
+// method hasn't been invoked yet.
+Fiz.auth = null;
+
+// The following variable is set by Fiz.clearBulletinBeforeNextAdd.
+Fiz.clearOldBulletin = false;
+
 /**
  * Adds a message to the "bulletin" area at the top of the page.  First,
  * this function looks for a div with id {@code bulletin}, and creates one
@@ -30,6 +48,9 @@ Fiz.ids = Object();
   *                                bulletin.
  */
 Fiz.addBulletinMessage = function(className, html) {
+    if (Fiz.clearOldBulletin) {
+        Fiz.clearBulletin();
+    }
     var bulletin = document.getElementById("bulletin");
     if (!bulletin) {
         // This page doesn't already include a bulletin; create a new
@@ -55,4 +76,13 @@ Fiz.clearBulletin = function() {
         bulletin.style.display = "none";
         bulletin.innerHTML = "";
     }
+    Fiz.clearOldBulletin = false;
+}
+
+/**
+ * This function sets a flag to clear any old bulletin contents in the
+ * next call to addBulletinMessage.
+ */
+Fiz.clearBulletinBeforeNextAdd = function() {
+    Fiz.clearOldBulletin = true;
 }

@@ -22,8 +22,7 @@ import org.apache.log4j.*;
  *   * Information about the response generated for the request, including
  *     the HttpServletResponse object and a Fiz Html object.
  *   * Global information about the application, including the HttpServlet
- *     object for the servlet container and additional Fiz information such
- *     as configuration datasets, the CSS cache, and data managers.
+ *     object for the servlet container.
  * Most of the major methods for servicing a request take a ClientRequest
  * object as their first argument; the ClientRequest is normally referred to
  * with a variable named {@code cr}.
@@ -64,6 +63,41 @@ public class ClientRequest {
         POST
     }
 
+    /**
+     * MissingPagePropertyError is thrown when methods such as
+     * {@code getPageProperty} cannot find the requested property.  This
+     * typically means that the current page is so old that its properties
+     * have been discarded.
+     */
+    public static class MissingPagePropertyError extends Error {
+        /**
+         * Construct a MissingPagePropertyError with a message describing the
+         * property that was not found.
+         * @param missingName      Name of the property that was not found;
+         *                         used to generate a message in the
+         *                         exception
+         */
+        public MissingPagePropertyError(String missingName) {
+            super("couldn't find page property \"" + missingName + "\"");
+        }
+    }
+
+    /**
+     * StalePageError is thrown when the page stage for the current page
+     * can't be found during an Ajax request or form post.
+     */
+    public static class StalePageError extends Error {
+        /**
+         * Construct a StalePageError.
+         */
+        public StalePageError() {
+            super("Stale page: the current page is so old that the " +
+                    "server has discarded its data about the page; if " +
+                    "you want to keep using this page please " +
+                    "click on the refresh button");
+        }
+    }
+
     // The servlet under which this ClientRequest is being processed.
     protected HttpServlet servlet;
 
@@ -80,12 +114,6 @@ public class ClientRequest {
     // Top-level dataset containing global information for this request,
     // such as query values and POST data.
     protected Dataset mainDataset = null;
-
-    // The following variable keeps track of all of the reminders that
-    // have been read from the POST data for the request.  Null means
-    // either the data has not been processed yet, or it contained
-    // no reminders.
-    protected HashMap<String,Dataset> reminders = null;
 
     // Indicates whether or not we have already attempted to process
     // Ajax POST data for this request.  If true, don't try again.
@@ -128,6 +156,29 @@ public class ClientRequest {
 
 	// Used to generate unique ids. Records last id used for each string
 	protected HashMap<String, Integer> idsMap = new HashMap<String, Integer>();
+
+    // Page properties for the current page.  Null means no properties have
+    // been referenced in the current request.
+    protected PageState pageState = null;
+
+    // Holds the identifier for the current page, which is computed by
+    // the getPageId method.  Null means getPageId has not yet been called
+    // for this page.
+    protected String pageId = null;
+
+    // True means that we have already set Fiz.auth in the browser; no need
+    // to set it again.
+    protected boolean authTokenSet = false;
+
+    // The following variable is set to true during some tests; this
+    // causes cryptographic authentication code to be bypassed, using
+    // instead a single fixed signature (so that tests don't have to
+    // worry about the signature being different every round).
+    protected boolean testMode = false;
+
+    // The following variable is set to true during most tests; this
+    // causes automatic checks of the authentication token to be skipped.
+    protected static boolean testSkipTokenCheck = false;
 
     /**
      * Constructs a ClientRequest object.  Typically invoked by the
@@ -220,22 +271,19 @@ public class ClientRequest {
     }
 
     /**
-     * Return the contents of a given reminder if it exists, or null if
-     * it doesn't.
-     * @param name                 Name of the desired reminder.
-     * @return                     The dataset whose contents represent the
-     *                             value of the reminder named {@code name}.
-     *                             If there is no such reminder in the current
-     *                             request null is returned.
+     * This method checks for the presence of an authentication token (a
+     * "fiz_auth" entry in the main dataset with a session-specific value),
+     * in order to prevent CSRF attacks in form submissions and Ajax
+     * requests.
+     * @throws AuthenticationError The form did not contain a valid
+     *                             authentication token.
      */
-    public Dataset checkReminder(String name) {
-        if (!requestDataProcessed) {
-            readRequestData();
+    protected void checkAuthToken() throws AuthenticationError {
+        String inputToken = getMainDataset().check("fiz_auth");
+        String sessionToken = getAuthToken();
+        if ((inputToken == null) || !(inputToken.equals(sessionToken))) {
+            throw new AuthenticationError();
         }
-        if (reminders == null) {
-            return null;
-        }
-        return reminders.get(name);
     }
 
     /**
@@ -280,6 +328,29 @@ public class ClientRequest {
         }
         Template.expand(template, data, jsCode,
                 Template.SpecialChars.JAVASCRIPT);
+    }
+
+    /**
+     * Arrange for a Javascript script to be executed in the browser.
+     * This method can be used for Ajax requests and form posts in
+     * addition to normal HTML requests; it will use the appropriate
+     * technique for each case.
+     * @param template             Template for the Javascript code, which
+     *                             will be expanded using {@code data}.
+     *                             Must end with a semi-colon and a newline.
+     * @param indexedData          Values to substitute in {@code template}
+     *                             using numeric specifiers such as {@code @1}.
+     */
+    public void evalJavascript(String template, Object ... indexedData) {
+        if (requestType == Type.NORMAL) {
+            getHtml().includeJavascript(template, indexedData);
+            return;
+        }
+        if (jsCode == null) {
+            jsCode = new StringBuilder(template.length() + 20);
+        }
+        Template.expand(template, jsCode,
+                Template.SpecialChars.JAVASCRIPT, indexedData);
     }
 
     /**
@@ -385,6 +456,54 @@ public class ClientRequest {
             logger.error("I/O error sending response in " +
                     "ClientRequest.finish");
         }
+    }
+
+    /**
+     * Return an authentication string unique to this session.  This
+     * token is intended to be passed to the browser and returned in
+     * various requests to verify that the request was generated by a
+     * page that's part of this session.  For example, the token
+     * can be used as the value of a hidden form element to prevent
+     * cross-site request forgery (CSRF).
+     * @return                     A string containing the CSRF
+     *                             authenticator.
+     */
+    protected String getAuthToken() {
+        // Implementation notes:
+        // * We cache the value of the authentication token in the
+        //   session so it doesn't need to be recomputed for each form.
+        // * There is no need to synchronize over access to the session;
+        //   it's possible that multiple requests for the same session
+        //   could be running concurrently, and both try to create the
+        //   cached token, but they will both create exactly the same
+        //   value so there is no race condition.
+
+        // First, check to see if we have a cached value.
+        HttpSession session = servletRequest.getSession(true);
+        Object o = session.getAttribute("fiz.ClientRequest.sessionToken");
+        if (o != null) {
+            return (String) o;
+        }
+
+        // No cached value, so we have to generate one.
+        byte[] macBytes;
+        try {
+            if (testMode) {
+                // Special mode for some tests: generate a fixed signature.
+                macBytes = "**fake auth**".getBytes("UTF-8");
+            } else {
+                macBytes = getMac().doFinal(session.getId().getBytes(
+                        "UTF-8"));
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new InternalError(
+                    "ClientRequest.getAuthToken couldn't convert to UTF-8");
+        }
+        StringBuilder buffer = new StringBuilder();
+        StringUtil.encode3to4(macBytes, buffer);
+        String token = buffer.toString();
+        session.setAttribute("fiz.ClientRequest.sessionToken", token);
+        return token;
     }
 
     /**
@@ -514,21 +633,46 @@ public class ClientRequest {
     }
 
     /**
-     * Return the contents of a given reminder if it exists, or generate
-     * an exception if it doesn't.
-     * @param name                 Name of the desired reminder.
-     * @return                     The dataset whose contents represent the
-     *                             value of the reminder named {@code name}.
-     * @throws InternalError       No such reminder is available in the
-     *                             current request.
+     * Returns a page property associated with the current page.
+     * @param name                 Name of the desired property.
+     * @return                     If a property named {@code name} has
+     *                             been defined for the current page (by
+     *                             calling {@code setPageProperty}, return
+     *                             it; otherwise generate an errord.
      */
-    public Dataset getReminder(String name) throws InternalError {
-        Dataset result = checkReminder(name);
+    public Object getPageProperty(String name) {
+        if (pageState == null) {
+            pageState = PageState.getPageState(this, getPageId(), false);
+            if (pageState == null) {
+                if (requestType == Type.NORMAL) {
+                    throw new MissingPagePropertyError(name);
+                } else {
+                    throw new StalePageError();
+                }
+            }
+        }
+        Object result = pageState.getPageProperty(name);
         if (result == null) {
-            throw new InternalError("couldn't find reminder \"" +
-                    name + "\"");
+            throw new MissingPagePropertyError(name);
         }
         return result;
+    }
+
+    /**
+     * Set a page property on the current page, which can be retrieved later
+     * by calling getPageProperty.  The property is stored in the session,
+     * so it will be available in subsequent Ajax requests and form postings
+     * for this page.  Fiz retains properties for the most recently
+     * accessed pages in each session, removing old properties on an
+     * LRU basis.
+     * @param name                 Name of the desired property.
+     * @param value                Value to remember for this property.
+     */
+    public void setPageProperty(String name, Object value) {
+        if (pageState == null) {
+            pageState = PageState.getPageState(this, getPageId(), true);
+        }
+        pageState.setPageProperty(name, value);
     }
 
     /**
@@ -716,27 +860,37 @@ public class ClientRequest {
     }
 
     /**
-     * Set the value of a reminder explicitly, overriding the normal
-     * mechanism for processing incoming data.  This method is intended
-     * primarily for used in unit tests.
-     * @param name                 Name of a reminder.
-     * @param contents             Value for the reminder.
+     * This method will generate Javascript code to set a session-specific
+     * authentication token in the browser; this token is returned in later
+     * requests and checked by the checkAuthToken method.
      */
-    public void setReminder(String name, Dataset contents) {
-        if (reminders == null) {
-            reminders = new HashMap<String,Dataset>();
+    public void setAuthToken() {
+        if (authTokenSet) {
+            return;
         }
-        reminders.put(name, contents);
-        requestDataProcessed = true;
+        evalJavascript("Fiz.auth = \"@1\";\n", getAuthToken());
+        authTokenSet = true;
     }
 
     /**
      * This method is invoked (typically by the dispatcher) to indicate
-     * what kind of request this is.
+     * what kind of request this is.  For Ajax requests and form posts
+     * this method makes sure the request contains a proper authentication
+     * token to prevent CSRF attacks.
      * @param type                 Request type (NORMAL, AJAX, POST).
+     * @throws AuthenticationError Type is AJAX or POST, but the request
+     *                             does not contain an authentication token
+     *                             that matches the current session.
      */
     public void setClientRequestType(Type type) {
         requestType = type;
+        if ((requestType != Type.NORMAL) && !testSkipTokenCheck) {
+            checkAuthToken();
+
+            // No need for this request to set the authentication token,
+            // since it already exists in the browser.
+            authTokenSet = true;
+        }
     }
 
     /**
@@ -863,6 +1017,61 @@ public class ClientRequest {
     }
 
     /**
+     * Returns a unique string identifying the "current page", which is
+     * used to bind page properties with the page.  Fiz ensures that Ajax
+     * requests and form posts will use the same page identifier as the
+     * request that generated the original page.  Page identifiers are
+     * generated lazily: if nothing in a page needs an identifier, then
+     * no identifier is generated for the page; if an identifier isn't needed
+     * until an Ajax request, then the identifier is assigned at that
+     * time and downloaded to the browser so it will be available for future
+     * Ajax requests and form posts.
+     * @return                     The identifier for the current page,
+     *                             which can be used to set and get properties
+     *                             for the page.
+     */
+    protected String getPageId() {
+        if (pageId != null) {
+            // We've already computed the value; no need to do it again,
+            // since it doesn't change during a given request.
+            return pageId;
+        }
+
+        // If this is a form post or Ajax request, then the request may
+        // include a page identifier (if one was assigned in some previous
+        // request for this page).  If this is the case, use that id.
+        pageId = getMainDataset().check("fiz_pageId");
+        if ((pageId != null) && (pageId.length() > 0)) {
+            return pageId;
+        }
+
+        // This is the first time a page identifier has been needed for this
+        // page.  Create a new id for it, using a counter stored in the
+        // session. Careful!  There could be other pages being rendered in
+        // the same session at the same time, which could be competing for
+        // access to the session variable.
+        HttpSession session = servletRequest.getSession(true);
+        Integer id;
+        synchronized(session) {
+            Object o = session.getAttribute("fiz.ClientRequest.lastPageId");
+            if (o == null) {
+                // This is the first page ever for this session.
+                id = 1;
+            } else {
+                id = ((Integer) o) + 1;
+            }
+            session.setAttribute("fiz.ClientRequest.lastPageId", id);
+        }
+        pageId = id.toString();
+
+        // Download the page id to the browser so that it will be included
+        // in future form posts and Ajax requests.
+        evalJavascript(Template.expand("Fiz.pageId = \"@1\";\n", pageId,
+                Template.SpecialChars.JAVASCRIPT));
+        return pageId;
+    }
+
+    /**
      * This method is invoked to parse incoming request data that
      * has MIME type text/fiz, which is used for Ajax requests.  It
      * populates various internal data structures with the contents
@@ -915,15 +1124,6 @@ public class ClientRequest {
             // Check against the known types and handle appropriately.
             if (type.equals("main")) {
                 current = mainDataset.addSerializedData(postData, current);
-            } else if (type.equals("reminder")) {
-                Dataset d = new Dataset();
-                String reminderName = Reminder.decode(this, postData,
-                        current, d, end);
-                if (reminders == null) {
-                    reminders = new HashMap<String,Dataset>();
-                }
-                reminders.put(reminderName, d);
-                current = end.value;
             } else {
                 throw new SyntaxError("unknown type \"" + type +
                         "\" in Fiz browser data");

@@ -5,10 +5,6 @@ package org.fiz;
  */
 
 public class AjaxTest extends junit.framework.TestCase {
-    public void test_SyntaxError() {
-        Ajax.SyntaxError error = new Ajax.SyntaxError("missing comma");
-        assertEquals("missing comma", error.getMessage());
-    }
 
     public void test_invoke_withStringBuilder() {
         ClientRequest cr = new ClientRequestFixture();
@@ -16,6 +12,8 @@ public class AjaxTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder();
         Ajax.invoke(cr, "/fiz/test/alert?age=24&name=@name&weight=@weight",
                 data, out);
+        TestUtil.assertSubstring("set authentication token",
+                "Fiz.auth =", cr.getHtml().jsCode.toString());
         TestUtil.assertSubstring("include Javascript file",
                 "/servlet/fizlib/Ajax.js",
                 cr.getHtml().jsFileHtml.toString());
@@ -24,21 +22,11 @@ public class AjaxTest extends junit.framework.TestCase {
                 "name=Alice&weight=%22110%22\"});",
                 out.toString());
     }
-    public void test_invoke_withReminders() {
-        ClientRequest cr = new ClientRequestFixture();
-        StringBuilder out = new StringBuilder();
-        Ajax.invoke(cr, "/fiz/a/b", null, out, "r1", "r2");
-        assertEquals("generated HTML",
-                "void new Fiz.Ajax({url: \"/fiz/a/b\", reminders: " +
-                "[Fiz.Reminder.reminders[\"r1\"], " +
-                "Fiz.Reminder.reminders[\"r2\"]]});",
-                out.toString());
-    }
 
     public void test_invoke_withoutStringBuilder() {
         ClientRequest cr = new ClientRequestFixture();
         Dataset data = new Dataset("name", "Alice", "weight", "\"110\"");
-        StringBuilder out = Ajax.invoke(cr,
+        String out = Ajax.invoke(cr,
                 "/fiz/test/alert?age=24&name=@name&weight=@weight",
                 data);
         TestUtil.assertSubstring("include Javascript file",
@@ -47,6 +35,22 @@ public class AjaxTest extends junit.framework.TestCase {
         assertEquals("generated HTML",
                 "void new Fiz.Ajax({url: \"/fiz/test/alert?age=24&" +
                 "name=Alice&weight=%22110%22\"});",
-                out.toString());
+                out);
+    }
+
+    public void test_invoke_withIndexedData() {
+        ClientRequest cr = new ClientRequestFixture();
+        String out = Ajax.invoke(cr,
+                "/fiz/test/alert?age=24&name=@1&weight=@2",
+                "<abcd>", "120");
+        TestUtil.assertSubstring("set authentication token",
+                "Fiz.auth =", cr.getHtml().jsCode.toString());
+        TestUtil.assertSubstring("include Javascript file",
+                "/servlet/fizlib/Ajax.js",
+                cr.getHtml().jsFileHtml.toString());
+        assertEquals("generated HTML",
+                "void new Fiz.Ajax({url: \"/fiz/test/alert?age=24&" +
+                "name=%3cabcd%3e&weight=120\"});",
+                out);
     }
 }

@@ -76,6 +76,29 @@ FormSectionTest.test_submit = function() {
     assertEqual("form1_iframe", form1.target, "form1.target");
 };
 
+FormSectionTest.test_submit_setPageId = function() {
+    document = new Document();
+    var form1 = document.addElementWithId("form1", {target: "undefined"});
+    var div1 = document.addElementWithId("form1_target", {innerHTML: "xxx"});
+    var form = new Fiz.FormSection("form1");
+    var pageId = document.addElementWithId("form1_fizPageId",
+            {value: "undefined"});
+    Fiz.pageId = "page44";
+
+    assertEqual(true, form.submit(), "return value");
+    assertEqual("page44", pageId.value, "page identifier");
+};
+
+FormSectionTest.test_submit_nonexistentPageIdElement = function() {
+    document = new Document();
+    var form1 = document.addElementWithId("form1", {target: "undefined"});
+    var div1 = document.addElementWithId("form1_target", {innerHTML: "xxx"});
+    var form = new Fiz.FormSection("form1");
+    Fiz.pageId = "page44";
+
+    assertEqual(true, form.submit(), "return value");
+};
+
 FormSectionTest.test_handleResponse = function() {
     Fiz.ids.form1 = new Fiz.FormSection("formxx");
     Fiz.ids.form1.handleResponse2 = function(script) {

@@ -7,9 +7,7 @@
  *     information.  The dataset is transmitted using the POST message
  *     using a custom Fiz format (see the {@code readInputData} method
  *     of the Ajax class for details.  Parameters can also be supplied
- *     using query values attached to the URL.  In addition, each request
- *     can include one or more Reminders.  See Reminder.java for details
- *     on how and why to use reminders.
+ *     using query values attached to the URL.
  *   * An Ajax response consists of Javascript code that is evaluated
  *     in the browser.
  *   * The result of an Ajax request is determined entirely by the server.
@@ -40,12 +38,6 @@
  *                                 objects in addition to string values.
  *                                 Each top-level value becomes an entry
  *                                 in the main dataset on the server.
- *   reminders:                    (optional) Either a single string or
- *                                 an array of strings, each of which contains
- *                                 a reminder to be sent to the server with
- *                                 this request.  The reminder(s) will be
- *                                 visible on the server under the names
- *                                 specified in the reminders themselves.
  * @param properties               Object whose properties describe the
  *                                 request.  See above for supported values.
  *                                 Or, this parameter can be a string
@@ -59,7 +51,6 @@ Fiz.Ajax = function(properties) {
     } else {
         this.url = properties.url;
         this.data = properties.data;
-        this.reminders = properties.reminders;
     }
     this.xmlhttp = null;           // XMLHTTP object for controlling the
                                    // request.
@@ -93,22 +84,10 @@ Fiz.Ajax = function(properties) {
     this.xmlhttp.open("POST", this.url);
     this.xmlhttp.setRequestHeader("Content-type", "text/fiz; charset=utf-8");
     var postData = "";
-    if (this.data) {
-        postData += "main.";
-        postData += Fiz.Ajax.serialize(this.data);
-    }
-    if (this.reminders) {
-        if ((typeof this.reminders) == "string") {
-            postData += "reminder.";
-            postData += this.reminders;
-        } else {
-            for (var i = 0; i < this.reminders.length; i++) {
-                postData += "reminder.";
-                postData += this.reminders[i];
-            }
-        }
-    }
+    postData += "main.";
+    postData += Fiz.Ajax.serialize(this.data);
     this.xmlhttp.send(postData);
+    Fiz.clearBulletinBeforeNextAdd();
 }
 
 /**
@@ -159,9 +138,9 @@ Fiz.Ajax.prototype.error = function(message) {
 }
 
 /**
- * Private: translate a dataset-like object into the form of a serialized dataset,
- * which can then be sent to Fiz.  See the {@code to serialize} method
-  * in Dataset.java for details on the syntax of this format.
+ * Private: translate a dataset-like object into the form of a serialized
+ * dataset, which can then be sent to Fiz.  See the {@code serialize}
+ * method in Dataset.java for details on the syntax of this format.
  * @param object                   Object consisting of a hierarchical
  *                                 collection of scalar properties, nested
  *                                 objects, and arrays of nested objects.
@@ -195,6 +174,18 @@ Fiz.Ajax.serialize = function(object) {
                     value.length + "." + value;
         }
         prefix = "\n";
+    }
+
+    // If an authentication token is available, include that in the request
+    // (is used by the server to prevent request forgeries).
+    if (Fiz.auth) {
+        result += prefix + "8.fiz_auth" + Fiz.auth.length + "." + Fiz.auth;
+    }
+    // If a page identifier has been assigned, include that in the request
+    // (it will allow the server to access saved data for this page).
+    if (Fiz.pageId) {
+        result += prefix + "10.fiz_pageId" + Fiz.pageId.length + "." +
+                  Fiz.pageId;
     }
     result += ")";
     return result;

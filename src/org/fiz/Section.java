@@ -71,9 +71,11 @@ public abstract class Section {
     /**
      * This method is invoked during the final phase of rendering a page;
      * it generates HTML for this section and appends it to the Html
-     * object associated with {@code request}.
+     * object associated with {@code request}.  It may also generate
+     * Javascript and other information related to this section.
      * @param cr                   Overall information about the client
-     *                             request being serviced; HTML should get appended to
+     *                             request being serviced; HTML, Javascript,
+     *                             etc. should get added to
      *                             {@code request.getHtml()}.
      */
     public abstract void render(ClientRequest cr);

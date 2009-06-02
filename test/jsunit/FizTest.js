@@ -6,6 +6,15 @@ include("fizlib/Fiz.js");
 
 FizTest = {};
 
+FizTest.test_addBulletinMessage_clearOldBulletin = function() {
+    var bulletin = document.addElementWithId("bulletin", {tagName: "div",
+            innerHTML: "old contents"});
+    Fiz.clearOldBulletin = true;
+    Fiz.addBulletinMessage("error", "Message #1");
+    assertEqual("", bulletin.innerHTML, "bulletin innerHTML");
+    assertEqual(false, Fiz.clearOldBulletin, "Fiz.clearOldBulletin");
+};
+
 FizTest.test_addBulletinMessage_createBulletin = function() {
     Fiz.addBulletinMessage("error", "Message #1");
     assertEqual("className:   bulletin\n" +
@@ -43,6 +52,7 @@ FizTest.test_addBulletinMessage_bulletinExists = function() {
 };
 
 FizTest.test_clearBulletin = function() {
+    Fiz.clearOldBulletin = true;
     var bulletin = document.addElementWithId("bulletin",
             {innerHTML: "sample contents"});
     Fiz.clearBulletin();
@@ -52,4 +62,11 @@ FizTest.test_clearBulletin = function() {
             "    display: none\n",
             bulletin.toString(),
             "contents of bulletin");
+    assertEqual(false, Fiz.clearOldBulletin, "Fiz.clearOldBulletin");
+};
+
+FizTest.test_clearBulletinBeforeNextAdd = function() {
+    Fiz.clearOldBulletin = false;
+    Fiz.clearBulletinBeforeNextAdd();
+    assertEqual(true, Fiz.clearOldBulletin, "Fiz.clearOldBulletin");
 };

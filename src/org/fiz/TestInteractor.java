@@ -164,22 +164,17 @@ public class TestInteractor extends Interactor {
                 "alert(\"Her name is @name, favorite saying @saying\");"));
         link2.render(cr, globalData, body);
         body.append("</p>\n");
-        Reminder r1 = new Reminder("r1", "text", "name", "Alice",
-                "age", "28", "sibling", new Dataset("name", "Bob"),
-                "sibling", new Dataset("name", "Carol"));
-        r1.flush(cr);
-        Reminder r2 = new Reminder("r2", "binary", "data", "\u1234\u0200");
-        r2.flush(cr);
-        body.append("<p>The following link returns 2 reminders to the " +
-                "server, where they are logged: ");
+        body.append("<p>The following link sends an Ajax request to the " +
+                "server, which will log the current page id: ");
         Template.expand("<a href=\"#\" onclick =\"@1; return false;\">" +
                 "Click me</a>\n", body,
-                Ajax.invoke(cr, "ajaxReminders", null, "r1", "r2"));
+                Ajax.invoke(cr, "ajaxPrintId"));
+        cr.setPageProperty("ajaxInfo", "phone number is 650-322-1980");
         body.append("<p>The following link issues an Ajax request " +
                 "to a nonexistent URL: ");
         Template.expand("<a href=\"#\" onclick =\"@1; return false;\">" +
                 "Click me</a>\n", body,
-                Ajax.invoke(cr, "/bogus/nonexistent", null));
+                Ajax.invoke(cr, "/bogus/nonexistent"));
         Link link3 = new Link(new Dataset("text", "Click here",
                 "ajaxUrl", "/fiz/test/ajaxUpdateTime"));
         body.append("<p>");
@@ -197,13 +192,9 @@ public class TestInteractor extends Interactor {
         body.append("<span id=\"perf\"></span>\n");
     }
 
-    public void ajaxReminders(ClientRequest cr) throws IOException {
-        Dataset d1 = cr.getReminder("text");
-        Dataset d2 = cr.getReminder("binary");
-        logger.info("First reminder:\n" + d1.toString());
-        String data = d2.get("data");
-        logger.info(String.format("Data from second reminder: 0x%x 0x%x",
-                data.codePointAt(0), data.codePointAt(1)));
+    public void ajaxPrintId(ClientRequest cr) throws IOException {
+        logger.info("Main dataset:\n" + cr.getMainDataset().toString());
+        logger.info("Page property: " + cr.getPageProperty("ajaxInfo"));
     }
 
     static class TestFilter extends FilterOutputStream {

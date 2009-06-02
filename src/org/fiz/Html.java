@@ -222,7 +222,7 @@ public class Html {
      * by the browser after the page has been processed.  This method
      * works only during normal HTML requests; for Ajax requests and
      * form posts, use ClientRequest.evalJavascript instead.
-     * TODO: rename this method to evalJavascript for consistency.
+     * TODO: rename this method to evalJavascript for consistency (or just change to "getJsCode"?).
      * @param code                 Javascript code.
      */
     public void includeJavascript(CharSequence code) {
