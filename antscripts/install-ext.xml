@@ -23,6 +23,7 @@ This ant script contains targets to install an extension
         <!-- Create a temporary directory to unpack the extension -->
         <delete dir="${tempdir}"/>
         <mkdir dir="${tempdir}"/>
+        <attrib dir="${tempdir}" hidden="true"/>        
 
         <!-- Fetch the required version of Fiz from the server -->
         <get src="${installer.url}"
@@ -42,6 +43,7 @@ This ant script contains targets to install an extension
 
         <delete dir="${tempdir}"/>
         <mkdir dir="${tempdir}"/>
+        <attrib dir="${tempdir}" hidden="true"/>
 
         <!-- Unpack the installer -->
         <unzip src="${extinstaller}" dest="${tempdir}"/>
@@ -92,7 +94,7 @@ This ant script contains targets to install an extension
     </target>
 
     <!-- The temporary directory into which the extension will be unpacked -->
-    <property name="tempdir" value="${destdir}/fiztemp"/>
+    <property name="tempdir" value="${destdir}/.fiztemp"/>
 
     <taskdef resource="net/sf/antcontrib/antlib.xml">
         <classpath>

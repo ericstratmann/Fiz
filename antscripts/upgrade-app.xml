@@ -13,6 +13,7 @@ version of the Fiz platform.
         <!-- Create a temporary directory in which to unpack the Fiz installer -->
         <delete dir="${tempdir}"/>
         <mkdir dir="${tempdir}"/>
+        <attrib dir="${tempdir}" hidden="true"/>
 
         <!-- Fetch the correct version of Fiz from the server -->
         <get src="${fizserver}/FizCore/${version}/fiz-${version}.zip"
@@ -55,6 +56,6 @@ version of the Fiz platform.
         
     </target>
 
-    <property name="tempdir" value="${appdir}/fiztemp"/>
+    <property name="tempdir" value="${appdir}/.fiztemp"/>
 
 </project>
