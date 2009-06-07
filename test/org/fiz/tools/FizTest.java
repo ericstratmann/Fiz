@@ -7,7 +7,7 @@ import java.util.HashMap;
  * JUnit tests for the Fiz command line tool.
  * Note: This set of tests does not completely test the tool. This is because
  * of the difficulty of creating stubs for methods that interact with the
- * community website.
+ * Fiz website.
  */
 public class FizTest extends junit.framework.TestCase {
     Fiz fizTool;

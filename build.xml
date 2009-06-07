@@ -209,7 +209,7 @@ for the Fiz framework.
     </target>
 
     <target name="package"
-            description="Packages the Fiz distribution so that it can be uploaded to the community website"
+            description="Packages the Fiz distribution so that it can be uploaded to the Fiz website"
             depends="build-installer">
         <delete dir="${packagedir}"/>
 
@@ -308,7 +308,7 @@ for the Fiz framework.
     server -->
     <property name="packagedir" value="${outdir}/package"/>
 
-    <!-- The URL that hosts Fiz and extensions (the Fiz Community website). -->
+    <!-- The URL that hosts Fiz and extensions (the Fiz website). -->
     <property name="serverurl" value="http://fiz.stanford.edu"/>
 
     <path id="classpath">
