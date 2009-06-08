@@ -39,6 +39,23 @@ build.xml file. -->
         </war>
     </target>
 
+    <target name="deploy" depends="build"
+            description="Deploys this application to a Tomcat server">
+        <deploy url="${tomcat.manager.url}"
+            username="${tomcat.username}"
+            password="${tomcat.password}"
+            path="${tomcat.application.path}"
+            update="true"
+            localWar="file:${basedir}/${builddir}" />
+    </target>
+
+    <target name="undeploy">
+        <undeploy url="${tomcat.manager.url}"
+            username="${tomcat.username}"
+            password="${tomcat.password}"
+            path="${tomcat.application.path}" />
+    </target>
+
     <target name="build-extensions">
         <foreach target="ext.build" param="ext.dir" inheritall="true">
             <path>
@@ -131,6 +148,10 @@ build.xml file. -->
     <!-- The name of the directory that contains all the extensions -->
     <property name="extensions.dir" value="extensions"/>
 
+    <!-- This file contains properties used to deploy the application
+    to a Tomcat server -->
+    <property file="tomcat.deploy.properties"/>
+
     <path id="classpath">
         <fileset dir="${builddir}/WEB-INF/lib">
             <include name="**/*.jar"/>
@@ -140,6 +161,12 @@ build.xml file. -->
     <taskdef resource="net/sf/antcontrib/antlib.xml">
         <classpath>
             <pathelement location="lib/ant-contrib-1.0b3.jar"/>
+        </classpath>
+    </taskdef>
+
+    <taskdef resource="org/apache/catalina/ant/antlib.xml">
+        <classpath>
+            <pathelement location="lib/catalina-ant.jar"/>
         </classpath>
     </taskdef>
 

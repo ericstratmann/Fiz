@@ -16,8 +16,16 @@ application -->
         <ant antfile="${antscriptsdir}/app.xml" target="build"/>
     </target>
 
-    <target name="war" description="Create WAR file" depends="compile">
+    <target name="war" description="Create WAR file">
         <ant antfile="${antscriptsdir}/app.xml" target="war"/>
+    </target>
+
+    <target name="deploy" description="Deploy the application to a Tomcat server">
+        <ant antfile="${antscriptsdir}/app.xml" target="deploy"/>
+    </target>
+
+    <target name="undeploy" description="Undeploy the application from a Tomcat server">
+        <ant antfile="${antscriptsdir}/app.xml" target="undeploy"/>
     </target>
 
     <!-- The directory that contains Fiz ant scripts. -->
