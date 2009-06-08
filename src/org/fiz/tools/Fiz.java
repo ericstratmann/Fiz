@@ -319,12 +319,7 @@ public class Fiz {
 
         // This command does not take any other arguments.
         if (argList.size() != 0) {
-            StringBuilder args = new StringBuilder();
-            for (String arg : argList) {
-                args.append(arg);
-            }
-            throw new ToolError(Command.checkCore, "invalid usage: " +
-                    args.toString());
+            throw new ToolError(Command.checkCore, "invalid usage");
         }
         
         // Verify and process the options that were specified.
@@ -1383,20 +1378,21 @@ public class Fiz {
         System.out.println(
                 "Usage: fiz <command> [args] [options]\n" +
                         "\n" +
-                        "Type 'fiz help <command>' for help on a specific command.\n" +
+                        "The following is a list of available commands along with brief usage\n" +
+                        "information. Type 'fiz help <command>' for more information on a specific\n" +
+                        "command.\n" +
                         "\n" +
                         "Available commands:\n" +
-                        "    check core (chc)    Check for new versions of Fiz.\n" +
-                        "    check ext (che)     Check for new versions of an extension.\n" +
-                        "    create app (cra)    Create a new Fiz web application.\n" +
-                        "    create ext (cre)    Create a new Fiz extension.\n" +
-                        "    help (h)            Print help information for this tool.\n" +
-                        "    install core (ic)   Install a new version of Fiz.\n" +
-                        "    install ext (ie)    Install an extension.\n" +
-                        "    upgrade (u)         Upgrade a Fiz web application to use new versions of\n" +
-                        "                        the Fiz libraries.\n" +
-                        "    version (v)         Print version information for Fiz, a web application\n" +
-                        "                        or an extension.\n" +
+                        "    check core (chc)    fiz check core [version]\n" +
+                        "    check ext (che)     fiz check ext <extension name> -v ARG\n" +
+                        "    create app (cra)    fiz create app <name>\n" +
+                        "    create ext (cre)    fiz create ext <name>\n" +
+                        "    help (h)            fiz help [commands]\n" +
+                        "    install core (ic)   fiz install core [version] -d ARG -v ARG\n" +
+                        "    install ext (ie)    fiz install ext <extension name> -d ARG -f ARG -s\n" +
+                        "                            -v ARG\n" +
+                        "    upgrade (u)         fiz upgrade [version] -d ARG\n" +
+                        "    version (v)         fiz version [path]\n" +
                         "\n" +
                         "Global Options:\n" +
                         "    These are options that are applicable to all commands.\n" +
@@ -1448,7 +1444,7 @@ public class Fiz {
                         "    \"foo\".\n" +
                         "\n" +
                         "        fiz check ext foo -v 1.1.0\n" +
-                        "    Prints version information for any releases of the extension named \"foo\" " +
+                        "    Prints version information for any releases of the extension named \"foo\"\n" +
                         "    newer than version 1.1.0.\n"
         );
     }
