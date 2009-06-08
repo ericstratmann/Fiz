@@ -44,6 +44,7 @@ build.xml file. -->
             <path>
                 <dirset dir="${extensions.dir}">
                     <depth min="0" max="0"/>
+                    <exclude name=".fiztemp"/>
                 </dirset>
             </path>
         </foreach>
