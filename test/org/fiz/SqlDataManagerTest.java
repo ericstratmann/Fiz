@@ -50,7 +50,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
 
     public void setUp() {
         // Only initialize the database once, then use that setup for
-        // all of the tests.  Asked of 4/2009 this reduced the running time
+        // all of the tests.  As of 4/2009 this reduced the running time
         // for this file from 16 seconds to less than 3 seconds.
         if (manager == null) {
             StringAppender appender = new StringAppender();
