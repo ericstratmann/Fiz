@@ -727,8 +727,7 @@ public class Fiz {
         // Find the root directory of the Fiz application.
         String appRootDirPath = findRootDir(appDirPath, DirType.application);
         if (appRootDirPath == null) {
-            throw new ToolError(Command.upgrade, "make sure " +
-                    appRootDirPath +
+            throw new ToolError(Command.upgrade, "make sure " + appDirPath +
                     " is the path to a valid Fiz web application, or " +
                     "extension.");
         }
