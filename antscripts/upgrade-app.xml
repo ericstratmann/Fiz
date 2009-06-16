@@ -31,11 +31,6 @@ version of the Fiz platform.
             <fileset dir="${newfizdir}/app/antscripts"/>
         </sync>
 
-        <mkdir dir="${appdir}/javascript/fizlib"/>
-        <sync todir="${appdir}/javascript/fizlib" overwrite="true">
-            <fileset dir="${newfizdir}/javascript/fizlib"/>
-        </sync>
-
         <mkdir dir="${appdir}/web/fizlib"/>
         <sync todir="${appdir}/web/fizlib" overwrite="true">
             <fileset dir="${newfizdir}/web/fizlib"/>
