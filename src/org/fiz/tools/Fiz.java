@@ -1562,7 +1562,7 @@ public class Fiz {
                         "        fiz upgrade\n" +
                         "    Upgrades the application to the latest version of Fiz.\n" +
                         "\n" +
-                        "        fiz upgrade 2.0 -p foo/bar\n" +
+                        "        fiz upgrade 2.0 -d foo/bar\n" +
                         "    Upgrades the application located at \"foo/bar\" to version 2.0 of the\n" +
                         "    Fiz platform.\n"
         );
