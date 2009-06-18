@@ -64,7 +64,14 @@ public class ServletContextFixture implements ServletContext {
         return null;
     }
     public String getRealPath(String path) {
-        return contextRoot + path;
+        if (path.length() == 0) {
+            return contextRoot;
+        }
+        if (path.startsWith("/")) {
+            return contextRoot + path;
+        } else {
+            return contextRoot + '/' + path;
+        }
     }
     public RequestDispatcher getRequestDispatcher(String path) {
         lastMethod = "getRequestDispatcher(\"" + path + "\")";

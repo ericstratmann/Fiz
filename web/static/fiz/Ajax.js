@@ -23,7 +23,7 @@
  */
 
 // The following line is used by Fiz to manage Javascript dependencies.
-// Fiz:include fizlib/Fiz.js
+// Fiz:include static/fiz/Fiz.js
 
 /**
  * Create an Ajax object and initiate a server request.  This function

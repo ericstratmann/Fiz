@@ -16,6 +16,7 @@ version of the Fiz platform.
         <attrib dir="${tempdir}" hidden="true"/>
 
         <!-- Fetch the correct version of Fiz from the server -->
+        <!-- TODO: URLs like this will need to change to reference "static" -->
         <get src="${fizserver}/FizCore/${version}/fiz-${version}.zip"
              dest="${tempdir}/fiz-${version}.zip"/>
 
@@ -31,9 +32,9 @@ version of the Fiz platform.
             <fileset dir="${newfizdir}/app/antscripts"/>
         </sync>
 
-        <mkdir dir="${appdir}/web/fizlib"/>
-        <sync todir="${appdir}/web/fizlib" overwrite="true">
-            <fileset dir="${newfizdir}/web/fizlib"/>
+        <mkdir dir="${appdir}/web/static/fiz"/>
+        <sync todir="${appdir}/web/static/fiz" overwrite="true">
+            <fileset dir="${newfizdir}/web/static/fiz"/>
         </sync>
 
         <mkdir dir="${appdir}/web/WEB-INF/fiz"/>
@@ -45,10 +46,10 @@ version of the Fiz platform.
         <copy todir="${appdir}/lib" overwrite="true">
             <fileset dir="${newfizdir}/lib"/>
         </copy>
-        
+
         <!-- Clean up -->
         <delete dir="${tempdir}"/>
-        
+
     </target>
 
     <property name="tempdir" value="${appdir}/.fiztemp"/>

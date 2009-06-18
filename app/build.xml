@@ -16,6 +16,10 @@ application -->
         <ant antfile="${antscriptsdir}/app.xml" target="build"/>
     </target>
 
+    <target name="build-extensions" description="Build extensions used by the application">
+        <ant antfile="${antscriptsdir}/app.xml" target="build-extensions"/>
+    </target>
+
     <target name="war" description="Create WAR file">
         <ant antfile="${antscriptsdir}/app.xml" target="war"/>
     </target>

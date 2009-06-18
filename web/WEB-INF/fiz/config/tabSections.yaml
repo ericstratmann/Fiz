@@ -53,4 +53,4 @@ tabGray:
   border:               1px solid #cccccc
   sidePadding:          2px
   selectedSidePadding:  2px
-  imageFamily:          /fizlib/images/tabGray
+  imageFamily:          /static/fiz/images/tabGray

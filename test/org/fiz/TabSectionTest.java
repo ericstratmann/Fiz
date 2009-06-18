@@ -58,31 +58,31 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "<!-- Start TabSection section12 -->\n" +
                 "<table id=\"section12\" class=\"TabSection\" cellspacing=\"0\">\n" +
                 "  <tr>\n" +
-                "    <td class=\"spacer\"><img src=\"/fizlib/images" +
+                "    <td class=\"spacer\"><img src=\"/static/fiz/images" +
                 "/blank.gif\" alt=\"\" /></td>\n" +
-                "    <td class=\"left\"><img src=\"/fizlib/images" +
+                "    <td class=\"left\"><img src=\"/static/fiz/images" +
                 "/blank.gif\" alt=\"\" /></td>\n" +
                 "    <td class=\"mid\" id=\"section12_first\">" +
                 "<a href=\"/a/b\"><div>First</div></a></td>\n" +
-                "    <td class=\"right\"><img src=\"/fizlib/images" +
+                "    <td class=\"right\"><img src=\"/static/fiz/images" +
                 "/blank.gif\" alt=\"\" /></td>\n" +
-                "    <td class=\"spacer\"><img src=\"/fizlib/images" +
+                "    <td class=\"spacer\"><img src=\"/static/fiz/images" +
                 "/blank.gif\" alt=\"\" /></td>\n" +
-                "    <td class=\"leftSelected\"><img src=\"/fizlib/images" +
+                "    <td class=\"leftSelected\"><img src=\"/static/fiz/images" +
                 "/blank.gif\" alt=\"\" /></td>\n" +
                 "    <td class=\"midSelected\" id=\"section12_second\">" +
                 "<a href=\"/a/c\"><div>Second</div></a></td>\n" +
-                "    <td class=\"rightSelected\"><img src=\"/fizlib" +
+                "    <td class=\"rightSelected\"><img src=\"/static/fiz" +
                 "/images/blank.gif\" alt=\"\" /></td>\n" +
-                "    <td class=\"spacer\"><img src=\"/fizlib/images" +
+                "    <td class=\"spacer\"><img src=\"/static/fiz/images" +
                 "/blank.gif\" alt=\"\" /></td>\n" +
-                "    <td class=\"left\"><img src=\"/fizlib/images" +
+                "    <td class=\"left\"><img src=\"/static/fiz/images" +
                 "/blank.gif\" alt=\"\" /></td>\n" +
                 "    <td class=\"mid\" id=\"section12_third\">" +
                 "<a href=\"/xyz\"><div>Third</div></a></td>\n" +
-                "    <td class=\"right\"><img src=\"/fizlib/images" +
+                "    <td class=\"right\"><img src=\"/static/fiz/images" +
                 "/blank.gif\" alt=\"\" /></td>\n" +
-                "    <td class=\"rightSpacer\"><img src=\"/fizlib/images" +
+                "    <td class=\"rightSpacer\"><img src=\"/static/fiz/images" +
                 "/blank.gif\" alt=\"\" /></td>\n" +
                 "  </tr>\n" +
                 "</table>\n" +
@@ -190,7 +190,7 @@ public class TabSectionTest extends junit.framework.TestCase {
         cr.getMainDataset().set("text", "<\">");
         section.render(cr);
         assertEquals("included Javascript files",
-                "fizlib/Fiz.js, fizlib/TabSection.js",
+                "static/fiz/Fiz.js, static/fiz/TabSection.js",
                 cr.getHtml().getJsFiles());
         TestUtil.assertSubstring("onclick handler",
                 "<a href=\"#\" onclick=\"Fiz.TabSection.selectTab" +

@@ -1,2 +1,4 @@
 All static resources (e.g. javascript files, images, etc) used by the extension
-should be added to this directory.
+should be added to this directory.  A file "xyz" in this directory will be
+deployed to the Web server and will be accessible via the URL
+"/static/ext/foo/xyz", where "foo" is the name of this extension.

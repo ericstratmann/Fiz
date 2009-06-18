@@ -146,7 +146,7 @@ public class TestInteractor extends Interactor {
             globalData.set("current", "1");
         }
         html.setTitle("Link Page");
-        html.includeJsFile("fizlib/Ajax.js");
+        html.includeJsFile("static/fiz/Ajax.js");
         StringBuilder body = html.getBody();
         Template.expand("<h1>Test Links</h1>\n" +
                 "<p>This page demonstrates several uses of links.</p>\n" +
@@ -174,9 +174,9 @@ public class TestInteractor extends Interactor {
                 "to a nonexistent URL: ");
         Template.expand("<a href=\"#\" onclick =\"@1; return false;\">" +
                 "Click me</a>\n", body,
-                Ajax.invoke(cr, "/bogus/nonexistent"));
+                Ajax.invoke(cr, "/static/bogus/nonexistent"));
         Link link3 = new Link(new Dataset("text", "Click here",
-                "ajaxUrl", "/fiz/test/ajaxUpdateTime"));
+                "ajaxUrl", "/test/ajaxUpdateTime"));
         body.append("<p>");
         link3.render(cr, globalData, body);
         body.append(" to update the time below.</p>\n" +

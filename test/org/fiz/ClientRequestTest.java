@@ -693,7 +693,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("Javascript code",
                 "Fiz.addBulletinMessage(\"Bulletin: sample &lt;error&gt;\");",
                 cr.getHtml().jsCode.toString());
-        assertEquals("js files in Html object", "fizlib/Fiz.js",
+        assertEquals("js files in Html object", "static/fiz/Fiz.js",
                 cr.getHtml().getJsFiles());
     }
     public void test_showErrorInfo_html() {
@@ -715,7 +715,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "Fiz.addBulletinMessage(\"Bulletin: sample &lt;error&gt; " +
                 "(from Alice)\");",
                 cr.getHtml().jsCode.toString());
-        assertEquals("js files in Html object", "fizlib/Fiz.js",
+        assertEquals("js files in Html object", "static/fiz/Fiz.js",
                 cr.getHtml().getJsFiles());
     }
     public void test_showErrorInfo_noTemplates() {

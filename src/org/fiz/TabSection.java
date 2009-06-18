@@ -159,9 +159,9 @@ public class TabSection extends Section{
             // So, the code below displays a 1x1 transparent image in each
             // empty cell to force IE to display borders.
             Template.expand("    <td class=\"spacer\">" +
-                    "<img src=\"/fizlib/images/blank.gif\" alt=\"\" /></td>\n" +
+                    "<img src=\"/static/fiz/images/blank.gif\" alt=\"\" /></td>\n" +
                     "    <td class=\"left@1\">" +
-                    "<img src=\"/fizlib/images/blank.gif\" alt=\"\" /></td>\n" +
+                    "<img src=\"/static/fiz/images/blank.gif\" alt=\"\" /></td>\n" +
                     "    <td class=\"mid@1\" id=\"@2\"><a",
                     out, Template.SpecialChars.NONE, suffix, tabId);
 
@@ -174,7 +174,7 @@ public class TabSection extends Section{
                 out.append("\"");
             } else {
                 if (!anyJavascript) {
-                    html.includeJsFile("fizlib/TabSection.js");
+                    html.includeJsFile("static/fiz/TabSection.js");
                     anyJavascript = true;
                 }
                 out.append(" href=\"#\" onclick=\"");
@@ -209,11 +209,11 @@ public class TabSection extends Section{
             Template.expand(tab.get("text"), data, out);
             Template.expand("</div></a></td>\n" +
                     "    <td class=\"right@1\">" +
-                    "<img src=\"/fizlib/images/blank.gif\" alt=\"\" /></td>\n",
+                    "<img src=\"/static/fiz/images/blank.gif\" alt=\"\" /></td>\n",
                     out, Template.SpecialChars.NONE, suffix);
         }
         Template.expand("    <td class=\"rightSpacer\">" +
-                "<img src=\"/fizlib/images/blank.gif\" alt=\"\" /></td>\n" +
+                "<img src=\"/static/fiz/images/blank.gif\" alt=\"\" /></td>\n" +
                 "  </tr>\n" +
                 "</table>\n" +
                 "<!-- End TabSection @id -->\n",

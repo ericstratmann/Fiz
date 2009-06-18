@@ -47,7 +47,7 @@ public class HtmlTest extends junit.framework.TestCase {
         html.setTitle("sample");
         html.getBody().append("body info\n");
         html.includeCssFile("test.css");
-        html.includeJsFile("fizlib/Ajax.js");
+        html.includeJsFile("static/fiz/Ajax.js");
         html.includeJavascript("window.dummy = 1;");
         html.clear();
         html.getBody().append("<p>Text</p>\n");

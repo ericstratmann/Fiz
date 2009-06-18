@@ -44,7 +44,7 @@ for the Fiz framework.
 
         </junit>
     </target>
-        
+
     <target name="test-js" depends="compile"
             description="Execute javascript unit tests">
         <java classname="org.mozilla.javascript.tools.shell.Main">
@@ -76,7 +76,7 @@ for the Fiz framework.
         <jslint>
             <formatter type="plain" />
             <fileset dir="test/jsunit" includes="*.js" />
-            <fileset dir="web/fizlib" includes="*.js" />
+            <fileset dir="web/static/fiz" includes="*.js" />
         </jslint>
     </target>
 
@@ -106,9 +106,9 @@ for the Fiz framework.
         <copy todir="${demodir}/WEB-INF/fiz/css">
             <fileset dir="web/WEB-INF/fiz/css"/>
         </copy>
-        <mkdir dir="${demodir}/fizlib"/>
-        <copy todir="${demodir}/fizlib">
-            <fileset dir="web/fizlib"/>
+        <mkdir dir="${demodir}/static/fiz"/>
+        <copy todir="${demodir}/static/fiz">
+            <fileset dir="web/static/fiz"/>
         </copy>
         <mkdir dir="${demodir}/WEB-INF/demo"/>
         <copy todir="${demodir}/WEB-INF/demo">
@@ -174,9 +174,9 @@ for the Fiz framework.
         <copy todir="${installerdir}/web/WEB-INF/fiz/css">
             <fileset dir="web/WEB-INF/fiz/css"/>
         </copy>
-        <mkdir dir="${installerdir}/web/fizlib"/>
-        <copy todir="${installerdir}/web/fizlib">
-            <fileset dir="web/fizlib"/>
+        <mkdir dir="${installerdir}/web/static/fiz"/>
+        <copy todir="${installerdir}/web/static/fiz">
+            <fileset dir="web/static/fiz"/>
         </copy>
         <mkdir dir="${installerdir}/web/WEB-INF/demo"/>
         <copy todir="${installerdir}/web/WEB-INF/demo">
@@ -189,6 +189,7 @@ for the Fiz framework.
         <copy todir="${installerdir}/app">
             <fileset dir="app"/>
         </copy>
+        <copy todir="${installerdir}/app/web/WEB-INF" file="web/WEB-INF/web.xml"/>
 
         <!-- Extension specific files -->
         <mkdir dir="${installerdir}/ext"/>
@@ -278,7 +279,7 @@ for the Fiz framework.
     </target>
 
     <!-- The version number that is embedded in the fiz.jar library file -->
-    <property name="version" value="1.0"/>
+    <property name="version" value="0.5"/>
 
     <!-- The directory containing Java libraries (.jar files) -->
     <property name="libdir" value="lib"/>

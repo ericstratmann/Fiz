@@ -2,15 +2,37 @@
 <!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
-<display-name>Fiz demo application</display-name>
+<display-name>Application based on the Fiz framework</display-name>
 <servlet>
     <servlet-name>fiz</servlet-name>
     <description>The Fiz dispatcher: invokes Interactor methods to handle
-    incoming requests.</description>
+    incoming requests</description>
     <servlet-class>org.fiz.Dispatcher</servlet-class>
+</servlet>
+<servlet>
+    <servlet-name>static</servlet-name>
+    <description>Fiz servlet for static resources</description>
+    <servlet-class>org.fiz.StaticServlet</servlet-class>
+</servlet>
+<servlet>
+    <servlet-name>favicon</servlet-name>
+    <description>Servlet for favicon.ico</description>
+    <servlet-class>org.fiz.StaticServlet</servlet-class>
+    <init-param>
+        <param-name>base</param-name>
+        <param-value>static/favIcon.ico</param-value>
+    </init-param>
 </servlet>
 <servlet-mapping>
     <servlet-name>fiz</servlet-name>
-    <url-pattern>/fiz/*</url-pattern>
+    <url-pattern>/*</url-pattern>
+</servlet-mapping>
+<servlet-mapping>
+    <servlet-name>static</servlet-name>
+    <url-pattern>/static/*</url-pattern>
+</servlet-mapping>
+<servlet-mapping>
+    <servlet-name>favicon</servlet-name>
+    <url-pattern>/favicon.ico</url-pattern>
 </servlet-mapping>
 </web-app>

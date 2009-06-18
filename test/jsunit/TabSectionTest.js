@@ -2,8 +2,8 @@
 //
 // Jsunit tests for TabSection.js, organized in the standard fashion.
 
-include("fizlib/Fiz.js");
-include("fizlib/TabSection.js");
+include("static/fiz/Fiz.js");
+include("static/fiz/TabSection.js");
 
 // Utility function: scans all the children of a node and returns a string
 // containing their classes.

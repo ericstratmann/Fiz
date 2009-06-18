@@ -5,7 +5,7 @@
  */
 
 // The following line is used by Fiz to manage Javascript dependencies.
-// Fiz:include fizlib/Fiz.js
+// Fiz:include static/fiz/Fiz.js
 
 /**
  * Create a TreeRow object, which is used to expand and unexpand

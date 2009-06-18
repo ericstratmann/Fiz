@@ -41,6 +41,7 @@ public class ServletResponseFixture implements HttpServletResponse{
     boolean getOutputStreamException = false;
     boolean getWriterException = false;
     boolean sendRedirectException = false;
+    boolean sendErrorException = false;
 
     // HttpServletResponse methods:
 
@@ -75,10 +76,16 @@ public class ServletResponseFixture implements HttpServletResponse{
         appendToLog("encodeURL(\"" + url + "\")");
         return "encodeURL";
     }
-    public void sendError(int status) {
+    public void sendError(int status) throws IOException {
+        if (sendErrorException) {
+            throw new IOException("exception in sendError");
+        }
         appendToLog("sendError(" + status + ")");
     }
     public void sendError(int status, String message) throws IOException {
+        if (sendErrorException) {
+            throw new IOException("exception in sendError");
+        }
         appendToLog("sendError(" + status + ", \"" + message + "\")");
     }
     public void sendRedirect(String location) throws IOException {

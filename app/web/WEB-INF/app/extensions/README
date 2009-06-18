@@ -1,9 +1,0 @@
-Add modified versions of an extension's configuration or css files to this 
-directory. This will override the default version of that file (which should be
-located somewhere under the "extensions" directory).
-For example, to override a configuration or css file in the "WEB-INF/extensions"
-folder, make a copy of it under the "web/WEB-INF/app/extensions" directory and
-make the required changes to that file. For example, to override a configuration
-file called foo.yaml in an extension named "bar" (this configuration file would
-be located at "extensions/bar/config/foo.yaml"), make a copy of it at
-"web/WEB-INF/app/extensions/bar/config/foo.yaml" and modify that copy.

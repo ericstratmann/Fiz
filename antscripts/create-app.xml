@@ -32,9 +32,9 @@ This ant script creates a new Fiz application
             <fileset file="${fizhome}/src/log4j.properties" />
         </copy>
 
-        <mkdir dir="${destdir}/web/fizlib"/>
-        <copy todir="${destdir}/web/fizlib">
-            <fileset dir="${fizhome}/web/fizlib"/>
+        <mkdir dir="${destdir}/web/static/fiz"/>
+        <copy todir="${destdir}/web/static/fiz">
+            <fileset dir="${fizhome}/web/static/fiz"/>
         </copy>
 
         <mkdir dir="${destdir}/web/WEB-INF/fiz"/>

@@ -40,7 +40,7 @@ public class Fiz {
          * Constructs a new ToolError with a given message. The value of
          * {@code command} indicates executing which command caused the
          * error.
-         *  
+         *
          * @param command       The command whose execution caused the error.
          * @param message       Detailed information about the problem.
          */
@@ -89,7 +89,7 @@ public class Fiz {
 
         /**
          * Constructs a new Command.
-         * 
+         *
          * @param commandStr   The corresponding command string.
          */
         Command(String commandStr) {
@@ -135,7 +135,7 @@ public class Fiz {
 
     /**
      * Entry method for the tool.
-     * 
+     *
      * @param args    The command-line arguments used when invoking the tool.
      */
     public static void main(String[] args) {
@@ -144,7 +144,7 @@ public class Fiz {
 
     /**
      * Executes commands specified in {@code args}.
-     * 
+     *
      * @param args    Commmand-line arguments used when invoking the tool.
      */
     protected void executeCommand(String[] args) {
@@ -305,7 +305,7 @@ public class Fiz {
         invokeAnt(buildFileName, "create", properties);
 
         log(LogLevel.normal, "created new extension at " +
-                getCanonicalPath(extDirPath));        
+                getCanonicalPath(extDirPath));
     }
 
     /**
@@ -321,7 +321,7 @@ public class Fiz {
         if (argList.size() != 0) {
             throw new ToolError(Command.checkCore, "invalid usage");
         }
-        
+
         // Verify and process the options that were specified.
         String versionSince = null;
         for (String key : options.keySet()) {
@@ -358,7 +358,7 @@ public class Fiz {
             return;
         }
 
-        ArrayList<Dataset> versionDataList = 
+        ArrayList<Dataset> versionDataList =
                 YamlDataset.newStringInstance(result).getChildren("record");
         log(LogLevel.quiet, "new releases since Fiz version " +
                 versionSince + ":");
@@ -419,7 +419,7 @@ public class Fiz {
                     " available");
             return;
         }
-        
+
         ArrayList<Dataset> versionDataList =
                 YamlDataset.newStringInstance(result).getChildren("record");
         if (versionSince != null) {
@@ -471,7 +471,7 @@ public class Fiz {
                 // an error.
                 throw new ToolError(Command.installCore, "invalid usage");
             }
-            
+
             version = argList.remove(0);
         }
 
@@ -564,13 +564,13 @@ public class Fiz {
         String appRootDir = findRootDir(path, DirType.application);
         if (appRootDir == null) {
             throw new ToolError(Command.upgrade, "make sure " + path +
-                    " is the path to a valid Fiz web application.");            
+                    " is the path to a valid Fiz web application.");
         }
 
         // The extension should be unpacked into the "extensions" sub-directory
         // of the application.
         String installPath = appRootDir + File.separator + "extensions";
-        
+
         if (filePath == null) {
             installExtFromServer(argList, version, installSources, installPath);
         } else {
@@ -615,11 +615,11 @@ public class Fiz {
             // "none" is the special value returned by the server when the
             // server does not have the extension.
             if (version.equals("none")) {
-                throw new ToolError(Command.installExt, "no extension named " + 
+                throw new ToolError(Command.installExt, "no extension named " +
                         extensionName + " on " + serverUrl);
             }
         }
-        
+
         File installDir = new File(installPath);
         if (!installDir.isDirectory()) {
             throw new ToolError(Command.installExt, installPath +
@@ -645,7 +645,7 @@ public class Fiz {
 
     /**
      * Invokes the ant target that installs an extension from a file.
-     * 
+     *
      * @param argList        The command-line arguments.
      * @param filePath       The path to the installer.
      * @param installPath    The path where the extension is to be installed.
@@ -698,6 +698,7 @@ public class Fiz {
             version = argList.remove(0);
         } else {
             // Query the server for the latest version of Fiz.
+            // TODO: change this URL to remove "fiz" once server upgraded.
             String urlStr = serverUrl + "/fiz/fizCore/latestVersion";
             try {
                 version = openUrl(urlStr);
@@ -744,7 +745,7 @@ public class Fiz {
         log(LogLevel.normal, "upgraded application at " +
                 getCanonicalPath(appDirPath) + " to Fiz version " + version);
     }
-    
+
     /**
      * Execute the "version" command.
      *
@@ -771,7 +772,7 @@ public class Fiz {
         // The path to (a subdirectory of) the Fiz installation, application,
         // or extension.
         String path = argList.remove(0);
-        
+
         // Check if this is a path to a Fiz core installation.
         String rootDirPath = findRootDir(path, DirType.core);
         if (rootDirPath != null) {
@@ -791,7 +792,7 @@ public class Fiz {
 
         // Check if this is a path to an extension.
         // Note: It is important to check for an extension before checking for
-        // an application since extensions are usually located under the 
+        // an application since extensions are usually located under the
         // "extensions" directory of an application.
         rootDirPath = findRootDir(path, DirType.extension);
         if (rootDirPath != null) {
@@ -833,12 +834,12 @@ public class Fiz {
         throw new ToolError(Command.version, "error occurred while " +
                 "checking the version. Make sure " + path +
                 " is the path to a valid Fiz installation, web " +
-                "application, or extension.");        
+                "application, or extension.");
     }
 
     /**
      * Parses the argument list and determines which command was specified.
-     * 
+     *
      * @param argList      The command-line arguments.
      * @return             A {@link org.fiz.tools.Fiz.Command} object which
      *                     indicating the command that was specified.
@@ -914,7 +915,7 @@ public class Fiz {
     /**
      * Invoke the ant target named {@code targetName} in the build file called
      * {@code buildFileName}.
-     * 
+     *
      * @param buildFileName    The path to the build file.
      * @param targetName       The name of the target to invoke. If null, the
      *                         default target is invoked.
@@ -987,7 +988,7 @@ public class Fiz {
                                                    ArrayList<String> argList,
                                                    String optionsWithParams) {
         HashMap<String, String> optionMap = new HashMap<String, String>();
-        
+
         for (Iterator<String> iter = argList.iterator(); iter.hasNext();) {
             String arg = iter.next();
 
@@ -996,7 +997,7 @@ public class Fiz {
                 // argument in the list.
                 continue;
             }
-            
+
             iter.remove();
             // Remove the leading '-' character.
             String options = arg.substring(1);
@@ -1040,7 +1041,7 @@ public class Fiz {
                 }
             }
         }
-        
+
         return optionMap;
     }
 
@@ -1102,7 +1103,7 @@ public class Fiz {
 
     /**
      * Returns the version number embedded in the Manifest of a jar file.
-     * 
+     *
      * @param jarPath   The path to the jar file.
      * @return          The version number if successful, null otherwise.
      */
@@ -1115,7 +1116,7 @@ public class Fiz {
         }
         catch (IOException e) {
             return null;
-        }        
+        }
     }
 
     /**
@@ -1206,7 +1207,7 @@ public class Fiz {
     /**
      * Checks if the the directory specified by {@code path} is the root
      * directory of a Fiz core installation, Fiz application or extension.
-     * 
+     *
      * @param path    The path to the directory to check.
      * @param type    The type of directory to check for.
      * @return        True if {@code path} is the root directory of (depending
@@ -1241,7 +1242,7 @@ public class Fiz {
         // ext/
         // lib/fiz.jar
         // shellscripts/
-        // web/fizlib/
+        // web/static/fiz/
         // web/WEB-INF/fiz
         // web/WEB-INF/web.xml
         // build.xml
@@ -1261,7 +1262,7 @@ public class Fiz {
         if (!(new File(path + "/shellscripts").isDirectory())) {
             return false;
         }
-        if (!(new File(path + "/web/fizlib").isDirectory())) {
+        if (!(new File(path + "/web/static/fiz").isDirectory())) {
             return false;
         }
         if (!(new File(path + "/web/WEB-INF/fiz").isDirectory())) {
@@ -1280,7 +1281,7 @@ public class Fiz {
     /**
      * Checks if the the directory specified by {@code path} is the root
      * directory of a Fiz application.
-     * 
+     *
      * @param path    The path to the directory to check.
      * @return        True if {@code path} is the root directory of a Fiz
      *                application, false otherwise.
@@ -1290,7 +1291,7 @@ public class Fiz {
         // antscripts/
         // lib/fiz.jar
         // src/
-        // web/fizlib/
+        // web/static/fiz/
         // web/WEB-INF/fiz
         // web/WEB-INF/web.xml
         // build.xml
@@ -1304,7 +1305,7 @@ public class Fiz {
         if (!(new File(path + "/src").isDirectory())) {
             return false;
         }
-        if (!(new File(path + "/web/fizlib").isDirectory())) {
+        if (!(new File(path + "/web/static/fiz").isDirectory())) {
             return false;
         }
         if (!(new File(path + "/web/WEB-INF/fiz").isDirectory())) {
@@ -1349,7 +1350,7 @@ public class Fiz {
 
     /**
      * Logs a message to std out.
-     * 
+     *
      * @param l         The log level of the message. The message is printed
      *                  only if the {@code l} is greater than or equal to the
      *                  current log level setting for the tool.

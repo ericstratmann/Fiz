@@ -210,7 +210,7 @@ public class TreeSection extends Section implements DirectAjax {
         if (pageProperty.className == null) {
             html.includeCssFile("TreeSection.css");
         }
-        html.includeJsFile("fizlib/TreeRow.js");
+        html.includeJsFile("static/fiz/TreeRow.js");
         Template.expand("\n<!-- Start TreeSection @1 -->\n" +
                 "<table cellspacing=\"0\" class=\"@2?{TreeSection}\" " +
                 "id=\"@1\">\n", out, pageProperty.id, pageProperty.className);
@@ -285,7 +285,7 @@ public class TreeSection extends Section implements DirectAjax {
                 repeat = "no-repeat";
             }
             Template.expand("    <td class=\"left\" " +
-                    "style=\"background-image: url(/fizlib/images/" +
+                    "style=\"background-image: url(/static/fiz/images/" +
                     "@1-line.gif); background-repeat: @2;\"",
                     out, pageProperty.edgeFamily, repeat);
             int midPoint = out.length();
@@ -301,7 +301,7 @@ public class TreeSection extends Section implements DirectAjax {
             // Now display one of 2 images in the left cell: a plus if the
             // element is expandable, or a horizontal line if this is a
             // leaf node.
-            Template.expand("><img src=\"/fizlib/images/@1-@2.gif\"></td>\n",
+            Template.expand("><img src=\"/static/fiz/images/@1-@2.gif\"></td>\n",
                     out, pageProperty.edgeFamily,
                     (expandable ? "plus": "leaf"));
 
@@ -324,7 +324,7 @@ public class TreeSection extends Section implements DirectAjax {
                 expandedRow.setLength(0);
                 expandedRow.append(out.substring(rowStart, midPoint));
                 Template.expand(" onclick=\"Fiz.ids['@1'].unexpand();\">" +
-                        "<img src=\"/fizlib/images/@2-minus.gif\"></td>\n",
+                        "<img src=\"/static/fiz/images/@2-minus.gif\"></td>\n",
                         expandedRow, rowId, pageProperty.edgeFamily);
                 expandedRow.append("    <td class=\"right\">");
                 Template.expand(styles.getPath(style + "-expanded"),
@@ -347,7 +347,7 @@ public class TreeSection extends Section implements DirectAjax {
                         "style=\"display:none\">\n", out, rowId);
                 if (!lastElement) {
                     Template.expand("    <td style=\"background-image: " +
-                            "url(/fizlib/images/@1-line.gif); " +
+                            "url(/static/fiz/images/@1-line.gif); " +
                             "background-repeat: repeat-y;\">",
                             out, pageProperty.edgeFamily);
                 } else {

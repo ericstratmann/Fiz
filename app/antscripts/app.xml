@@ -17,8 +17,11 @@ build.xml file. -->
     <target name="build" description="Build the web application"
             depends="compile">
         <mkdir dir="${builddir}"/>
-        <copy todir="${builddir}/fizlib">
-            <fileset dir="web/fizlib"/>
+        <copy todir="${builddir}/static">
+            <fileset dir="web/static"/>
+        </copy>
+        <copy todir="${builddir}/static/fiz">
+            <fileset dir="web/static/fiz"/>
         </copy>
         <copy todir="${builddir}/WEB-INF">
             <fileset dir="web/WEB-INF">
@@ -75,14 +78,14 @@ build.xml file. -->
 	    <basename file="${ext.dir}" property="ext.name"/>
 
         <!-- Config files -->
-        <mkdir dir="${builddir}/WEB-INF/extensions/${ext.name}/config"/>
-        <copy todir="${builddir}/WEB-INF/extensions/${ext.name}/config">
+        <mkdir dir="${builddir}/WEB-INF/ext/${ext.name}/config"/>
+        <copy todir="${builddir}/WEB-INF/ext/${ext.name}/config">
             <fileset dir="${ext.dir}/config"/>
         </copy>
 
         <!-- Css files -->
-        <mkdir dir="${builddir}/WEB-INF/extensions/${ext.name}/css"/>
-        <copy todir="${builddir}/WEB-INF/extensions/${ext.name}/css">
+        <mkdir dir="${builddir}/WEB-INF/ext/${ext.name}/css"/>
+        <copy todir="${builddir}/WEB-INF/ext/${ext.name}/css">
             <fileset dir="${ext.dir}/css"/>
         </copy>
 
@@ -93,14 +96,14 @@ build.xml file. -->
         </copy>
 
         <!-- Static files -->
-        <mkdir dir="${builddir}/extensions/${ext.name}"/>
-        <copy todir="${builddir}/extensions/${ext.name}">
+        <mkdir dir="${builddir}/static/ext/${ext.name}"/>
+        <copy todir="${builddir}/static/ext/${ext.name}">
             <fileset dir="${ext.dir}/static"/>
         </copy>
     </target>
 
     <target name="ext.build.src">
-        <basename file="${ext.dir}" property="ext.name"/>        
+        <basename file="${ext.dir}" property="ext.name"/>
         <!-- Execute the extension's build file -->
         <ant antfile="${ext.dir}/build.xml" target="build" inheritall="false"/>
         <!-- Invoke ext.build.bin on the build output -->
@@ -146,7 +149,7 @@ build.xml file. -->
     <property name="builddir" value="${outdir}/${appname}"/>
 
     <!-- The name of the directory that contains all the extensions -->
-    <property name="extensions.dir" value="extensions"/>
+    <property name="extensions.dir" value="ext"/>
 
     <!-- This file contains properties used to deploy the application
     to a Tomcat server -->

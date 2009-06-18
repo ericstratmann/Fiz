@@ -146,7 +146,7 @@ public class DemoInteractor extends Interactor {
         Html html = cr.getHtml();
         html.setTitle("CompoundSection Demo");
         CompoundSection section = new CompoundSection (
-                new Dataset("borderFamily", "/fizlib/images/borderBlueFilled",
+                new Dataset("borderFamily", "/static/fiz/images/borderBlueFilled",
                         "background", "#f1f5fb"),
                 new TemplateSection ("<p>Here is some sample text " +
                         "to fill the body of this compound section.</p>\n"),
@@ -154,7 +154,7 @@ public class DemoInteractor extends Interactor {
                         "which follows the first.</p>\n")
         );
         CompoundSection section2 = new CompoundSection (
-                new Dataset("borderFamily", "/fizlib/images/borderGrayFilled",
+                new Dataset("borderFamily", "/static/fiz/images/borderGrayFilled",
                         "background", "#f5f5f5"),
                 new TemplateSection ("<p>This text provides the body " +
                         "of the second compound section.  I will type " +

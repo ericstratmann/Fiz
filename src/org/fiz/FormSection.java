@@ -374,7 +374,7 @@ public class FormSection extends Section {
         // Generate a Javascript object containing information about the form.
         cr.evalJavascript("Fiz.ids.@id = new Fiz.FormSection(\"@id\");\n",
                 properties);
-        html.includeJsFile("fizlib/FormSection.js");
+        html.includeJsFile("static/fiz/FormSection.js");
     }
 
     /**

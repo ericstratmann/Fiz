@@ -22,7 +22,7 @@ public class Ajax {
     public static void invoke(ClientRequest cr, CharSequence urlTemplate,
             Dataset data, StringBuilder out) {
         cr.setAuthToken();
-        cr.getHtml().includeJsFile("fizlib/Ajax.js");
+        cr.getHtml().includeJsFile("static/fiz/Ajax.js");
 
         // Quoting is tricky:
         //   * Must first use URL quoting while expanding the URL template.
@@ -74,7 +74,7 @@ public class Ajax {
     public static String invoke(ClientRequest cr, CharSequence urlTemplate,
             Object ... indexedData) {
         cr.setAuthToken();
-        cr.getHtml().includeJsFile("fizlib/Ajax.js");
+        cr.getHtml().includeJsFile("static/fiz/Ajax.js");
         StringBuilder javascript = new StringBuilder(urlTemplate.length()
                 + 40);
 

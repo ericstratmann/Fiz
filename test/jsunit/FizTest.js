@@ -2,7 +2,7 @@
 //
 // Jsunit tests for Fiz.js, organized in the standard fashion.
 
-include("fizlib/Fiz.js");
+include("static/fiz/Fiz.js");
 
 FizTest = {};
 

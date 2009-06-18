@@ -89,9 +89,9 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "Fiz.ids[\"tree1_2\"].expand(\"<table cellspacing=\\\"0\\\" " +
                 "class=\\\"TreeSection\\\" id=\\\"tree1_2\\\">\\n  " +
                 "<tr id=\\\"tree1_2_0\\\">\\n    <td class=\\\"left\\\" " +
-                "style=\\\"background-image: url(/fizlib/images/" +
+                "style=\\\"background-image: url(/static/fiz/images/" +
                 "treeSolid-line.gif); background-repeat: " +
-                "no-repeat;\\\"><img src=\\\"/fizlib/images/" +
+                "no-repeat;\\\"><img src=\\\"/static/fiz/images/" +
                 "treeSolid-leaf.gif\\\"></td>\\n    <td " +
                 "class=\\\"right\\\">leaf: child1</td>\\n  " +
                 "</tr>\\n</table>\\n\");\n",
@@ -109,8 +109,8 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "id=\"tree1\">\n" +
                 "  <tr id=\"tree1_0\">\n" +
                 "    <td class=\"left\" style=\"background-image: " +
-                "url(/fizlib/images/treeSolid-line.gif); background-repeat: " +
-                "no-repeat;\"><img src=\"/fizlib/images/treeSolid-leaf." +
+                "url(/static/fiz/images/treeSolid-line.gif); background-repeat: " +
+                "no-repeat;\"><img src=\"/static/fiz/images/treeSolid-leaf." +
                 "gif\"></td>\n" +
                 "    <td class=\"right\">leaf: child1</td>\n" +
                 "  </tr>\n" +
@@ -123,7 +123,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
         TestUtil.assertSubstring("CSS file names", "TreeSection.css",
                 cr.getHtml().getCssFiles());
         assertEquals("Javascript file names",
-                "fizlib/Fiz.js, fizlib/TreeRow.js",
+                "static/fiz/Fiz.js, static/fiz/TreeRow.js",
                 cr.getHtml().getJsFiles());
         assertEquals("names of defined page properties", "tree1",
                 StringUtil.join(cr.pageState.properties.keySet(), ", "));
@@ -140,8 +140,8 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "id=\"tree1\">\n" +
                 "  <tr id=\"tree1_0\">\n" +
                 "    <td class=\"left\" style=\"background-image: " +
-                "url(/fizlib/images/treeSolid-line.gif); background-repeat: " +
-                "no-repeat;\"><img src=\"/fizlib/images/treeSolid-leaf." +
+                "url(/static/fiz/images/treeSolid-line.gif); background-repeat: " +
+                "no-repeat;\"><img src=\"/static/fiz/images/treeSolid-leaf." +
                 "gif\"></td>\n" +
                 "    <td class=\"right\">leaf: child1</td>\n" +
                 "  </tr>\n" +
@@ -162,23 +162,23 @@ public class TreeSectionTest extends junit.framework.TestCase {
         TreeSection.renderChildren(cr, p, children, "tree1_3", out);
         assertEquals("generated HTML", "  <tr id=\"tree1_3_0\">\n" +
                 "    <td class=\"left\" style=\"background-image: url(" +
-                "/fizlib/images/treeSolid-line.gif); background-repeat: " +
+                "/static/fiz/images/treeSolid-line.gif); background-repeat: " +
                 "repeat-y;\" onclick=\"void new Fiz.Ajax({url: &quot;" +
                 "/fiz/TreeSection/ajaxExpand?sectionId=tree1&amp;" +
                 "nodeId=tree1%5f3%5f0&quot;});\">" +
-                "<img src=\"/fizlib/images/treeSolid-plus.gif\"></td>\n" +
+                "<img src=\"/static/fiz/images/treeSolid-plus.gif\"></td>\n" +
                 "    <td class=\"right\">node: Alice</td>\n" +
                 "  </tr>\n" +
                 "  <tr id=\"tree1_3_0_childRow\" style=\"display:none\">\n" +
-                "    <td style=\"background-image: url(/fizlib/images/" +
+                "    <td style=\"background-image: url(/static/fiz/images/" +
                 "treeSolid-line.gif); background-repeat: repeat-y;\"></td>\n" +
                 "    <td><div class=\"nested\" id=\"tree1_3_0_childDiv\">" +
                 "</div></td>\n" +
                 "  </tr>\n" +
                 "  <tr id=\"tree1_3_1\">\n" +
                 "    <td class=\"left\" style=\"background-image: url(" +
-                "/fizlib/images/treeSolid-line.gif); background-repeat: " +
-                "no-repeat;\"><img src=\"/fizlib/images/treeSolid-leaf.gif\">" +
+                "/static/fiz/images/treeSolid-line.gif); background-repeat: " +
+                "no-repeat;\"><img src=\"/static/fiz/images/treeSolid-leaf.gif\">" +
                 "</td>\n" +
                 "    <td class=\"right\">leaf: Bob</td>\n" +
                 "  </tr>\n",
@@ -200,9 +200,9 @@ public class TreeSectionTest extends junit.framework.TestCase {
         TreeSection.renderChildren(cr, p, children, "tree1_3", out);
         assertEquals("generated HTML", "  <tr id=\"tree1_3_0\">\n" +
                 "    <td class=\"left\" style=\"background-image: url" +
-                "(/fizlib/images/treeSolid-line.gif); " +
+                "(/static/fiz/images/treeSolid-line.gif); " +
                 "background-repeat: no-repeat;\">" +
-                "<img src=\"/fizlib/images/treeSolid-leaf.gif\"></td>\n" +
+                "<img src=\"/static/fiz/images/treeSolid-leaf.gif\"></td>\n" +
                 "    <td class=\"right\">name: Alice</td>\n" +
                 "  </tr>\n",
                 out.toString());
@@ -221,16 +221,16 @@ public class TreeSectionTest extends junit.framework.TestCase {
         assertEquals("accumulated Javascript",
                 "Fiz.ids[\"tree1_3_0\"] = new Fiz.TreeRow(\"tree1_3_0\", " +
                 "\"  <tr id=\\\"tree1_3_0\\\">\\n    <td class=\\\"left\\\" " +
-                "style=\\\"background-image: url(/fizlib/images/treeSolid-" +
+                "style=\\\"background-image: url(/static/fiz/images/treeSolid-" +
                 "line.gif); background-repeat: repeat-y;\\\" onclick=\\\"void " +
                 "new Fiz.Ajax({url: &quot;/fiz/TreeSection/ajaxExpand?" +
                 "sectionId=tree1&amp;nodeId=tree1%5f3%5f0&quot;});\\\">" +
-                "<img src=\\\"/fizlib/images/treeSolid-plus.gif\\\"></td>\\n" +
+                "<img src=\\\"/static/fiz/images/treeSolid-plus.gif\\\"></td>\\n" +
                 "    <td class=\\\"right\\\">node: Alice</td>\\n  </tr>\\n\"," +
                 " \"  <tr id=\\\"tree1_3_0\\\">\\n    <td class=\\\"left\\\" " +
-                "style=\\\"background-image: url(/fizlib/images/treeSolid-" +
+                "style=\\\"background-image: url(/static/fiz/images/treeSolid-" +
                 "line.gif); background-repeat: repeat-y;\\\" onclick=\\\"" +
-                "Fiz.ids['tree1_3_0'].unexpand();\\\"><img src=\\\"/fizlib/" +
+                "Fiz.ids['tree1_3_0'].unexpand();\\\"><img src=\\\"/static/fiz/" +
                 "images/treeSolid-minus.gif\\\"></td>\\n    <td class=\\\"" +
                 "right\\\">node-expanded: Alice</td>\\n  </tr>\\n\");\n",
                  javascript.substring(javascript.indexOf("Fiz.ids")));

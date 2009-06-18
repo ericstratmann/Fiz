@@ -397,7 +397,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "Fiz.ids.form1 = new Fiz.FormSection(\"form1\");\n",
                 cr.getHtml().jsCode.toString());
         assertEquals("Javascript files",
-                "fizlib/Ajax.js, fizlib/Fiz.js, fizlib/FormSection.js",
+                "static/fiz/Ajax.js, static/fiz/Fiz.js, static/fiz/FormSection.js",
                 cr.getHtml().getJsFiles());
     }
 

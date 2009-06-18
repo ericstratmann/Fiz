@@ -8,8 +8,8 @@
  */
 
 // The following lines are used by Fiz to manage Javascript dependencies.
-// Fiz:include fizlib/Fiz.js
-// Fiz:include fizlib/Ajax.js
+// Fiz:include static/fiz/Fiz.js
+// Fiz:include static/fiz/Ajax.js
 
 /**
  * Create a FormSection object.

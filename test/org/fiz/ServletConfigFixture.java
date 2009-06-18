@@ -15,12 +15,15 @@ public class ServletConfigFixture implements ServletConfig {
 
     public ServletContext servletContext;
 
+    // Returned this as the result of the next call to getInitParameter.
+    public String parameterValue = null;
+
     public ServletConfigFixture(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
 
     public String getInitParameter(String name) {
-        return "getInitParameter(\"" + name + "\")";
+        return parameterValue;
     }
     public Enumeration getInitParameterNames() {
         Vector<String> v = new Vector<String>();

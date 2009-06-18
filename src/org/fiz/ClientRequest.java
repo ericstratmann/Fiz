@@ -243,7 +243,7 @@ public class ClientRequest {
      */
     public void addMessageToBulletin(String template, Dataset data,
             String divClass) {
-        getHtml().includeJsFile("fizlib/Fiz.js");
+        getHtml().includeJsFile("static/fiz/Fiz.js");
         String html = Template.expand(template, data);
         StringBuilder javascript = new StringBuilder();
         Template.expand("Fiz.addBulletinMessage(\"@1\", \"@2\");\n",
@@ -806,7 +806,7 @@ public class ClientRequest {
      *
      * @param fileName              The name of the file to send to the
      *                              browser; used to compute an appropriate
-     *                              MIME tie for the response.
+     *                              MIME type for the response.
      * @param fileSource            An {@code InputStream} that contains
      *                              the file contents. This input stream will
      *                              be closed by the ClientRequest object in
@@ -933,7 +933,7 @@ public class ClientRequest {
                     Dataset.DesiredType.STRING, Dataset.Quantity.FIRST_ONLY);
             if (template != null) {
                 foundTemplate = true;
-                getHtml().includeJsFile("fizlib/Fiz.js");
+                getHtml().includeJsFile("static/fiz/Fiz.js");
                 getHtml().includeJavascript("Fiz.addBulletinMessage(\"@html\");",
                         new Dataset("html", Template.expand(template,
                         compound)));

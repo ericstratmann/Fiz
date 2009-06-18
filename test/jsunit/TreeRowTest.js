@@ -2,8 +2,8 @@
 //
 // Jsunit tests for TreeRow.js, organized in the standard fashion.
 
-include("fizlib/Fiz.js");
-include("fizlib/TreeRow.js");
+include("static/fiz/Fiz.js");
+include("static/fiz/TreeRow.js");
 
 TreeRowTest = {};
 

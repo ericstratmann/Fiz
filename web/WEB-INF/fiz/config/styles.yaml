@@ -32,8 +32,8 @@ TemplateSection:
 
 TreeSection:
     leaf:              <span class="label">@text</span>
-    node:              <img src="/fizlib/images/folder.gif" /><span class="label">@text</span>
-    node-expanded:     <img src="/fizlib/images/folder-open.gif" /><span class="label">@text</span>
+    node:              <img src="/static/fiz/images/folder.gif" /><span class="label">@text</span>
+    node-expanded:     <img src="/static/fiz/images/folder-open.gif" /><span class="label">@text</span>
 
 # The following styles are used to handle uncaught exceptions that
 # escape all the way out to the Fiz dispatcher.

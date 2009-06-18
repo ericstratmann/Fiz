@@ -2,8 +2,8 @@
 //
 // Jsunit tests for Ajax.js, organized in the standard fashion.
 
-include("fizlib/Fiz.js");
-include("fizlib/Ajax.js");
+include("static/fiz/Fiz.js");
+include("static/fiz/Ajax.js");
 include("XmlHttpFixture.js");
 
 AjaxTest = {};
@@ -106,7 +106,7 @@ AjaxTest.test_stateChange_errorInResponseJavascript = function() {
     assertEqual("clearBulletin();" +
             "addBulletinMessage(\"bulletinError\", " +
             "\"Error in Ajax request for /a/b: error in Javascript " +
-            "response (web/fizlib/Ajax.js(eval):1): SyntaxError: " +
+            "response (web/static/fiz/Ajax.js(eval):1): SyntaxError: " +
             "syntax error\");",
             jsunit.log.replace(/\.js#\d*\(/, ".js("), "jsunit.log");
 };
@@ -126,7 +126,7 @@ AjaxTest.test_stateChange_evalAction_syntaxError = function() {
     ajax.stateChange();
     assertEqual("clearBulletin();addBulletinMessage(\"bulletinError\", " +
             "\"Error in Ajax request for /a/b: error in Javascript " +
-            "response (web/fizlib/Ajax.js(eval):1): " +
+            "response (web/static/fiz/Ajax.js(eval):1): " +
             "SyntaxError: syntax error\");",
             jsunit.log.replace(/\.js#\d*\(/, ".js("), "jsunit.log");
 };
@@ -138,7 +138,7 @@ AjaxTest.test_stateChange_exceptionWithLineNumber = function() {
     ajax.stateChange();
     assertEqual("clearBulletin();addBulletinMessage(\"bulletinError\", " +
             "\"Error in Ajax request for /a/b: error in Javascript response " +
-            "(web/fizlib/Ajax.js(eval):1): SyntaxError: " +
+            "(web/static/fiz/Ajax.js(eval):1): SyntaxError: " +
             "syntax error\");",
             jsunit.log.replace(/\.js#\d*\(/, ".js("), "jsunit.log");
 };

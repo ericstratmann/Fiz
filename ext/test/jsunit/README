@@ -1,1 +1,2 @@
 Add test files for any javascript files that are part of your extension.
+These tests will be run using Fiz's junit testing framework.

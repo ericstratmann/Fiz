@@ -143,9 +143,9 @@ public class Dispatcher extends HttpServlet {
         }
 
         Config.init(contextRoot + "/WEB-INF/app/config",
-                contextRoot + "/WEB-INF/app/extensions",
+                contextRoot + "/WEB-INF/app/ext",
                 contextRoot + "/WEB-INF/fiz/config",
-                contextRoot + "/WEB-INF/extensions");
+                contextRoot + "/WEB-INF/ext");
         initMainConfigDataset(contextRoot);
         String debug = Config.getDataset("main").check("debug");
         clearCaches = (debug != null) && (debug.equals("1"));
@@ -154,9 +154,9 @@ public class Dispatcher extends HttpServlet {
                 Config.getDataset("main").toString().trim().replace(
                 "\n", "\n    "));
         Css.init(contextRoot + "/WEB-INF/app/css",
-                contextRoot + "/WEB-INF/app/extensions",
+                contextRoot + "/WEB-INF/app/ext",
                 contextRoot + "/WEB-INF/fiz/css",
-                contextRoot + "/WEB-INF/extensions");
+                contextRoot + "/WEB-INF/ext");
 
         // If you want more detailed logging, such as request URLs, uncomment
         // the following line.
@@ -209,7 +209,7 @@ public class Dispatcher extends HttpServlet {
      * @param response             Used to generate the response.
      */
     @Override
-    public void service (HttpServletRequest request,
+    public void service(HttpServletRequest request,
         HttpServletResponse response) {
         long startTime = System.nanoTime();
         UrlMethod method = null;
