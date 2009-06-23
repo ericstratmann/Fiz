@@ -2,11 +2,10 @@ package org.fiz;
 import java.util.HashMap;
 
 /**
- * The Config class is used internally by Fiz to manage configuration
- * datasets.  Config knows how to find datasets on disk and it caches
- * them in main memory for faster access.  The static methods of this
- * class are synchronized, so that they can be invoked by concurrent
- * threads.
+ * The Config class manages configuration datasets.  Config knows how 
+ * to find datasets on disk and it caches them in main memory for faster 
+ * access.  The static methods of this class are synchronized, so that 
+ * they can be invoked by concurrent threads.
  */
 
 public class Config {

@@ -4,15 +4,14 @@ import java.util.HashMap;
 import javax.servlet.http.*;
 
 /**
- * The Css class is used internally by Fiz to manage dynamically generated
- * stylesheet files.  When a .css file is requested, this class generates
- * it by expanding a template.  It also caches the results to speed up
- * future accesses.  The class is designed for concurrent execution by
- * multiple threads handling requests in parallel while sharing a collection
- * of stylesheet files.
+ * The Css class manages dynamically generated stylesheet files.  When a 
+ * .css file is requested, this class generates it by expanding a template.  
+ * It also caches the results to speed up future accesses.  The class is 
+ * designed for concurrent execution by multiple threads handling requests 
+ * in parallel while sharing a collection of stylesheet files.
  */
 
-class Css {
+public class Css {
     // The following hash table maps from the string name of a .css file
     // to a string containing the dynamically generated contents of the file.
     protected static HashMap<String,String> cache
