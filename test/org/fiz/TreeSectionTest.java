@@ -164,7 +164,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "    <td class=\"left\" style=\"background-image: url(" +
                 "/static/fiz/images/treeSolid-line.gif); background-repeat: " +
                 "repeat-y;\" onclick=\"void new Fiz.Ajax({url: &quot;" +
-                "/fiz/TreeSection/ajaxExpand?sectionId=tree1&amp;" +
+                "/TreeSection/ajaxExpand?sectionId=tree1&amp;" +
                 "nodeId=tree1%5f3%5f0&quot;});\">" +
                 "<img src=\"/static/fiz/images/treeSolid-plus.gif\"></td>\n" +
                 "    <td class=\"right\">node: Alice</td>\n" +
@@ -223,7 +223,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "\"  <tr id=\\\"tree1_3_0\\\">\\n    <td class=\\\"left\\\" " +
                 "style=\\\"background-image: url(/static/fiz/images/treeSolid-" +
                 "line.gif); background-repeat: repeat-y;\\\" onclick=\\\"void " +
-                "new Fiz.Ajax({url: &quot;/fiz/TreeSection/ajaxExpand?" +
+                "new Fiz.Ajax({url: &quot;/TreeSection/ajaxExpand?" +
                 "sectionId=tree1&amp;nodeId=tree1%5f3%5f0&quot;});\\\">" +
                 "<img src=\\\"/static/fiz/images/treeSolid-plus.gif\\\"></td>\\n" +
                 "    <td class=\\\"right\\\">node: Alice</td>\\n  </tr>\\n\"," +

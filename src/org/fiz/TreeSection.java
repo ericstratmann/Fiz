@@ -294,7 +294,7 @@ public class TreeSection extends Section implements DirectAjax {
             // for the left cell (which will contain a "+" box).
             if (expandable) {
                 Template.expand(" onclick=\"@1\"", out,
-                    Ajax.invoke(cr, "/fiz/TreeSection/ajaxExpand?" +
+                    Ajax.invoke(cr, "/TreeSection/ajaxExpand?" +
                     "sectionId=@1&nodeId=@2", pageProperty.id, rowId));
             }
 
