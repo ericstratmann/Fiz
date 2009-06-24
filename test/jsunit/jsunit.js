@@ -342,6 +342,27 @@ function alert(message) {
 }
 
 /**
+ * This method returns a function which can be used to stub other functions.
+ * The function returned will log the function name and its arguments to the
+ * jsunit.log variable in the form of "name(arg1, arg2)\n".
+ *
+ * @param name      Name of the function being replaced
+ * @return          A function which will log its arguments
+ */
+function logFunction(name) {
+    return function() {
+        jsunit.log += name + "(";
+        for (var i = 0; i < arguments.length; i++) {
+            jsunit.log += arguments[i];
+            if (i != arguments.length - 1) {
+                jsunit.log += ", ";
+            }
+        }
+        jsunit.log += ")\n";
+    }
+}
+
+/**
  * This method is a stand-in for the browser method of the same name.
  * It just logs information about the call to {@code jsunit.log}.
  * @param firstArg                 First argument to setTimeout: either a
