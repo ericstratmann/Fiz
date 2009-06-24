@@ -83,13 +83,15 @@ for the Fiz framework.
     <!-- Builds a demo application that showcases some of the default
     sections that come with Fiz -->
     <target name="build-demo" description="Builds the Fiz demo application"
-            depends="compile">
+            depends="compile,test-compile">
         <delete dir="${demodir}"/>
 
         <!-- Classes and libraries -->
         <mkdir dir="${demodir}/WEB-INF/lib"/>
         <jar destfile="${demodir}/WEB-INF/lib/fiz.jar"
                 basedir="${classdir}"/>
+        <jar destfile="${demodir}/WEB-INF/lib/fiz-test.jar"
+                basedir="${testclassdir}"/>
         <copy todir="${demodir}/WEB-INF/lib">
             <fileset dir="${libdir}"/>
         </copy>

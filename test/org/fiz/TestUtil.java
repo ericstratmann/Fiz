@@ -81,6 +81,46 @@ public class TestUtil {
         }
         Assert.assertEquals(message, expected, matcher.group());
     }
+    
+    /**
+     * Asserts that the specified file at directory/subpath exists, is 
+     * a file, and contains the specified contents.
+     * 
+     * @param directory     The directory containing the file to check.
+     * @param subpath       The subpath from the directory to the file 
+     *                      to check.
+     * @param contents      The contents that the file should contain.
+     */
+    public static void assertFileContents(String directory, String subpath, String contents) {
+        File fileToCheck = new File(directory, subpath);
+        Assert.assertTrue(subpath + " exists", fileToCheck.exists());
+        Assert.assertTrue(subpath + " is a file", fileToCheck.isFile());
+        try {
+            Assert.assertEquals("Contents of " + subpath, contents, 
+                    Util.readFile(fileToCheck.getAbsolutePath()).toString());
+        } catch (FileNotFoundException fnfe) {
+            Assert.assertTrue("Could not read contents of " + subpath, false);
+        }
+    }
+    
+    /**
+     * Asserts that the specified directory at directory/subpath exists, 
+     * is a directory, and contains the specified number of items.
+     * 
+     * @param directory     The directory containing the directory to 
+     *                      check.
+     * @param subpath       The subpath from the directory to the 
+     *                      directory to check.
+     * @param size          The number of items that the directory should 
+     *                      contain.
+     */
+    public static void assertDirSize(String directory, String subpath, int size) {
+        File dirToCheck = new File(directory, subpath);
+        Assert.assertTrue(subpath + " exists", dirToCheck.exists());
+        Assert.assertTrue(subpath + " is a directory", dirToCheck.isDirectory());
+        Assert.assertEquals("Number of items in " + subpath, size, dirToCheck.list().length);
+        
+    }
 
     /**
      * Creates a file containing a given string as contents.  If an error
