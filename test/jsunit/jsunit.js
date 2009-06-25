@@ -286,8 +286,8 @@ function assertEqual(expected, actual, description) {
     if (description != null) {
         message += ": " + description;
     }
-    message += "\nExpected value: " + expected +
-            "\nActual value:   " + actual;
+    message += "\nExpected value: " + valueAndType(expected) +
+            "\nActual value:   " + valueAndType(actual);
     if (typeof expected === "string" && typeof actual === "string" &&
             expected.indexOf("\n") >= 0) {
         // The expected result has multiple lines.  To make it
@@ -511,6 +511,28 @@ function names(value) {
     }
     names.sort();
     return names;
+}
+
+/**
+ * Returns a string containing both the value and the type of an object;
+ * used in error messages for assertions.
+ * @param value                    Value to be printed.
+ * @return                         See above.
+ */
+function valueAndType(o) {
+    var type = typeof o;
+    var result = "";
+    if (type === "string") {
+        result += "\"" + o + "\"";
+    } else {
+        result += o;
+    }
+    if ((type === "object") && (o instanceof Array)) {
+        result += " (array)";
+    } else {
+        result += " (" + type + ")";
+    }
+    return result;
 }
 
 main(arguments);
