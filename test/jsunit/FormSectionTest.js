@@ -16,70 +16,70 @@ Fiz.Ajax = function(properties) {
 FormSectionTest = {};
 
 FormSectionTest.test_clearElementErrors = function() {
-    var row1 = document.addElementWithId("div1", {className: "undefined"});
-    var div1 = document.addElementWithId("div1_diagnostic",
+    var row1 = document.addElementWithId("row1", {className: "undefined"});
+    var diag1 = document.addElementWithId("row1_diagnostic",
         {style: {display: "none"}, innerHTML: "xxx"});
-    var row2 = document.addElementWithId("div2", {className: "undefined"});
-    var div2 = document.addElementWithId("div2_diagnostic",
+    var row2 = document.addElementWithId("row2", {className: "undefined"});
+    var diag2 = document.addElementWithId("row2_diagnostic",
             {style: {display: "none"}, innerHTML: "yyy"});
     var form = new Fiz.FormSection("form16");
 
-    form.elementError("div1", "error1");
-    form.elementError("div2", "error2");
+    form.elementError("row1", "error1");
+    form.elementError("row2", "error2");
     form.clearElementErrors();
-    assertEqual("none", div1.style.display,
-            "div1.style.display after call");
+    assertEqual("none", diag1.style.display,
+            "diag1.style.display after call");
     assertEqual("", row1.className, "row1.className after call");
-    assertEqual("none", div2.style.display,
-            "div2.style.display after call");
+    assertEqual("none", diag2.style.display,
+            "diag2.style.display after call");
     assertEqual("", row2.className, "row2.className after call");
     assertEqual("", form.errorElements.join(", "),
             "form.errorElements after call");
 };
 
 FormSectionTest.test_elementError = function() {
-    var row1 = document.addElementWithId("div1", {className: "undefined"});
-    var div1 = document.addElementWithId("div1_diagnostic",
+    var row1 = document.addElementWithId("row1", {className: "undefined"});
+    var diag1 = document.addElementWithId("row1_diagnostic",
         {style: {display: "none"}, innerHTML: "xxx"});
-    var row2 = document.addElementWithId("div2", {className: "undefined"});
-    var div2 = document.addElementWithId("div2_diagnostic",
+    var row2 = document.addElementWithId("row2", {className: "undefined"});
+    var diag2 = document.addElementWithId("row2_diagnostic",
             {style: {display: "none"}, innerHTML: "yyy"});
     var form = new Fiz.FormSection("form16");
 
-    form.elementError("div1", "error1");
-    assertEqual("div1", form.errorElements.join(", "),
+    form.elementError("row1", "error1");
+    assertEqual("row1", form.errorElements.join(", "),
             "form.errorElements after first call");
-    assertEqual("", div1.style.display,
-            "div1.style.display after first call");
-    assertEqual("error1", div1.innerHTML,
-            "div1.innerHTML after first call");
+    assertEqual("", diag1.style.display,
+            "diag1.style.display after first call");
+    assertEqual("error1", diag1.innerHTML,
+            "diag1.innerHTML after first call");
     assertEqual("formError", row1.className,
             "row.className after first call");
 
     // Make a second call on a different element, and make sure that
     // errorElements records both elements.
-    form.elementError("div2", "error2");
-    assertEqual("div1, div2", form.errorElements.join(", "),
+    form.elementError("row2", "error2");
+    assertEqual("row1, row2", form.errorElements.join(", "),
             "form.errorElements after second call");
 };
 
 FormSectionTest.test_submit = function() {
     var form1 = document.addElementWithId("form1", {target: "undefined"});
-    var div1 = document.addElementWithId("form1_target", {innerHTML: "xxx"});
+    var target1 = document.addElementWithId("form1_target", {innerHTML: "xxx"});
     var form = new Fiz.FormSection("form1");
 
     assertEqual(true, form.submit(), "return value");
     assertEqual(form, Fiz.FormSection.currentForm,
             "Fiz.FormSection.currentForm");
     assertEqual("<iframe name=\"form1_iframe\"></iframe>",
-            div1.innerHTML, "HTML for iframe");
+            target1.innerHTML, "HTML for iframe");
     assertEqual("form1_iframe", form1.target, "form1.target");
 };
 
 FormSectionTest.test_submit_setPageId = function() {
     document = new Document();
     var form1 = document.addElementWithId("form1", {target: "undefined"});
-    var div1 = document.addElementWithId("form1_target", {innerHTML: "xxx"});
+    var target1 = document.addElementWithId("form1_target", {innerHTML: "xxx"});
     var form = new Fiz.FormSection("form1");
     var pageId = document.addElementWithId("form1_fizPageId",
             {value: "undefined"});
@@ -92,7 +92,7 @@ FormSectionTest.test_submit_setPageId = function() {
 FormSectionTest.test_submit_nonexistentPageIdElement = function() {
     document = new Document();
     var form1 = document.addElementWithId("form1", {target: "undefined"});
-    var div1 = document.addElementWithId("form1_target", {innerHTML: "xxx"});
+    var target1 = document.addElementWithId("form1_target", {innerHTML: "xxx"});
     var form = new Fiz.FormSection("form1");
     Fiz.pageId = "page44";
 
@@ -112,20 +112,20 @@ FormSectionTest.test_handleResponse = function() {
 };
 
 FormSectionTest.test_handleResponse2 = function() {
-    var div1 = document.addElementWithId("form1_target", {innerHTML: "xxx"});
+    var target1 = document.addElementWithId("form1_target", {innerHTML: "xxx"});
     var form = new Fiz.FormSection("form1");
 
     // Create a bulletin message and a form diagnostic so that we can make
     // sure they both get cleared.
     var bulletin = document.addElementWithId("bulletin",
             {innerHTML: "sample contents"});
-    var row2 = document.addElementWithId("div2", {className: "undefined"});
-    var div2 = document.addElementWithId("div2_diagnostic",
+    var row2 = document.addElementWithId("row2", {className: "undefined"});
+    var diag2 = document.addElementWithId("row2_diagnostic",
             {style: {display: "none"}, innerHTML: "yyy"});
-    form.elementError("div2", "error1");
+    form.elementError("row2", "error1");
 
     window.xyzzy = 44;
     form.handleResponse2("window.xyzzy += 3;");
-    assertEqual("", div1.innerHTML, "HTML for iframe");
+    assertEqual("", target1.innerHTML, "HTML for iframe");
     assertEqual(47, window.xyzzy, "incremented variable contents");
 };
