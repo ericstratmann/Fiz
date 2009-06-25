@@ -46,9 +46,8 @@ AjaxTest.test_constructor_sendRequestWithData = function() {
     assertEqual("open(method: POST, url: /a/b, async: undefined)\n" +
             "setRequestHeader(name: Content-type, value: text/fiz; " +
             "charset=utf-8)\n" +
-            "send(message: main.(3.age2.28\n" +
-            "4.name5.Alice))\n",
-            jsunit.log, "jsunit.log");
+            "send(message: main.(4.name5.Alice\n" +
+            "3.age2.28))\n", jsunit.log, "jsunit.log");
 };
 
 AjaxTest.test_constructor_setOnChangeHandler = function() {
@@ -171,12 +170,12 @@ AjaxTest.test_serialize = function() {
             array: [{name: "Bill"}, {name: "Carol"}, {name: "David"}],
             empty: [],
             last: 1234.56});
-    assertEqual("(5.array(4.name4.Bill)(4.name5.Carol)(4.name5.David)\n" +
-            "4.last7.1234.56\n" +
-            "6.object(3.age2.44\n" +
-            "4.name5.Alice)\n" +
-            "1.a2.14\n" +
-            "1.b11.test string)", result);
+    assertEqual("(1.a2.14\n" + 
+            "1.b11.test string\n" +
+            "6.object(4.name5.Alice\n" + 
+            "3.age2.44)\n" + 
+            "5.array(4.name4.Bill)(4.name5.Carol)(4.name5.David)\n" +
+            "4.last7.1234.56)", result);
 };
 
 AjaxTest.test_serialize_undefinedObject = function() {
