@@ -338,7 +338,7 @@ public class Fiz {
             versionSince = checkFizVersion(fizHome);
         }
 
-        String urlStr = serverUrl + "/fiz/fizCore/versionInfo";
+        String urlStr = serverUrl + "/fizCore/versionInfo";
         if (versionSince != null) {
             urlStr = urlStr + "?since=" + versionSince;
         }
@@ -399,7 +399,7 @@ public class Fiz {
         }
 
         String urlStr = serverUrl +
-                "/fiz/extensions/versionInfo?extensionName=" + extName;
+                "/extensions/versionInfo?extensionName=" + extName;
         if (versionSince != null) {
             urlStr = urlStr + "&since=" + versionSince;
         }
@@ -477,7 +477,7 @@ public class Fiz {
 
         if (version == null) {
             // If no version was specified, install the latest version.
-            String urlStr = serverUrl + "/fiz/fizCore/latestVersion";
+            String urlStr = serverUrl + "/fizCore/latestVersion";
             try {
                 version = openUrl(urlStr);
             }
@@ -569,7 +569,7 @@ public class Fiz {
 
         // The extension should be unpacked into the "extensions" sub-directory
         // of the application.
-        String installPath = appRootDir + File.separator + "extensions";
+        String installPath = appRootDir + File.separator + "ext";
 
         if (filePath == null) {
             installExtFromServer(argList, version, installSources, installPath);
@@ -602,7 +602,7 @@ public class Fiz {
         if (version == null) {
             // If no version was specified, install the latest version.
             String urlStr = serverUrl +
-                    "/fiz/extensions/latestVersion?extensionName=" +
+                    "/extensions/latestVersion?extensionName=" +
                     extensionName;
             try {
                 version = openUrl(urlStr);
@@ -699,7 +699,7 @@ public class Fiz {
         } else {
             // Query the server for the latest version of Fiz.
             // TODO: change this URL to remove "fiz" once server upgraded.
-            String urlStr = serverUrl + "/fiz/fizCore/latestVersion";
+            String urlStr = serverUrl + "/fizCore/latestVersion";
             try {
                 version = openUrl(urlStr);
             }

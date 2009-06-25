@@ -8,9 +8,9 @@ fi
 
 if [ "`uname -o`" = "Cygwin" ]; then
     # Use ; as the path separator for cygwin.
-    CLASSPATH=""$FIZ_HOME"/lib/ant.jar;"$FIZ_HOME"/lib/ant-launcher.jar;"$FIZ_HOME"/lib/ant-nodeps.jar;"$FIZ_HOME"/lib/jyaml.jar;"$FIZ_HOME"/lib/fiz.jar"
+    CLASSPATH=""$FIZ_HOME"/lib/ant.jar;"$FIZ_HOME"/lib/ant-launcher.jar;"$FIZ_HOME"/lib/ant-nodeps.jar;"$FIZ_HOME"/lib/jyaml.jar;"$FIZ_HOME"/out/classes;"$FIZ_HOME"/lib/fiz.jar"
 else
-    CLASSPATH="$FIZ_HOME"/lib/ant.jar:"$FIZ_HOME"/lib/ant-launcher.jar:"$FIZ_HOME"/lib/ant-nodeps.jar:"$FIZ_HOME"/lib/jyaml.jar:"$FIZ_HOME"/lib/fiz.jar
+    CLASSPATH="$FIZ_HOME"/lib/ant.jar:"$FIZ_HOME"/lib/ant-launcher.jar:"$FIZ_HOME"/lib/ant-nodeps.jar:"$FIZ_HOME"/lib/jyaml.jar:"$FIZ_HOME"/out/classes;"$FIZ_HOME"/lib/fiz.jar
 fi
 
 java -DFIZ_HOME="$FIZ_HOME" -DSERVER_URL="$SERVER_URL" -classpath "$CLASSPATH" org.fiz.tools.Fiz $*

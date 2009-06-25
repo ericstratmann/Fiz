@@ -8,22 +8,21 @@ This ant script contains targets to install an extension
     <target name="install-bin-from-server">
         <antcall target="install-from-server">
             <param name="installer.url"
-                   value="${fizserver}/Extensions/${extname}/${version}/${extname}-bin-${version}.zip"/>
+                   value="${fizserver}/static/Extensions/${extname}/${version}/${extname}-bin-${version}.zip"/>
         </antcall>
     </target>
 
     <target name="install-src-from-server">
         <antcall target="install-from-server">
             <param name="installer.url"
-                   value="${fizserver}/Extensions/${extname}/${version}/${extname}-src-${version}.zip"/>
+                   value="${fizserver}/static/Extensions/${extname}/${version}/${extname}-src-${version}.zip"/>
         </antcall>
     </target>
 
     <target name="install-from-server">
         <!-- Create a temporary directory to unpack the extension -->
         <delete dir="${tempdir}"/>
-        <mkdir dir="${tempdir}"/>
-        <attrib dir="${tempdir}" hidden="true"/>        
+        <mkdir dir="${tempdir}"/>    
 
         <!-- Fetch the required version of Fiz from the server -->
         <get src="${installer.url}"
@@ -43,7 +42,6 @@ This ant script contains targets to install an extension
 
         <delete dir="${tempdir}"/>
         <mkdir dir="${tempdir}"/>
-        <attrib dir="${tempdir}" hidden="true"/>
 
         <!-- Unpack the installer -->
         <unzip src="${extinstaller}" dest="${tempdir}"/>

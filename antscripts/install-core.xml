@@ -12,7 +12,7 @@ This ant script contains targets to fetch a new version of Fiz
         <mkdir dir="${destdir}"/>
 
         <!-- Fetch the required version of Fiz from the server -->
-        <get src="${fizserver}/FizCore/${version}/fiz-${version}.zip"
+        <get src="${fizserver}/static/FizCore/${version}/fiz-${version}.zip"
              dest="${destdir}/fiz-${version}.zip"/>
         <unzip src="${destdir}/fiz-${version}.zip"
                dest="${destdir}"/>
