@@ -4,6 +4,8 @@ import java.io.*;
 import javax.servlet.*;
 import org.apache.log4j.*;
 
+import org.fiz.test.*;
+
 /**
  * Junit tests for the StaticServlet class.
  */

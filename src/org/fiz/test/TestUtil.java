@@ -1,4 +1,4 @@
-package org.fiz;
+package org.fiz.test;
 import java.io.*;
 import java.lang.*;
 import java.util.regex.*;
@@ -6,6 +6,7 @@ import javax.xml.parsers.*;
 import org.junit.*;
 import org.w3c.dom.*;
 import org.xml.sax.*;
+import org.fiz.*;
 
 /**
  * TestUtil provides an assortment of methods for use in Fiz unit tests.

@@ -1,4 +1,4 @@
-package org.fiz;
+package org.fiz.test;
 import java.io.*;
 import java.util.*;
 import javax.servlet.*;
@@ -52,7 +52,7 @@ public class ServletRequestFixture implements HttpServletRequest {
     public String lastMethod = null;
 
     // Used to simulate parameter data via setParameters().
-    protected Hashtable<String,String> parameterMap = null;
+    public Hashtable<String,String> parameterMap = null;
 
     // The following variables provide return values for some of the methods;
     // tests can modify these variables to test different scenarios.
@@ -61,12 +61,12 @@ public class ServletRequestFixture implements HttpServletRequest {
     public String uri = "/x/y/z";
     public String queryString = "a=b&c=d";
     public String contentType = "contentType";
-    protected String input = null;
+    public String input = null;
 
     // A single session is shared across all ServletRequestsFixture
     // objects for all time (tests can nullify this variable to
     // force a new section to be created).
-    protected static HttpSession session = null;
+    public static HttpSession session = null;
 
     public ServletRequestFixture() {
         parameterMap = new Hashtable<String,String>();

@@ -1,5 +1,8 @@
 package org.fiz;
+
 import java.io.*;
+
+import org.fiz.test.*;
 
 /**
  * Junit tests for the YamlDataset class.

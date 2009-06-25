@@ -1,4 +1,4 @@
-package org.fiz;
+package org.fiz.test;
 import javax.servlet.*;
 import java.util.*;
 

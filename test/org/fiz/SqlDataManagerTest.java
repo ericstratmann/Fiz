@@ -1,7 +1,10 @@
 package org.fiz;
+
 import java.sql.*;
 import java.util.*;
 import org.apache.log4j.*;
+
+import org.fiz.test.*;
 
 /**
  * Junit tests for the SqlDataManager class.

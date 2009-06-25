@@ -90,8 +90,6 @@ for the Fiz framework.
         <mkdir dir="${demodir}/WEB-INF/lib"/>
         <jar destfile="${demodir}/WEB-INF/lib/fiz.jar"
                 basedir="${classdir}"/>
-        <jar destfile="${demodir}/WEB-INF/lib/fiz-test.jar"
-                basedir="${testclassdir}"/>
         <copy todir="${demodir}/WEB-INF/lib">
             <fileset dir="${libdir}"/>
         </copy>
@@ -322,10 +320,10 @@ for the Fiz framework.
         <pathelement location="${libdir}/jyaml.jar" />
         <pathelement location="${libdir}/log4j.jar" />
         <pathelement location="${libdir}/servlet.jar"/>
+        <pathelement location="${libdir}/junit.jar" />
     </path>
 
     <path id="classpath.test">
-        <pathelement location="${libdir}/junit.jar" />
         <pathelement location="${classdir}" />
         <pathelement location="${testclassdir}" />
         <path refid="classpath" />

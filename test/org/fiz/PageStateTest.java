@@ -3,6 +3,8 @@ package org.fiz;
 import java.util.*;
 import javax.servlet.http.*;
 
+import org.fiz.test.*;
+
 /**
  * Junit tests for the PageState class.
  */

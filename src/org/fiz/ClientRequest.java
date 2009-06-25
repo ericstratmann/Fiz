@@ -152,7 +152,7 @@ public class ClientRequest {
 
     // If the following variable is nonzero, then all uploaded files larger
     // than this will be written temporarily to disk.  Used for testing.
-    int testSizeThreshold = 0;
+    protected int testSizeThreshold = 0;
 
 	// Used to generate unique ids. Records last id used for each string
 	protected HashMap<String, Integer> idsMap = new HashMap<String, Integer>();

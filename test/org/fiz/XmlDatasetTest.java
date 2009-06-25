@@ -1,6 +1,9 @@
 package org.fiz;
+
 import java.io.*;
 import org.xml.sax.*;
+
+import org.fiz.test.*;
 
 /**
  * Junit tests for the XmlDataset class.

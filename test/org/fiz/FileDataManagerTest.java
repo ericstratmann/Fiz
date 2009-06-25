@@ -3,6 +3,8 @@ import java.io.*;
 import java.util.*;
 import org.apache.log4j.Level;
 
+import org.fiz.test.*;
+
 /**
  * Junit tests for the FileDataManager class.
  */

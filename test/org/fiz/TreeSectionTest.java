@@ -2,6 +2,8 @@ package org.fiz;
 
 import java.util.*;
 
+import org.fiz.test.*;
+
 /**
  * Junit tests for the TreeSection class.
  */

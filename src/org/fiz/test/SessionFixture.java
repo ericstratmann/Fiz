@@ -1,4 +1,4 @@
-package org.fiz;
+package org.fiz.test;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -11,7 +11,7 @@ import java.util.*;
 @SuppressWarnings("deprecation")
 public class SessionFixture implements HttpSession {
     // The following variable is used to hold attribute values.
-    HashMap<String,Object> attributes = new HashMap<String,Object>();
+    public HashMap<String,Object> attributes = new HashMap<String,Object>();
 
     // Methods from HttpSession.  Many of these methods do nothing
     // right now; they can be filled in with something more reasonable

@@ -4,6 +4,8 @@ import javax.servlet.*;
 import java.util.*;
 import org.apache.log4j.*;
 
+import org.fiz.test.*;
+
 /**
  * Junit tests for the Dispatcher class.
  */

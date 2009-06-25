@@ -6,6 +6,7 @@ import javax.crypto.*;
 import javax.servlet.http.*;
 
 import org.apache.log4j.*;
+import org.fiz.test.*;
 
 /**
  * Junit tests for the ClientRequest class.

@@ -3,6 +3,8 @@ package org.fiz;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.fiz.test.*;
+
 /**
  * JUnit tests for TableLayout.
  */

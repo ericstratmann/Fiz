@@ -1,6 +1,9 @@
 package org.fiz;
+
 import java.io.*;
 import java.lang.reflect.*;
+
+import org.fiz.test.*;
 
 /**
  * Junit tests for the Util class.

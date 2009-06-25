@@ -1,5 +1,7 @@
 package org.fiz;
 
+import org.fiz.test.*;
+
 /**
  * Junit tests for the CompoundSection class.
  */

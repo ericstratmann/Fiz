@@ -2,6 +2,8 @@ package org.fiz;
 
 import javax.servlet.http.*;
 
+import org.fiz.test.*;
+
 /**
  * Junit tests for the FormSection class.
  */

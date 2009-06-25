@@ -1,5 +1,7 @@
-package org.fiz;
+package org.fiz.test;
 import org.apache.log4j.*;
+
+import org.fiz.*;
 
 /**
  * This class provides a dummy implementation of the ClientRequest class

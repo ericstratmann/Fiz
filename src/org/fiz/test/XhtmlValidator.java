@@ -1,4 +1,4 @@
-package org.fiz;
+package org.fiz.test;
 
 import java.io.*;
 import javax.xml.parsers.*;

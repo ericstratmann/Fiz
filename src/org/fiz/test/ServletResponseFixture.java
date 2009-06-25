@@ -3,7 +3,7 @@
  * interface; it is used for testing.
  */
 
-package org.fiz;
+package org.fiz.test;
 
 import java.io.*;
 import java.util.*;
@@ -20,9 +20,9 @@ public class ServletResponseFixture implements HttpServletResponse{
     // The underlying stream for this ServletResponse object.
     protected ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-    protected ServletOutputStreamFixture stream =
+    public ServletOutputStreamFixture stream =
             new ServletOutputStreamFixture(out);
-    protected PrintWriter writer = new PrintWriter(out);
+    public PrintWriter writer = new PrintWriter(out);
 
     public String contentType = null;
 
@@ -32,16 +32,16 @@ public class ServletResponseFixture implements HttpServletResponse{
 
     // Only one of getWriter() or getOutputStream() may be called during a
     // single request, else an IllegalStateException is thrown.
-    boolean getWriterInvoked = false;
-    boolean getOutputStreamInvoked = false;
+    public boolean getWriterInvoked = false;
+    public boolean getOutputStreamInvoked = false;
 
     // The following variables determine the output from certain methods.
-    String uri = "uriString";
-    String queryString = "?a=b&c=d";
-    boolean getOutputStreamException = false;
-    boolean getWriterException = false;
-    boolean sendRedirectException = false;
-    boolean sendErrorException = false;
+    public String uri = "uriString";
+    public String queryString = "?a=b&c=d";
+    public boolean getOutputStreamException = false;
+    public boolean getWriterException = false;
+    public boolean sendRedirectException = false;
+    public boolean sendErrorException = false;
 
     // HttpServletResponse methods:
 
