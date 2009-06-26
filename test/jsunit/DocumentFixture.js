@@ -52,7 +52,11 @@ Document.prototype.addElementWithId = function(id, contents) {
 // are supposed to behave.
 
 Document.prototype.getElementById = function(id) {
-    return this.ids[id];
+    if (this.ids[id] !== undefined) {
+        return this.ids[id];
+    }
+
+    return null;
 }
 
 Document.prototype.createElement = function(tagName) {
