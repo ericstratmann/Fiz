@@ -34,6 +34,7 @@ public class DemoInteractor extends Interactor {
 
     // Datasets that supply results for raw data requests.
     Dataset formData = new Dataset("name", "Bill", "age", "41",
+    		"expiration", "11/12/2007",
             "height", "73", "weight", "195",
             "saying", "Line 1\nLine 2\n<Line 3>\n", "fruit", "grape",
             "notify", "all", "state", "California", "mascot", "Spartans");
@@ -57,36 +58,10 @@ public class DemoInteractor extends Interactor {
                     "label", "Age:")),
             new EntryFormElement(new Dataset("id", "state",
                     "label", "Home state:")),
-            new CompoundFormElement(new Dataset("id", "expiration",
-                    "label", "Expiration date:", "template",
-                    "<table cellspacing=\"0\"><tr><td>Month:&nbsp</td>" +
-                    "<td>@1</td><td>&nbsp&nbsp Year:&nbsp</td>" +
-                    "<td>@2</td></tr></table>"),
-                    new SelectFormElement(YamlDataset.newStringInstance(
-                        "id: expireMonth\n" +
-                        "choice:\n" +
-                        "  - value:  January\n" +
-                        "  - value:  February\n" +
-                        "  - value:  March\n" +
-                        "  - value:  April\n" +
-                        "  - value:  May\n" +
-                        "  - value:  June\n" +
-                        "  - value:  July\n" +
-                        "  - value:  August\n" +
-                        "  - value:  September\n" +
-                        "  - value:  October\n" +
-                        "  - value:  November\n" +
-                        "  - value:  December\n")),
-                    new SelectFormElement(YamlDataset.newStringInstance(
-                        "id: expireYear\n" +
-                        "choice:\n" +
-                        "  - value:  2008\n" +
-                        "  - value:  2009\n" +
-                        "  - value:  2010\n" +
-                        "  - value:  2011\n" +
-                        "  - value:  2012\n" +
-                        "  - value:  2013\n" +
-                        "  - value:  2014\n"))),
+            new DateFormElement(new Dataset("id", "expiration",
+                    "label", "Expiration date:",
+                    "attachPosition", Integer.toString(DateFormElement.RIGHT),
+                    "dateFormat", "m-d-Y")),
             new PasswordFormElement(new Dataset("id", "password",
                     "label", "Password:")),
             new PasswordFormElement(new Dataset("id", "password2",

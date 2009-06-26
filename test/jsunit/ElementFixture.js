@@ -54,6 +54,19 @@ Element.prototype.toString = function() {
 }
 
 /**
+ * Returns an array that contains all of the children of a particular element.
+ * @return							See above
+ */
+Element.prototype.getChildNodes = function() {
+	var children = [];
+	for(var child = this.firstChild; child != null;
+			child = child.nextSibling) {
+		children.push(child);
+	}
+	return children;
+}
+
+/**
  * Generates a string describing all of the children of a particular element.
  * @return                         See above.
  */
@@ -66,7 +79,7 @@ Element.prototype.printChildren = function() {
     }
     return result;
 }
-
+ 
 // The following functions provide dummy versions of standard DOM functions;
 // see the DOM documentation for details on how they are supposed to behave.
 // The functions below may attempt to replicate part or all of the

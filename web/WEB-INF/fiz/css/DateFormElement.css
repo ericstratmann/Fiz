@@ -1,0 +1,80 @@
+/* DateFormElement.css -
+ *
+ * This file defines styles for DateFormElements that use the default
+ * class.  Many of the styles are inherited from those defined in css.yaml.
+ */
+ 
+ .DateFormElement input {
+ 	width: @formElementWidth;
+ 	font-family: @fontFamily;
+ 	font-size: 100%;
+ 	border: @standardBorder;
+ 	padding: 1px 3px 1px 3px;
+ 	margin: 0px;
+}
+
+.DateFormElement input:focus {
+    border: @accentBorder;
+    background: @activeBackground;
+}
+
+.DateFormElement img {
+	margin-left: 3px;
+	vertical-align: middle;
+	cursor: pointer;
+}
+
+.DateFormElement a {
+	cursor: pointer;
+}
+
+.DateFormElement .picker {
+	background: #fff;
+	position: absolute;
+	display: none;
+	border: @standardBorder;
+	padding: 3px;
+	z-index: 999;
+	font-size: .8em;
+}
+
+.DateFormElement .picker .nav, .DateFormElement .picker .header {
+	padding: 3px;;
+	background: #eee;
+	font-weight: bold;
+	text-align: center;
+}
+
+.DateFormElement .picker .nav a {
+	vertical-align: middle;
+	margin: 0 10px;
+}
+
+.DateFormElement .picker td, .DateFormElement .picker th {
+	width: 20px;
+ 	border: 1px solid #fff;
+	padding: 1px;
+ 	text-align: center;
+}
+
+.DateFormElement .picker td {
+ 	color: #ccc;
+}
+
+.DateFormElement .picker .cur-month {
+	color: #000;
+	cursor: pointer;
+}
+
+.DateFormElement .picker .col-S {
+	color: #bbffcc;
+}
+
+.DateFormElement .picker .cur-day {
+	font-weight: bold;
+}
+
+.DateFormElement .picker td.cur-month.hover {
+	background: @activeBackground;
+	border: @accentBorder;
+}

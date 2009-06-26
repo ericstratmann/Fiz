@@ -44,7 +44,6 @@ public class Button implements Formatter {
      *                             expand templates from the properties.
      * @param out                  HTML for the Button is appended here.
      */
-    @Override
     public void render(ClientRequest cr, Dataset data, StringBuilder out) {
         Button.render(cr, properties, data, out);
     }
