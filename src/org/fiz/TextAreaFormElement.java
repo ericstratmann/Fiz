@@ -11,7 +11,7 @@ package org.fiz;
  *                   in the {@code help} configuration dataset.
  *   id:             (required) Name for this FormElement; must be unique
  *                   among all ids for the page.  This is used as the name
- *                   for the data value in query and update requests and
+ *                   for the data value in input and output datasets and
  *                   also as the {@code name} attribute for the HTML element.
  *   label:          (optional) Template for label to display next to the
  *                   FormElement to identify the element for the user.

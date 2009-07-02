@@ -8,8 +8,7 @@ package org.fiz;
  *                   property is omitted the form will look for help text
  *                   in the {@code help} configuration dataset.
  *   id:             (required) Name for this FormElement; must be unique
- *                   among all ids for the page.  This is used as the name
- *                   for the data value in query and update requests.
+ *                   among all ids for the page.
  *   label:          (optional) Template for label to display next to the
  *                   checkbox to identify the element for the user.
  *   span:           (optional) If this property has the value {@code true}

@@ -11,7 +11,7 @@ package org.fiz;
  * the following properties:
  *   id:             (required) Name for this FormElement; must be unique
  *                   among all ids for the page.  This is used as the name
- *                   for the data value in query and update requests and
+ *                   for the data value in input and output datasets and
  *                   also as the {@code name} attribute for the HTML input
  *                   element.
  */

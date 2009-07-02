@@ -17,7 +17,7 @@ package org.fiz;
  *   id:             (required) Name that identifies a group of related
  *                   RadioFormElements; must be unique among all ids for
  *                   the page.  This is used as the name for the data value
- *                   in query and update requests and also as the {@code name}
+ *                   in input and output datasets and also as the {@code name}
  *                   attribute for the HTML input element.
  *   label:          (optional) HTML template for label to display next
  *                   to the form element to identify the element for the user.
