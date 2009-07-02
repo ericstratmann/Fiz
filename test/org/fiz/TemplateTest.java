@@ -27,7 +27,7 @@ public class TemplateTest extends junit.framework.TestCase {
             info.out = out;
             info.quoting = Template.SpecialChars.NONE;
             info.indexedQuoting = Template.SpecialChars.NONE;
-            info.ignoreErrors = false;
+            info.ignoreMissing = false;
             info.missingData = false;
             info.skip = false;
             info.end = -1;
@@ -45,7 +45,7 @@ public class TemplateTest extends junit.framework.TestCase {
             info.out = out;
             info.quoting = Template.SpecialChars.NONE;
             info.indexedQuoting = Template.SpecialChars.NONE;
-            info.ignoreErrors = conditional;
+            info.ignoreMissing = conditional;
             info.missingData = false;
             info.skip = false;
             info.end = -1;
@@ -62,7 +62,7 @@ public class TemplateTest extends junit.framework.TestCase {
             info.data = data;
             info.out = out;
             info.quoting = Template.SpecialChars.HTML;
-            info.ignoreErrors = false;
+            info.ignoreMissing = false;
             info.missingData = false;
             info.skip = false;
             info.end = -1;
@@ -79,7 +79,7 @@ public class TemplateTest extends junit.framework.TestCase {
             info.data = data;
             info.out = out;
             info.quoting = encoding;
-            info.ignoreErrors = conditional;
+            info.ignoreMissing = conditional;
             info.missingData = false;
             info.skip = false;
             info.end = -1;
@@ -98,7 +98,7 @@ public class TemplateTest extends junit.framework.TestCase {
             info.out = out;
             info.quoting = encoding;
             info.sqlParameters = sqlParameters;
-            info.ignoreErrors = conditional;
+            info.ignoreMissing = conditional;
             info.missingData = false;
             info.skip = false;
             info.end = -1;
@@ -116,14 +116,14 @@ public class TemplateTest extends junit.framework.TestCase {
             info.out = out;
             info.quoting = Template.SpecialChars.NONE;
             info.indexedQuoting = Template.SpecialChars.NONE;
-            info.ignoreErrors = false;
+            info.ignoreMissing = false;
             info.missingData = true;
             info.skip = false;
             info.end = -1;
             info.lastDeletedSpace = lastDeletedSpace;
             Template.expandBraces(info, start);
             missingData = info.missingData;
-            conditional = info.ignoreErrors;
+            conditional = info.ignoreMissing;
             end = info.end;
             TemplateFixture.lastDeletedSpace = info.lastDeletedSpace;
         }
@@ -140,14 +140,14 @@ public class TemplateTest extends junit.framework.TestCase {
             info.templateEnd = template.length();
             info.data = new Dataset();
             info.out = out;
-            info.ignoreErrors = false;
+            info.ignoreMissing = false;
             info.missingData = false;
             info.skip = false;
             info.end = -1;
             info.lastDeletedSpace = lastDeletedSpace;
             int result = Template.skipTo(info, start, c1, c2);
             missingData = info.missingData;
-            conditional = info.ignoreErrors;
+            conditional = info.ignoreMissing;
             skip = info.skip;
             end = info.end;
             TemplateFixture.lastDeletedSpace = info.lastDeletedSpace;
@@ -599,6 +599,14 @@ public class TemplateTest extends junit.framework.TestCase {
         assertEquals("missingData", true, TemplateFixture.missingData);
         assertEquals("output string", "123", out.toString());
     }
+    public void test_appendValue_emptyConditionalValue() {
+        Dataset data = new Dataset("first_name", "");
+        StringBuilder out = new StringBuilder("123");
+        TemplateFixture.appendValue("first_name", data, out, true,
+                Template.SpecialChars.HTML, null);
+        assertEquals("missingData", true, TemplateFixture.missingData);
+        assertEquals("output string", "123", out.toString());
+    }
     public void test_appendValue_unconditionalSucceeded() {
         Dataset data = new Dataset("last_name", "West");
         StringBuilder out = new StringBuilder("123");
@@ -668,7 +676,7 @@ public class TemplateTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.expandBraces("{{abc@last_name@}}x}}y", data, out, 2);
         assertEquals("end of specifier", 21, TemplateFixture.end);
-        assertEquals("ignoreErrors", false, TemplateFixture.conditional);
+        assertEquals("ignoreMissing", false, TemplateFixture.conditional);
         assertEquals("output string", "123abcWest}}x", out.toString());
     }
     public void test_expandBraces_closeBracesAtEnd() {
@@ -697,7 +705,7 @@ public class TemplateTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder("123");
         TemplateFixture.expandBraces("{{abc@data.47@data2}}x", data, out, 2);
         assertEquals("end of specifier", 21, TemplateFixture.end);
-        assertEquals("ignoreErrors", false, TemplateFixture.conditional);
+        assertEquals("ignoreMissing", false, TemplateFixture.conditional);
         assertEquals("output string", "123", out.toString());
     }
     public void test_expandBraces_collapsePrecedingSpace() {

@@ -159,11 +159,12 @@ public class Template {
         SpecialChars currentQuoting;
                                    // Set by {@code findValue}: either
                                    // {@code quoting} or {@code indexedQuoting}.
-        boolean ignoreErrors;      // True means we are processing information
+        boolean ignoreMissing;     // True means we are processing information
                                    // between curly braces, so don't get upset
                                    // if data values can't be found.
         boolean missingData;       // True means that a data value couldn't
-                                   // be found but ignoreErrors was true.
+                                   // be found (or was empty) but ignoreMissing
+                                   // was true.
         boolean skip;              // True means we are parsing part of the
                                    // template without actually expanding it
                                    // (e.g. in a @foo?{...|...} substitution)
@@ -214,7 +215,7 @@ public class Template {
         info.data = data;
         info.out = out;
         info.quoting = quoting;
-        info.ignoreErrors = false;
+        info.ignoreMissing = false;
         info.missingData = false;
         info.lastDeletedSpace = -1;
         expandRange(info, 0, template.length());
@@ -314,7 +315,7 @@ public class Template {
         info.indexedData = indexedData;
         info.sqlParameters = null;
         info.indexedQuoting = indexedQuoting;
-        info.ignoreErrors = false;
+        info.ignoreMissing = false;
         info.missingData = false;
         info.lastDeletedSpace = -1;
         expandRange(info, 0, template.length());
@@ -532,7 +533,7 @@ public class Template {
         info.quoting = null;
         info.sqlParameters = sqlParameters;
         info.indexedQuoting = null;
-        info.ignoreErrors = false;
+        info.ignoreMissing = false;
         info.missingData = false;
         info.lastDeletedSpace = -1;
         expandRange(info, 0, template.length());
@@ -548,7 +549,7 @@ public class Template {
      * @param end                  Index of the character just after the last
      *                             one to expand.
      * @throws MissingValueError   Thrown if a data value couldn't be found
-     *                             and info.ignoreErrors is false.
+     *                             and info.ignoreMissing is false.
      * @throws SyntaxError         The template contains an illegal construct.
      */
     protected static void expandRange(ParseInfo info, int start, int end)
@@ -588,7 +589,7 @@ public class Template {
      * @param start                Index of the character immediately after
      *                             the {@code @}.
      * @throws MissingValueError   Thrown if a data value couldn't be found
-     *                             and info.ignoreErrors is false.
+     *                             and info.ignoreMissing is false.
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
      */
@@ -634,7 +635,7 @@ public class Template {
      * @param start                Index in info.template of the character
      *                             just after the "?".
      * @throws MissingValueError   Thrown if a data value couldn't be found
-     *                             and info.ignoreErrors is false.
+     *                             and info.ignoreMissing is false.
      * @throws SyntaxError         The template contains an illegal construct.
      */
     protected static void expandChoice(ParseInfo info, String name,
@@ -686,7 +687,7 @@ public class Template {
      * @param start                Index of the character immediately after
      *                             the "@(".
      * @throws MissingValueError   Thrown if a data value couldn't be found
-     *                             and info.ignoreErrors is false.
+     *                             and info.ignoreMissing is false.
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
      */
@@ -733,7 +734,7 @@ public class Template {
      *                             info.out and info.missingInfo.
      * @param name                 Name of the desired dataset element.
      * @throws MissingValueError   Thrown if the data value couldn't be found
-     *                             and info.ignoreErrors is false.
+     *                             and info.ignoreMissing is false.
      */
     protected static void appendValue(ParseInfo info, String name)
             throws MissingValueError {
@@ -741,9 +742,9 @@ public class Template {
         if (info.skip) {
             return;
         }
-        if (info.ignoreErrors) {
+        if (info.ignoreMissing) {
             value = findValue(info, name, false);
-            if (value == null) {
+            if ((value == null) || (value.length() == 0)) {
                 info.missingData = true;
                 return;
             }
@@ -786,7 +787,7 @@ public class Template {
      */
     protected static void expandBraces(ParseInfo info, int start)
             throws SyntaxError {
-        info.ignoreErrors = true;
+        info.ignoreMissing = true;
         info.missingData = false;
         int oldEnd = info.out.length();
         int oldSqlParametersSize = (info.sqlParameters != null) ?
@@ -861,7 +862,7 @@ public class Template {
                         }
                     }
                 }
-                info.ignoreErrors = false;
+                info.ignoreMissing = false;
                 return;
             } else {
                 info.out.append(c);
