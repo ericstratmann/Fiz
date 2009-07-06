@@ -15,32 +15,36 @@ This ant script creates a new Fiz application
 
         <!-- Copy over application specific files -->
         <sync todir="${destdir}" includeemptydirs="true">
-            <fileset dir="${fizhome}/app" excludes="README"/>
+            <fileset dir="${fizhome}/app">
+                <exclude name="**/antscripts/**"/>
+                <exclude name="README"/>
+            </fileset>
         </sync>
 
         <replace file="${destdir}/build.xml"
                  token="@@APPLICATION_NAME" value="${appname}"/>
-
-        <!-- Files that are not application specific -->
-        <mkdir dir="${destdir}/lib"/>
-        <copy todir="${destdir}/lib">
-            <fileset dir="${fizhome}/lib"/>
-        </copy>
-
-        <mkdir dir="${destdir}/src"/>
+        
         <copy todir="${destdir}/src">
             <fileset file="${fizhome}/src/log4j.properties" />
         </copy>
 
-        <mkdir dir="${destdir}/web/static/fiz"/>
-        <copy todir="${destdir}/web/static/fiz">
-            <fileset dir="${fizhome}/web/static/fiz"/>
-        </copy>
-
-        <mkdir dir="${destdir}/web/WEB-INF/fiz"/>
-        <copy todir="${destdir}/web/WEB-INF/fiz">
-            <fileset dir="${fizhome}/web/WEB-INF/fiz" />
-        </copy>
+        <!-- Create a copy of the app-creating fiz tool -->
+        <mkdir dir="${destdir}/fiz"/>
+        <copy todir="${destdir}/fiz">
+            <fileset dir="${fizhome}">
+                <include name="antscripts/**"/>
+                <include name="app/**"/>
+                <include name="ext/**"/>
+                <include name="imageSource/**"/>
+                <include name="lib/**"/>
+                <include name="out/lib/**"/>
+                <include name="src/**"/>
+                <include name="shellscripts/**"/>
+                <include name="test/**"/>
+                <include name="web/**"/>
+                <include name="build.xml"/>
+            </fileset>
+           </copy>
 
     </target>
 

@@ -8,15 +8,18 @@ for the Fiz framework.
 
     <target name="clean" description="Remove all generated files">
         <delete dir="${outdir}"/>
-        <delete dir="${docdir}"/>
     </target>
 
     <target name="compile" description="Compile from source">
+        <!-- Compile the sources -->
         <mkdir dir="${classdir}"/>
         <javac srcdir="src" destdir="${classdir}" classpathref="classpath" />
+        <!-- Create the jar file for these tools -->
+        <mkdir dir="${genlibdir}"/>
+        <jar destfile="${genlibdir}/fiz.jar" basedir="${classdir}"/>
     </target>
 
-    <target name="test-compile" depends="compile"
+    <target name="compile-test" depends="compile"
             description="Compile unit tests">
         <mkdir dir="${testclassdir}"/>
         <javac destdir="${testclassdir}" srcdir="test">
@@ -24,17 +27,18 @@ for the Fiz framework.
         </javac>
     </target>
 
-    <target name="test" depends="compile,test-compile"
+    <target name="test" depends="compile,compile-test"
             description="Execute unit tests" >
         <antcall target="test-java"/>
         <antcall target="test-js"/>
     </target>
 
-    <target name="test-java" depends="compile,test-compile"
+    <target name="test-java" depends="compile,compile-test"
             description="Excecute java unit tests">
         <junit fork="yes">
             <classpath refid="classpath.test" />
             <formatter type="brief" usefile="false"/>
+            <sysproperty key="fiz.location" value="."/>
 
             <batchtest>
                 <fileset dir="${testclassdir}">
@@ -83,7 +87,7 @@ for the Fiz framework.
     <!-- Builds a demo application that showcases some of the default
     sections that come with Fiz -->
     <target name="build-demo" description="Builds the Fiz demo application"
-            depends="compile,test-compile">
+            depends="compile,compile-test">
         <delete dir="${demodir}"/>
 
         <!-- Classes and libraries -->
@@ -232,34 +236,34 @@ for the Fiz framework.
     </target>
 
     <target name="install" description="Installs Fiz" depends="checkOS">
-		<antcall target="${install.target}"/>
+        <antcall target="${install.target}"/>
     </target>
 
-	<target name="checkOS">
-		<condition property="install.target" value="install-windows">
-			<os family="windows"/>
-		</condition>
-		<condition property="install.target" value="install-mac">
-			<os family="mac"/>
-		</condition>
-		<condition property="install.target" value="install-unix">
-			<os family="unix"/>
-		</condition>
-	</target>
+    <target name="checkOS">
+        <condition property="install.target" value="install-windows">
+            <os family="windows"/>
+        </condition>
+        <condition property="install.target" value="install-mac">
+            <os family="mac"/>
+        </condition>
+        <condition property="install.target" value="install-unix">
+            <os family="unix"/>
+        </condition>
+    </target>
 
-	<target name="install-windows" description="OS specific target for Windows"
+    <target name="install-windows" description="OS specific target for Windows"
             depends="prepare-scripts">
-	</target>
+    </target>
 
-	<target name="install-mac" description="OS specific target for MacOS"
-            depends="prepare-scripts">
-        <chmod file="bin/fiz" perm="ugo+x"/>
-	</target>
-
-	<target name="install-unix" description="OS specific target for Unix"
+    <target name="install-mac" description="OS specific target for MacOS"
             depends="prepare-scripts">
         <chmod file="bin/fiz" perm="ugo+x"/>
-	</target>
+    </target>
+
+    <target name="install-unix" description="OS specific target for Unix"
+            depends="prepare-scripts">
+        <chmod file="bin/fiz" perm="ugo+x"/>
+    </target>
 
     <target name="prepare-scripts"
             description="Replaces tokens in the Fiz script files">
@@ -295,6 +299,9 @@ for the Fiz framework.
 
     <!-- The directory in which Java classes are compiled -->
     <property name="classdir" value="${outdir}/classes"/>
+    
+    <!-- The directory in which generated libraries are compiled -->
+    <property name="genlibdir" value="${outdir}/lib"/>
 
     <!-- The directory in which Java test classes are compiled. -->
     <property name="testclassdir" value="${outdir}/tests" />

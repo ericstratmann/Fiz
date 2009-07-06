@@ -1,0 +1,2 @@
+Add JUnit test files for your classes here. These will be automatically compiled
+and executed by the target named "test" in your application's build.xml file.

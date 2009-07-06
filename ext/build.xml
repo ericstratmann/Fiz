@@ -6,57 +6,51 @@
         <delete dir="${outdir}"/>
     </target>
 
-    <target name="compile" description="Compile from source"
-            depends="checksources" if="contains.sources">
+    <target name="compile" description="Compile from source">
+        <!-- Compile the sources -->
         <mkdir dir="${classdir}"/>
-        <javac srcdir="src" destdir="${classdir}" classpathref="classpath" />
+        <javac srcdir="src" destdir="${classdir}" classpathref="classpath"/>
+        <!-- Create the jar file for this extension -->
+        <mkdir dir="${genlibdir}"/>
+        <jar destfile="${genlibdir}/${extname}.jar" basedir="${classdir}"/>
     </target>
     
     <target name="test-compile" depends="compile"
             description="Compile unit tests">
         <mkdir dir="${testclassdir}"/>
         <javac destdir="${testclassdir}" srcdir="test">
-            <classpath refid="classpath"/>
+            <classpath refid="classpath.test"/>
         </javac>
     </target>
-
+    
     <target name="test" depends="compile,test-compile"
             description="Execute unit tests" >
         <junit fork="yes">
-            <classpath refid="classpath" />
+            <classpath refid="classpath.test" />
             <formatter type="brief" usefile="false"/>
+            <sysproperty key="fiz.location" value="${my.fiz.location}"/>
 
             <batchtest>
                 <fileset dir="${testclassdir}">
                     <include name="**/*Test.class"/>
                 </fileset>
             </batchtest>
-
         </junit>
     </target>
 
-    <target name="build" description="Builds and packages this extension"
+    <target name="build" description="Builds this extension"
             depends="compile, javadoc">
-
-        <!-- Generate and copy library files -->
-        <mkdir dir="${builddir}/lib"/>
-        <manifest file="${outdir}/MANIFEST.MF">
-            <attribute name="Built-By" value="${user.name}"/>
-            <attribute name="Implementation-Title" value="${extname}"/>
-            <attribute name="Implementation-Version" value="${version}"/>
-        </manifest>
-
-        <!-- Generate the .jar file for this extension -->
-        <antcall target="jar"/>
-
-        <copy todir="${builddir}/lib">
-            <!-- libs.list contains a list of jar file names that are to be
-            included in the extension build -->
-            <fileset dir="lib">
-                <includesfile name="lib/libs.list"/>
-                <exclude name="libs.list"/>
-                <exclude name="README"/>
-            </fileset>
+        <!-- Copy the jar files to be included in the extension build -->
+        <mkdir dir="${builddir}/${libdir}"/>
+        <copy todir="${builddir}/${libdir}">
+            <fileset dir="${genlibdir}"/>
+            <fileset dir="${libdir}" excludes="README"/>
+        </copy>
+        
+        <!-- Copy the javadoc files -->
+        <mkdir dir="${builddir}/javadoc"/>
+        <copy todir="${builddir}/javadoc">
+            <fileset dir="${docdir}"/>
         </copy>
 
         <!-- Copy static resources used by this extension -->
@@ -74,15 +68,27 @@
         <copy todir="${builddir}/css">
             <fileset dir="css" excludes="README"/>
         </copy>
+    </target>
+    
+    <target name="package" depends="build" description="Packages this extension">
+        <!-- Create a manifest file -->
+        <manifest file="${outdir}/MANIFEST.MF">
+            <attribute name="Built-By" value="${user.name}"/>
+            <attribute name="Implementation-Title" value="${extname}"/>
+            <attribute name="Implementation-Version" value="${version}"/>
+        </manifest>
 
-        <!-- Documentation -->
-        <ant target="package-docs"/>
+        <!-- Create the documentation zipfile -->
+        <zip destfile="${outdir}/${extname}-doc-${version}.zip">
+            <zipfileset dir="${docdir}" prefix="${extname}-doc-${version}"/>
+        </zip>
         
-        <!-- Create extension package -->
+        <!-- Create the binary extension zipfile -->
         <zip destfile="${outdir}/${extname}-bin-${version}.zip">
             <zipfileset dir="${builddir}" prefix="${extname}"/>
         </zip>
 
+        <!-- Create the source extension zipfile -->
         <zip destfile="${outdir}/${extname}-src-${version}.zip">
             <zipfileset dir="${builddir}" prefix="${extname}"/>
             <zipfileset file="build.xml" prefix="${extname}"/>
@@ -91,6 +97,7 @@
             <zipfileset dir="lib" prefix="${extname}/lib"/>
         </zip>
 
+        <!-- Create the overarching package zipfile -->
         <zip destfile="${outdir}/${extname}-pkg-${version}.zip">
             <zipfileset dir="${outdir}">
                 <include name="${extname}-bin-${version}.zip"/>
@@ -98,14 +105,15 @@
                 <include name="${extname}-doc-${version}.zip"/>
             </zipfileset>
         </zip>
-
     </target>
-
-    <target name="javadoc" depends="compile" if="contains.sources">
+    
+    <target name="javadoc" depends="compile" 
+            description="Creates javadoc for this extension">
+        <mkdir dir="${docdir}"/>
         <javadoc destdir="${docdir}"
                  public="true"
                  Windowtitle="${extname} documentation"
-                 docletpath="${libdir}/fiz.jar"
+                 docletpathref="classpath"
                  doclet="org.fiz.FizDoc">
             <classpath>
                 <path refid="classpath"/>
@@ -115,38 +123,8 @@
             </fileset>
         </javadoc>
         <concat destfile="${docdir}/stylesheet.css" append="true">
-            <filelist dir="." files="javadoc.css"/>
+            <filelist dir="${my.fiz.location}" files="javadoc.css"/>
         </concat>
-    </target>
-
-    <!-- Generates the .jar file for this extension -->
-    <target name="jar" depends="compile" if="contains.sources">
-        <!-- Generate the .jar file for this extension -->
-        <jar destfile="${builddir}/lib/${extname}.jar" basedir="${classdir}"
-                manifest="${outdir}/MANIFEST.MF"/>
-    </target>
-
-    <!-- Conditionally packages javadoc files. Invoked only from the "build"
-     target -->
-    <target name="package-docs" if="contains.sources">
-        <mkdir dir="${builddir}/javadoc"/>
-        <copy todir="${builddir}/javadoc">
-            <fileset dir="${docdir}"/>
-        </copy>
-        <zip destfile="${outdir}/${extname}-doc-${version}.zip">
-            <zipfileset dir="${docdir}" prefix="${extname}-doc-${version}"/>
-        </zip>
-    </target>
-
-    <!-- Checks if this extension includes in any java source files -->
-    <target name="checksources">
-        <condition property="contains.sources">
-            <resourcecount when="gt" count="0">
-                <fileset dir="src">
-                    <include name="**/*.java"/>
-                </fileset>
-            </resourcecount>
-        </condition>
     </target>
 
     <!-- The version number of this extension -->
@@ -164,6 +142,9 @@
 
     <!-- The directory in which Java classes are compiled -->
     <property name="classdir" value="${outdir}/classes"/>
+    
+    <!-- The directory containing generated libraries -->
+    <property name="genlibdir" value="${outdir}/lib"/>
 
     <!-- The directory in which Java test classes are compiled. -->
     <property name="testclassdir" value="${outdir}/tests" />
@@ -174,10 +155,33 @@
     <!-- The directory in which Javadocs are created -->
     <property name="docdir" value="${outdir}/javadoc"/>
     
+    <!-- Loads into ${fiz.location} the application-relative 
+     location of the default Fiz tools installation to use -->
+    <property file="../../fiz.properties"/>
+    
+    <!-- The directory containing the fiz installation to use.  By 
+     default this is set to ../../${fiz.location}.  If you wish to 
+     specify a different Fiz tools installation to use, change the 
+     value of the property below -->
+    <property name="my.fiz.location" value="../../${fiz.location}"/>
+    
+    
     <path id="classpath">
         <fileset dir="${libdir}">
             <include name="**/*.jar"/>
         </fileset>
+        <fileset dir="${my.fiz.location}/${libdir}">
+            <include name="**/*.jar"/>
+        </fileset>
+        <fileset dir="${my.fiz.location}/${genlibdir}" erroronmissingdir="false">
+            <include name="**/*.jar"/>
+        </fileset>
     </path>
 
+    <path id="classpath.test">
+        <pathelement location="${classdir}"/>
+        <pathelement location="${testclassdir}"/>
+        <path refid="classpath"/>
+    </path>
+    
 </project>

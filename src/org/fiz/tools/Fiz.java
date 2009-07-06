@@ -1240,7 +1240,6 @@ public class Fiz {
         // antscripts/
         // app/
         // ext/
-        // lib/fiz.jar
         // shellscripts/
         // web/static/fiz/
         // web/WEB-INF/fiz
@@ -1254,9 +1253,6 @@ public class Fiz {
             return false;
         }
         if (!(new File(path + "/ext").isDirectory())) {
-            return false;
-        }
-        if (!(new File(path + "/lib/fiz.jar").isFile())) {
             return false;
         }
         if (!(new File(path + "/shellscripts").isDirectory())) {
@@ -1288,33 +1284,29 @@ public class Fiz {
      */
     protected boolean isFizApplicationDir(String path) {
         // Check for the following directory structure:
-        // antscripts/
-        // lib/fiz.jar
+        // ext/
         // src/
-        // web/static/fiz/
-        // web/WEB-INF/fiz
-        // web/WEB-INF/web.xml
+        // web/static/
+        // web/WEB-INF/app
         // build.xml
+        // fiz.properties
 
-        if (!(new File(path + "/antscripts").isDirectory())) {
-            return false;
-        }
-        if (!(new File(path + "/lib/fiz.jar").isFile())) {
+        if (!(new File(path + "/ext").isDirectory())) {
             return false;
         }
         if (!(new File(path + "/src").isDirectory())) {
             return false;
         }
-        if (!(new File(path + "/web/static/fiz").isDirectory())) {
+        if (!(new File(path + "/web/static/").isDirectory())) {
             return false;
         }
-        if (!(new File(path + "/web/WEB-INF/fiz").isDirectory())) {
-            return false;
-        }
-        if (!(new File(path + "/web/WEB-INF/web.xml").isFile())) {
+        if (!(new File(path + "/web/WEB-INF/app").isDirectory())) {
             return false;
         }
         if (!(new File(path + "/build.xml").isFile())) {
+            return false;
+        }
+        if (!(new File(path + "/fiz.properties").isFile())) {
             return false;
         }
 

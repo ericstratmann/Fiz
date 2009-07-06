@@ -9,33 +9,118 @@ build.xml file. -->
     </target>
 
     <target name="compile" description="Compile from source"
-            depends="clean-build, copy-libs, build-extensions">
+            depends="compile-extensions">
+        <antcall target="compile-classes"/>
+    </target>
+    
+    <target name="compile-classes" description="Compiles the application 
+                classes without first forcing the extensions to be compiled">
         <mkdir dir="${classdir}"/>
         <javac srcdir="src" destdir="${classdir}" classpathref="classpath" />
     </target>
+    
+    <target name="compile-test" description="Compile unit tests">
+        <mkdir dir="${testclassdir}"/>
+        <javac destdir="${testclassdir}" srcdir="test">
+            <classpath refid="classpath.test"/>
+        </javac>
+    </target>
+    
+    <target name="test" depends="build, compile-test"
+                description="Execute unit tests">
+        <junit fork="yes">
+            <classpath refid="classpath.test" />
+            <formatter type="brief" usefile="false"/>
+            <sysproperty key="fiz.location" value="${fiz.location}"/>
+
+            <batchtest>
+                <fileset dir="${testclassdir}">
+                    <include name="**/*Test.class"/>
+                </fileset>
+            </batchtest>
+
+        </junit>
+    </target>
 
     <target name="build" description="Build the web application"
-            depends="compile">
+            depends="build-extensions, compile-classes">
         <mkdir dir="${builddir}"/>
+        
+        <!-- Create the static/ directory -->
+        <mkdir dir="${builddir}/static"/>
         <copy todir="${builddir}/static">
-            <fileset dir="web/static"/>
+            <fileset dir="web/static">
+                <exclude name="**/README"/>
+            </fileset>
         </copy>
+        
+        <!-- Create the static/fiz/ directory-->
+        <mkdir dir="${builddir}/static/fiz"/>
         <copy todir="${builddir}/static/fiz">
-            <fileset dir="web/static/fiz"/>
+            <fileset dir="${fiz.location}/web/static/fiz">
+                <exclude name="**/README"/>
+            </fileset>
         </copy>
+        
+        <!-- Create the WEB-INF/ directory -->
+        <mkdir dir="${builddir}/WEB-INF"/>
         <copy todir="${builddir}/WEB-INF">
             <fileset dir="web/WEB-INF">
                 <exclude name="**/README"/>
             </fileset>
         </copy>
-        <copy todir="${builddir}/WEB-INF/lib">
-            <fileset dir="lib"/>
-        </copy>
+        
+        <!-- Create the WEB-INF/classes/ directory -->
+        <mkdir dir="${builddir}/WEB-INF/classes"/>
         <copy todir="${builddir}/WEB-INF/classes">
             <fileset dir="${classdir}"/>
         </copy>
+        
+        <!-- Create the WEB-INF/fiz/ directory -->
+        <mkdir dir="${builddir}/WEB-INF/fiz"/>
+        <copy todir="${builddir}/WEB-INF/fiz">
+            <fileset dir="${fiz.location}/web/WEB-INF/fiz">
+                <exclude name="**/README"/>
+            </fileset>
+        </copy>
+        
+        <!-- Create the WEB-INF/lib/ directory, copying over libraries 
+         from Fiz, extensions, and the application in the correct order -->
+        <mkdir dir="${builddir}/WEB-INF/lib"/>
+        <copy todir="${builddir}/WEB-INF/lib">
+            <fileset dir="${fiz.location}/${genlibdir}" erroronmissingdir="false"/>
+            <fileset dir="${fiz.location}/${libdir}">
+                <exclude name="**/README"/>
+            </fileset>
+           </copy>
+        
+        <!-- We must interject the extensions' files here, so that their 
+         libraries are copied into the deployment directory in the right 
+         order. -->
+        <antcall target="copy-extensions-build"/>
+        
+        <copy todir="${builddir}/WEB-INF/lib">
+            <fileset dir="${libdir}">
+                <exclude name="**/README"/>
+            </fileset>
+        </copy>
+        
+        <!-- Copy web.xml into the deployment directory, either from the 
+         referenced Fiz tools or from the application if one exists there -->
+        <if>
+            <available file="web/WEB-INF/web.xml" />
+            <then>
+                <property name="webxmlloc" value="web/WEB-INF"/>
+            </then>
+            <else>
+                <property name="webxmlloc" value="${fiz.location}/web/WEB-INF"/>
+            </else>
+        </if>
+        <copy todir="${builddir}/WEB-INF">
+            <fileset file="${webxmlloc}/web.xml"/>
+        </copy>
     </target>
-
+    
     <target name="war" description="Create WAR file" depends="build">
         <war destfile="${outdir}/${appname}.war">
             <fileset dir="${builddir}"/>
@@ -58,79 +143,101 @@ build.xml file. -->
             password="${tomcat.password}"
             path="${tomcat.application.path}" />
     </target>
+    
+    <target name="compile-extensions" description="Compiles each extension 
+                installed in this application">
+        <!-- Runs the compile target of each extension -->
+        <antcall target="foreach-extension">
+            <param name="target" value="ext.invoke.target"/>
+            <param name="argument" value="compile"/>
+        </antcall>
+    </target>
+    
+    <target name="build-extensions" description="Builds each extension 
+                installed in this application">
+        <!-- Runs the build target of each extension-->
+        <antcall target="foreach-extension">
+            <param name="target" value="ext.invoke.target"/>
+            <param name="argument" value="build"/>
+        </antcall>
+    </target>
 
-    <target name="build-extensions">
-        <foreach target="ext.build" param="ext.dir" inheritall="true">
+    <target name="copy-extensions-build" description="Copies the deployment 
+                directories of each extension into the application's 
+                deployment directory">
+        <!-- Runs ext.copy.build on each extension -->
+        <antcall target="foreach-extension">
+            <param name="target" value="ext.copy.build"/>
+            <param name="argument" value=""/>
+        </antcall>
+    </target>
+    
+    <target name="foreach-extension" description="Iterates over each extension 
+                installed in this application, calling the specified {target} 
+                with an {argument}">
+        <foreach target="${target}" param="ext.dir" inheritall="true">
             <path>
                 <dirset dir="${extensions.dir}">
                     <depth min="0" max="0"/>
                     <exclude name=".fiztemp"/>
                 </dirset>
             </path>
+            <param name="argument" value="${argument}"/>
         </foreach>
     </target>
 
-    <target name="ext.build" depends="ext.check.src">
-        <antcall target="${ext.build.target}"/>
+    <target name="ext.invoke.target" description="Determines if an extension is 
+                a source distribution, and if so invokes its {argument} target">
+        <if>
+            <available file="${ext.dir}/src"/>
+            <then>
+                <!-- Execute specified target -->
+                <ant antfile="${ext.dir}/build.xml" target="${argument}" inheritall="false"/>
+            </then>
+        </if>
     </target>
+    
+    <target name="ext.copy.build" description="Determines the deployment directory 
+                for a given extension, and then copies its files into the 
+                application's deployment directory">
+        <basename file="${ext.dir}" property="ext.name"/>
+        
+        <!-- Determine the extension's build directory -->
+        <if>
+            <available file="${ext.dir}/src"/>
+            <then>
+                <!-- For source distributions -->
+                <property name="ext.build.dir" value="${ext.dir}/out/${ext.name}"/>
+            </then>
+            <else>
+                <!-- For binary distributions -->
+                <property name="ext.build.dir" value="${ext.dir}"/>
+            </else>
+        </if>
 
-    <target name="ext.build.bin">
-	    <basename file="${ext.dir}" property="ext.name"/>
-
-        <!-- Config files -->
+        <!-- Copy the extension's configurations -->
         <mkdir dir="${builddir}/WEB-INF/ext/${ext.name}/config"/>
         <copy todir="${builddir}/WEB-INF/ext/${ext.name}/config">
-            <fileset dir="${ext.dir}/config"/>
+            <fileset dir="${ext.build.dir}/config"/>
         </copy>
 
-        <!-- Css files -->
+        <!-- Copy the extension's css -->
         <mkdir dir="${builddir}/WEB-INF/ext/${ext.name}/css"/>
         <copy todir="${builddir}/WEB-INF/ext/${ext.name}/css">
-            <fileset dir="${ext.dir}/css"/>
+            <fileset dir="${ext.build.dir}/css"/>
         </copy>
 
-        <!-- Copy libraries -->
+        <!-- Copy the extension's libraries -->
         <mkdir dir="${builddir}/WEB-INF/lib"/>
         <copy todir="${builddir}/WEB-INF/lib">
-            <fileset dir="${ext.dir}/lib"/>
+            <fileset dir="${ext.build.dir}/lib"/>
         </copy>
 
-        <!-- Static files -->
+        <!-- Copy the extension's static resources -->
         <mkdir dir="${builddir}/static/ext/${ext.name}"/>
         <copy todir="${builddir}/static/ext/${ext.name}">
-            <fileset dir="${ext.dir}/static"/>
+            <fileset dir="${ext.build.dir}/static"/>
         </copy>
-    </target>
-
-    <target name="ext.build.src">
-        <basename file="${ext.dir}" property="ext.name"/>
-        <!-- Execute the extension's build file -->
-        <ant antfile="${ext.dir}/build.xml" target="build" inheritall="false"/>
-        <!-- Invoke ext.build.bin on the build output -->
-        <antcall target="ext.build.bin">
-            <param name="ext.dir" value="${ext.dir}/out/${ext.name}"/>
-        </antcall>
-    </target>
-
-    <!-- This target checks if an extension directory contains sources or
-    just binaries -->
-    <target name="ext.check.src">
-        <condition property="ext.build.target" value="ext.build.src"
-                   else="ext.build.bin">
-            <available file="${ext.dir}/build.xml"
-                       property="ext.src" value="ext.build.src"/>
-        </condition>
-    </target>
-
-    <target name="copy-libs">
-        <mkdir dir="${builddir}/WEB-INF/lib"/>
-        <copy todir="${builddir}/WEB-INF/lib">
-            <fileset dir="lib"/>
-        </copy>
-    </target>
-
-    <target name="clean-build">
-        <delete dir="${builddir}"/>
     </target>
 
     <!-- The directory containing Java libraries (.jar files). -->
@@ -141,7 +248,13 @@ build.xml file. -->
 
     <!-- The directory in which Java classes are compiled. -->
     <property name="classdir" value="${outdir}/classes" />
+    
+    <!-- The directory for all generated libriries -->
+    <property name="genlibdir" value="${outdir}/lib"/>
 
+    <!-- The directory in which Java test classes are compiled. -->
+    <property name="testclassdir" value="${outdir}/tests" />
+    
     <!-- The name of the web application -->
     <property name="appname" value="${ant.project.name}"/>
 
@@ -156,20 +269,36 @@ build.xml file. -->
     <property file="tomcat.deploy.properties"/>
 
     <path id="classpath">
-        <fileset dir="${builddir}/WEB-INF/lib">
+        <fileset dir="${libdir}">
+            <include name="**/*.jar"/>
+        </fileset>
+        <fileset dir="${extensions.dir}">
+            <include name="*/${libdir}/**/*.jar"/>
+            <include name="*/${genlibdir}/**/*.jar"/>
+        </fileset>
+        <fileset dir="${fiz.location}/${libdir}">
+            <include name="**/*.jar"/>
+        </fileset>
+        <fileset dir="${fiz.location}/${genlibdir}" erroronmissingdir="false">
             <include name="**/*.jar"/>
         </fileset>
     </path>
 
+    <path id="classpath.test">
+        <pathelement location="${classdir}" />
+        <pathelement location="${testclassdir}" />
+        <path refid="classpath" />
+    </path>
+
     <taskdef resource="net/sf/antcontrib/antlib.xml">
         <classpath>
-            <pathelement location="lib/ant-contrib-1.0b3.jar"/>
+            <pathelement location="${fiz.location}/lib/ant-contrib-1.0b3.jar"/>
         </classpath>
     </taskdef>
 
     <taskdef resource="org/apache/catalina/ant/antlib.xml">
         <classpath>
-            <pathelement location="lib/catalina-ant.jar"/>
+            <pathelement location="${fiz.location}/lib/catalina-ant.jar"/>
         </classpath>
     </taskdef>
 

@@ -2,6 +2,7 @@ package org.fiz.test;
 
 import java.io.*;
 import javax.xml.parsers.*;
+
 import org.w3c.dom.Document;
 import org.xml.sax.*;
 
@@ -64,14 +65,19 @@ public class XhtmlValidator {
      * entity names (for DTD's) to files.
      */
     private static class XhtmlEntityResolver implements EntityResolver {
-        // Directory containing all of the DTD files:
-        protected static final String DTD_ROOT = "test/dtd/";
+        // File present in Fiz applications, containing a reference to the 
+        // Fiz tools installation to use:
+        protected static final String FIZ_LOCATION_PROPERTY = "fiz.location";
+        
+        protected static final String DEFAULT_DTD_ROOT = "test" + 
+            File.separator + "dtd" + File.separator;
+        protected static String dtdRoot = null;
 
         /**
          * Given the name of an entity, this method extracts the last
          * file name in the entity's path, finds the corresponding
-         * file in DTD_ROOT, and returns an InputSource that can be used
-         * to read the file.
+         * file in the appropriate dtd directory, and returns an 
+         * InputSource that can be used to read the file.
          * @param publicId         Not used.
          * @param systemId         System identifier for the entity, which can
          *                         be mapped to a file name.
@@ -82,9 +88,24 @@ public class XhtmlValidator {
          */
         public InputSource resolveEntity(String publicId, String systemId)
                 throws FileNotFoundException {
+            if (dtdRoot == null) {
+                updateDtdRoot();
+            }
             String fileName = systemId.substring(systemId.lastIndexOf('/')+1);
             return new InputSource(new InputStreamReader(
-                    new FileInputStream(DTD_ROOT + fileName)));
+                    new FileInputStream(dtdRoot + fileName)));
+        }
+        
+        /**
+         * Determines where the dtd XHTML validation files are kept.  If a 
+         * fiz.location system property is set, use the directory 
+         * <fiz.location>/test/dtd.  Otherwise assume that the dtd files are 
+         * kept locally in ./test/dtd/.  
+         *
+         */
+        private void updateDtdRoot() {
+            String fizLocation = System.getProperty(FIZ_LOCATION_PROPERTY);
+            dtdRoot = (fizLocation == null? "" : fizLocation + File.separator) + DEFAULT_DTD_ROOT;
         }
     }
 
