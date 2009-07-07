@@ -26,6 +26,12 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         assertEquals("path", "abc, xyz, first/second",
                 StringUtil.join(manager.path, ", "));
     }
+    public void test_constructor_defaultPath() {
+        Config.setDataset("main", new Dataset("home", "/a/b/c"));
+        manager = new FileDataManager();
+        assertEquals("path", "/a/b/c/WEB-INF",
+                StringUtil.join(manager.path, ", "));
+    }
 
     public void test_clearCache() {
         TestUtil.writeFile("_testData_/test.yml", "value: abc\n");

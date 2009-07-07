@@ -23,10 +23,17 @@ public class FileDataManager {
      *                             directory.  When looking up files,
      *                             the file is looked up in each of these
      *                             directories in order (first existing
-     *                             file wins).
+     *                             file wins).  If no directories are
+     *                             provided the path defaults to the
+     *                             WEB-INF directory in the application's
+     *                             deployment.
      */
     public FileDataManager(String ... path) {
         this.path = path;
+        if (this.path.length == 0) {
+            this.path = new String[1];
+            this.path[0] = Config.get("main", "home") + "/WEB-INF";
+        }
     }
 
     /**
