@@ -139,9 +139,8 @@ public class FormSection extends Section {
             "style=\"display:none\"></div>";
 
     // The following variable is used to identify the first error in
-    // form data for a given post.  False means that the current call
-    // to the {@code post} method has not yet invoked the {@code elementError}
-    // method.
+    // form data for a given post.  False means that {@code elementError}
+    // has not been invoked since the last call to {@collectFormData}.
     protected boolean anyElementErrors;
 
     /**
@@ -200,6 +199,8 @@ public class FormSection extends Section {
      *                             display information about the error.
      */
     public Dataset collectFormData(ClientRequest cr) {
+        anyElementErrors = false;
+
         // Give each of the form elements a chance to collect and transform
         // the data for which it is responsible.
         Dataset postData = new Dataset();
@@ -215,7 +216,7 @@ public class FormSection extends Section {
                 String id = element.getId();
                 errorData = new Dataset("message", e.getMessage(),
                         "culprit", id);
-                elementError(cr, errorData, id);
+                elementError(cr, id, errorData);
             }
         }
 
@@ -244,7 +245,7 @@ public class FormSection extends Section {
             if (culprit != null) {
                 for (FormElement element : elements) {
                     if (element.responsibleFor(culprit)) {
-                        elementError(cr, error, element.getId());
+                        elementError(cr, element.getId(), error);
                         foundCulprit = true;
                         break;
                     }
@@ -258,20 +259,19 @@ public class FormSection extends Section {
 
     /**
      * When an error is detected in form data and the problem can be traced
-     * to a particular form element, this method is invoked to generate
-     * AJAX actions to display information about the error next to the form
-     * element.
+     * to a particular form element, this method will display information
+     * about the error next to the form element.
      * @param cr                   Overall information about the client
      *                             request being serviced.
-     * @param errorData            Dataset containing information about the
-     *                             error.
      * @param elementId            Identifier for the form element
      *                             responsible for the error; typically the
      *                             same as the {@code culprit} value in
      *                             {@code errorData}.
+     * @param errorData            Dataset containing information about the
+     *                             error.
      */
-    public void elementError(ClientRequest cr, Dataset errorData,
-            String elementId) {
+    public void elementError(ClientRequest cr, String elementId,
+            Dataset errorData) {
         // Generate HTML for the error message.
         StringBuilder html = new StringBuilder(100);
         String templateName = properties.check("elementErrorStyle");
@@ -296,6 +296,25 @@ public class FormSection extends Section {
         cr.evalJavascript(Template.expand("Fiz.ids.@1.elementError(" +
                 "\"@(1)_@2\", \"@3\");\n", Template.SpecialChars.JAVASCRIPT,
                 id, elementId, html));
+    }
+
+
+    /**
+     * When an error is detected in form data and the problem can be traced
+     * to a particular form element, this method will display information
+     * about the error next to the form element.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @param elementId            Identifier for the form element
+     *                             responsible for the error; typically the
+     *                             same as the {@code culprit} value in
+     *                             {@code errorData}.
+     * @param message              Human-readable message describing the
+     *                             problem.
+     */
+    public void elementError(ClientRequest cr, String elementId,
+            String message) {
+        elementError(cr, elementId, new Dataset("message", message));
     }
 
     /**

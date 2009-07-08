@@ -132,16 +132,16 @@ public class Demo2Interactor extends Interactor {
                         "label", "GPA:")));
         boolean anyErrors = false;
         if (cr.getMainDataset().get("last").length() == 0) {
-            form.elementError (cr, new Dataset("message",
-                    "You must supply the student's last name."), "last");
+            form.elementError (cr, "last", new Dataset("message",
+                    "You must supply the student's last name."));
             anyErrors = true;
         };
         String gpa = cr.getMainDataset().get("gpa");
         boolean gpaError = false;
         if (gpa.length() == 0) {
-            form.elementError (cr, new Dataset("message",
-                    "You must supply the student's grade-point average."),
-                    "gpa");
+            form.elementError (cr, "gpa", new Dataset("message",
+                    "You must supply the student's grade-point average.")
+            );
             anyErrors = true;
         } else {
             try {
@@ -155,9 +155,9 @@ public class Demo2Interactor extends Interactor {
             }
         }
         if (gpaError) {
-            form.elementError(cr, new Dataset("message",
-                "The GPA must be a number between 0.0 and 4.0."),
-                "gpa");
+            form.elementError(cr, "gpa", new Dataset("message",
+                "The GPA must be a number between 0.0 and 4.0.")
+            );
             anyErrors = true;
         }
         if (!anyErrors && (gpa.equals("4.0"))) {

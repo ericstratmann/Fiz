@@ -1,7 +1,5 @@
 package org.fiz;
 
-import javax.servlet.http.*;
-
 import org.fiz.test.*;
 
 /**
@@ -207,8 +205,8 @@ public class FormSectionTest extends junit.framework.TestCase {
         Dataset main = cr.getMainDataset();
         main.set("name", "Alice");
         main.set("age", "21");
-        form.elementError(cr, new Dataset("message", "<failure>",
-                "culprit", "age"), "id11");
+        form.elementError(cr, "id11", new Dataset("message", "<failure>",
+                "culprit", "age"));
         assertEquals("javascript response",
                 "Fiz.addBulletinMessage(\"bulletinError\", \"bulletin: " +
                 "One or more of the input fields are invalid; see " +
@@ -232,8 +230,8 @@ public class FormSectionTest extends junit.framework.TestCase {
         Dataset main = cr.getMainDataset();
         main.set("name", "Alice");
         main.set("age", "21");
-        form.elementError(cr, new Dataset("message", "<failure>",
-                "culprit", "age"), "id11");
+        form.elementError(cr, "id11", new Dataset("message", "<failure>",
+                "culprit", "age"));
         assertEquals("javascript response",
                 "Fiz.ids.form1.elementError(\"form1_id11\", \"error " +
                 "for Alice: &lt;failure&gt;\");\n",
@@ -248,11 +246,30 @@ public class FormSectionTest extends junit.framework.TestCase {
         cr.setClientRequestType(ClientRequest.Type.POST);
         Config.setDataset("styles", new Dataset("FormSection",
                 new Dataset("elementError", "default style: @message")));
-        form.elementError(cr, new Dataset("message", "<failure>",
-                "culprit", "age"), "id11");
+        form.elementError(cr, "id11", new Dataset("message", "<failure>",
+                "culprit", "age"));
         assertEquals("javascript response",
                 "Fiz.ids.form1.elementError(\"form1_id11\", " +
                 "\"default style: &lt;failure&gt;\");\n",
+                cr.jsCode.toString());
+    }
+
+    public void test_elementError_messageArgument() {
+        FormSection form = new FormSection(
+                new Dataset("id", "form1", "elementErrorStyle", "style22"),
+                new EntryFormElement("name", "Name:"),
+                new EntryFormElement("age", "Age:"));
+        cr.setClientRequestType(ClientRequest.Type.POST);
+        Config.setDataset("styles", new Dataset(
+                "style22", "error message: @message",
+                "bulletin", "bulletin: @message"));
+        form.elementError(cr, "id11", "synthetic error");
+        assertEquals("javascript response",
+                "Fiz.addBulletinMessage(\"bulletinError\", \"bulletin: " +
+                "One or more of the input fields are invalid; see " +
+                "details below.\");\n" +
+                "Fiz.ids.form1.elementError(\"form1_id11\", " +
+                "\"error message: synthetic error\");\n",
                 cr.jsCode.toString());
     }
 
