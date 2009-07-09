@@ -79,12 +79,29 @@ Element.prototype.printChildren = function() {
     }
     return result;
 }
- 
+
 // The following functions provide dummy versions of standard DOM functions;
 // see the DOM documentation for details on how they are supposed to behave.
 // The functions below may attempt to replicate part or all of the
 // functionality of the official DOM versions, or they may just log
 // information about their parameters.
+
+/**
+ * Generates a list of children of the current element that are of the type
+ * specified. IMPORTANT: Element must include a "tag" property for this
+ * function to find it.
+ * @param tag							The type of element we are looking for
+ */
+Element.prototype.getElementsByTagName = function(tag) {
+	var children = [];
+	for (var child = this.firstChild; child != null;
+			child = child.nextSibling) {
+			if (tag == child.tag) {
+				children.push(child);
+			}
+	}
+	return children;
+}
 
 Element.prototype.appendChild = function(element) {
     element.parentNode = this;

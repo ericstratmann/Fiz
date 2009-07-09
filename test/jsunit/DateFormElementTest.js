@@ -149,9 +149,9 @@ DateFormElementTest.test_redraw = function() {
 	var icon = document.addElementWithId("cal1_icon");
 	var grid = document.addElementWithId("cal1_grid");
 	for(var i = 0; i < 6; i++) {
-		var row = document.addElementWithId("row-" + (i + 1));
+		var row = document.addElementWithId("row-" + (i + 1), {tag: "tr"});
 		for(var j = 0; j < 7; j++) {
-			row.appendChild(document.addElementWithId("cell-" + (i + 1) + "-" + (j + 1)));
+			row.appendChild(document.addElementWithId("cell-" + (i + 1) + "-" + (j + 1),  {tag: "td"}));
 		}
 		grid.appendChild(row);
 		row.__defineGetter__("childNodes", function() {
@@ -173,7 +173,7 @@ DateFormElementTest.test_redraw = function() {
 	// Previous month
 	assertEqual(29, document.getElementById("cell-1-1").textContent,
 			"Row 1, Column 1");
-	assertEqual("", document.getElementById("cell-1-1").className,
+	assertEqual("excluded", document.getElementById("cell-1-1").className,
 			"Row 1, Column 1: className");
 	assertEqual(31, document.getElementById("cell-1-3").textContent,
 			"Row 1, Column 3");
@@ -181,11 +181,11 @@ DateFormElementTest.test_redraw = function() {
 	// Current month
 	assertEqual(1, document.getElementById("cell-1-4").textContent,
 			"Row 1, Column 4");
-	assertEqual(" cur-month", document.getElementById("cell-1-4").className,
+	assertEqual("cur-month", document.getElementById("cell-1-4").className,
 			"Row 1, Column 4: className");
 	assertEqual(13, document.getElementById("cell-3-2").textContent,
 			"Row 3, Column 2");
-	assertEqual(" cur-month cur-day", document.getElementById("cell-3-2").className,
+	assertEqual("cur-month cur-day", document.getElementById("cell-3-2").className,
 			"Row 3, Column 2: className");
 	assertEqual(31, document.getElementById("cell-5-6").textContent,
 			"Row 5, Column 6");
@@ -193,7 +193,7 @@ DateFormElementTest.test_redraw = function() {
 	// Next month
 	assertEqual(1, document.getElementById("cell-5-7").textContent,
 			"Row 5, Column 7");
-	assertEqual("", document.getElementById("cell-5-7").className,
+	assertEqual("excluded", document.getElementById("cell-5-7").className,
 			"Row 5, Column 7: className");
 	assertEqual(8, document.getElementById("cell-6-7").textContent,
 			"Row 6, Column 7");
