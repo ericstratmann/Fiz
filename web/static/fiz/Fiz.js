@@ -86,3 +86,46 @@ Fiz.clearBulletin = function() {
 Fiz.clearBulletinBeforeNextAdd = function() {
     Fiz.clearOldBulletin = true;
 }
+
+Fiz.addClass = function(elem, className)
+{
+	if(elem.className.match(className) == null) {
+		// Trim off the white spaces
+		elem.className = elem.className.replace(/^\s+|\s+$/g, '');
+		
+		// Split at whitespace characters
+		var classes = (elem.className == '' ?
+				[] : elem.className.split(/\s+/));
+				
+		// Add the new class
+		classes.push(className);
+		
+		// ... And finally, put it all together again
+ 		elem.className = classes.join(' ');
+ 	}
+}
+
+Fiz.removeClass = function(elem, className)
+{
+	elem.className = elem.className.replace(className, '');
+}
+
+Fiz.findPos = function(obj)
+{
+	var curleft = 0;
+	var curtop = 0;
+	if(obj.offsetParent) {
+		do {
+			curleft += obj.offsetLeft;
+			curtop += obj.offsetTop;
+		} while(obj = obj.offsetParent);
+ 	}
+	return [curleft,curtop];
+}
+
+Fiz.cancelBubble = function(e)
+{
+	if (!e) var e = window.event;
+	e.cancelBubble = true;
+ 	if (e.stopPropagation) e.stopPropagation();
+}

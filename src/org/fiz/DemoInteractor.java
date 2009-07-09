@@ -34,10 +34,10 @@ public class DemoInteractor extends Interactor {
 
     // Datasets that supply results for raw data requests.
     Dataset formData = new Dataset("name", "Bill", "age", "41",
-    		"expiration", "11/12/2007",
             "height", "73", "weight", "195",
             "saying", "Line 1\nLine 2\n<Line 3>\n", "fruit", "grape",
             "notify", "all", "state", "California", "mascot", "Spartans");
+
     Dataset fruitInfo = new Dataset(
             "fruit", new Dataset("name", "Apple", "value", "Apple"),
             "fruit", new Dataset("name", "Banana", "value", "banana"),
@@ -49,19 +49,68 @@ public class DemoInteractor extends Interactor {
             "fruit", new Dataset("name", "Strawberry", "value", "strawberry"),
             "fruit", new Dataset("name", "Watermelon", "value", "watermelon"));
 
+    private static Dataset autocompleteData = new Dataset(
+            "name", new Dataset("name", "George Washington", "value", "1"),
+            "name", new Dataset("name", "John Adams", "value", "2"),
+            "name", new Dataset("name", "Thoms Jefferson", "value", "3"),
+            "name", new Dataset("name", "James Madison", "value", "4"),
+            "name", new Dataset("name", "James Monroe", "value", "5"),
+            "name", new Dataset("name", "John Quincy Adams", "value", "6"),
+            "name", new Dataset("name", "Andrew Jackson", "value", "7"),
+            "name", new Dataset("name", "Martin Van Buren", "value", "8"),
+            "name", new Dataset("name", "William Henry Harrison", "value", "9"),
+            "name", new Dataset("name", "John Tyler", "value", "10"),
+            "name", new Dataset("name", "James Knox Polk", "value", "11"),
+            "name", new Dataset("name", "Zachary Taylor", "value", "12"),
+            "name", new Dataset("name", "Millard Fillmore", "value", "13"),
+            "name", new Dataset("name", "Franklin Pierce", "value", "14"),
+            "name", new Dataset("name", "James Buchanan", "value", "15"),
+            "name", new Dataset("name", "Abraham Lincoln", "value", "16"),
+            "name", new Dataset("name", "Andrew Johnson", "value", "17"),
+            "name", new Dataset("name", "Ulysses S. Grant", "value", "18"),
+            "name", new Dataset("name", "Rutherford B. Hayes", "value", "19"),
+            "name", new Dataset("name", "James Garfield", "value", "20"),
+            "name", new Dataset("name", "Chester Arthur", "value", "21"),
+            "name", new Dataset("name", "Grover Cleveland", "value", "22"),
+            "name", new Dataset("name", "Benjamin Harrison", "value", "23"),
+            "name", new Dataset("name", "Grover Cleveland", "value", "24"),
+            "name", new Dataset("name", "William McKinley", "value", "25"),
+            "name", new Dataset("name", "Theodore Roosevelt", "value", "26"),
+            "name", new Dataset("name", "William Howard Taft", "value", "27"),
+            "name", new Dataset("name", "Woodrow Wilson", "value", "28"),
+            "name", new Dataset("name", "Warren Harding", "value", "29"),
+            "name", new Dataset("name", "Calvin Coolidge", "value", "30"),
+            "name", new Dataset("name", "Herbert Hoover", "value", "31"),
+            "name", new Dataset("name", "Franklin D. Roosevelt", "value", "32"),
+            "name", new Dataset("name", "Harry S. Truman", "value", "33"),
+            "name", new Dataset("name", "Dwight D. Eisenhower", "value", "34"),
+            "name", new Dataset("name", "John F. Kennedy", "value", "35"),
+            "name", new Dataset("name", "Lyndon Johnson", "value", "36"),
+            "name", new Dataset("name", "Richard Nixon", "value", "37"),
+            "name", new Dataset("name", "Gerald Ford", "value", "38"),
+            "name", new Dataset("name", "James Carter", "value", "39"),
+            "name", new Dataset("name", "Ronald Reagan", "value", "40"),
+            "name", new Dataset("name", "George H.W. Bush", "value", "41"),
+            "name", new Dataset("name", "William J. Clinton", "value", "42"),
+            "name", new Dataset("name", "George W. Bush", "value", "43"),
+            "name", new Dataset("name", "Barack H. Obama", "value", "44"));
+
     FormSection sideBySideForm = new FormSection(
             new Dataset("id", "form1", "request", "getFormData",
                     "postUrl", "postSideBySide"),
-            new EntryFormElement(new Dataset("id", "name",
-                    "label", "Name:", "help", "Enter customer name here")),
+            new AutocompleteFormElement(new Dataset("id", "name",
+                    "label", "Name:", "help", "Enter customer name here",
+                    "requestFactory", "DemoInteractor.autocompleteRequest")),
             new EntryFormElement(new Dataset("id", "age",
                     "label", "Age:")),
             new EntryFormElement(new Dataset("id", "state",
                     "label", "Home state:")),
             new DateFormElement(new Dataset("id", "expiration",
                     "label", "Expiration date:",
-                    "attachPosition", Integer.toString(DateFormElement.RIGHT),
-                    "dateFormat", "m-d-Y")),
+                    "attachPosition", "bottom",
+                    "dateFormat", "m-d-Y",
+                    "exclude", "Saturday, 1/12/2005, 7/23," +
+                    		"8/13/2010:9/11/2010, :6/24/2009, 9/3/2011:")),
             new PasswordFormElement(new Dataset("id", "password",
                     "label", "Password:")),
             new PasswordFormElement(new Dataset("id", "password2",
@@ -92,6 +141,18 @@ public class DemoInteractor extends Interactor {
             new UploadFormElement("upload", "File to upload:"),
             new HiddenFormElement("mascot")
             );
+    
+    public static DataRequest autocompleteRequest(String query) {
+    	Dataset matches = new Dataset();
+    	for(Dataset data : autocompleteData.getChildren("name")) {
+    		String dataName = data.get("name");
+    		if(dataName.substring(0, Math.min(query.length(), dataName.length())).equals(query)) {
+    			matches.addChild("data", data);
+    		}
+    	}
+    	
+    	return RawDataManager.newRequest(matches);
+    }
 
     FormSection verticalForm = new FormSection(
             new Dataset("id", "form2", "request", "getFormData",
