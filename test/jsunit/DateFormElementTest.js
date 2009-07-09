@@ -149,9 +149,9 @@ DateFormElementTest.test_redraw = function() {
 	var icon = document.addElementWithId("cal1_icon");
 	var grid = document.addElementWithId("cal1_grid");
 	for(var i = 0; i < 6; i++) {
-		var row = document.addElementWithId("row-" + (i + 1), {tag: "tr"});
+		var row = document.addElementWithId("row-" + (i + 1), {tagName: "tr"});
 		for(var j = 0; j < 7; j++) {
-			row.appendChild(document.addElementWithId("cell-" + (i + 1) + "-" + (j + 1),  {tag: "td"}));
+			row.appendChild(document.addElementWithId("cell-" + (i + 1) + "-" + (j + 1),  {tagName: "td"}));
 		}
 		grid.appendChild(row);
 		row.__defineGetter__("childNodes", function() {

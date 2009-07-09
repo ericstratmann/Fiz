@@ -88,7 +88,7 @@ Element.prototype.printChildren = function() {
 
 /**
  * Generates a list of children of the current element that are of the type
- * specified. IMPORTANT: Element must include a "tag" property for this
+ * specified. IMPORTANT: Element must include a "tagName" property for this
  * function to find it.
  * @param tag							The type of element we are looking for
  */
@@ -96,7 +96,7 @@ Element.prototype.getElementsByTagName = function(tag) {
 	var children = [];
 	for (var child = this.firstChild; child != null;
 			child = child.nextSibling) {
-			if (tag == child.tag) {
+			if (tag == child.tagName) {
 				children.push(child);
 			}
 	}
