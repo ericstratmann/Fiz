@@ -89,6 +89,9 @@ Fiz.clearBulletinBeforeNextAdd = function() {
 
 Fiz.addClass = function(elem, className)
 {
+	if(undefined == elem.className) {
+		elem.className = '';
+	}
 	if(elem.className.match(className) == null) {
 		// Trim off the white spaces
 		elem.className = elem.className.replace(/^\s+|\s+$/g, '');
@@ -107,6 +110,9 @@ Fiz.addClass = function(elem, className)
 
 Fiz.removeClass = function(elem, className)
 {
+	if(undefined == elem.className) {
+		elem.className = '';
+	}
 	elem.className = elem.className.replace(className, '');
 }
 
@@ -125,7 +131,16 @@ Fiz.findPos = function(obj)
 
 Fiz.cancelBubble = function(e)
 {
-	if (!e) var e = window.event;
+	var e;
+	if (!e) { e = window.event; }
 	e.cancelBubble = true;
- 	if (e.stopPropagation) e.stopPropagation();
+ 	if (e.stopPropagation) { e.stopPropagation(); }
+}
+
+Fiz.getKeyCode = function(e) {
+	if (window.event) {
+		return e.keyCode;
+	} else {
+		return e.which;
+	}
 }

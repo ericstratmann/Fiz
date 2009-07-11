@@ -11,14 +11,14 @@
  *                                 be copied to the new element.
  */
 function Element(contents) {
-    if (contents != undefined) {
-        for (var name in contents) {
-            this[name] = contents[name];
-        }
-    }
-    if (this.style == undefined) {
-        this.style = new Object();
-    }
+	if (contents != undefined) {
+		for (var name in contents) {
+			this[name] = contents[name];
+		}
+	}
+	if (this.style == undefined) {
+		this.style = new Object();
+	}
 }
 
 /**
@@ -31,16 +31,16 @@ function Element(contents) {
  *                                 element.
  */
 Element.prototype.getId = function() {
-    if (this.id != null) {
-        return this.id;
-    }
-    for (var i = 0, length = document.createdElements.length; i < length;
-            i++) {
-        if (document.createdElements[i] == this) {
-            return ((this.tagName != null) ? this.tagName : "") + "#" + i;
-        }
-    }
-    return "unknown element";
+	if (this.id != null) {
+		return this.id;
+	}
+	for (var i = 0, length = document.createdElements.length; i < length;
+			i++) {
+		if (document.createdElements[i] == this) {
+			return ((this.tagName != null) ? this.tagName : "") + "#" + i;
+		}
+	}
+	return "unknown element";
 }
 
 /**
@@ -50,9 +50,17 @@ Element.prototype.getId = function() {
  *                                 this element.
  */
 Element.prototype.toString = function() {
-    return printDataset(this);
+	return printDataset(this);
 }
 
+/**
+ * Returns whether an element has any children or not
+ * @return							See above
+ */
+Element.prototype.hasChildNodes = function() {
+	return (this.firstChild);
+}
+ 
 /**
  * Returns an array that contains all of the children of a particular element.
  * @return							See above
@@ -65,26 +73,6 @@ Element.prototype.getChildNodes = function() {
 	}
 	return children;
 }
-
-/**
- * Generates a string describing all of the children of a particular element.
- * @return                         See above.
- */
-Element.prototype.printChildren = function() {
-    var result = "";
-    for (var child = this.firstChild, i = 0; child != null;
-            child = child.nextSibling, i++) {
-        result += "Child #" + i + ":\n";
-        result += printDataset(child, "    ");
-    }
-    return result;
-}
-
-// The following functions provide dummy versions of standard DOM functions;
-// see the DOM documentation for details on how they are supposed to behave.
-// The functions below may attempt to replicate part or all of the
-// functionality of the official DOM versions, or they may just log
-// information about their parameters.
 
 /**
  * Generates a list of children of the current element that are of the type
@@ -103,68 +91,108 @@ Element.prototype.getElementsByTagName = function(tag) {
 	return children;
 }
 
+/**
+ * Generates a string describing all of the children of a particular element.
+ * @return                         See above.
+ */
+Element.prototype.printChildren = function() {
+	var result = "";
+	for (var child = this.firstChild, i = 0; child != null;
+			child = child.nextSibling, i++) {
+		result += "Child #" + i + ":\n";
+		result += printDataset(child, "    ");
+	}
+	return result;
+}
+
+// The following functions provide dummy versions of standard DOM functions;
+// see the DOM documentation for details on how they are supposed to behave.
+// The functions below may attempt to replicate part or all of the
+// functionality of the official DOM versions, or they may just log
+// information about their parameters.
+
 Element.prototype.appendChild = function(element) {
-    element.parentNode = this;
-    if (!this.lastChild) {
-        this.firstChild = this.lastChild = element;
-        return;
-    }
-    element.previousSibling = this.lastChild;
-    this.lastChild.nextSibling = element;
-    this.lastChild = element;
+	element.parentNode = this;
+	if (!this.lastChild) {
+		this.firstChild = this.lastChild = element;
+		return;
+	}
+	element.previousSibling = this.lastChild;
+	this.lastChild.nextSibling = element;
+	this.lastChild = element;
+}
+
+Element.prototype.removeChild = function(element) {
+	for (var child = this.firstChild; child != null;
+			child = child.nextSibling) {
+		if (child == element) {
+						if (!child.previousSibling) {
+							this.firstChild = child.nextSibling;
+						} else {
+							child.previousSibling.nextSibling = child.nextSibling;
+						}
+						if (!child.nextSibling) {
+							this.lastChild = child.previousSibling;
+						} else {
+							child.nextSibling.previousSibling = child.previousSibling;
+						}
+			return child;
+		}
+	}	
+	throw new Error("Element.removeChild could not find the child");
 }
 
 Element.prototype.insertBefore = function(element, successor) {
-    element.parentNode = this;
-    if (successor == null) {
-        appendChild(element);
-        return;
-    }
+	element.parentNode = this;
+	if (successor == null) {
+		appendChild(element);
+		return;
+	}
 
-    // Make sure that successor is one of our children.
-    for (var child = this.firstChild; child != successor;
-            child = child.nextSibling) {
-        if (!child) {
-            throw new Error("Element.insertBefore couldn't find successor");
-        }
-    }
+	// Make sure that successor is one of our children.
+	for (var child = this.firstChild; child != successor;
+			child = child.nextSibling) {
+		if (!child) {
+			throw new Error("Element.insertBefore couldn't find successor");
+		}
+	}
 
-    // Insert the element.
-    if (!successor.previousSibling) {
-        this.firstChild = element;
-    } else {
-        successor.previousSibling.nextSibling = element;
-        element.previousSibling = successor.previousSibling;
-    }
-    successor.previousSibling = element;
-    element.nextSibling = successor;
+	// Insert the element.
+	if (!successor.previousSibling) {
+		this.firstChild = element;
+	} else {
+		successor.previousSibling.nextSibling = element;
+		element.previousSibling = successor.previousSibling;
+	}
+	successor.previousSibling = element;
+	element.nextSibling = successor;
 }
 
 Element.prototype.replaceChild = function(newChild, oldChild) {
-    for (var child = this.firstChild; child != null;
-            child = child.nextSibling) {
-        if (child == oldChild) {
-            newChild.previousSibling = child.previousSibling;
-            if (child.previousSibling == null) {
-                this.firstChild = newChild;
-            } else {
-                child.previousSibling.nextSibling = newChild;
-            }
-            newChild.nextSibling = child.nextSibling;
-            if (child.nextSibling == null) {
-                this.lastChild = newChild;
-            } else {
-                child.nextSibling.previousSibling = newChild;
-            }
-            return;
-        }
-    }
+	for (var child = this.firstChild; child != null;
+			child = child.nextSibling) {
+		if (child == oldChild) {
+			newChild.previousSibling = child.previousSibling;
+			if (child.previousSibling == null) {
+				this.firstChild = newChild;
+			} else {
+				child.previousSibling.nextSibling = newChild;
+			}
+			newChild.nextSibling = child.nextSibling;
+			if (child.nextSibling == null) {
+				this.lastChild = newChild;
+			} else {
+				child.nextSibling.previousSibling = newChild;
+			}
+			return;
+		}
+	}
 }
 
 Element.prototype.scrollIntoView = function() {
-    jsunit.log += this.getId() + ".scrollIntoView()\n";
+	jsunit.log += this.getId() + ".scrollIntoView()\n";
 }
 
 Element.prototype.setAttribute = function(name, value) {
-    this[name] = value;
+	this[name] = value;
 }

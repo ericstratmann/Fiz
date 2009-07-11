@@ -1,6 +1,6 @@
-/* DateFormElement.css -
+/* AutocompleteFormElement.css -
  *
- * This file defines styles for DateFormElements that use the default
+ * This file defines styles for AutocompleteFormElements that use the default
  * class.  Many of the styles are inherited from those defined in css.yaml.
  */
  
@@ -26,10 +26,15 @@
 	cursor: pointer;
 }
 
+.AutocompleteFormElement .query {
+	margin-bottom: 5px;
+	color: #cccccc;
+}
+
 .AutocompleteFormElement .dropdown {
  	width: @formElementWidth;
 	position: absolute;
-	background: #fff;
+	background: #ffffff;
 	display: none;
 	list-style: none;
 	border: @standardBorder;
@@ -40,7 +45,7 @@
 }
 
 .AutocompleteFormElement li {
-	border: 1px solid #fff;
+	border: 1px solid #ffffff;
 	padding: 2px;	
 }
 

@@ -24,6 +24,8 @@
 Fiz.DateFormElement = function(id, dateFormat, attachPosition)
 {
 	var self = this;
+
+	// Set default values for this form element
 	this.id = id;
 	this.dateFormat = (undefined == dateFormat) ? 'm/d/Y' : dateFormat;
 	this.attachPosition =

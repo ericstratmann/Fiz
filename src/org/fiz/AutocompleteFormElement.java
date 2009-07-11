@@ -9,27 +9,20 @@ import org.fiz.TreeSection.PageProperty;
 /**
  * The DateFormElement allows users to input time and date either manually (in a
  * variety of formats) or through a customizable, JS-driven calendar object. It
- * supports the following properties: class: (optional) Class attribute to use
- * for the <div> containing this element; defaults to CheckboxFormElement. id:
- * (required) Name for this FormElement; must be unique among all ids for the
- * page. This is used as the name for the data value in query and update
- * requests and also as the {@code name} attribute for the HTML input element.
- * label: (optional) Template for label to display next to the checkbox to
- * identify the element for the user. attachPosition: (optional) Defaults to
- * BOTTOM. Define whether the calendar pops up to the RIGHT or to the BOTTOM of
- * the input field dateFormat: (optional) Defaults to m/d/Y. Specifies the
- * format of the date in the input field. The following specifiers may be used:
- * d: day without leading 0s (1, 2, ... , 30, 31) D: day with leading 0s (01,
- * 02, ... , 30, 31) m: month without leading 0s (1, 2, ... , 11, 12) M: month
- * with leading 0s (01, 02, ... , 11, 12) y: year in two-digit form (88, 89, ...
- * , 01, 02) Y: year in four-digit form (1988, 1989, ... , 2001, 2002)
+ * supports the following properties:
+ *   class: 			(optional) Class attribute to use for the <div>
+ *   					containing this element; defaults to AutocompleteFormElement.
+ *   id:				(required) Name for this FormElement; must be unique
+ *   					among all ids for the page. This is used as the name
+ *   					for the data value in query and update requests and also
+ *   					as the {@code name} attribute for the HTML input element.
+ *   label: (optional)	Template for label to display next to the input field to
+ * 						identify the element for the user.
+ *   attachPosition:	(optional) Defaults to {@code bottom}. Define whether
+ *   					the calendar pops up to the {@code right} or to the
+ *   					{@code bottom} of the input field.
  */
 public class AutocompleteFormElement extends FormElement implements DirectAjax {
-
-	public static final int BOTTOM = 0;
-	public static final int RIGHT = 1;
-	public static final String[] WEEK_SHORT = { "S", "M", "Tu", "W", "Th", "F",
-	"S" };
 
 	protected static class PageProperty implements Serializable {
 		protected String id;
@@ -45,7 +38,7 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
 	protected PageProperty pageProperty;
 
 	/**
-	 * Construct a DateFormElement from a set of properties that define its
+	 * Construct a AutocompleteFormElement from a set of properties that define its
 	 * configuration.
 	 * 
 	 * @param properties
@@ -54,19 +47,8 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
 	 */
 	public AutocompleteFormElement(Dataset properties) {
 		super(properties);
-		pageProperty = new PageProperty(properties.get("id"), properties.get("requestFactory"));
-	}
-
-	/**
-	 * Construct a DateFormElement from an identifier and label.
-	 * 
-	 * @param id
-	 *            Value for the element's {@code id} property.
-	 * @param label
-	 *            Value for the element's {@code label} property.
-	 */
-	public AutocompleteFormElement(String id, String label) {
-		this(new Dataset("id", id, "label", label));
+		pageProperty = new PageProperty(properties.get("id"),
+				properties.get("requestFactory"));
 	}
 
 	/**
@@ -84,7 +66,13 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
 	}
 
 	/**
-	 * 
+	 * This method is an Ajax entry point, invoked to fetch the autocomplete
+	 * results for a query in an AutocompleteFormElement.
+	 * @param cr					Overall information about the client
+	 * 								request being serviced; there must
+	 * 								be a {@code query} value in the main
+	 * 								dataset, which is the value for which
+	 * 								we are trying to autocomplete. 
 	 */
 	public static void ajaxQuery(ClientRequest cr) {
 		Dataset main = cr.getMainDataset();
@@ -108,37 +96,34 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
 	/**
 	 * This method is invoked to generate HTML for this form element.
 	 * 
-	 * @param cr
-	 *            Overall information about the client request being serviced.
-	 * @param data
-	 *            Data for the form (a CompoundDataset including both form data,
-	 *            if any, and the global dataset).
-	 * @param out
-	 *            Generated HTML is appended here.
+	 * @param cr				Overall information about the client
+	 * 							request being serviced.
+	 * @param data				Data for the form (a CompoundDataset
+	 * 							including both form data, if any, and
+	 * 							the global dataset).
+	 * @param out				Generated HTML is appended here.
 	 */
 	@Override
 	public void render(ClientRequest cr, Dataset data, StringBuilder out) {
         cr.setPageProperty(pageProperty.id, pageProperty);
+        cr.setAuthToken();
         
-		Ajax.invoke(cr, "/AutocompleteFormElement/ajaxQuery?"
-				+ "id=@1&"
-				+ "query=\" + document.getElementById('@(2)_field').value + \"",
-				id, properties.check("id"));
-		Template.expand(
-				"<div class=\"@class?{AutocompleteFormElement}\" id=\"@id\">",
+		Template.expand("\n<!-- Start AutocompleteFormElement @id -->\n" +
+				"<div class=\"@class?{AutocompleteFormElement}\" id=\"@id\">\n",
 				properties, out);
-		Template.expand("<input type=\"hidden\" name=\"@id\" id=\"@(id)_hidden\" />",
+		Template.expand("  <input type=\"hidden\" name=\"@id\" id=\"@(id)_hidden\" />\n",
 				properties, out);
-		Template.expand("<input type=\"text\" id=\"@(id)_field\""
+		Template.expand("  <input type=\"text\" id=\"@(id)_input\""
 				+ "onkeyup=\"Fiz.ids.@id.fetchResult(event)\" "
 				+ "onblur=\"Fiz.ids.@id.hideChoices()\" "
-				+ "{{value=\"@1\"}} />"
-				+ "<ul id=\"@(id)_dropdown\" class=\"dropdown\"></ul>",
+				+ "{{value=\"@1\"}} />\n"
+				+ "  <ul id=\"@(id)_dropdown\" class=\"dropdown\"></ul>\n",
 				properties, out, data.check(id));
-		out.append("</div>");
+		out.append("</div>\n");
+		Template.expand("<!-- End AutocompleteFormElement @id -->\n", properties, out);
 
         // Generate a Javascript object containing information about the form.
-        cr.evalJavascript("Fiz.ids.@id = new Fiz.AutocompleteFormElement(\"@id\");\n",
+        cr.evalJavascript("Fiz.ids.@id = new Fiz.AutocompleteFormElement(\"@id\", @numResults?{5});\n",
         				  properties);
 		cr.getHtml().includeCssFile("AutocompleteFormElement.css");
 		cr.getHtml().includeJsFile("static/fiz/AutocompleteFormElement.js");

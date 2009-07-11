@@ -101,18 +101,15 @@ public class DemoInteractor extends Interactor {
             new AutocompleteFormElement(new Dataset("id", "name",
                     "label", "Name:", "help", "Enter customer name here",
                     "requestFactory", "DemoInteractor.autocompleteRequest")),
-            new EntryFormElement(new Dataset("id", "age",
-                    "label", "Age:")),
-            new EntryFormElement(new Dataset("id", "state",
-                    "label", "Home state:")),
+            new EntryFormElement("age", "Age:"),
+            new EntryFormElement("state", "Home state:"),
             new DateFormElement(new Dataset("id", "expiration",
                     "label", "Expiration date:",
                     "attachPosition", "bottom",
                     "dateFormat", "m-d-Y",
                     "exclude", "Saturday, 1/12/2005, 7/23," +
                     		"8/13/2010:9/11/2010, :6/24/2009, 9/3/2011:")),
-            new PasswordFormElement(new Dataset("id", "password",
-                    "label", "Password:")),
+            new PasswordFormElement("password", "Password:"),
             new PasswordFormElement(new Dataset("id", "password2",
                     "label", "Retype password:", "duplicate", "password")),
             new CheckboxFormElement(new Dataset("id", "citizen",
@@ -136,16 +133,17 @@ public class DemoInteractor extends Interactor {
                     "multiple", "multiple",
                     "height", "5",
                     "choiceName", "fruit")),
-            new TextAreaFormElement(new Dataset("id", "saying",
-                    "label", "Favorite saying:")),
+            new TextAreaFormElement("saying", "Favorite saying:"),
             new UploadFormElement("upload", "File to upload:"),
             new HiddenFormElement("mascot")
             );
     
     public static DataRequest autocompleteRequest(String query) {
+        query = query.toLowerCase();
+        
     	Dataset matches = new Dataset();
     	for(Dataset data : autocompleteData.getChildren("name")) {
-    		String dataName = data.get("name");
+    		String dataName = data.get("name").toLowerCase();
     		if(dataName.substring(0, Math.min(query.length(), dataName.length())).equals(query)) {
     			matches.addChild("data", data);
     		}

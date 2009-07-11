@@ -39,7 +39,7 @@
 }
 
 .DateFormElement .picker {
-	background: #fff;
+	background: #ffffff;
 	position: absolute;
 	display: none;
 	border: @standardBorder;
@@ -50,7 +50,7 @@
 
 .DateFormElement .picker .nav, .DateFormElement .picker .header {
 	padding: 3px 5px;
-	background: #eee;
+	background: #eeeeee;
 	font-weight: bold;
 }
 
@@ -74,12 +74,12 @@
 }
 
 .DateFormElement .picker .cur-month {
-	color: #000;
+	color: #000000;
 	cursor: pointer;
 }
 
 .DateFormElement .picker .excluded {
- 	color: #ccc;
+ 	color: #cccccc;
 	cursor: default;
 }
 
