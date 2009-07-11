@@ -11,7 +11,7 @@ import org.fiz.TreeSection.PageProperty;
  * variety of formats) or through a customizable, JS-driven calendar object. It
  * supports the following properties:
  *   class: 			(optional) Class attribute to use for the <div>
- *   					containing this element; defaults to AutocompleteFormElement.
+ *   					containing this element; defaults to DateFormElement.
  *   id:				(required) Name for this FormElement; must be unique
  *   					among all ids for the page. This is used as the name
  *   					for the data value in query and update requests and also
@@ -20,7 +20,39 @@ import org.fiz.TreeSection.PageProperty;
  * 						identify the element for the user.
  *   attachPosition:	(optional) Defaults to {@code bottom}. Define whether
  *   					the calendar pops up to the {@code right} or to the
- *   					{@code bottom} of the input field.
+ *   					{@code bottom} of the input field
+ *   dateFormat:		(optional) Defaults to m/d/Y. Specifies the format of the
+ *   					date in the input field. The following specifiers may be
+ *   					used:
+ *   					d: day without leading 0s (1, 2, ... , 30, 31)
+ *   					D: day with leading 0s (01, 02, ... , 30, 31)
+ *   					m: month without leading 0s (1, 2, ... , 11, 12)
+ *   					M: month with leading 0s (01, 02, ... , 11, 12)
+ *   					y: year in two-digit form (88, 89, ... , 01, 02)
+ *   					Y: year in four-digit form (1988, 1989, ... , 2001, 2002)
+ *  calendarIcon:		(optional) Defaults to /static/fiz/calendar-icon.gif.
+ *   					Decides which icon to use on the right of the form field
+ *   					for opening the calendar.
+ *  exclude:			(optional) Specifies the days to exclude from selection
+ *  					on the calendar. The following specifiers may be used:
+ *  					{day_of_week}:	Monday, Tuesday, ... , Saturday, Sunday
+ *  					today:			replaced with the current date
+ *                      {m}/{d}{/{Y}}?: Specifies specific dates to omit. If the
+ *                                      year is left out, then the date is omitted
+ *                                      on an annual basis.        
+ *  					{number} {unit} {ago?}:	Specifies a relative date. The
+ *  											optional {@code ago} flag specifies
+ *  											a relative date in the past
+ *												e.g. 12 months ago, 3 days
+ *						The following syntax may be used:
+ *  					{start_date?}:{end_date?}:	{@code start_date} and
+ *  												{@code end_date} can be replaced
+ *  												with any of the specifiers above.
+ *                                                  If either the {@code start_date}
+ *                                                  or the {@code end_date} are omitted,
+ *                                                  then the range goes infinitely into
+ *                                                  the past or infinitely into the
+ *                                                  future respectively.
  */
 public class AutocompleteFormElement extends FormElement implements DirectAjax {
 
