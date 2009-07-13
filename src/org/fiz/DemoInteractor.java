@@ -332,26 +332,26 @@ public class DemoInteractor extends Interactor {
 		);
 	}
 
-	public void loginSection(ClientRequest cr) {
-		Html html = cr.getHtml();
-		html.setTitle("LoginSection Demo");
-
-		if (sqlDataManager == null) {
-			sqlDataManager = new SqlDataManager(new Dataset(
-					"serverUrl","jdbc:mysql://localhost",
-					"user", "root",
-					"password", "",
-					"driverClass", "com.mysql.jdbc.Driver"));
-		}
-		
-		cr.showSections(
-				new TemplateSection("<h1>Login</h1>\n"),
-				new LoginSection(new Dataset(
-						"id", "loginForm",
-						"requestFactory", "login"
-				))
-		);
-	}
+//	public void loginSection(ClientRequest cr) {
+//		Html html = cr.getHtml();
+//		html.setTitle("LoginSection Demo");
+//
+//		if (sqlDataManager == null) {
+//			sqlDataManager = new SqlDataManager(new Dataset(
+//					"serverUrl","jdbc:mysql://localhost",
+//					"user", "root",
+//					"password", "",
+//					"driverClass", "com.mysql.jdbc.Driver"));
+//		}
+//		
+//		cr.showSections(
+//				new TemplateSection("<h1>Login</h1>\n"),
+//				new LoginSection(new Dataset(
+//						"id", "loginForm",
+//						"requestFactory", "login"
+//				))
+//		);
+//	}
 
 	/**
 	 * Displays a page containing statistics from all the performance timers.
