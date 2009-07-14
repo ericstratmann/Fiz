@@ -182,16 +182,16 @@ public class DateFormElementTest extends junit.framework.TestCase {
 
     public void test_stringToDate() {
         DateFormElement.today = createDate(1, 14, 2008);
-        assertNull(DateFormElement.stringToDate(""));
-        assertTrue(createDate(1, 14, 2008).equals(
+        assertNull("No date", DateFormElement.stringToDate(""));
+        assertTrue("Today", createDate(1, 14, 2008).equals(
                 DateFormElement.stringToDate("today")));
-        assertTrue(createDate(6, 8, 2009).equals(
+        assertTrue("6/8/2009", createDate(6, 8, 2009).equals(
                 DateFormElement.stringToDate("6/8/2009")));
-        assertTrue(createDate(9, 14, 2009).equals(
+        assertTrue("8 months", createDate(9, 14, 2008).equals(
                 DateFormElement.stringToDate("8 months")));
-        assertTrue(createDate(1, 17, 2008).equals(
+        assertTrue("3 days", createDate(1, 17, 2008).equals(
                 DateFormElement.stringToDate("3 days")));
-        assertTrue(createDate(1, 14, 2010).equals(
+        assertTrue("2 years", createDate(1, 14, 2010).equals(
                 DateFormElement.stringToDate("2 years")));
     }
 
@@ -201,13 +201,13 @@ public class DateFormElementTest extends junit.framework.TestCase {
     }
 
     public void test_getDayOfWeek() {
-        assertEquals(0, DateFormElement.getDayOfWeek("Sunday"));
-        assertEquals(1, DateFormElement.getDayOfWeek("mon"));
-        assertEquals(2, DateFormElement.getDayOfWeek("Tues"));
-        assertEquals(3, DateFormElement.getDayOfWeek("wednesday"));
-        assertEquals(4, DateFormElement.getDayOfWeek("Thursday"));
-        assertEquals(5, DateFormElement.getDayOfWeek("fri"));
-        assertEquals(6, DateFormElement.getDayOfWeek("sat"));
+        assertEquals("Sunday", 0, DateFormElement.getDayOfWeek("Sunday"));
+        assertEquals("mon", 1, DateFormElement.getDayOfWeek("mon"));
+        assertEquals("Tues", 2, DateFormElement.getDayOfWeek("Tues"));
+        assertEquals("wednesday", 3, DateFormElement.getDayOfWeek("wednesday"));
+        assertEquals("Thursday", 4, DateFormElement.getDayOfWeek("Thursday"));
+        assertEquals("fri", 5, DateFormElement.getDayOfWeek("fri"));
+        assertEquals("sat", 6, DateFormElement.getDayOfWeek("sat"));
     }
 
     public void test_getToday() {

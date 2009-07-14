@@ -12,34 +12,51 @@ import java.util.regex.MatchResult;
 /**
  * The DateFormElement allows users to input time and date either manually (in a
  * variety of formats) or through a customizable, JS-driven calendar object. It
- * supports the following properties: class: (optional) Class attribute to use
- * for the <div> containing this element; defaults to DateFormElement. id:
- * (required) Name for this FormElement; must be unique among all ids for the
- * page. This is used as the name for the data value in query and update
- * requests and also as the {@code name} attribute for the HTML input element.
- * label: (optional) Template for label to display next to the input field to
- * identify the element for the user. attachPosition: (optional) Defaults to
- * {@code bottom}. Define whether the calendar pops up to the {@code right} or
- * to the {@code bottom} of the input field dateFormat: (optional) Defaults to
- * m/d/Y. Specifies the format of the date in the input field. The following
- * specifiers may be used: d: day without leading 0s (1, 2, ... , 30, 31) D: day
- * with leading 0s (01, 02, ... , 30, 31) m: month without leading 0s (1, 2, ...
- * , 11, 12) M: month with leading 0s (01, 02, ... , 11, 12) y: year in
- * two-digit form (88, 89, ... , 01, 02) Y: year in four-digit form (1988, 1989,
- * ... , 2001, 2002) calendarIcon: (optional) Defaults to
- * /static/fiz/calendar-icon.gif. Decides which icon to use on the right of the
- * form field for opening the calendar. exclude: (optional) Specifies the days
- * to exclude from selection on the calendar. The following specifiers may be
- * used: {day_of_week}: Monday, Tuesday, ... , Saturday, Sunday today: replaced
- * with the current date {m}/{d}{/{Y}}?: Specifies specific dates to omit. If
- * the year is left out, then the date is omitted on an annual basis. {number}
- * {unit} {ago?}: Specifies a relative date. The optional {@code ago} flag
- * specifies a relative date in the past e.g. 12 months ago, 3 days The
- * following syntax may be used: {start_date?}:{end_date?}: {@code start_date}
- * and {@code end_date} can be replaced with any of the specifiers above. If
- * either the {@code start_date} or the {@code end_date} are omitted, then the
- * range goes infinitely into the past or infinitely into the future
- * respectively.
+ * supports the following properties:
+ *   class:				(optional) Class attribute to use for the {@code <div>}
+ *   					containing this element; defaults to DateFormElement.
+ *   id:				(required) Name for this FormElement; must be unique
+ *   					among all ids for the page. This is used as the name for
+ *   					the data value in query and update requests and also as
+ *   					the {@code name} attribute for the HTML input element.
+ *   label:				(optional) Template for label to display next to the
+ *   					input field to identify the element for the user.
+ *   attachPosition:	(optional) Defaults to {@code bottom}. Define whether
+ *   					the calendar pops up to the {@code right} or to the
+ *   					{@code bottom} of the input field.
+ *   dateFormat:		(optional) Defaults to {@code m/d/Y}. Specifies the
+ *   					format of the date in the input field. The following
+ * 						specifiers may be used:
+ * 						d: day without leading 0s (1, 2, ... , 30, 31)
+ * 						D: day with leading 0s (01, 02, ... , 30, 31)
+ * 						m: month without leading 0s (1, 2, ... , 11, 12)
+ * 						M: month with leading 0s (01, 02, ... , 11, 12)
+ * 						y: year in two-digit form (88, 89, ... , 01, 02)
+ * 						Y: year in four-digit form (1988, ... , 2002)
+ *   calendarIcon:		(optional) Defaults to /static/fiz/calendar-icon.gif.
+ *   					Decides which icon to use on the right of the form field
+ *   					for opening the calendar.
+ *   exclude:			(optional) Specifies the days to exclude from selection
+ *   					on the calendar. The following specifiers may be used:
+ *   					{day_of_week}: 	
+ *   						Monday, Tuesday, ... , Saturday, Sunday
+ *   					today:
+ *   						replaced with the current date
+ *   					{m}/{d}{/{Y}}?:
+ *   						Specifies specific dates to omit. If the year is
+ *   						left out, then the date is omitted on an annual
+ *   						basis.
+ * 						{number} {unit} {ago?}:
+ * 							Specifies a relative date. The optional {@code ago}
+ * 							flag specifies a relative date in the past e.g. 12
+ * 							months ago, 3 days.
+ * 						The following syntax may be used:
+ * 						{start_date?}:{end_date?}: 
+ * 							{@code start_date} and {@code end_date} can be
+ * 							replaced with any of the specifiers above. If either
+ *							the {@code start_date} or the {@code end_date} are
+ *							omitted, then the range goes infinitely into the
+ *							past or infinitely into the future respectively.
  */
 public class DateFormElement extends FormElement {
 
@@ -53,9 +70,9 @@ public class DateFormElement extends FormElement {
 	 * Construct a DateFormElement from a set of properties that define its
 	 * configuration.
 	 * 
-	 * @param properties
-	 *            Dataset whose values are used to configure the element. See
-	 *            the class documentation above for a list of supported values.
+	 * @param properties		Dataset whose values are used to configure the
+	 * 							element. See the class documentation above for
+	 * 							a list of supported values.
 	 */
 	public DateFormElement(Dataset properties) {
 		super(properties);
@@ -64,10 +81,8 @@ public class DateFormElement extends FormElement {
 	/**
 	 * Construct a DateFormElement from an identifier and label.
 	 * 
-	 * @param id
-	 *            Value for the element's {@code id} property.
-	 * @param label
-	 *            Value for the element's {@code label} property.
+	 * @param id			Value for the element's {@code id} property.
+	 * @param label			Value for the element's {@code label} property.
 	 */
 	public DateFormElement(String id, String label) {
 		this(new Dataset("id", id, "label", label));
@@ -76,36 +91,34 @@ public class DateFormElement extends FormElement {
 	/**
 	 * This method is invoked to generate HTML for this form element.
 	 * 
-	 * @param cr
-	 *            Overall information about the client request being serviced.
-	 * @param data
-	 *            Data for the form (a CompoundDataset including both form data,
-	 *            if any, and the global dataset).
-	 * @param out
-	 *            Generated HTML is appended here.
+	 * @param cr				Overall information about the client
+	 * 							request being serviced.
+	 * @param data				Data for the form (a CompoundDataset including
+	 * 							both form data, if any, and the global dataset).
+	 * @param out				Generated HTML is appended here.
 	 */
 	@Override
 	public void render(ClientRequest cr, Dataset data, StringBuilder out) {
 
 		// Create the form fields in HTML
-		Template.expand("\n<!-- Start DateFormElement @id -->\n"
-				+ "<div class=\"@class?{DateFormElement}\" id=\"@id\">\n"
-				+ "  <input type=\"text\" name=\"@id\" id=\"@(id)_input\" "
-				+ "onblur=\"Fiz.ids.@id.validateAndUpdate()\" "
-				+ "{{value=\"@1?{" + dateToString(getToday()) + "}\"}} />\n",
+		Template.expand("\n<!-- Start DateFormElement @id -->\n" +
+				"<div class=\"@class?{DateFormElement}\" id=\"@id\">\n" +
+				"  <input type=\"text\" name=\"@id\" id=\"@(id)_input\" " +
+				"onblur=\"Fiz.ids.@id.validateAndUpdate()\" " +
+				"{{value=\"@1?{" + dateToString(getToday()) + "}\"}} />\n",
 				properties, out, data.check(id));
 
-		Template.expand(
-				"  <img src=\"@calendarIcon?{/static/fiz/images/calendar-icon.gif}\" "
-						+ "id=\"@(id)_icon\" alt=\"Pick a date\" />\n",
+		Template.expand("  <img src=\"" +
+				"@calendarIcon?{/static/fiz/images/calendar-icon.gif}\" " +
+				"id=\"@(id)_icon\" alt=\"Pick a date\" />\n",
 				properties, out, data.check(id));
 
 		// Create the calendar picker in HTML
-		Template.expand("  <div id=\"@(id)_picker\" class=\"picker\">\n"
-				+ "    <div id=\"@(id)_header\" class=\"header\"></div>\n"
-				+ "    <a onclick=\"Fiz.ids.@id.closePicker()\" "
-				+ "class=\"close-button\">[x]</a>\n"
-				+ "    <table id=\"@(id)_table\">\n", properties, out);
+		Template.expand("  <div id=\"@(id)_picker\" class=\"picker\">\n" +
+				"    <div id=\"@(id)_header\" class=\"header\"></div>\n" +
+				"    <a onclick=\"Fiz.ids.@id.closePicker()\" " +
+				"class=\"close-button\">[x]</a>\n" +
+				"    <table id=\"@(id)_table\">\n", properties, out);
 
 		for (String week : WEEK_SHORT) {
 			out.append("      <col class=\"col-" + week + "\" />\n");
@@ -117,8 +130,8 @@ public class DateFormElement extends FormElement {
 			out.append("<th>" + week + "</th>");
 		}
 
-		Template.expand("</tr>\n" + "      </thead>\n"
-				+ "      <tbody id=\"@(id)_grid\">\n", properties, out);
+		Template.expand("</tr>\n" + "      </thead>\n" +
+				"      <tbody id=\"@(id)_grid\">\n", properties, out);
 		for (int i = 0; i < 6; i++) {
 			if (i % 2 == 0) {
 				out.append("        <tr class=\"even\">");
@@ -133,28 +146,26 @@ public class DateFormElement extends FormElement {
 		out.append("      </tbody>\n" + "    </table>\n");
 
 		// Add navigation to our calendar
-		Template
-				.expand(
-						"    <div id=\"@(id)_navigation\" class=\"nav\">\n      "
-								+ "<a onclick=\"Fiz.ids.@id.prevYear()\" "
-								+ "id=\"@(id)_prevYear\" class=\"arrow-prev-year\">"
-								+ "<img src=\"/static/fiz/images/arrow-left-double.gif\" "
-								+ "alt=\"Previous Year\" /></a>\n      "
-								+ "<a onclick=\"Fiz.ids.@id.prevMonth()\" "
-								+ "id=\"@(id)_prevMonth\" class=\"arrow-prev-month\">"
-								+ "<img src=\"/static/fiz/images/arrow-left.gif\" "
-								+ "alt=\"Previous Month\" /></a>\n      "
-								+ "<a onclick=\"Fiz.ids.@id.today()\" "
-								+ "class=\"arrow-today\">Today</a>\n      "
-								+ "<a onclick=\"Fiz.ids.@id.nextMonth()\" "
-								+ "id=\"@(id)_nextMonth\" class=\"arrow-next-month\">"
-								+ "<img src=\"/static/fiz/images/arrow-right.gif\" "
-								+ "alt=\"Next Month\" /></a>\n      "
-								+ "<a onclick=\"Fiz.ids.@id.nextYear()\" "
-								+ "id=\"@(id)_nextYear\" class=\"arrow-next-year\">"
-								+ "<img src=\"/static/fiz/images/arrow-right-double.gif\" "
-								+ "alt=\"Next Year\" /></a>\n    " + "</div>\n",
-						properties, out);
+		Template.expand("    <div id=\"@(id)_navigation\" class=\"nav\">\n" +
+				"      <a onclick=\"Fiz.ids.@id.prevYear()\" " +
+				"id=\"@(id)_prevYear\" class=\"arrow-prev-year\">" +
+				"<img src=\"/static/fiz/images/arrow-left-double.gif\" " +
+				"alt=\"Previous Year\" /></a>\n      " +
+				"<a onclick=\"Fiz.ids.@id.prevMonth()\" " +
+				"id=\"@(id)_prevMonth\" class=\"arrow-prev-month\">" +
+				"<img src=\"/static/fiz/images/arrow-left.gif\" " +
+				"alt=\"Previous Month\" /></a>\n      " +
+				"<a onclick=\"Fiz.ids.@id.today()\" " +
+				"class=\"arrow-today\">Today</a>\n      " +
+				"<a onclick=\"Fiz.ids.@id.nextMonth()\" " +
+				"id=\"@(id)_nextMonth\" class=\"arrow-next-month\">" +
+				"<img src=\"/static/fiz/images/arrow-right.gif\" " +
+				"alt=\"Next Month\" /></a>\n      " +
+				"<a onclick=\"Fiz.ids.@id.nextYear()\" " +
+				"id=\"@(id)_nextYear\" class=\"arrow-next-year\">" +
+				"<img src=\"/static/fiz/images/arrow-right-double.gif\" " +
+				"alt=\"Next Year\" /></a>\n    " + "</div>\n",
+				properties, out);
 		out.append("  </div>\n</div>\n");
 		Template.expand("<!-- End DateFormElement @id -->\n", properties, out);
 
@@ -180,8 +191,8 @@ public class DateFormElement extends FormElement {
 	 * Parses the filter string to create a Dataset containing a list of rules
 	 * for determining whether a date is selectable or not.
 	 * 
-	 * @param filterString
-	 *            String consisting of a comma-separated list of filters
+	 * @param filterString			String consisting of a comma-separated list
+	 * 								of filters
 	 * @return Dataset containing a list of the filters in a processed format
 	 */
 	protected Dataset parseFilter(String filterString) {
@@ -219,9 +230,8 @@ public class DateFormElement extends FormElement {
 	/**
 	 * Formats a user-defined date string into a Javascript parseable string.
 	 * 
-	 * @param dateString
-	 *            A string that fits one of the specified forms allowed for
-	 *            defining a date
+	 * @param dateString		A string that fits one of the specified forms
+	 * 							allowed for defining a date
 	 * @return A Javascript parsable date string
 	 */
 	protected static String formatForJs(String dateString) {
@@ -231,9 +241,8 @@ public class DateFormElement extends FormElement {
 	/**
 	 * Converts various strings into Java Date objects
 	 * 
-	 * @param dateString
-	 *            A string that fits one of the specified forms allowed for
-	 *            defining a date
+	 * @param dateString		A string that fits one of the specified forms
+	 * 							allowed for defining a date
 	 * @return A date object representing the input string
 	 */
 	protected static Date stringToDate(String dateString) {
@@ -259,7 +268,8 @@ public class DateFormElement extends FormElement {
 				cal.setTime(dateObject);
 
 				Scanner s = new Scanner(dateString);
-				if (s.findInLine("^(\\d+) (month|day|year)s?\\s?(ago)?$") != null) {
+				if (s.findInLine("^(\\d+) (month|day|year)s?\\s?(ago)?$")
+						!= null) {
 					MatchResult result = s.match();
 
 					int amount = Integer.parseInt(result.group(1));
@@ -285,8 +295,7 @@ public class DateFormElement extends FormElement {
 	/**
 	 * Converts a Java Date object into a Javascript parsable date string
 	 * 
-	 * @param dateObject
-	 *            The date object to be converted into a string
+	 * @param dateObject		The date object to be converted into a string
 	 * @return A Javascript parsable date string
 	 */
 	protected static String dateToString(Date dateObject) {
@@ -300,15 +309,15 @@ public class DateFormElement extends FormElement {
 	/**
 	 * Gets the corresponding index for the day of the week
 	 * 
-	 * @param dayOfWeek
-	 *            String representation of the day of the week (Sunday, sun,
-	 *            Monday, tues, ...)
-	 * @return Index for the day of the week (0 = Sunday, 1 = Monday, ... , 6 =
-	 *         Saturday)
+	 * @param dayOfWeek			String representation of the day of the week
+	 * 							(Sunday, sun, Monday, tues, ...)
+	 * @return Index for the day of the week (0 = Sunday, 1 = Monday, ... ,
+	 * 			6 = Saturday)
 	 */
 	protected static int getDayOfWeek(String dayOfWeek) {
 		for (int i = 0; i < WEEK_SHORT.length; i++) {
-			if (dayOfWeek.toLowerCase().indexOf(WEEK_SHORT[i].toLowerCase()) == 0) {
+			if (dayOfWeek.toLowerCase().indexOf(
+					WEEK_SHORT[i].toLowerCase()) == 0) {
 				return i;
 			}
 		}
