@@ -129,16 +129,15 @@ public class TabSection extends Section{
                 Config.getDataset("tabSections").getChild(style),
                 properties,
                 Config.getDataset("css"));
-        Template.expand(getTemplate(), styleData, expandedCss,
-                Template.SpecialChars.NONE);
+        Template.appendRaw(expandedCss, getTemplate(), styleData);
         html.includeCss(expandedCss);
 
         // Generate the HTML for the tabs.
-        Template.expand("\n<!-- Start TabSection @id -->\n" +
+        Template.appendHtml(out, "\n<!-- Start TabSection @id -->\n" +
                 "<table id=\"@id\" class=\"@class?{TabSection}\" " +
                 "cellspacing=\"0\">\n" +
                 "  <tr>\n",
-                properties, out);
+                properties);
 
         // The tabs are displayed in a single row containing four <td>
         // elements for each: one to create space before the tab, one for
@@ -158,19 +157,19 @@ public class TabSection extends Section{
             // cause other browsers to drop different parts of the borders.
             // So, the code below displays a 1x1 transparent image in each
             // empty cell to force IE to display borders.
-            Template.expand("    <td class=\"spacer\">" +
+            Template.appendHtml(out, "    <td class=\"spacer\">" +
                     "<img src=\"/static/fiz/images/blank.gif\" alt=\"\" /></td>\n" +
                     "    <td class=\"left@1\">" +
                     "<img src=\"/static/fiz/images/blank.gif\" alt=\"\" /></td>\n" +
                     "    <td class=\"mid@1\" id=\"@2\"><a",
-                    out, Template.SpecialChars.NONE, suffix, tabId);
+                    suffix, tabId);
 
             // Generate the action for this tab (the contents of the href
             // attribute for the <a> element).
             String url = tab.check("url");
             if (url != null) {
                 out.append(" href=\"");
-                Template.expand(url, data, out, Template.SpecialChars.URL);
+                Template.appendUrl(out, url, data);
                 out.append("\"");
             } else {
                 if (!anyJavascript) {
@@ -184,8 +183,8 @@ public class TabSection extends Section{
                 // Javascript code to modify the DOM so that the new selected
                 // tab will appear selected (no need for this in the URL case
                 // because an entirely new page will be displayed).
-                Template.expand("Fiz.TabSection.selectTab(\"@1\"); ",
-                        javascript, Template.SpecialChars.JAVASCRIPT, tabId);
+                Template.appendJavascript(javascript, "Fiz.TabSection.selectTab(\"@1\"); ",
+                        tabId);
                 String ajaxUrl = tab.check("ajaxUrl");
                 if (ajaxUrl != null) {
                     // AJAX action.
@@ -194,8 +193,7 @@ public class TabSection extends Section{
                     // Javascript action.
                     String jsTemplate = tab.check("javascript");
                     if (jsTemplate != null) {
-                        Template.expand(jsTemplate, data, javascript,
-                                Template.SpecialChars.JAVASCRIPT);
+                        Template.appendJavascript(javascript, jsTemplate, data);
                     }
                 }
                 Html.escapeHtmlChars(javascript, out);
@@ -206,18 +204,18 @@ public class TabSection extends Section{
             // the text needs to be enclosed in an extra <div>; otherwise
             // padding specified for it gets lost.
             out.append("><div>");
-            Template.expand(tab.get("text"), data, out);
-            Template.expand("</div></a></td>\n" +
+            Template.appendHtml(out, tab.get("text"), data);
+            Template.appendHtml(out, "</div></a></td>\n" +
                     "    <td class=\"right@1\">" +
                     "<img src=\"/static/fiz/images/blank.gif\" alt=\"\" /></td>\n",
-                    out, Template.SpecialChars.NONE, suffix);
+                    suffix);
         }
-        Template.expand("    <td class=\"rightSpacer\">" +
+        Template.appendHtml(out, "    <td class=\"rightSpacer\">" +
                 "<img src=\"/static/fiz/images/blank.gif\" alt=\"\" /></td>\n" +
                 "  </tr>\n" +
                 "</table>\n" +
                 "<!-- End TabSection @id -->\n",
-                properties, out);
+                properties);
     }
 
     /**

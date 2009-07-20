@@ -698,7 +698,6 @@ public class Fiz {
             version = argList.remove(0);
         } else {
             // Query the server for the latest version of Fiz.
-            // TODO: change this URL to remove "fiz" once server upgraded.
             String urlStr = serverUrl + "/fizCore/latestVersion";
             try {
                 version = openUrl(urlStr);

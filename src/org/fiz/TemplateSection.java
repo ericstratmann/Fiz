@@ -113,10 +113,10 @@ public class TemplateSection extends Section {
                 StringBuilder contents = Util.readFileFromPath(fileName,
                         "template",
                         cr.getServletContext().getRealPath("WEB-INF"));
-                Template.expand(contents, data, cr.getHtml().getBody());
+                Template.appendHtml(cr.getHtml().getBody(), contents, data);
                 return;
             }
         }
-        Template.expand(template, data, cr.getHtml().getBody());
+        Template.appendHtml(cr.getHtml().getBody(), template, data);
     }
 }

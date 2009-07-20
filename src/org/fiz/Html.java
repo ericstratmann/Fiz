@@ -239,8 +239,7 @@ public class Html {
      * @param data                 Values to be substituted into the template.
      */
     public void includeJavascript(CharSequence template, Dataset data) {
-        Template.expand(template, data, jsCode,
-                Template.SpecialChars.JAVASCRIPT);
+        Template.appendJavascript(jsCode, template, data);
     }
 
     /**
@@ -251,8 +250,7 @@ public class Html {
      * @param args                 Values to be substituted into the template.
      */
     public void includeJavascript(CharSequence template, Object... args) {
-        Template.expand(template, jsCode, Template.SpecialChars.JAVASCRIPT,
-                args);
+        Template.appendJavascript(jsCode, template, args);
     }
 
     /**

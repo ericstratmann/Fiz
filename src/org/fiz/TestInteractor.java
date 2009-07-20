@@ -148,11 +148,11 @@ public class TestInteractor extends Interactor {
         html.setTitle("Link Page");
         html.includeJsFile("static/fiz/Ajax.js");
         StringBuilder body = html.getBody();
-        Template.expand("<h1>Test Links</h1>\n" +
+        Template.appendHtml(body, "<h1>Test Links</h1>\n" +
                 "<p>This page demonstrates several uses of links.</p>\n" +
                 "<p>This is page @current.  Click on the link below " +
                 "to go to page @next.</p>\n" +
-                "<p>", globalData, body);
+                "<p>", globalData);
         Link link = new Link(new Dataset("text", "Go to page @next",
                 "url", "link?current=@next"));
         link.render(cr, globalData, body);
@@ -166,14 +166,14 @@ public class TestInteractor extends Interactor {
         body.append("</p>\n");
         body.append("<p>The following link sends an Ajax request to the " +
                 "server, which will log the current page id: ");
-        Template.expand("<a href=\"#\" onclick =\"@1; return false;\">" +
-                "Click me</a>\n", body,
-                Ajax.invoke(cr, "ajaxPrintId"));
+        Template.appendHtml(body,
+                "<a href=\"#\" onclick =\"@1; return false;\">" +
+                "Click me</a>\n", Ajax.invoke(cr, "ajaxPrintId"));
         cr.setPageProperty("ajaxInfo", "phone number is 650-322-1980");
         body.append("<p>The following link issues an Ajax request " +
                 "to a nonexistent URL: ");
-        Template.expand("<a href=\"#\" onclick =\"@1; return false;\">" +
-                "Click me</a>\n", body,
+        Template.appendHtml(body, "<a href=\"#\" onclick =\"@1; return false;\">" +
+                "Click me</a>\n",
                 Ajax.invoke(cr, "/static/bogus/nonexistent"));
         Link link3 = new Link(new Dataset("text", "Click here",
                 "ajaxUrl", "/test/ajaxUpdateTime"));

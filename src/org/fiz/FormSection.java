@@ -278,8 +278,8 @@ public class FormSection extends Section {
         if (templateName == null) {
             templateName = "FormSection.elementError";
         }
-        Template.expand(Config.getPath("styles", templateName),
-                new CompoundDataset(errorData, cr.getMainDataset()), html);
+        Template.appendHtml(html, Config.getPath("styles", templateName),
+                new CompoundDataset(errorData, cr.getMainDataset()));
 
         // Display a bulletin message indicating that there are problems,
         // but only generate one message regardless of how many errors have
@@ -293,8 +293,8 @@ public class FormSection extends Section {
 
         // Invoke a Javascript method, passing it information about
         // the form element plus the HTML.
-        cr.evalJavascript(Template.expand("Fiz.ids.@1.elementError(" +
-                "\"@(1)_@2\", \"@3\");\n", Template.SpecialChars.JAVASCRIPT,
+        cr.evalJavascript(Template.expandJavascript(
+                "Fiz.ids.@1.elementError(\"@(1)_@2\", \"@3\");\n",
                 id, elementId, html));
     }
 
@@ -340,12 +340,12 @@ public class FormSection extends Section {
             Dataset response = dataRequest.getResponseData();
             if (response == null) {
                 // An error occurred in the request.
-                Template.expand("\n<!-- Start FormSection @id -->\n",
-                        properties, out);
+                Template.appendHtml(out, "\n<!-- Start FormSection @id -->\n",
+                        properties);
                 cr.showErrorInfo(properties.check("errorStyle"),
                         "FormSection.error", dataRequest.getErrorData());
-                Template.expand("\n<!-- End FormSection @id -->\n",
-                        properties, out);
+                Template.appendHtml(out, "\n<!-- End FormSection @id -->\n",
+                        properties);
                 return;
             }
             if (response.containsKey("record")) {
@@ -374,7 +374,7 @@ public class FormSection extends Section {
         // * Create a second hidden form element that will hold the page
         //   id for this page (the actual id value is filled in from
         //   Javascript).
-        Template.expand("\n<!-- Start FormSection @id -->\n" +
+        Template.appendHtml(out, "\n<!-- Start FormSection @id -->\n" +
                 "<div id=\"@(id)_target\" style=\"display:none;\"></div>\n" +
                 "<form id=\"@id\" class=\"@class?{FormSection}\" " +
                 "onsubmit=\"return Fiz.ids.@id.submit();\" " +
@@ -384,11 +384,11 @@ public class FormSection extends Section {
                 "value=\"@1\" />\n" +
                 "  <input id=\"@(id)_fizPageId\" type=\"hidden\" " +
                 "name=\"fiz_pageId\" />\n",
-                properties, out, cr.getAuthToken());
+                properties, cr.getAuthToken());
         renderInner(cr, data, out);
-        Template.expand("</form>\n" +
+        Template.appendHtml(out, "</form>\n" +
                 "<!-- End FormSection @id -->\n",
-                properties, out);
+                properties);
 
         // Generate a Javascript object containing information about the form.
         cr.evalJavascript("Fiz.ids.@id = new Fiz.FormSection(\"@id\");\n",
@@ -441,7 +441,7 @@ public class FormSection extends Section {
 
         String layout = properties.check("layout");
         boolean vertical = (layout != null) && layout.equals("vertical");
-        Template.expand("  <table cellspacing=\"0\" class=\"@1\">\n", out,
+        Template.appendHtml(out, "  <table cellspacing=\"0\" class=\"@1\">\n",
                 vertical ? "vertical" : "sideBySide");
 
         // Each iteration of the following loop displays a single
@@ -463,12 +463,11 @@ public class FormSection extends Section {
 
         // Add the submit button if desired, and finish up the form.
         if (buttonStyle.length() > 0) {
-            Template.expand("    <tr>\n      <td class=\"submit\" " +
-                    "{{colspan=\"@1\"}}>", out,
+            Template.appendHtml(out, "    <tr>\n      <td class=\"submit\" " +
+                    "{{colspan=\"@1\"}}>",
                     (vertical ? null : "2"));
-            Template.expand(Config.getPath("styles", buttonStyle),
-                    new CompoundDataset(properties, cr.getMainDataset()),
-                    out);
+            Template.appendHtml(out, Config.getPath("styles", buttonStyle),
+                    new CompoundDataset(properties, cr.getMainDataset()));
             out.append("</td>\n    </tr>\n");
         }
         out.append("  </table>\n");
@@ -500,7 +499,7 @@ public class FormSection extends Section {
     protected void sideBySideElement(ClientRequest cr, FormElement element,
             Dataset data, StringBuilder out) {
         String elementId = element.getId();
-        Template.expand("    <tr id=\"@(1)_@2\" {{title=\"@3\"}}>\n", out,
+        Template.appendHtml(out, "    <tr id=\"@(1)_@2\" {{title=\"@3\"}}>\n",
                 id, elementId, getHelpText(element));
         int startingLength = out.length();
         out.append("      <td class=\"label\">");
@@ -519,7 +518,7 @@ public class FormSection extends Section {
 
         // Create an extra <div> underneath the control for displaying
         // error messages pertaining to this form element.
-        Template.expand(diagnosticTemplate, out, id, elementId);
+        Template.appendHtml(out, diagnosticTemplate, id, elementId);
         out.append("</td>\n    </tr>\n");
 
     }
@@ -539,7 +538,7 @@ public class FormSection extends Section {
     protected void verticalElement(ClientRequest cr, FormElement element,
             Dataset data, StringBuilder out) {
         String elementId = element.getId();
-        Template.expand("    <tr id=\"@(1)_@2\" {{title=\"@3\"}}><td>\n", out,
+        Template.appendHtml(out, "    <tr id=\"@(1)_@2\" {{title=\"@3\"}}><td>\n",
                 id, elementId, getHelpText(element));
         int rowStart = out.length();
         out.append("      <div class=\"label\">");
@@ -556,7 +555,7 @@ public class FormSection extends Section {
 
         // Create an extra <div> underneath the control for displaying
         // error messages pertaining to this form element.
-        Template.expand(diagnosticTemplate, out, id, elementId);
+        Template.appendHtml(out, diagnosticTemplate, id, elementId);
         out.append("</div>\n    </td></tr>\n");
     }
 

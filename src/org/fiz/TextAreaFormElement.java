@@ -81,8 +81,8 @@ public class TextAreaFormElement extends FormElement {
     public void render(ClientRequest cr, Dataset data,
             StringBuilder out) {
         cr.getHtml().includeCssFile("TextAreaFormElement.css");
-        Template.expand("<textarea name=\"@id\" " +
+        Template.appendHtml(out, "<textarea name=\"@id\" " +
                 "class=\"@class?{TextAreaFormElement}\" rows=\"@rows?{10}\">" +
-                "{{@1}}</textarea>", properties, out, data.check(id));
+                "{{@1}}</textarea>", properties, data.check(id));
     }
 }

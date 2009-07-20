@@ -88,8 +88,8 @@ public class ImageSelector implements Formatter {
 			alt = key;
 		}
 
-		Template.expand("<img src=\"@1\" alt=\"@2\" />", out,
-			Template.expand(src, data, Template.SpecialChars.URL),
-			Template.expand(alt, data, Template.SpecialChars.NONE));
+		Template.appendHtml(out, "<img src=\"@1\" alt=\"@2\" />",
+                Template.expandUrl(src, data),
+			Template.expandRaw(alt, data));
     }
 }

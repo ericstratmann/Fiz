@@ -149,8 +149,8 @@ public class Link implements Formatter {
         // confirmation, if requested.
         if (url != null) {
             // Normal href.
-            Template.expand("<a href=\"@1\"", out, Template.expand(url,
-                    data, Template.SpecialChars.URL));
+            Template.appendHtml(out, "<a href=\"@1\"",
+                    Template.expandUrl(url, data));
         } else {
             StringBuilder expandedJs;
             if (ajaxUrl != null) {
@@ -160,11 +160,10 @@ public class Link implements Formatter {
             } else {
                 // Javascript code.
                 expandedJs = new StringBuilder(javascript.length());
-                Template.expand(javascript, data, expandedJs,
-                        Template.SpecialChars.JAVASCRIPT);
+                Template.appendJavascript(expandedJs, javascript, data);
             }
-            Template.expand("<a href=\"#\" onclick=\"@1 return false;\"",
-                    out, expandedJs);
+            Template.appendHtml(out, "<a href=\"#\" onclick=\"@1 return false;\"",
+                    expandedJs);
         }
         if (confirm != null) {
             renderConfirmation(confirm, data, out);
@@ -179,11 +178,11 @@ public class Link implements Formatter {
                     + "<tr><td>");
             renderIcon(cr, data, out);
             out.append("</td><td class=\"text\">");
-            Template.expand(text, data, out);
+            Template.appendHtml(out, text, data);
             out.append("</td></tr></table>");
         } else if (displayText) {
             // Display only text.
-            Template.expand(text, data, out);
+            Template.appendHtml(out, text, data);
         } else {
             // Display only an image.
             renderIcon(cr, data, out);
@@ -210,7 +209,7 @@ public class Link implements Formatter {
         // on the entire message.  Then generate the full block of
         // Javascript code, and finally HTML-quote that entire block.
         // Thus the contents of the message get quoted twice.
-        Template.expand(template, data, message, Template.SpecialChars.NONE);
+        Template.appendRaw(message, template, data);
         StringBuilder code = new StringBuilder("if (!confirm(\"");
         Html.escapeStringChars(message.toString(), code);
         code.append("\") {return false;}");
@@ -229,12 +228,12 @@ public class Link implements Formatter {
     protected void renderIcon(ClientRequest cr, Dataset data,
             StringBuilder out) {
         StringBuilder expandedUrl = new StringBuilder(iconUrl.length());
-        Template.expand(iconUrl, data, expandedUrl, Template.SpecialChars.URL);
+        Template.appendUrl(expandedUrl, iconUrl, data);
         out.append("<img class=\"Link\" src=\"");
         Html.escapeHtmlChars(expandedUrl, out);
         out.append("\" alt=\"");
         if (alt != null) {
-            Template.expand(alt, data, out);
+            Template.appendHtml(out, alt, data);
         }
         out.append("\" />");
     }

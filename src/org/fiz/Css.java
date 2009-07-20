@@ -1,13 +1,11 @@
 package org.fiz;
-import java.io.*;
 import java.util.HashMap;
-import javax.servlet.http.*;
 
 /**
- * The Css class manages dynamically generated stylesheet files.  When a 
- * .css file is requested, this class generates it by expanding a template.  
- * It also caches the results to speed up future accesses.  The class is 
- * designed for concurrent execution by multiple threads handling requests 
+ * The Css class manages dynamically generated stylesheet files.  When a
+ * .css file is requested, this class generates it by expanding a template.
+ * It also caches the results to speed up future accesses.  The class is
+ * designed for concurrent execution by multiple threads handling requests
  * in parallel while sharing a collection of stylesheet files.
  */
 
@@ -74,8 +72,7 @@ public class Css {
         // Not cached; find the template and expand it.
         StringBuilder template = Util.readFileFromPath(name, "CSS", path);
         StringBuilder expandedCss = new StringBuilder(template.length());
-        Template.expand(template, Config.getDataset("css"), expandedCss,
-                Template.SpecialChars.NONE);
+        Template.appendRaw(expandedCss, template, Config.getDataset("css"));
         String css = expandedCss.toString();
         cache.put(name, css);
         return css;

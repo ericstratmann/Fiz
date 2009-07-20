@@ -244,10 +244,10 @@ public class ClientRequest {
     public void addMessageToBulletin(String template, Dataset data,
             String divClass) {
         getHtml().includeJsFile("static/fiz/Fiz.js");
-        String html = Template.expand(template, data);
+        String html = Template.expandHtml(template, data);
         StringBuilder javascript = new StringBuilder();
-        Template.expand("Fiz.addBulletinMessage(\"@1\", \"@2\");\n",
-                javascript, Template.SpecialChars.JAVASCRIPT, divClass, html);
+        Template.appendJavascript(javascript, "Fiz.addBulletinMessage(\"@1\", \"@2\");\n",
+                divClass, html);
         evalJavascript(javascript);
     }
 
@@ -326,8 +326,7 @@ public class ClientRequest {
         if (jsCode == null) {
             jsCode = new StringBuilder(template.length() + 20);
         }
-        Template.expand(template, data, jsCode,
-                Template.SpecialChars.JAVASCRIPT);
+        Template.appendJavascript(jsCode, template, data);
     }
 
     /**
@@ -349,8 +348,7 @@ public class ClientRequest {
         if (jsCode == null) {
             jsCode = new StringBuilder(template.length() + 20);
         }
-        Template.expand(template, jsCode,
-                Template.SpecialChars.JAVASCRIPT, indexedData);
+        Template.appendJavascript(jsCode, template, indexedData);
     }
 
     /**
@@ -793,8 +791,8 @@ public class ClientRequest {
             }
         } else {
             jsCode = null;
-            evalJavascript(Template.expand("document.location.href = \"@1\";\n",
-                    Template.SpecialChars.JAVASCRIPT, url));
+            evalJavascript(Template.expandJavascript(
+                    "document.location.href = \"@1\";\n", url));
         }
     }
 
@@ -927,7 +925,7 @@ public class ClientRequest {
                     Dataset.DesiredType.STRING, Dataset.Quantity.FIRST_ONLY);
             if (template != null) {
                 foundTemplate = true;
-                Template.expand(template, compound, getHtml().getBody());
+                Template.appendHtml(getHtml().getBody(), template, compound);
             }
             template = (String) styles.lookupPath(style + "-bulletin",
                     Dataset.DesiredType.STRING, Dataset.Quantity.FIRST_ONLY);
@@ -935,7 +933,7 @@ public class ClientRequest {
                 foundTemplate = true;
                 getHtml().includeJsFile("static/fiz/Fiz.js");
                 getHtml().includeJavascript("Fiz.addBulletinMessage(\"@html\");",
-                        new Dataset("html", Template.expand(template,
+                        new Dataset("html", Template.expandHtml(template,
                         compound)));
             }
             if (!foundTemplate) {
@@ -975,9 +973,9 @@ public class ClientRequest {
      *                             {@code innerHTML} property.
      */
     public void updateElement(String id, String html) {
-        evalJavascript(Template.expand(
+        evalJavascript(Template.expandJavascript(
                 "document.getElementById(\"@1\").innerHTML = \"@2\";\n",
-                Template.SpecialChars.JAVASCRIPT, id, html));
+                id, html));
     }
 
     /**
@@ -1066,8 +1064,8 @@ public class ClientRequest {
 
         // Download the page id to the browser so that it will be included
         // in future form posts and Ajax requests.
-        evalJavascript(Template.expand("Fiz.pageId = \"@1\";\n", pageId,
-                Template.SpecialChars.JAVASCRIPT));
+        evalJavascript(Template.expandJavascript("Fiz.pageId = \"@1\";\n",
+                pageId));
         return pageId;
     }
 

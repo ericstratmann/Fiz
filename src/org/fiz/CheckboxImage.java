@@ -99,7 +99,7 @@ public class CheckboxImage implements Formatter {
 			alt = "checked";
 		}
 
-		Template.expand("<img src=\"@1-@2.png\" alt=\"@3\" />", out, family,
-			checked, alt);
+		Template.appendHtml(out, "<img src=\"@1-@2.png\" alt=\"@3\" />",
+                family, checked, alt);
 	}
 }

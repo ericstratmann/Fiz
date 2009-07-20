@@ -152,8 +152,10 @@ public class CompoundFormElement extends FormElement {
         // completely valid HTML (don't want to quote <> etc.).
         // However, information coming from {@code data} must still be
         // quoted.
-        Template.expand(template, data, out, Template.SpecialChars.HTML,
-                Template.SpecialChars.NONE, componentHtml);
+        Template.ParseInfo info = new Template.ParseInfo(template, out,
+                Template.SpecialChars.HTML, data, componentHtml);
+        info.indexedQuoting = Template.SpecialChars.NONE;
+        Template.expandRange(info, 0, template.length());
     }
 
     /**

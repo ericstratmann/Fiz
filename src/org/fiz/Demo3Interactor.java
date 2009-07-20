@@ -7,18 +7,13 @@ package org.fiz;
 public class Demo3Interactor extends Interactor {
     FormSection form = new FormSection(
         new Dataset("postUrl", "post"),
-        new EntryFormElement(new Dataset("id", "name",
-                "label", "Name:")),
-        new EntryFormElement(new Dataset("id", "street1",
-                "label", "Address:")),
-        new EntryFormElement(new Dataset("id", "street2",
-                "label", "")),
-        new EntryFormElement(new Dataset("id", "city",
-                "label", "City:")),
+        new EntryFormElement("name", "Name:"),
+        new EntryFormElement("street1", "Address:"),
+        new EntryFormElement("street2",  ""),
+        new EntryFormElement("city", "City:"),
         new SelectFormElement(new Dataset("id", "state",
                 "label", "State:", "choiceRequest", "getStates")),
-        new EntryFormElement(new Dataset("id", "zip",
-                "label", "Zip code:")));
+        new EntryFormElement("zip", "Zip code:"));
 
     /**
      * Displays a page containing a simple form.
@@ -47,7 +42,7 @@ public class Demo3Interactor extends Interactor {
     public void post(ClientRequest cr) {
         Dataset data = form.collectFormData(cr);
         if (validate(cr, data)) {
-            cr.updateElement("postedInfo", Template.expand(
+            cr.updateElement("postedInfo", Template.expandHtml(
                     "<p>Posted form data: @name, @street1, {{@street2,}} " +
                     "@city, @state  @zip</p>\n", data));
         }

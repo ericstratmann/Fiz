@@ -44,7 +44,7 @@ public class TemplateFormElement extends FormElement {
     @Override
     public void render(ClientRequest cr, Dataset data,
             StringBuilder out) {
-        Template.expand(properties.get("template"), data, out);
+        Template.appendHtml(out, properties.get("template"), data);
     }
 
     /**

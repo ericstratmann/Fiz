@@ -354,8 +354,8 @@ public class Dispatcher extends HttpServlet {
                         "true")) {
                     html.clear();
                 }
-                Template.expand(Config.getPath("styles", "uncaught.html"),
-                        new Dataset("message", basicMessage), html.getBody());
+                Template.appendHtml(html.getBody(), Config.getPath("styles", "uncaught.html"),
+                        new Dataset("message", basicMessage));
             }
             catch (Throwable t) {
                 // Things are really messed up: an exception happened while

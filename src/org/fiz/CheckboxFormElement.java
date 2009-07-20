@@ -103,9 +103,9 @@ public class CheckboxFormElement extends FormElement {
             StringBuilder out) {
         cr.getHtml().includeCssFile("CheckboxFormElement.css");
         String value = data.check(id);
-        Template.expand("<div class=\"@class?{CheckboxFormElement}\">" +
+        Template.appendHtml(out, "<div class=\"@class?{CheckboxFormElement}\">" +
                 "<input type=\"checkbox\" name=\"@id\" id=\"@id\" " +
-                "value=\"true\"", properties, out);
+                "value=\"true\"", properties);
         if ((value != null) && (value.equals(trueValue))) {
             out.append(" checked=\"checked\"");
         }
@@ -118,7 +118,7 @@ public class CheckboxFormElement extends FormElement {
             Html.escapeHtmlChars("el=getElementById(\"" + id + "\"); " +
                     "el.checked=!el.checked;", out);
             out.append("\">");
-            Template.expand(extra, data, out);
+            Template.appendHtml(out, extra, data);
             out.append("</span>");
         }
         out.append("</div>");

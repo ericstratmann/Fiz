@@ -114,10 +114,10 @@ public class TableSection extends Section {
         if (!properties.containsKey("class")) {
             html.includeCssFile("TableSection.css");
         }
-        Template.expand("\n<!-- Start TableSection {{@id}} -->\n" +
+        Template.appendHtml(out, "\n<!-- Start TableSection {{@id}} -->\n" +
                 "<table {{id=\"@id\"}} class=\"@class?{TableSection}\" " +
                 "cellspacing=\"0\">\n",
-                properties, out);
+                properties);
 
         // Header row.
         if (!properties.containsKey("noHeader")) {
@@ -177,7 +177,7 @@ public class TableSection extends Section {
                 if (template == null) {
                     template = "There are no records to display";
                 }
-                Template.expand(template, mainDataset, out);
+                Template.appendHtml(out, template, mainDataset);
                 out.append("</td>\n  </tr>\n");
             } else {
                 // Normal case: there are records to display.
@@ -203,8 +203,9 @@ public class TableSection extends Section {
         }
 
         // End.
-        Template.expand("</table>\n<!-- End TableSection {{@id}} -->\n",
-                properties, out);
+        Template.appendHtml(out,
+                "</table>\n<!-- End TableSection {{@id}} -->\n",
+                properties);
     }
 
     /**

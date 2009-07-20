@@ -23,7 +23,7 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
         }
         @Override
         public void render(ClientRequest cr, Dataset data, StringBuilder out) {
-            Template.expand(template, data, out);
+            Template.appendHtml(out, template, data);
         }
     }
 

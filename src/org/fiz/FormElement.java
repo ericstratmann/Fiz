@@ -148,7 +148,7 @@ public abstract class FormElement implements Formatter {
             StringBuilder out) {
         String template = properties.check("label");
         if (template != null) {
-            Template.expand(template, data, out);
+            Template.appendHtml(out, template, data);
         }
         return true;
     }

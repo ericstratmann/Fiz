@@ -150,19 +150,19 @@ public class SelectFormElement extends FormElement {
             choices = properties.getChildren(choiceName);
         }
         cr.getHtml().includeCssFile("SelectFormElement.css");
-        Template.expand("\n<!-- Start SelectFormElement @id -->\n" +
+        Template.appendHtml(out, "\n<!-- Start SelectFormElement @id -->\n" +
                 "<select name=\"@id\" " +
                 "class=\"@class?{SelectFormElement}\" " +
                 "{{size=\"@height\"}} {{multiple=\"@multiple\"}}>\n",
-                properties, out);
+                properties);
         for (Dataset choice: choices) {
             String selected = null;
             if (initialSelections.contains(choice.get("value"))) {
                 selected = "selected";
             }
-            Template.expand("  <option {{selected=\"@1\"}} " +
+            Template.appendHtml(out, "  <option {{selected=\"@1\"}} " +
                     "value=\"@value\">@name?{@value}</option>\n",
-                    choice, out, selected);
+                    choice, selected);
         }
         out.append("</select>\n<!-- End SelectFormElement @id -->\n");
     }

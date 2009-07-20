@@ -15,7 +15,6 @@ version of the Fiz platform.
         <mkdir dir="${tempdir}"/>
 
         <!-- Fetch the correct version of Fiz from the server -->
-        <!-- TODO: URLs like this will need to change to reference "static" -->
         <get src="${fizserver}/static/FizCore/${version}/fiz-${version}.zip"
              dest="${tempdir}/fiz-${version}.zip"/>
 

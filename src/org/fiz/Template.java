@@ -25,10 +25,11 @@ import java.util.*;
  *                          name of another dataset element, and substitutes
  *                          the value of that element into the output.  It is
  *                          an error if the name doesn't exist in the dataset.
- * @<i>name</i>?{...}       Default: if <i>name</i> exists in the dataset,
- *                          copy its contents to the output and skip over
- *                          {@code ?{...}}.  Otherwise, performed template
- *                          expansion on the the text between the braces.
+ * @<i>name</i>?{...}       Default: if <i>name</i> exists in the dataset
+ *                          and has a nonzero length, copy its contents
+ *                          to the output and skip over {@code ?{...}}.
+ *                          Otherwise, perform template expansion on the
+ *                          text between the braces.
  * @<i>name</i>?{<i>t1</i>|<i>t2</i>}    Choice: if <i>name</i> exists in the
  *                          dataset perform template expansion on <i>t1</i>.
  *                          Otherwise perform template expansion on <i>t2</i>.
@@ -101,7 +102,7 @@ public class Template {
      * Instances of this enum indicate how to escape special characters
      * in data values incorporated into template output.
      */
-    public enum SpecialChars {
+    protected enum SpecialChars {
         /**
          * The output will be used in HTML, so replace special HTML
          * characters such as {@code <} with HTML entities such as
@@ -140,9 +141,10 @@ public class Template {
                                    // in substituted values from {@code data}.
                                    // Null means we are doing SQL template
                                    // expansion.
-        Object[] indexedData;      // Used in some forms of {@code expand}:
+        Object[] indexedData;      // Used in some forms of expansion:
                                    // provides additional data referenced with
                                    // numerical specifiers such as {@code @1}.
+                                   // Null means no indexed data.
         ArrayList<String> sqlParameters;
                                    // Non-null means we are expanding an SQL
                                    // template, so variables don't get
@@ -187,113 +189,100 @@ public class Template {
                                    // This field holds the index into the
                                    // template of the last space character
                                    // we collapsed out, or -1 if none.
+
+        /**
+         * Construct a ParseInfo object.
+         * @param template         Template to be expanded.
+         * @param out              Append expanded information to this
+         *                         object.
+         * @param quoting          Style of quoting to use for expansion.
+         * @param data             Dataset that will provide values for
+         *                         expansion; null means no dataset
+         *                         values available.
+         * @param indexedData      Zero or more objects whose values can be
+         *                         referred to in the template with
+         *                         numerical specifiers such as {@code @1}.
+         *                         Null values may be supplied to indicate
+         *                         "no object with this index".
+         */
+        public ParseInfo(CharSequence template, StringBuilder out,
+                SpecialChars quoting, Dataset data, Object[] indexedData) {
+            this.template = template;
+            this.data = data;
+            this.out = out;
+            this.indexedQuoting = this.quoting = quoting;
+            this.indexedData = indexedData;
+            this.ignoreMissing = false;
+            this.missingData = false;
+            this.lastDeletedSpace = -1;
+        }
     }
 
     // No constructor: this class only has a static methods.
     private Template() {}
 
     /**
-     * Substitute data into a template string, appending the result to a
-     * StringBuilder.
+     * Substitute data into a template string, using HTML conventions
+     * for escaping special characters in substituted values.
      * @param template             Contains text to be copied to
      *                             {@code out} plus substitution
      *                             specifiers such as {@code @foo}.
      * @param data                 Provides data to be substituted into the
      *                             template.
-     * @param out                  The expanded template is appended here.
-     * @param quoting              Determines whether (and how) special
-     *                             characters in data values are quoted.
+     * @param indexedData          One or more objects, whose values can be
+     *                             referred to in the template with
+     *                             numerical specifiers such as {@code @1}.
+     *                             Null values may be supplied to indicate
+     *                             "no object with this index".
      * @throws MissingValueError   A required data value couldn't be found.
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
+     * @return                     A String containing the result of the
+     *                             expansion.
      */
-    public static void expand(CharSequence template, Dataset data,
-            StringBuilder out, SpecialChars quoting)
+    public static String expandHtml(CharSequence template, Dataset data,
+            Object ... indexedData)
             throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo();
-        info.template = template;
-        info.data = data;
-        info.out = out;
-        info.quoting = quoting;
-        info.ignoreMissing = false;
-        info.missingData = false;
-        info.lastDeletedSpace = -1;
+        ParseInfo info = new ParseInfo(template, new StringBuilder(),
+                SpecialChars.HTML, data, indexedData);
         expandRange(info, 0, template.length());
+        return info.out.toString();
     }
 
     /**
-     * Substitute data into a template string and return the expanded result.
-     * @param template             Contains text plus substitution
+     * Substitute data into a template string, using HTML conventions
+     * for escaping special characters in substituted values.
+     * @param template             Contains text to be copied to
+     *                             {@code out} plus substitution
      *                             specifiers such as {@code @foo}.
-     * @param data                 Provides data to be substituted into the
-     *                             template.
-     * @param quoting              Determines whether (and how) special
-     *                             characters in data values are quoted.
-     * @return                     The result produced by expanding the
-     *                             template.
+     * @param indexedData          One or more objects, whose values can be
+     *                             referred to in the template with
+     *                             numerical specifiers such as {@code @1}.
+     *                             Null values may be supplied to indicate
+     *                             "no object with this index".
      * @throws MissingValueError   A required data value couldn't be found.
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
+     * @return                     A String containing the results of the
+     *                             expansion.
      */
-    public static String expand(CharSequence template, Dataset data,
-            SpecialChars quoting)
-            throws MissingValueError, SyntaxError {
-        StringBuilder out = new StringBuilder(template.length() + 50);
-        expand(template, data, out, quoting);
-        return out.toString();
+    public static String expandHtml(CharSequence template,
+            Object ... indexedData) throws MissingValueError, SyntaxError {
+        ParseInfo info = new ParseInfo(template, new StringBuilder(),
+                SpecialChars.HTML, null, indexedData);
+        expandRange(info, 0, template.length());
+        return info.out.toString();
     }
 
     /**
-     * Substitute data into a template string, appending the result to a
-     * StringBuilder using HTML encoding.
+     * Substitute data into a template string, using HTML conventions
+     * for escaping special characters in substituted values.
+     * @param out                  The results of expansion are appended here.
      * @param template             Contains text to be copied to
      *                             {@code out} plus substitution
      *                             specifiers such as {@code @foo}.
      * @param data                 Provides data to be substituted into the
      *                             template.
-     * @param out                  The expanded template is appended here.
-     * @throws MissingValueError   A required data value couldn't be found.
-     * @throws SyntaxError         The template contains an illegal construct
-     *                             such as {@code @+}.
-     */
-    public static void expand(CharSequence template, Dataset data,
-            StringBuilder out) throws MissingValueError, SyntaxError {
-        expand(template, data, out, SpecialChars.HTML);
-    }
-
-    /**
-     * Substitute data into a template string and return the expanded result;
-     * use HTML quoting.
-     * @param template             Contains text plus substitution
-     *                             specifiers such as {@code @foo}.
-     * @param data                 Provides data to be substituted into the
-     *                             template.
-     * @return                     The result produced by expanding the
-     *                             template.
-     * @throws MissingValueError   A required data value couldn't be found.
-     * @throws SyntaxError         The template contains an illegal construct
-     *                             such as {@code @+}.
-     */
-    public static String expand(CharSequence template, Dataset data)
-            throws MissingValueError, SyntaxError {
-        StringBuilder out = new StringBuilder(template.length() + 50);
-        expand(template, data, out, SpecialChars.HTML);
-        return out.toString();
-    }
-
-    /**
-     * Substitute data into a template string using values from both a
-     * dataset and a collection of objects, appending to a StringBuilder.
-     * @param template             Contains text plus substitution
-     *                             specifiers such as {@code @foo}.
-     * @param data                 Provides data to be substituted into the
-     *                             template.
-     * @param out                  The expanded template is appended here.
-     * @param quoting              Determines how to handle special characters
-     *                             in values retrieved from {@code data}.
-     * @param indexedQuoting       Determines how to handle special characters
-     *                             in values retrieved from
-     *                             {@code indexValues}.
      * @param indexedData          One or more objects, whose values can be
      *                             referred to in the template with
      *                             numerical specifiers such as {@code @1}.
@@ -303,64 +292,21 @@ public class Template {
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
      */
-    public static void expand(CharSequence template, Dataset data,
-            StringBuilder out, SpecialChars quoting,
-            SpecialChars indexedQuoting, Object ... indexedData)
+    public static void appendHtml(StringBuilder out, CharSequence template,
+                                  Dataset data, Object... indexedData)
             throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo();
-        info.template = template;
-        info.data = data;
-        info.out = out;
-        info.quoting = quoting;
-        info.indexedData = indexedData;
-        info.sqlParameters = null;
-        info.indexedQuoting = indexedQuoting;
-        info.ignoreMissing = false;
-        info.missingData = false;
-        info.lastDeletedSpace = -1;
+        ParseInfo info = new ParseInfo(template, out, SpecialChars.HTML,
+                data, indexedData);
         expandRange(info, 0, template.length());
     }
 
     /**
-     * Substitute data into a template string using values from both a
-     * dataset and a collection of objects and return the expanded result.
-     * @param template             Contains text plus substitution
+     * Substitute data into a template string, using HTML conventions
+     * for escaping special characters in substituted values.
+     * @param out                  The results of expansion are appended here.
+     * @param template             Contains text to be copied to
+     *                             {@code out} plus substitution
      *                             specifiers such as {@code @foo}.
-     * @param data                 Provides data to be substituted into the
-     *                             template.
-     * @param quoting              Determines how to handle special characters
-     *                             in values retrieved from {@code data}.
-     * @param indexedQuoting       Determines how to handle special characters
-     *                             in values retrieved from
-     *                             {@code indexValues}.
-     * @param indexedData          One or more objects, whose values can be
-     *                             referred to in the template with
-     *                             numerical specifiers such as {@code @1}.
-     *                             Null values may be supplied to indicate
-     *                             "no object with this index".
-     * @return                     The result produced by expanding the
-     *                             template.
-     * @throws MissingValueError   A required data value couldn't be found.
-     * @throws SyntaxError         The template contains an illegal construct
-     *                             such as {@code @+}.
-     */
-    public static String expand(CharSequence template, Dataset data,
-            SpecialChars quoting, SpecialChars indexedQuoting,
-            Object ... indexedData) throws MissingValueError, SyntaxError {
-        StringBuilder out = new StringBuilder(template.length() + 50);
-        expand(template, data, out, quoting, indexedQuoting, indexedData);
-        return out.toString();
-    }
-
-    /**
-     * Substitute data into a template string using values from both a
-     * dataset and a collection of objects, with HTML encoding everywhere,
-     * and append the result to a StringBuilder.
-     * @param template             Contains text plus substitution
-     *                             specifiers such as {@code @foo}.
-     * @param data                 Provides data to be substituted into the
-     *                             template.
-     * @param out                  The expanded template is appended here.
      * @param indexedData          One or more objects, whose values can be
      *                             referred to in the template with
      *                             numerical specifiers such as {@code @1}.
@@ -370,18 +316,19 @@ public class Template {
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
      */
-    public static void expand(CharSequence template, Dataset data,
-            StringBuilder out, Object ... indexedData)
+    public static void appendHtml(StringBuilder out, CharSequence template,
+                                  Object... indexedData)
             throws MissingValueError, SyntaxError {
-        expand(template, data, out, Template.SpecialChars.HTML,
-                Template.SpecialChars.HTML, indexedData);
+        ParseInfo info = new ParseInfo(template, out, SpecialChars.HTML,
+                null, indexedData);
+        expandRange(info, 0, template.length());
     }
 
     /**
-     * Substitute data into a template string using values from both a
-     * dataset and a collection of objects, with HTML encoding everywhere,
-     * and return the expanded result.
-     * @param template             Contains text plus substitution
+     * Substitute data into a template string, using Javascript string
+     * conventions for escaping special characters in substituted values.
+     * @param template             Contains text to be copied to
+     *                             {@code out} plus substitution
      *                             specifiers such as {@code @foo}.
      * @param data                 Provides data to be substituted into the
      *                             template.
@@ -390,112 +337,299 @@ public class Template {
      *                             numerical specifiers such as {@code @1}.
      *                             Null values may be supplied to indicate
      *                             "no object with this index".
-     * @return                     The result produced by expanding the
-     *                             template.
      * @throws MissingValueError   A required data value couldn't be found.
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
+     * @return                     A String containing the result of the
+     *                             expansion.
      */
-    public static String expand(CharSequence template, Dataset data,
-            Object ... indexedData) throws MissingValueError, SyntaxError {
-        StringBuilder out = new StringBuilder(template.length() + 50);
-        expand(template, data, out, Template.SpecialChars.HTML,
-                Template.SpecialChars.HTML, indexedData);
-        return out.toString();
-    }
-
-    /**
-     * Substitute data into a template string using values from a collection
-     * of objects (no dataset) and append the result to a StringBuilder.
-     * @param template             Contains text plus substitution
-     *                             specifiers such as {@code @foo}.
-     * @param out                  The expanded template is appended here.
-     * @param quoting              Determines how to handle special characters
-     *                             in substituted data values.
-     * @param indexedData          One or more objects, whose values can be
-     *                             referred to in the template with
-     *                             numerical specifiers such as {@code @1}.
-     *                             Null values may be supplied to indicate
-     *                             "no object with this index".
-     * @throws MissingValueError   A required data value couldn't be found.
-     * @throws SyntaxError         The template contains an illegal construct
-     *                             such as {@code @+}.
-     */
-    public static void expand(CharSequence template, StringBuilder out,
-            SpecialChars quoting, Object ... indexedData)
+    public static String expandJavascript(CharSequence template, Dataset data,
+            Object ... indexedData)
             throws MissingValueError, SyntaxError {
-        expand(template, null, out, null, quoting, indexedData);
+        ParseInfo info = new ParseInfo(template, new StringBuilder(),
+                SpecialChars.JAVASCRIPT, data, indexedData);
+        expandRange(info, 0, template.length());
+        return info.out.toString();
     }
 
     /**
-     * Substitute data into a template string using values from a collection
-     * of objects (no dataset) and return the result.
-     * @param template             Contains text plus substitution
+     * Substitute data into a template string, using Javascript string
+     * conventions for escaping special characters in substituted values.
+     * @param template             Contains text to be copied to
+     *                             {@code out} plus substitution
      *                             specifiers such as {@code @foo}.
-     * @param quoting              Determines how to handle special characters
-     *                             in substituted data values.
      * @param indexedData          One or more objects, whose values can be
      *                             referred to in the template with
      *                             numerical specifiers such as {@code @1}.
      *                             Null values may be supplied to indicate
      *                             "no object with this index".
-     * @return                     The result produced by expanding the
-     *                             template.
      * @throws MissingValueError   A required data value couldn't be found.
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
+     * @return                     A String containing the results of the
+     *                             expansion.
      */
-    public static String expand(CharSequence template, SpecialChars quoting,
+    public static String expandJavascript(CharSequence template,
             Object ... indexedData) throws MissingValueError, SyntaxError {
-        StringBuilder out = new StringBuilder(template.length() + 50);
-        expand(template, null, out, null, quoting, indexedData);
-        return out.toString();
+        ParseInfo info = new ParseInfo(template, new StringBuilder(),
+                SpecialChars.JAVASCRIPT, null, indexedData);
+        expandRange(info, 0, template.length());
+        return info.out.toString();
     }
 
     /**
-     * Substitute data into a template string using values from a collection
-     * of objects (no dataset) with HTML encoding and append the result to
-     * a StringBuilder.
-     * @param template             Contains text plus substitution
+     * Substitute data into a template string, using Javascript string
+     * conventions for escaping special characters in substituted values.
+     * @param out                  The results of expansion are appended here.
+     * @param template             Contains text to be copied to
+     *                             {@code out} plus substitution
      *                             specifiers such as {@code @foo}.
-     * @param out                  The expanded template is appended here.
-     * @param indexedData          One or more objects, whose values can be
-     *                             referred to in the template with
-     *                             numerical specifiers such as {@code @1}.
-     *                             Null values may be supplied to indicate
-     *                             "no object with this index".
-     * @throws MissingValueError   A required data value couldn't be found.
-     * @throws SyntaxError         The template contains an illegal construct
-     *                             such as {@code @+}.
-     */
-    public static void expand(CharSequence template, StringBuilder out,
-            Object ... indexedData) throws MissingValueError, SyntaxError {
-        expand(template, null, out, null, Template.SpecialChars.HTML,
-                indexedData);
-    }
-
-    /**
-     * Substitute data into a template string using values from a collection
-     * of objects (no dataset) with HTML encoding and return the result.
-     * @param template             Contains text plus substitution
-     *                             specifiers such as {@code @foo}.
-     * @param indexedData          One or more objects, whose values can be
-     *                             referred to in the template with
-     *                             numerical specifiers such as {@code @1}.
-     *                             Null values may be supplied to indicate
-     *                             "no object with this index".
-     * @return                     The result produced by expanding the
+     * @param data                 Provides data to be substituted into the
      *                             template.
+     * @param indexedData          One or more objects, whose values can be
+     *                             referred to in the template with
+     *                             numerical specifiers such as {@code @1}.
+     *                             Null values may be supplied to indicate
+     *                             "no object with this index".
      * @throws MissingValueError   A required data value couldn't be found.
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
      */
-    public static String expand(CharSequence template, Object ... indexedData)
+    public static void appendJavascript(StringBuilder out,
+            CharSequence template, Dataset data, Object... indexedData)
             throws MissingValueError, SyntaxError {
-        StringBuilder out = new StringBuilder(template.length() + 50);
-        expand(template, null, out, null, Template.SpecialChars.HTML,
-                indexedData);
-        return out.toString();
+        ParseInfo info = new ParseInfo(template, out, SpecialChars.JAVASCRIPT,
+                data, indexedData);
+        expandRange(info, 0, template.length());
+    }
+
+    /**
+     * Substitute data into a template string, using Javascript string
+     * conventions for escaping special characters in substituted values.
+     * @param out                  The results of expansion are appended here.
+     * @param template             Contains text to be copied to
+     *                             {@code out} plus substitution
+     *                             specifiers such as {@code @foo}.
+     * @param indexedData          One or more objects, whose values can be
+     *                             referred to in the template with
+     *                             numerical specifiers such as {@code @1}.
+     *                             Null values may be supplied to indicate
+     *                             "no object with this index".
+     * @throws MissingValueError   A required data value couldn't be found.
+     * @throws SyntaxError         The template contains an illegal construct
+     *                             such as {@code @+}.
+     */
+    public static void appendJavascript(StringBuilder out,
+            CharSequence template, Object... indexedData)
+            throws MissingValueError, SyntaxError {
+        ParseInfo info = new ParseInfo(template, out, SpecialChars.JAVASCRIPT,
+                null, indexedData);
+        expandRange(info, 0, template.length());
+    }
+
+    /**
+     * Substitute data into a template string, using URL encoding for
+     * escaping special characters in substituted values.
+     * @param template             Contains text to be copied to
+     *                             {@code out} plus substitution
+     *                             specifiers such as {@code @foo}.
+     * @param data                 Provides data to be substituted into the
+     *                             template.
+     * @param indexedData          One or more objects, whose values can be
+     *                             referred to in the template with
+     *                             numerical specifiers such as {@code @1}.
+     *                             Null values may be supplied to indicate
+     *                             "no object with this index".
+     * @throws MissingValueError   A required data value couldn't be found.
+     * @throws SyntaxError         The template contains an illegal construct
+     *                             such as {@code @+}.
+     * @return                     A String containing the result of the
+     *                             expansion.
+     */
+    public static String expandUrl(CharSequence template, Dataset data,
+            Object ... indexedData)
+            throws MissingValueError, SyntaxError {
+        ParseInfo info = new ParseInfo(template, new StringBuilder(),
+                SpecialChars.URL, data, indexedData);
+        expandRange(info, 0, template.length());
+        return info.out.toString();
+    }
+
+    /**
+     * Substitute data into a template string, using URL encoding for
+     * escaping special characters in substituted values.
+     * @param template             Contains text to be copied to
+     *                             {@code out} plus substitution
+     *                             specifiers such as {@code @foo}.
+     * @param indexedData          One or more objects, whose values can be
+     *                             referred to in the template with
+     *                             numerical specifiers such as {@code @1}.
+     *                             Null values may be supplied to indicate
+     *                             "no object with this index".
+     * @throws MissingValueError   A required data value couldn't be found.
+     * @throws SyntaxError         The template contains an illegal construct
+     *                             such as {@code @+}.
+     * @return                     A String containing the results of the
+     *                             expansion.
+     */
+    public static String expandUrl(CharSequence template,
+            Object ... indexedData) throws MissingValueError, SyntaxError {
+        ParseInfo info = new ParseInfo(template, new StringBuilder(),
+                SpecialChars.URL, null, indexedData);
+        expandRange(info, 0, template.length());
+        return info.out.toString();
+    }
+
+    /**
+     * Substitute data into a template string, using URL encoding for
+     * escaping special characters in substituted values.
+     * @param out                  The results of expansion are appended here.
+     * @param template             Contains text to be copied to
+     *                             {@code out} plus substitution
+     *                             specifiers such as {@code @foo}.
+     * @param data                 Provides data to be substituted into the
+     *                             template.
+     * @param indexedData          One or more objects, whose values can be
+     *                             referred to in the template with
+     *                             numerical specifiers such as {@code @1}.
+     *                             Null values may be supplied to indicate
+     *                             "no object with this index".
+     * @throws MissingValueError   A required data value couldn't be found.
+     * @throws SyntaxError         The template contains an illegal construct
+     *                             such as {@code @+}.
+     */
+    public static void appendUrl(StringBuilder out, CharSequence template,
+            Dataset data, Object... indexedData)
+            throws MissingValueError, SyntaxError {
+        ParseInfo info = new ParseInfo(template, out, SpecialChars.URL,
+                data, indexedData);
+        expandRange(info, 0, template.length());
+    }
+
+    /**
+     * Substitute data into a template string, using URL encoding for
+     * escaping special characters in substituted values.
+     * @param out                  The results of expansion are appended here.
+     * @param template             Contains text to be copied to
+     *                             {@code out} plus substitution
+     *                             specifiers such as {@code @foo}.
+     * @param indexedData          One or more objects, whose values can be
+     *                             referred to in the template with
+     *                             numerical specifiers such as {@code @1}.
+     *                             Null values may be supplied to indicate
+     *                             "no object with this index".
+     * @throws MissingValueError   A required data value couldn't be found.
+     * @throws SyntaxError         The template contains an illegal construct
+     *                             such as {@code @+}.
+     */
+    public static void appendUrl(StringBuilder out, CharSequence template,
+            Object... indexedData) throws MissingValueError, SyntaxError {
+        ParseInfo info = new ParseInfo(template, out, SpecialChars.URL,
+                null, indexedData);
+        expandRange(info, 0, template.length());
+    }
+
+    /**
+     * Substitute data into a template string (no escaping of special
+     * characters in substituted values).
+     * @param template             Contains text to be copied to
+     *                             {@code out} plus substitution
+     *                             specifiers such as {@code @foo}.
+     * @param data                 Provides data to be substituted into the
+     *                             template.
+     * @param indexedData          One or more objects, whose values can be
+     *                             referred to in the template with
+     *                             numerical specifiers such as {@code @1}.
+     *                             Null values may be supplied to indicate
+     *                             "no object with this index".
+     * @throws MissingValueError   A required data value couldn't be found.
+     * @throws SyntaxError         The template contains an illegal construct
+     *                             such as {@code @+}.
+     * @return                     A String containing the result of the
+     *                             expansion.
+     */
+    public static String expandRaw(CharSequence template, Dataset data,
+            Object ... indexedData)
+            throws MissingValueError, SyntaxError {
+        ParseInfo info = new ParseInfo(template, new StringBuilder(),
+                SpecialChars.NONE, data, indexedData);
+        expandRange(info, 0, template.length());
+        return info.out.toString();
+    }
+
+    /**
+     * Substitute data into a template string (no escaping of special
+     * characters in substituted values).
+     * @param template             Contains text to be copied to
+     *                             {@code out} plus substitution
+     *                             specifiers such as {@code @foo}.
+     * @param indexedData          One or more objects, whose values can be
+     *                             referred to in the template with
+     *                             numerical specifiers such as {@code @1}.
+     *                             Null values may be supplied to indicate
+     *                             "no object with this index".
+     * @throws MissingValueError   A required data value couldn't be found.
+     * @throws SyntaxError         The template contains an illegal construct
+     *                             such as {@code @+}.
+     * @return                     A String containing the results of the
+     *                             expansion.
+     */
+    public static String expandRaw(CharSequence template,
+            Object ... indexedData) throws MissingValueError, SyntaxError {
+        ParseInfo info = new ParseInfo(template, new StringBuilder(),
+                SpecialChars.NONE, null, indexedData);
+        expandRange(info, 0, template.length());
+        return info.out.toString();
+    }
+
+    /**
+     * Substitute data into a template string (no escaping of special
+     * characters in substituted values).
+     * @param out                  The results of expansion are appended here.
+     * @param template             Contains text to be copied to
+     *                             {@code out} plus substitution
+     *                             specifiers such as {@code @foo}.
+     * @param data                 Provides data to be substituted into the
+     *                             template.
+     * @param indexedData          One or more objects, whose values can be
+     *                             referred to in the template with
+     *                             numerical specifiers such as {@code @1}.
+     *                             Null values may be supplied to indicate
+     *                             "no object with this index".
+     * @throws MissingValueError   A required data value couldn't be found.
+     * @throws SyntaxError         The template contains an illegal construct
+     *                             such as {@code @+}.
+     */
+    public static void appendRaw(StringBuilder out, CharSequence template,
+            Dataset data, Object... indexedData)
+            throws MissingValueError, SyntaxError {
+        ParseInfo info = new ParseInfo(template, out, SpecialChars.NONE,
+                data, indexedData);
+        expandRange(info, 0, template.length());
+    }
+
+    /**
+     * Substitute data into a template string (no escaping of special
+     * characters in substituted values).
+     * @param out                  The results of expansion are appended here.
+     * @param template             Contains text to be copied to
+     *                             {@code out} plus substitution
+     *                             specifiers such as {@code @foo}.
+     * @param indexedData          One or more objects, whose values can be
+     *                             referred to in the template with
+     *                             numerical specifiers such as {@code @1}.
+     *                             Null values may be supplied to indicate
+     *                             "no object with this index".
+     * @throws MissingValueError   A required data value couldn't be found.
+     * @throws SyntaxError         The template contains an illegal construct
+     *                             such as {@code @+}.
+     */
+    public static void appendRaw(StringBuilder out, CharSequence template,
+            Object... indexedData)
+            throws MissingValueError, SyntaxError {
+        ParseInfo info = new ParseInfo(template, out, SpecialChars.NONE,
+                null, indexedData);
+        expandRange(info, 0, template.length());
     }
 
     /**
@@ -526,16 +660,9 @@ public class Template {
     public static String expandSql(CharSequence template, Dataset data,
             ArrayList<String> sqlParameters)
             throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo();
-        info.template = template;
-        info.data = data;
-        info.out = new StringBuilder(template.length() + 50);
-        info.quoting = null;
+        ParseInfo info = new ParseInfo(template,
+                new StringBuilder(template.length() + 50), null, data, null);
         info.sqlParameters = sqlParameters;
-        info.indexedQuoting = null;
-        info.ignoreMissing = false;
-        info.missingData = false;
-        info.lastDeletedSpace = -1;
         expandRange(info, 0, template.length());
         return info.out.toString();
     }

@@ -178,7 +178,7 @@ public class TableLayout {
         for (HtmlFragment fragment : parsedLayout) {
             switch (fragment.type) {
                 case TemplateHtml:
-                    Template.expand(fragment.value, properties, out);
+                    Template.appendHtml(out, fragment.value, properties);
                     break;
                 case ChildId:
                     container.renderChild(fragment.value, cr);

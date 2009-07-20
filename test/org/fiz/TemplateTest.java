@@ -20,15 +20,9 @@ public class TemplateTest extends junit.framework.TestCase {
 
         public static void expandRange(String template, Dataset data,
                 StringBuilder out, int start, int end) {
-            Template.ParseInfo info = new Template.ParseInfo();
-            info.template = template;
+            Template.ParseInfo info = new Template.ParseInfo(template,
+                    out, Template.SpecialChars.NONE, data, null);
             info.templateEnd = -15;
-            info.data = data;
-            info.out = out;
-            info.quoting = Template.SpecialChars.NONE;
-            info.indexedQuoting = Template.SpecialChars.NONE;
-            info.ignoreMissing = false;
-            info.missingData = false;
             info.skip = false;
             info.end = -1;
             Template.expandRange(info, start, end);
@@ -38,15 +32,10 @@ public class TemplateTest extends junit.framework.TestCase {
 
         public static void expandAtSign(String template, Dataset data,
                 StringBuilder out, boolean conditional, int start) {
-            Template.ParseInfo info = new Template.ParseInfo();
-            info.template = template;
+            Template.ParseInfo info = new Template.ParseInfo(template,
+                    out, Template.SpecialChars.NONE, data, null);
             info.templateEnd = template.length();
-            info.data = data;
-            info.out = out;
-            info.quoting = Template.SpecialChars.NONE;
-            info.indexedQuoting = Template.SpecialChars.NONE;
             info.ignoreMissing = conditional;
-            info.missingData = false;
             info.skip = false;
             info.end = -1;
             Template.expandAtSign(info, start);
@@ -56,14 +45,9 @@ public class TemplateTest extends junit.framework.TestCase {
 
         public static void expandChoice(String template, Dataset data,
                 StringBuilder out, String name, int start) {
-            Template.ParseInfo info = new Template.ParseInfo();
-            info.template = template;
+            Template.ParseInfo info = new Template.ParseInfo(template,
+                    out, Template.SpecialChars.HTML, data, null);
             info.templateEnd = template.length();
-            info.data = data;
-            info.out = out;
-            info.quoting = Template.SpecialChars.HTML;
-            info.ignoreMissing = false;
-            info.missingData = false;
             info.skip = false;
             info.end = -1;
             Template.expandChoice(info, name, start);
@@ -73,14 +57,10 @@ public class TemplateTest extends junit.framework.TestCase {
         public static void expandParenName(String template, Dataset data,
                 StringBuilder out, boolean conditional, int start,
                 Template.SpecialChars encoding) {
-            Template.ParseInfo info = new Template.ParseInfo();
-            info.template = template;
+            Template.ParseInfo info = new Template.ParseInfo(template,
+                    out, encoding, data, null);
             info.templateEnd = template.length();
-            info.data = data;
-            info.out = out;
-            info.quoting = encoding;
             info.ignoreMissing = conditional;
-            info.missingData = false;
             info.skip = false;
             info.end = -1;
             Template.expandParenName(info, start);
@@ -92,14 +72,10 @@ public class TemplateTest extends junit.framework.TestCase {
                 StringBuilder out, boolean conditional,
                 Template.SpecialChars encoding,
                 ArrayList<String> sqlParameters) {
-            Template.ParseInfo info = new Template.ParseInfo();
-            info.template = "dummy template";
-            info.data = data;
-            info.out = out;
-            info.quoting = encoding;
+            Template.ParseInfo info = new Template.ParseInfo("dummy template",
+                    out, encoding, data, null);
             info.sqlParameters = sqlParameters;
             info.ignoreMissing = conditional;
-            info.missingData = false;
             info.skip = false;
             info.end = -1;
             Template.appendValue(info, name);
@@ -109,14 +85,9 @@ public class TemplateTest extends junit.framework.TestCase {
 
         public static void expandBraces(String template, Dataset data,
                 StringBuilder out, int start, int lastDeletedSpace) {
-            Template.ParseInfo info = new Template.ParseInfo();
-            info.template = template;
+            Template.ParseInfo info = new Template.ParseInfo(template,
+                    out, Template.SpecialChars.NONE, data, null);
             info.templateEnd = template.length();
-            info.data = data;
-            info.out = out;
-            info.quoting = Template.SpecialChars.NONE;
-            info.indexedQuoting = Template.SpecialChars.NONE;
-            info.ignoreMissing = false;
             info.missingData = true;
             info.skip = false;
             info.end = -1;
@@ -135,13 +106,9 @@ public class TemplateTest extends junit.framework.TestCase {
 
         public static int skipTo(String template, StringBuilder out,
                 int start, char c1, char c2) {
-            Template.ParseInfo info = new Template.ParseInfo();
-            info.template = template;
+            Template.ParseInfo info = new Template.ParseInfo(template,
+                    out, Template.SpecialChars.NONE, new Dataset(), null);
             info.templateEnd = template.length();
-            info.data = new Dataset();
-            info.out = out;
-            info.ignoreMissing = false;
-            info.missingData = false;
             info.skip = false;
             info.end = -1;
             info.lastDeletedSpace = lastDeletedSpace;
@@ -157,11 +124,8 @@ public class TemplateTest extends junit.framework.TestCase {
         public static String findValue(String name, boolean required,
                 Dataset data, Template.SpecialChars quoting,
                 Object[] indexedData, Template.SpecialChars indexedQuoting) {
-            Template.ParseInfo info = new Template.ParseInfo();
-            info.template = "dummy template";
-            info.data = data;
-            info.quoting = quoting;
-            info.indexedData = indexedData;
+            Template.ParseInfo info = new Template.ParseInfo(
+                    "dummy template", null, quoting, data, indexedData);
             info.indexedQuoting = indexedQuoting;
             String result = Template.findValue(info, name, required);
             currentQuoting = info.currentQuoting;
@@ -176,115 +140,133 @@ public class TemplateTest extends junit.framework.TestCase {
     }
 
     public void test_syntaxError() {
-        Template.SyntaxError e = new Template. SyntaxError(
+        Template.SyntaxError e = new Template.SyntaxError(
                 "sample message");
         assertEquals("error message", "sample message", e.getMessage());
     }
 
-    public void test_expand_withQuoting() {
+    public void test_expandHtml() {
+        Dataset data = new Dataset("name", "<Alice>", "age", "28");
+        String result = Template.expandHtml("name: @name, age: @2",
+                data, "abc", "25");
+        assertEquals("output string", "name: &lt;Alice&gt;, age: 25",
+                result);
+    }
+
+    public void test_expandHtml_noDataset() {
+        String result = Template.expandHtml("name: @1, age: @2",
+                "<Alice>", "25");
+        assertEquals("output string", "name: &lt;Alice&gt;, age: 25",
+                result);
+    }
+
+    public void test_appendHtml() {
         Dataset data = new Dataset("name", "<Alice>", "age", "28");
         StringBuilder out = new StringBuilder("123");
-        Template.expand("name: @name, age: @age, "
-                + "{{weight: @weight}} misc: @{@}",
-                data, out, Template.SpecialChars.NONE);
-        assertEquals("output string", "123name: <Alice>, age: 28, misc: {}",
+        Template.appendHtml(out, "name: @name, age: @2",
+                data, "abc", "25");
+        assertEquals("output string", "123name: &lt;Alice&gt;, age: 25",
                 out.toString());
     }
 
-    public void test_expand_withQuotingNoOut() {
-        Dataset data = new Dataset("name", "<Alice>", "age", "28");
-        assertEquals("output string", "name: <Alice>, age: 28",
-                Template.expand("name: @name, age: @age", data,
-                Template.SpecialChars.NONE));
-    }
-
-    public void test_expand_noQuoting() {
-        Dataset data = new Dataset("name", "<Alice>", "age", "28");
+    public void test_appendHtml_noDataset() {
         StringBuilder out = new StringBuilder("123");
-        Template.expand("name: @name, age: @age", data, out);
-        assertEquals("output string", "123name: &lt;Alice&gt;, age: 28",
+        Template.appendHtml(out, "name: @1, age: @2", "<Alice>", "25");
+        assertEquals("output string", "123name: &lt;Alice&gt;, age: 25",
                 out.toString());
     }
 
-    public void test_expand_noQuotingNoOut() {
-        Dataset data = new Dataset("name", "<Alice>", "age", "28");
-        assertEquals("output string", "name: &lt;Alice&gt;, age: 28",
-                Template.expand("name: @name, age: @age", data));
-    }
-
-    public void test_expand_dataAndIndexedData() {
-        Dataset data = new Dataset("name", "<Alice>", "1", "<dataset>");
-        StringBuilder out = new StringBuilder();
-        Template.expand("name: @name, age: @1", data, out,
-                Template.SpecialChars.HTML, Template.SpecialChars.NONE,
-                "<index data #1>", "<index data #2>");
-        assertEquals("output string",
-                "name: &lt;Alice&gt;, age: <index data #1>",
-                out.toString());
-    }
-
-    public void test_expand_dataAndIndexedDataNoOut() {
-        Dataset data = new Dataset("name", "<Alice>", "1", "<dataset>");
-        String result = Template.expand("name: @name, age: @1", data,
-                Template.SpecialChars.NONE, Template.SpecialChars.HTML,
-                "<index data #1>", "<index data #2>");
-        assertEquals("output string",
-                "name: <Alice>, age: &lt;index data #1&gt;",
+    public void test_expandJavascript() {
+        Dataset data = new Dataset("name", "\"Alice\n", "age", "28");
+        String result = Template.expandJavascript("name: @name, age: @2",
+                data, "abc", "a\tb");
+        assertEquals("output string", "name: \\\"Alice\\n, age: a\\tb",
                 result);
     }
 
-    public void test_expand_dataAndIndexedDataHtmlEncoding() {
-        Dataset data = new Dataset("name", "<Alice>", "1", "<dataset>");
-        StringBuilder out = new StringBuilder();
-        Template.expand("name: @name, age: @1", data, out,
-                "<index data #1>", "<index data #2>");
-        assertEquals("output string",
-                "name: &lt;Alice&gt;, age: &lt;index data #1&gt;",
-                out.toString());
-    }
-
-    public void test_expand_dataAndIndexedDataHtmlEncodingNoOut() {
-        Dataset data = new Dataset("name", "<Alice>", "1", "<dataset>");
-        String result = Template.expand("name: @name, age: @1", data,
-                "<index data #1>", "<index data #2>");
-        assertEquals("output string",
-                "name: &lt;Alice&gt;, age: &lt;index data #1&gt;",
+    public void test_expandJavascript_noDataset() {
+        String result = Template.expandJavascript("name: @1, age: @2",
+                "\"Alice\n", "a\tb");
+        assertEquals("output string", "name: \\\"Alice\\n, age: a\\tb",
                 result);
     }
 
-    public void test_expand_indexedDataOnly() {
-        StringBuilder out = new StringBuilder();
-        Template.expand("name: @1, age: @2", out, Template.SpecialChars.HTML,
-                "<index data #1>", "<index data #2>");
-        assertEquals("output string",
-                "name: &lt;index data #1&gt;, age: &lt;index data #2&gt;",
+    public void test_appendJavascript() {
+        Dataset data = new Dataset("name", "\"Alice\n", "age", "28");
+        StringBuilder out = new StringBuilder("123");
+        Template.appendJavascript(out, "name: @name, age: @2",
+                data, "abc", "a\tb");
+        assertEquals("output string", "123name: \\\"Alice\\n, age: a\\tb",
                 out.toString());
     }
 
-    public void test_expand_indexedDataOnlyNoOut() {
-        String result = Template.expand("name: @1, age: @2",
-                Template.SpecialChars.NONE, "<index data #1>",
-                "<index data #2>");
-        assertEquals("output string",
-                "name: <index data #1>, age: <index data #2>",
-                result);
-    }
-
-    public void test_expand_indexedDataOnlyHTMLEncoding() {
-        StringBuilder out = new StringBuilder();
-        Template.expand("name: @1, age: @2", out,
-                "<index data #1>", "<index data #2>");
-        assertEquals("output string",
-                "name: &lt;index data #1&gt;, age: &lt;index data #2&gt;",
+    public void test_appendJavascript_noDataset() {
+        StringBuilder out = new StringBuilder("123");
+        Template.appendJavascript(out, "name: @1, age: @2", "\"Alice\n", "25");
+        assertEquals("output string", "123name: \\\"Alice\\n, age: 25",
                 out.toString());
     }
 
-    public void test_expand_indexedDataOnlyHTMLEncodingNoOut() {
-        String result = Template.expand("name: @1, age: @2",
-                "<index data #1>", "<index data #2>");
-        assertEquals("output string",
-                "name: &lt;index data #1&gt;, age: &lt;index data #2&gt;",
+    public void test_expandUrl() {
+        Dataset data = new Dataset("name", "C&H Sugar");
+        String result = Template.expandUrl("/a/b?name=@name&count=@2",
+                data, "abc", 99);
+        assertEquals("output string", "/a/b?name=C%26H+Sugar&count=99",
                 result);
+    }
+
+    public void test_expandUrl_noDataset() {
+        String result = Template.expandUrl("/a/b?name=@1&count=@2",
+                "C&H Sugar", 99);
+        assertEquals("output string", "/a/b?name=C%26H+Sugar&count=99",
+                result);
+    }
+
+    public void test_appendUrl() {
+        Dataset data = new Dataset("name", "C&H Sugar", "age", "28");
+        StringBuilder out = new StringBuilder("123");
+        Template.appendUrl(out, "/a/b?name=@name&count=@2",
+                data, "abc", 99);
+        assertEquals("output string", "123/a/b?name=C%26H+Sugar&count=99",
+                out.toString());
+    }
+
+    public void test_appendUrl_noDataset() {
+        StringBuilder out = new StringBuilder("123");
+        Template.appendUrl(out, "/a/b?name=@1&count=@2", "C&H Sugar", 99);
+        assertEquals("output string", "123/a/b?name=C%26H+Sugar&count=99",
+                out.toString());
+    }
+
+    public void test_expandRaw() {
+        Dataset data = new Dataset("x", "<\">");
+        String result = Template.expandRaw("first: @x, second: @2",
+                data, "abc", "&\n");
+        assertEquals("output string", "first: <\">, second: &\n",
+                result);
+    }
+
+    public void test_expandRaw_noDataset() {
+        String result = Template.expandRaw("first: @1, second: @2",
+                "<\">", "&\n");
+        assertEquals("output string", "first: <\">, second: &\n",
+                result);
+    }
+
+    public void test_appendRaw() {
+        Dataset data = new Dataset("x", "<\">");
+        StringBuilder out = new StringBuilder("123");
+        Template.appendRaw(out, "first: @x, second: @2",
+                data, "abc", "&\n");
+        assertEquals("output string", "123first: <\">, second: &\n",
+                out.toString());
+    }
+
+    public void test_appendRaw_noDataset() {
+        StringBuilder out = new StringBuilder("123");
+        Template.appendRaw(out, "first: @1, second: @2", "<\">", "&\n");
+        assertEquals("output string", "123first: <\">, second: &\n",
+                out.toString());
     }
 
     public void test_expandSql() {
@@ -372,7 +354,7 @@ public class TemplateTest extends junit.framework.TestCase {
     public void test_expandAtSign_choice() {
         Dataset data = new Dataset("age", "28");
         StringBuilder out = new StringBuilder("123");
-        Template.expand("name: @name?{unknown}, xyz", data, out);
+        Template.appendHtml(out, "name: @name?{unknown}, xyz", data, out);
         assertEquals("output string", "123name: unknown, xyz", out.toString());
     }
     public void test_expandAtSign_simpleName() {
@@ -711,15 +693,15 @@ public class TemplateTest extends junit.framework.TestCase {
     public void test_expandBraces_collapsePrecedingSpace() {
         Dataset data = new Dataset();
         StringBuilder out = new StringBuilder();
-        Template.expand("x {{@foo}}", data, out);
+        Template.appendHtml(out, "x {{@foo}}", data);
         assertEquals("braces at end of string", "x", out.toString());
         out.setLength(0);
-        Template.expand("- {{@foo}} -", data, out);
+        Template.appendHtml(out, "- {{@foo}} -", data);
         assertEquals("spaces on both sides", "- -", out.toString());
         out.setLength(0);
-        Template.expand("x {{@x}}] x {{@x}}> x {{@x}}} x {{@x}}) x "
+        Template.appendHtml(out, "x {{@x}}] x {{@x}}> x {{@x}}} x {{@x}}) x "
                 + "{{@x}}\" x {{@x}}\'",
-                data, out);
+                data);
         assertEquals("close-delimiter follows braces", "x] x> x} x) x\" x'",
                 out.toString());
         out.setLength(0);
@@ -728,23 +710,23 @@ public class TemplateTest extends junit.framework.TestCase {
         assertEquals("update lastDeletedSpace", 1,
                 TemplateFixture.lastDeletedSpace);
         out.setLength(0);
-        Template.expand("<{{@x}} {{@x}}>", data, out);
+        Template.appendHtml(out, "<{{@x}} {{@x}}>", data);
         assertEquals("don't delete the same space twice", "<>",
                 out.toString());
         out.setLength(0);
-        Template.expand("{{@x}}) + b{{@x}}> + {{@x}}y", data, out);
+        Template.appendHtml(out, "{{@x}}) + b{{@x}}> + {{@x}}y", data);
         assertEquals("don't remove spaces", ") + b> + y",
                 out.toString());
     }
     public void test_expandBraces_collapseTrailingSpace() {
         Dataset data = new Dataset();
         StringBuilder out = new StringBuilder();
-        Template.expand("{{@x}} bcd", data, out);
+        Template.appendHtml(out, "{{@x}} bcd", data);
         assertEquals("braces at start of string", "bcd", out.toString());
         out.setLength(0);
-        Template.expand("[{{@x}} + <{{@x}} + @{{{@x}} + ({{@x}} + "
+        Template.appendHtml(out, "[{{@x}} + <{{@x}} + @{{{@x}} + ({{@x}} + "
                 + "\"{{@x}} + \'{{@x}} +",
-                data, out);
+                data);
         assertEquals("open-delimiter precedes braces", "[+ <+ {+ (+ \"+ '+",
                 out.toString());
         out.setLength(0);
@@ -752,7 +734,7 @@ public class TemplateTest extends junit.framework.TestCase {
         assertEquals("update lastDeletedSpace", 7,
                 TemplateFixture.lastDeletedSpace);
         out.setLength(0);
-        Template.expand("<{{@x}}abc + y{{@x}}y + <{{@x}}", data, out);
+        Template.appendHtml(out, "<{{@x}}abc + y{{@x}}y + <{{@x}}", data);
         assertEquals("don't remove spaces", "<abc + yy + <",
                 out.toString());
     }
@@ -864,14 +846,14 @@ public class TemplateTest extends junit.framework.TestCase {
 
     public void test_variousComplexTemplates() {
         StringBuilder out = new StringBuilder();
-        Template.expand("first {{name: @name, age: @age?{unknown}}}",
-                new Dataset("name", "Bob"), out);
+        Template.appendHtml(out, "first {{name: @name, age: @age?{unknown}}}",
+                new Dataset("name", "Bob"));
         assertEquals("output string", "first name: Bob, age: unknown",
                 out.toString());
 
         out.setLength (0);
-        Template.expand("first {{name: @name, age: @age?{unknown}, " +
-                "weight: @weight}}", new Dataset("name", "Bob"), out);
+        Template.appendHtml(out, "first {{name: @name, age: @age?{unknown}, " +
+                "weight: @weight}}", new Dataset("name", "Bob"));
         assertEquals("output string", "first", out.toString());
     }
 }

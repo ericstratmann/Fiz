@@ -31,8 +31,7 @@ public class Ajax {
         //     because URL quoting has already quoted all the characters
         //     that are special in strings.
         out.append("void new Fiz.Ajax({url: \"");
-        Template.expand(urlTemplate, data, out,
-                Template.SpecialChars.URL);
+        Template.appendUrl(out, urlTemplate, data);
         out.append("\"");
         out.append("});");
     }
@@ -85,8 +84,7 @@ public class Ajax {
         //     because URL quoting has already quoted all the characters
         //     that are special in strings.
         javascript.append("void new Fiz.Ajax({url: \"");
-        Template.expand(urlTemplate, javascript, Template.SpecialChars.URL,
-                indexedData);
+        Template.appendUrl(javascript, urlTemplate, indexedData);
         javascript.append("\"");
         javascript.append("});");
         return javascript.toString();

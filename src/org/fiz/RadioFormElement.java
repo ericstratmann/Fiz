@@ -58,9 +58,9 @@ public class RadioFormElement extends FormElement {
             StringBuilder out) {
         cr.getHtml().includeCssFile("RadioFormElement.css");
         String actual = data.check(id);
-        Template.expand("<div class=\"@class?{RadioFormElement}\">" +
+        Template.appendHtml(out, "<div class=\"@class?{RadioFormElement}\">" +
                 "<input type=\"radio\" name=\"@id\" id=\"@id.@value\" " +
-                "value=\"@value\"", properties, out);
+                "value=\"@value\"", properties);
         if ((actual != null) && (actual.equals(value))) {
             out.append(" checked=\"checked\"");
         }
@@ -73,7 +73,7 @@ public class RadioFormElement extends FormElement {
             Html.escapeHtmlChars("getElementById(" +
                     "\"" + id + "." + value + "\").checked=true;", out);
             out.append("\">");
-            Template.expand(extra, data, out);
+            Template.appendHtml(out, extra, data);
             out.append("</span>");
         }
         out.append("</div>");

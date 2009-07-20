@@ -58,7 +58,7 @@ public class Column implements Formatter {
         if (formatter != null) {
             formatter.render(cr, rowData, out);
         } else {
-            Template.expand(template, rowData, out);
+            Template.appendHtml(out, template, rowData);
         }
     }
 

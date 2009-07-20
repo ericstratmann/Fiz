@@ -106,7 +106,7 @@ public class PasswordFormElement extends FormElement {
     public void render(ClientRequest cr, Dataset data,
             StringBuilder out) {
         cr.getHtml().includeCssFile("PasswordFormElement.css");
-        Template.expand("<input type=\"password\" name=\"@id\" " +
-                "class=\"@class?{PasswordFormElement}\" />", properties, out);
+        Template.appendHtml(out, "<input type=\"password\" name=\"@id\" " +
+                "class=\"@class?{PasswordFormElement}\" />", properties);
     }
 }

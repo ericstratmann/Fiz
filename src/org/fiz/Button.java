@@ -68,13 +68,12 @@ public class Button implements Formatter {
         } else {
             String jsTemplate = properties.get("javascript");
             javascript = new StringBuilder(jsTemplate.length());
-            Template.expand(jsTemplate, data, javascript,
-                    Template.SpecialChars.JAVASCRIPT);
+            Template.appendJavascript(javascript, jsTemplate, data);
         }
-        Template.expand("<button {{class=\"@class\"}} " +
+        Template.appendHtml(out, "<button {{class=\"@class\"}} " +
                 "onclick=\"@1 return false;\">",
-                properties, out, javascript);
-        Template.expand(properties.get("text"), data, out);
+                properties, javascript);
+        Template.appendHtml(out, properties.get("text"), data);
         out.append("</button>");
     }
 }

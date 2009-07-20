@@ -101,12 +101,12 @@ public class CompoundSection extends Section implements TableLayoutContainer {
 
         // Render the portion of the container that comes before the children.
         StringBuilder out = cr.getHtml().getBody();
-        Template.expand("\n<!-- Start CompoundSection {{@id}} -->\n",
-                properties, out);
+        Template.appendHtml(out, "\n<!-- Start CompoundSection {{@id}} -->\n",
+                properties);
         String borderFamily = properties.check("borderFamily");
         String layout = properties.check("layout");
         if (borderFamily != null) {
-            Template.expand("<table {{id=\"@id\"}} {{class=\"@class\"}} " +
+            Template.appendHtml(out, "<table {{id=\"@id\"}} {{class=\"@class\"}} " +
                     "cellspacing=\"0\">\n" +
                     "  <tr style=\"line-height: 0px;\">\n" +
                     "    <td><img src=\"@borderFamily-nw.gif\" alt=\"\" />" +
@@ -125,7 +125,7 @@ public class CompoundSection extends Section implements TableLayoutContainer {
                     "</td>\n" +
                     "    <td class=\"compoundBody\" " +
                     "{{style=\"background: @background;\"}}>\n",
-                    properties, out);
+                    properties);
             if (layout != null) {
                 // If a table layout was specified, expand it using the
                 // TableLayout class.
@@ -146,9 +146,9 @@ public class CompoundSection extends Section implements TableLayoutContainer {
                     "class", properties.check("class"));
             TableLayout.render(layoutProperties, this, cr);
         } else {
-            Template.expand("<div {{id=\"@id\"}} {{class=\"@class\"}} " +
+            Template.appendHtml(out, "<div {{id=\"@id\"}} {{class=\"@class\"}} " +
                     "{{style=\"background: @background;\"}}>\n",
-                    properties, out);
+                    properties);
         }
 
         if (layout == null) {
@@ -165,7 +165,7 @@ public class CompoundSection extends Section implements TableLayoutContainer {
 
         // Render the portion of the container that comes after the children.
         if (borderFamily != null) {
-            Template.expand("    </td>\n" +
+            Template.appendHtml(out, "    </td>\n" +
                     "    <td style=\"background-image: " +
                     "url(@borderFamily-e.gif); " +
                     "background-repeat: repeat-y;\">" +
@@ -181,12 +181,12 @@ public class CompoundSection extends Section implements TableLayoutContainer {
                     "    <td><img src=\"@borderFamily-se.gif\" alt=\"\" />" +
                     "</td>\n" +
                     "  </tr>\n" +
-                    "</table>\n", properties, out);
+                    "</table>\n", properties);
         } else if (layout == null) {
             out.append("</div>\n");
         }
-        Template.expand("<!-- End CompoundSection {{@id}} -->\n",
-                properties, out);
+        Template.appendHtml(out, "<!-- End CompoundSection {{@id}} -->\n",
+                properties);
     }
 
     /**
