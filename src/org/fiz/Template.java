@@ -59,14 +59,11 @@ import java.util.*;
  * Translation can be disabled for dataset values by specifying {@code NONE}
  * as the encoding.
  *
- * Some forms of the {@code expand} method allow you to provide data values
- * using one or more Objects instead of a Dataset.  In this case, you use
- * numerical specifiers such as {@code @3} to refer to the values:
- * {@code @1} refers to the string value of the first object, {@code @2}
- * refers to the string value of the second object, and so on.  In some
- * cases you can provide both a dataset and Objects, in which case a
- * specifier such as {@code @2} refers to an object, if there is one
- * corresponding to that index, otherwise it is looked up in the dataset.
+ * When invoking template expansion, you can also provide data values using
+ * one or more Objects instead of (or in addition to) a Dataset.  In this
+ * case, you use numerical specifiers such as {@code @3} to refer to the
+ * values: {@code @1} refers to the string value of the first object,
+ * {@code @2} refers to the string value of the second object, and so on.
  */
 
 public class Template {
