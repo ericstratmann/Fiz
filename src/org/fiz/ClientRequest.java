@@ -297,7 +297,7 @@ public class ClientRequest {
      */
     public void evalJavascript(CharSequence javascript) {
         if (requestType == Type.NORMAL) {
-            getHtml().includeJavascript(javascript);
+            getHtml().evalJavascript(javascript);
             return;
         }
         if (jsCode == null) {
@@ -320,7 +320,7 @@ public class ClientRequest {
      */
     public void evalJavascript(String template, Dataset data) {
         if (requestType == Type.NORMAL) {
-            getHtml().includeJavascript(template, data);
+            getHtml().evalJavascript(template, data);
             return;
         }
         if (jsCode == null) {
@@ -342,7 +342,7 @@ public class ClientRequest {
      */
     public void evalJavascript(String template, Object ... indexedData) {
         if (requestType == Type.NORMAL) {
-            getHtml().includeJavascript(template, indexedData);
+            getHtml().evalJavascript(template, indexedData);
             return;
         }
         if (jsCode == null) {
@@ -932,7 +932,7 @@ public class ClientRequest {
             if (template != null) {
                 foundTemplate = true;
                 getHtml().includeJsFile("static/fiz/Fiz.js");
-                getHtml().includeJavascript("Fiz.addBulletinMessage(\"@html\");",
+                getHtml().evalJavascript("Fiz.addBulletinMessage(\"@html\");",
                         new Dataset("html", Template.expandHtml(template,
                         compound)));
             }
