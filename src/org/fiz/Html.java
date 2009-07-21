@@ -222,10 +222,9 @@ public class Html {
      * by the browser after the page has been processed.  This method
      * works only during normal HTML requests; for Ajax requests and
      * form posts, use ClientRequest.evalJavascript instead.
-     * TODO: rename this method to evalJavascript for consistency (or just change to "getJsCode"?).
      * @param code                 Javascript code.
      */
-    public void includeJavascript(CharSequence code) {
+    public void evalJavascript(CharSequence code) {
         jsCode.append(code);
     }
 
@@ -238,7 +237,7 @@ public class Html {
      * @param template             Javascript code template.
      * @param data                 Values to be substituted into the template.
      */
-    public void includeJavascript(CharSequence template, Dataset data) {
+    public void evalJavascript(CharSequence template, Dataset data) {
         Template.appendJavascript(jsCode, template, data);
     }
 
@@ -249,7 +248,7 @@ public class Html {
      * @param template             Javascript code template.
      * @param args                 Values to be substituted into the template.
      */
-    public void includeJavascript(CharSequence template, Object... args) {
+    public void evalJavascript(CharSequence template, Object... args) {
         Template.appendJavascript(jsCode, template, args);
     }
 

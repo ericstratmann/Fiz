@@ -51,7 +51,7 @@ public class HtmlTest extends junit.framework.TestCase {
         html.getBody().append("body info\n");
         html.includeCssFile("test.css");
         html.includeJsFile("static/fiz/Ajax.js");
-        html.includeJavascript("window.dummy = 1;");
+        html.evalJavascript("window.dummy = 1;");
         html.clear();
         html.getBody().append("<p>Text</p>\n");
         assertEquals("**Prologue**\n" +
@@ -166,10 +166,10 @@ public class HtmlTest extends junit.framework.TestCase {
         Util.deleteTree("_test_");
     }
 
-    public void test_includeJavascript() {
-        html.includeJavascript(
+    public void test_evalJavascript() {
+        html.evalJavascript(
                 "// Javascript comment with special chars <&>\n");
-        html.includeJavascript(
+        html.evalJavascript(
                 "var i = 444;\n");
         assertEquals("accumulated Javascript",
                 "// Javascript comment with special chars <&>\n" +
@@ -177,16 +177,16 @@ public class HtmlTest extends junit.framework.TestCase {
                 html.jsCode.toString());
     }
 
-    public void test_includeJavascript_withTemplateAndDataset() {
-        html.includeJavascript("foo(\"@value1\", value2);",
+    public void test_evalJavascript_withTemplateAndDataset() {
+        html.evalJavascript("foo(\"@value1\", value2);",
                 new Dataset("value1", "\"\n\000<&'>", "value2", "345"));
         assertEquals("accumulated Javascript",
                 "foo(\"\\\"\\n\\x00<&'>\", value2);",
                 html.jsCode.toString());
     }
 
-    public void test_includeJavascript_withTemplateAndArgs() {
-        html.includeJavascript("foo(\"@1\", \"@3\");",
+    public void test_evalJavascript_withTemplateAndArgs() {
+        html.evalJavascript("foo(\"@1\", \"@3\");",
                 "\"\n\000<&'>", "value2", "value3");
         assertEquals("accumulated Javascript",
                 "foo(\"\\\"\\n\\x00<&'>\", \"value3\");",
@@ -226,7 +226,7 @@ public class HtmlTest extends junit.framework.TestCase {
         TestUtil.assertSubstring("body only", "body info",
                 html.toString());
         html.clear();
-        html.includeJavascript("x = 44;");
+        html.evalJavascript("x = 44;");
         TestUtil.assertSubstring("Javascript only",
                 "<head>\n" +
                 "<title></title>\n" +
@@ -367,9 +367,9 @@ public class HtmlTest extends junit.framework.TestCase {
     }
     public void test_print_javascriptCode() {
         html.getBody().append("<p> First paragraph.</p>\n");
-        html.includeJavascript(
+        html.evalJavascript(
                 "// Javascript comment with special chars <&>\n");
-        html.includeJavascript(
+        html.evalJavascript(
                 "var i = 444;\n");
         TestUtil.assertSubstring("<body> element from document", "<body>\n" +
                 "<p> First paragraph.</p>\n" +

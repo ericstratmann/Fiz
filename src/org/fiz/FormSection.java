@@ -574,7 +574,7 @@ public class FormSection extends Section {
         // In order to handle the response correctly, we need the id for the
         // form.  Fortunately, there should be a value "fiz_formId" in
         // the form's data.
-        cr.getHtml().includeJavascript(
+        cr.getHtml().evalJavascript(
                 "window.parent.Fiz.FormSection.handleResponse(\"@1\");\n",
                 javascript);
 
