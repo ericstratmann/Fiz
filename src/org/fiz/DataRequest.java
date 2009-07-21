@@ -179,8 +179,8 @@ public class DataRequest {
     }
 
     /**
-     * Marks the request as having failed, and records detailed information
-     * about the error(s) that occurred.
+     * Invoked by data managers to indicate that the request has failed;
+     * records detailed information about the error(s) that occurred.
      * @param errorInfo            One or more datasets, each containing
      *                             information about one error that occurred
      *                             while processing the request.
@@ -276,7 +276,7 @@ public class DataRequest {
     }
 
     /**
-     * Returned the name for this request, which was associated with the request
+     * Return the name for this request, which was associated with the request
      * when it was constructed or by calling {@code setName}.
      * @return                     The name of the request, or null if there
      *                             is none.
