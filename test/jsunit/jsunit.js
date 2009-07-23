@@ -132,11 +132,11 @@ function runTests(file) {
         jsunit.currentTestError = false;
         jsunit.log = "";
 
+        document = new Document(); // global
+
         if (testClass.setUp) {
             testClass.setUp();
         }
-
-        document = new Document(); // global
 
         try {
             testClass[test]();
