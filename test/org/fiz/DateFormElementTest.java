@@ -1,3 +1,18 @@
+/* Copyright (c) 2009 Stanford University
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
 package org.fiz;
 
 import org.fiz.test.*;
@@ -14,7 +29,7 @@ public class DateFormElementTest extends junit.framework.TestCase {
         date.set(Calendar.MILLISECOND, 0);
         return date.getTime();
     }
-    
+
     public void test_render_basics() {
         DateFormElement.today = createDate(1, 14, 2008);
         DateFormElement element = new DateFormElement(
@@ -24,7 +39,7 @@ public class DateFormElementTest extends junit.framework.TestCase {
         element.render(cr, new Dataset(), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start DateFormElement cal1 -->\n" +
-                "<div class=\"DateFormElement\" id=\"cal1\">\n" + 
+                "<div class=\"DateFormElement\" id=\"cal1\">\n" +
                 "  <input type=\"text\" name=\"cal1\" id=\"cal1_input\" onblur=\"Fiz.ids.cal1.validateAndUpdate()\" value=\"January 14, 2008\" />\n" +
                 "  <img src=\"/static/fiz/images/calendar-icon.gif\" id=\"cal1_icon\" alt=\"Pick a date\" />\n" +
                 "  <div id=\"cal1_picker\" class=\"picker\">\n" +
@@ -58,7 +73,7 @@ public class DateFormElementTest extends junit.framework.TestCase {
                 "      <a onclick=\"Fiz.ids.cal1.nextYear()\" id=\"cal1_nextYear\" class=\"arrow-next-year\"><img src=\"/static/fiz/images/arrow-right-double.gif\" alt=\"Next Year\" /></a>\n" +
                 "    </div>\n" +
                 "  </div>\n" +
-                "</div>\n" + 
+                "</div>\n" +
                 "<!-- End DateFormElement cal1 -->\n",
                 out.toString());
         out.insert(0, "<form action=\"a/b/c\">\n");
@@ -87,7 +102,7 @@ public class DateFormElementTest extends junit.framework.TestCase {
                 "Fiz.ids.cal1 = new Fiz.DateFormElement('cal1', 'm/d/Y', 'right');\n",
                  cr.getHtml().jsCode.toString());
     }
-    
+
     public void test_render_dateFormat() {
         DateFormElement element = new DateFormElement(
                 new Dataset(
@@ -101,7 +116,7 @@ public class DateFormElementTest extends junit.framework.TestCase {
                 "Fiz.ids.cal1 = new Fiz.DateFormElement('cal1', 'm-d-Y', 'bottom');\n",
                  cr.getHtml().jsCode.toString());
     }
-    
+
 
 
     public void test_render_calendarIcon() {
@@ -116,7 +131,7 @@ public class DateFormElementTest extends junit.framework.TestCase {
         element.render(cr, new Dataset(), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start DateFormElement cal1 -->\n" +
-                "<div class=\"DateFormElement\" id=\"cal1\">\n" + 
+                "<div class=\"DateFormElement\" id=\"cal1\">\n" +
                 "  <input type=\"text\" name=\"cal1\" id=\"cal1_input\" onblur=\"Fiz.ids.cal1.validateAndUpdate()\" value=\"January 14, 2008\" />\n" +
                 "  <img src=\"test.jpg\" id=\"cal1_icon\" alt=\"Pick a date\" />\n" +
                 "  <div id=\"cal1_picker\" class=\"picker\">\n" +
@@ -150,14 +165,14 @@ public class DateFormElementTest extends junit.framework.TestCase {
                 "      <a onclick=\"Fiz.ids.cal1.nextYear()\" id=\"cal1_nextYear\" class=\"arrow-next-year\"><img src=\"/static/fiz/images/arrow-right-double.gif\" alt=\"Next Year\" /></a>\n" +
                 "    </div>\n" +
                 "  </div>\n" +
-                "</div>\n" + 
+                "</div>\n" +
                 "<!-- End DateFormElement cal1 -->\n",
                 out.toString());
         out.insert(0, "<form action=\"a/b/c\">\n");
         out.append("</form>\n");
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    
+
     public void test_render_exclude() {
         DateFormElement element = new DateFormElement(
                 new Dataset(
@@ -178,7 +193,7 @@ public class DateFormElementTest extends junit.framework.TestCase {
                 "endDate: \"June 24, 2009\"}, {startDate: \"September 3, 2011\", type: " +
                 "\"range\", endDate: \"null\"}]});\n",
                  cr.getHtml().jsCode.toString());
-    } 
+    }
 
     public void test_stringToDate() {
         DateFormElement.today = createDate(1, 14, 2008);

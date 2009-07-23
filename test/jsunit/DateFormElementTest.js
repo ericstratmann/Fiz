@@ -1,6 +1,19 @@
 // DateFormElementTest.js --
 //
 // Jsunit tests for DateFormElement.js, organized in the standard fashion.
+//
+// Copyright (c) 2009 Stanford University
+// Permission to use, copy, modify, and distribute this software for any
+// purpose with or without fee is hereby granted, provided that the above
+// copyright notice and this permission notice appear in all copies.
+//
+// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+// WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+// ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+// WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+// ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+// OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 include("static/fiz/Fiz.js");
 include("static/fiz/date.js");
@@ -13,14 +26,14 @@ DateFormElementTest.test_validateAndUpdate_validInput = function() {
 	var picker = document.addElementWithId("cal1_picker");
 	var input = document.addElementWithId("cal1_input", {value: "12/10/1999"});
 	var icon = document.addElementWithId("cal1_icon");
-	
+
 	var formElem = new Fiz.DateFormElement("cal1");
 
 	formElem.validateAndUpdate();
 	assertEqual("12/10/1999", input.value, "Value of input: 12/10/1999");
-	
+
 	input.value = "January 1, 1979";
-	formElem.validateAndUpdate();	
+	formElem.validateAndUpdate();
 	assertEqual("1/1/1979", input.value, "Value of input: January 1, 1979");
 }
 
@@ -28,16 +41,16 @@ DateFormElementTest.test_validateAndUpdate_invalidInput = function() {
 	var picker = document.addElementWithId("cal1_picker");
 	var input = document.addElementWithId("cal1_input", {value: "12/099"});
 	var icon = document.addElementWithId("cal1_icon");
-	
+
 	var formElem = new Fiz.DateFormElement("cal1");
-	
+
 	formElem.validateAndUpdate();
-	
+
 	assertEqual("12/099", input.value, "Value of input: 12/099");
 
 	input.value = "Octust 35, 1999";
 	formElem.validateAndUpdate();
-	
+
 	assertEqual("Octust 35, 1999", input.value, "Value of input: Octust 35, 1999");
 }
 
@@ -45,10 +58,10 @@ DateFormElementTest.test_validateAndDisplay_validInput = function() {
 	var picker = document.addElementWithId("cal1_picker");
 	var input = document.addElementWithId("cal1_input", {value: "3/29/2008"});
 	var icon = document.addElementWithId("cal1_icon");
-	
+
 	var formElem = new Fiz.DateFormElement("cal1");
 	formElem.redraw = logFunction("redraw");
-	
+
 	formElem.validateAndDisplay();
 
 	assertEqual(2, formElem.dDate.getMonth(),
@@ -57,7 +70,7 @@ DateFormElementTest.test_validateAndDisplay_validInput = function() {
 			"Displayed Date: Day");
 	assertEqual(2008, formElem.dDate.getFullYear(),
 			"Displayed Date: Year");
-	
+
 	assertEqual(2, formElem.sDate.getMonth(),
 			"Selected Date: Month");
 	assertEqual(29, formElem.sDate.getDate(),
@@ -70,7 +83,7 @@ DateFormElementTest.test_validateAndDisplay_invalidInput = function() {
 	var picker = document.addElementWithId("cal1_picker");
 	var input = document.addElementWithId("cal1_input", {value: "12/099"});
 	var icon = document.addElementWithId("cal1_icon");
-	
+
 	var formElem = new Fiz.DateFormElement("cal1");
 	formElem.redraw = logFunction("redraw");
 
@@ -80,7 +93,7 @@ DateFormElementTest.test_validateAndDisplay_invalidInput = function() {
 	var sDate_oldMonth = formElem.sDate.getMonth();
 	var sDate_oldDay = formElem.sDate.getDate();
 	var sDate_oldYear = formElem.sDate.getFullYear();
-	
+
 	formElem.validateAndDisplay();
 
 	assertEqual(dDate_oldMonth, formElem.dDate.getMonth(),
@@ -89,7 +102,7 @@ DateFormElementTest.test_validateAndDisplay_invalidInput = function() {
 			"Displayed Date: Day");
 	assertEqual(dDate_oldYear, formElem.dDate.getFullYear(),
 			"Displayed Date: Year");
-	
+
 	assertEqual(sDate_oldMonth, formElem.sDate.getMonth(),
 			"Selected Date: Month");
 	assertEqual(sDate_oldDay, formElem.sDate.getDate(),
@@ -108,7 +121,7 @@ DateFormElementTest.test_openPicker = function() {
 														 offsetHeight: 5,
 														 offsetParent: parent,
 														 className: "undefined"});
-	
+
 	var formElem = new Fiz.DateFormElement("cal1", "", "right");
 	formElem.validateAndUpdate = logFunction("validateAndUpdate");
 	formElem.openPicker();
@@ -119,10 +132,10 @@ DateFormElementTest.test_openPicker = function() {
 			"attachRight: Left of picker");
 	assertEqual("block", picker.style.display,
 			"attachRight: Visibility of picker");
-	
+
 	formElem.attachPosition = "bottom";
 	formElem.openPicker();
-	
+
 	assertEqual("8px", picker.style.top,
 			"attachBottom: Top of picker");
 	assertEqual("0px", picker.style.left,
@@ -135,7 +148,7 @@ DateFormElementTest.test_closePicker = function() {
 	var picker = document.addElementWithId("cal1_picker", {style: {display: "block"}});
 	var input = document.addElementWithId("cal1_input");
 	var icon = document.addElementWithId("cal1_icon");
-	
+
 	var formElem = new Fiz.DateFormElement("cal1");
 	formElem.closePicker();
 
@@ -161,7 +174,7 @@ DateFormElementTest.test_redraw = function() {
 	grid.__defineGetter__("childNodes", function() {
 		return this.getChildNodes();
 	});
-	
+
 	var formElem = new Fiz.DateFormElement("cal1");
 	formElem.sDate = new Date("August 13, 2007");
 	formElem.dDate = new Date("August 1, 2007");
@@ -169,7 +182,7 @@ DateFormElementTest.test_redraw = function() {
 	formElem.redraw();
 
 	assertEqual("August 2007", header.textContent, "Header");
-	
+
 	// Previous month
 	assertEqual(29, document.getElementById("cell-1-1").textContent,
 			"Row 1, Column 1");
@@ -208,15 +221,15 @@ DateFormElementTest.test_redrawNav = function() {
 	var prevMonthLink = document.addElementWithId("cal1_prevMonth");
 	var nextMonthLink = document.addElementWithId("cal1_nextMonth");
 	var nextYearLink = document.addElementWithId("cal1_nextYear");
-	
+
 	var formElem = new Fiz.DateFormElement("cal1");
-	
+
 	formElem.startLimit = new Date("May 14, 2008");
 	formElem.endLimit = new Date("July 14, 2008");
-	
+
 	formElem.redrawNav(new Date("May 23, 2008"),
 			new Date("June 15, 2008"), new Date("July 23, 2008"));
-			
+
 	assertEqual("hidden", prevYearLink.style.visibility,
 			"Prev Year Link: startLimit = 5/14/2008, curdate = 6/15/2008");
 	assertEqual("visible", prevMonthLink.style.visibility,
@@ -228,10 +241,10 @@ DateFormElementTest.test_redrawNav = function() {
 
 	formElem.startLimit = new Date("June 14, 2007");
 	formElem.endLimit = new Date("June 14, 2009");
-	
+
 	formElem.redrawNav(new Date("May 23, 2008"),
 			new Date("June 15, 2008"), new Date("July 23, 2008"));
-			
+
 	assertEqual("visible", prevYearLink.style.visibility,
 			"Prev Year Link: startLimit = 6/14/2007, curdate = 6/15/2008");
 	assertEqual("visible", prevMonthLink.style.visibility,
@@ -243,10 +256,10 @@ DateFormElementTest.test_redrawNav = function() {
 
 	formElem.startLimit = new Date("July 14, 2007");
 	formElem.endLimit = new Date("May 14, 2009");
-	
+
 	formElem.redrawNav(new Date("May 23, 2008"),
 			new Date("June 15, 2008"), new Date("July 23, 2008"));
-			
+
 	assertEqual("hidden", prevYearLink.style.visibility,
 			"Prev Year Link: startLimit = 7/14/2007, curdate = 6/15/2008");
 	assertEqual("visible", prevMonthLink.style.visibility,
@@ -296,7 +309,7 @@ DateFormElementTest.test_setDisplayedDate = function() {
 
 	var formElem = new Fiz.DateFormElement("cal1");
 	formElem.setDisplayedDate(new Date("December 3, 2004"));
-	
+
 	assertEqual("12/1/2004",
 			(formElem.dDate.getMonth() + 1) + "/" + formElem.dDate.getDate() + "/" + formElem.dDate.getFullYear(),
 			"Displayed Date");
@@ -309,7 +322,7 @@ DateFormElementTest.test_setSelectedDate = function() {
 
 	var formElem = new Fiz.DateFormElement("cal1");
 	formElem.setSelectedDate(new Date("December 3, 2004"));
-	
+
 	assertEqual("12/3/2004",
 			(formElem.sDate.getMonth() + 1) + "/" + formElem.sDate.getDate() + "/" + formElem.sDate.getFullYear(),
 			"Selected Date");
@@ -322,7 +335,7 @@ DateFormElementTest.test_prevYear = function() {
 
 	var formElem = new Fiz.DateFormElement("cal1");
 	formElem.redraw = logFunction("redraw");
-	
+
 	var curYear = formElem.dDate.getFullYear();
 	formElem.prevYear();
 
@@ -336,7 +349,7 @@ DateFormElementTest.test_prevMonth = function() {
 
 	var formElem = new Fiz.DateFormElement("cal1");
 	formElem.redraw = logFunction("redraw");
-	
+
 	var curMonth = formElem.dDate.getMonth();
 	formElem.prevMonth();
 
@@ -350,7 +363,7 @@ DateFormElementTest.test_today = function() {
 
 	var formElem = new Fiz.DateFormElement("cal1");
 	formElem.redraw = logFunction("redraw");
-	
+
 	var curMonth = formElem.dDate.getMonth();
 	formElem.nextMonth();
 
@@ -364,7 +377,7 @@ DateFormElementTest.test_nextMonth = function() {
 
 	var formElem = new Fiz.DateFormElement("cal1");
 	formElem.redraw = logFunction("redraw");
-	
+
 	var curMonth = formElem.dDate.getMonth();
 	formElem.nextMonth();
 
@@ -378,7 +391,7 @@ DateFormElementTest.test_nextYear = function() {
 
 	var formElem = new Fiz.DateFormElement("cal1");
 	formElem.redraw = logFunction("redraw");
-	
+
 	var curYear = formElem.dDate.getFullYear();
 	formElem.nextYear();
 
@@ -391,7 +404,7 @@ DateFormElementTest.test_setFilters = function() {
 	var icon = document.addElementWithId("cal1_icon");
 
 	var formElem = new Fiz.DateFormElement("cal1");
-	
+
 	formElem.setFilters(
 			{filter:
 				[
@@ -403,7 +416,7 @@ DateFormElementTest.test_setFilters = function() {
 				]
 			}
 	);
-	
+
 	assertEqual("6", formElem.filters[0].dayOfWeek,
 			"Day of week filter: Day of week");
 	assertEqual(new Date(2005, 0, 12).toString(), formElem.filters[1].date.toString(),
@@ -425,7 +438,7 @@ DateFormElementTest.test_setFilters = function() {
 			"Start Limit");
 	assertEqual(new Date(2011, 8, 5).toString(), formElem.endLimit.toString(),
 			"End Limit");
-	
+
 }
 
 DateFormElementTest.test_isExcluded_dayOfWeek = function() {
@@ -434,7 +447,7 @@ DateFormElementTest.test_isExcluded_dayOfWeek = function() {
 	var icon = document.addElementWithId("cal1_icon");
 
 	var formElem = new Fiz.DateFormElement("cal1");
-	
+
 	formElem.setFilters({filter:[{type: "dayOfWeek", dayOfWeek: "6"}]});
 
 	assertEqual(true, formElem.isExcluded(new Date("January 1, 2011")),
@@ -447,7 +460,7 @@ DateFormElementTest.test_isExcluded_specificDate = function() {
 	var icon = document.addElementWithId("cal1_icon");
 
 	var formElem = new Fiz.DateFormElement("cal1");
-	
+
 	formElem.setFilters({filter:[{type: "date", date: "January 12, 2011"}]});
 
 	assertEqual(true, formElem.isExcluded(new Date("January 12, 2011")),
@@ -460,7 +473,7 @@ DateFormElementTest.test_isExcluded_backDateRange = function() {
 	var icon = document.addElementWithId("cal1_icon");
 
 	var formElem = new Fiz.DateFormElement("cal1");
-	
+
 	formElem.setFilters(
 			{filter:
 				[
@@ -483,7 +496,7 @@ DateFormElementTest.test_isExcluded_dateRange = function() {
 	var icon = document.addElementWithId("cal1_icon");
 
 	var formElem = new Fiz.DateFormElement("cal1");
-	
+
 	formElem.setFilters(
 			{filter:
 				[
@@ -493,17 +506,17 @@ DateFormElementTest.test_isExcluded_dateRange = function() {
 	);
 
 	assertEqual(false, formElem.isExcluded(new Date("August 17, 2010")),
-			"August 17, 2010");	
+			"August 17, 2010");
 	assertEqual(true, formElem.isExcluded(new Date("August 18, 2010")),
-			"August 18, 2010");	
+			"August 18, 2010");
 	assertEqual(true, formElem.isExcluded(new Date("August 19, 2010")),
-			"August 19, 2010");	
+			"August 19, 2010");
 	assertEqual(true, formElem.isExcluded(new Date("September 13, 2010")),
-			"September 13, 2010");	
+			"September 13, 2010");
 	assertEqual(true, formElem.isExcluded(new Date("September 14, 2010")),
-			"September 14, 2010");	
+			"September 14, 2010");
 	assertEqual(false, formElem.isExcluded(new Date("September 15, 2010")),
-			"September 15, 2010");	
+			"September 15, 2010");
 }
 
 DateFormElementTest.test_isExcluded_forwardDateRange = function() {
@@ -512,7 +525,7 @@ DateFormElementTest.test_isExcluded_forwardDateRange = function() {
 	var icon = document.addElementWithId("cal1_icon");
 
 	var formElem = new Fiz.DateFormElement("cal1");
-	
+
 	formElem.setFilters(
 			{filter:
 				[
@@ -522,11 +535,11 @@ DateFormElementTest.test_isExcluded_forwardDateRange = function() {
 	);
 
 	assertEqual(false, formElem.isExcluded(new Date("September 4, 2011")),
-			"September 4, 2011");	
+			"September 4, 2011");
 	assertEqual(true, formElem.isExcluded(new Date("September 5, 2011")),
-			"September 5, 2011");	
+			"September 5, 2011");
 	assertEqual(true, formElem.isExcluded(new Date("September 6, 2011")),
-			"September 6, 2011");	
+			"September 6, 2011");
 }
 
 DateFormElementTest.test_formatDate = function() {
@@ -545,14 +558,14 @@ DateFormElementTest.test_formatDate = function() {
 DateFormElementTest.test_highlight_true = function() {
 	var elem = document.addElementWithId("elem", { className: "undefined" });
 	Fiz.DateFormElement.highlight(elem, true);
-	
+
 	assertEqual("hover", elem.className.match("hover")[0], "Hover on");
 }
 
 DateFormElementTest.test_highlight_false = function() {
 	var elem = document.addElementWithId("elem", { className: "undefined" });
 	Fiz.DateFormElement.highlight(elem, false);
-	
+
 	assertEqual(null, elem.className.match("hover"), "Hover off");
 }
 
@@ -561,7 +574,7 @@ DateFormElementTest.test_compareDate = function() {
 	var dateB = new Date("December 13, 2001");
 	var dateC = new Date(91, 04, 24); // May 24, 1991
 	var dateD = new Date(99, 09, 12); // October 12, 1999
-	
+
 	assertEqual(-1, Fiz.DateFormElement.compareDate(dateA, dateB),
 			"11/12/1999 < 12/13/2001");
 	assertEqual(0, Fiz.DateFormElement.compareDate(dateA, dateD),

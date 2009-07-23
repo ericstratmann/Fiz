@@ -1,10 +1,24 @@
-/** DateFormElement.js --
+/* DateFormElement.js --
  *
  * This file provides Javascript functions needed to implement the
  * DateFormElement class.  One Fiz.DateFormElement is created
  * for each DateFormElement Java object.  Methods on the Javascript
  * are invoked for functions such as redrawing and navigating the calendar,
  * showing and hiding the calendar, and updating the form element.
+ *
+ * Copyright (c) 2009 Stanford University
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 // The following lines are used by Fiz to manage Javascript dependencies.
@@ -33,14 +47,14 @@ Fiz.DateFormElement = function(id, dateFormat, attachPosition)
 	this.filters = [];
 	this.startLimit = null;
 	this.endLimit = null;
-		
+
 	// Selected date: Highlighted in picker, displayed in input field
 	this.sDate = new Date();
 
 	// Displayed date: First day of the month currently displayed in picker
 	this.dDate = new Date();
 	this.dDate.setDate(1);
-	
+
 	// Fetch important elements
 	this.input = document.getElementById(this.id + '_input');
 
@@ -52,7 +66,7 @@ Fiz.DateFormElement = function(id, dateFormat, attachPosition)
 	this.icon.onclick = function() {
 		self.openPicker();
 	};
-		
+
 	this.validateAndUpdate();
 }
 
@@ -93,7 +107,7 @@ Fiz.DateFormElement.prototype.openPicker = function()
 	// Used for accessing this object from
 	// anonymous functions
 	var self = this;
-		
+
 	// Find the location of the input field
 	var x, y;
 
@@ -104,7 +118,7 @@ Fiz.DateFormElement.prototype.openPicker = function()
 		x = 0;
 		y = 3 + this.input.offsetHeight;
 	}
-		
+
 	// Attach calendar picker to the input field
 	this.picker.style.top = y + 'px';
 	this.picker.style.left = x + 'px';
@@ -113,13 +127,13 @@ Fiz.DateFormElement.prototype.openPicker = function()
 	// Update the state of the picker to reflect
 	// the value of the field it is attached to
 	this.validateAndDisplay();
-		
+
 	// Sets the icon to close the picker when it's open
 	this.icon.onclick = function() {
 		self.closePicker();
 	};
 }
-	
+
 /**
  * This method hides the calendar and updates the field to reflect
  * the selection made.
@@ -127,7 +141,7 @@ Fiz.DateFormElement.prototype.openPicker = function()
 Fiz.DateFormElement.prototype.closePicker = function()
 {
 	var self = this;
-	
+
 	this.picker.style.display = 'none';
 
 	this.icon.onclick = function() {
@@ -157,7 +171,7 @@ Fiz.DateFormElement.prototype.redraw = function()
 
 	// Day of the week on whic the month starts
 	var curDayOfWeek = this.dDate.getDay();
-	
+
 	// Update heading with new month and year displayed
 	document.getElementById(this.id + '_header').textContent = Fiz.DateFormElement.i18n.monthNamesLong[curMonth] + ' ' + curYear;
 
@@ -172,7 +186,7 @@ Fiz.DateFormElement.prototype.redraw = function()
 
 	// Change the navigation depending on the limits set
 	this.redrawNav(prevDate, this.dDate, nextDate);
-	
+
 	// Number of days in prevMonth
 	var prevNumDays = Fiz.DateFormElement.getNumberOfDays(
 			prevDate.getMonth(),
@@ -180,7 +194,7 @@ Fiz.DateFormElement.prototype.redraw = function()
 	);
 
 	var curWeek = 0;
-	var month = document.getElementById(this.id + '_grid'); // TBODY element	
+	var month = document.getElementById(this.id + '_grid'); // TBODY element
 	var weeks = month.getElementsByTagName('tr'); // TR elements in the TBODY
 	var week = weeks[curWeek].getElementsByTagName('td'); // TD elements in the TR
 
@@ -191,21 +205,21 @@ Fiz.DateFormElement.prototype.redraw = function()
 				prevNumDays - curDayOfWeek + 1 + i);
 		this.dateCell(week[i], date, false);
 	}
-	
+
 	// We fill in the calendar with the dates for the current month
 	for (var i = 1; i <= curNumDays; i++) {
 		var date = new Date(curYear, curMonth, i);
 		var item = this.dateCell(week[curDayOfWeek], date, !this.isExcluded(date));
-			
+
 		// Style the item
 		Fiz.addClass(item, 'cur-month');
-		
+
 		// If the date of the current cell matches the selected date,
 		// we give it a class name so we can style it
 		if (Fiz.DateFormElement.compareDate(this.sDate, date) == 0) {
 			Fiz.addClass(item, 'cur-day');
 		}
-		
+
 		curDayOfWeek++;
 		curDayOfWeek %= 7;
 
@@ -215,7 +229,7 @@ Fiz.DateFormElement.prototype.redraw = function()
 			week = weeks[curWeek].getElementsByTagName('td');
 		}
 	}
-	
+
 	// We fill in the calendar (up to maximum of 6 weeks)
 	// with the dates for the next month
 	for (var i = 0; curWeek < 6; i++) {
@@ -260,11 +274,11 @@ Fiz.DateFormElement.prototype.redrawNav = function(prevDate, curDate, nextDate)
 				&& prevDate.getFullYear() <= this.startLimit.getFullYear()) {
 			prevMonthLink.style.visibility = 'hidden';
 		}
-		
+
 		// We hide the previous year link in two cases:
 		// 1) We are already displaying the earliest year for which
 		//		we have months to display
-		// 2) We are displaying the year after the earliest year 
+		// 2) We are displaying the year after the earliest year
 		//		but an earlier month
 		if ((curDate.getFullYear() <= this.startLimit.getFullYear())
 				|| (curDate.getFullYear() == this.startLimit.getFullYear() + 1
@@ -284,7 +298,7 @@ Fiz.DateFormElement.prototype.redrawNav = function(prevDate, curDate, nextDate)
 		// We hide the next year link in two cases:
 		// 1) We are already displaying the latest year for which
 		//		we have months to display
-		// 2) We are displaying the year before the latest year 
+		// 2) We are displaying the year before the latest year
 		//		but a later month
 		if ((curDate.getFullYear() >= this.endLimit.getFullYear())
 				|| (curDate.getFullYear() == this.endLimit.getFullYear() - 1
@@ -306,7 +320,7 @@ Fiz.DateFormElement.prototype.redrawNav = function(prevDate, curDate, nextDate)
 Fiz.DateFormElement.prototype.dateCell = function(cell, date, selectable)
 {
 	var self = this;
-	
+
 	cell.className = '';
 
 	if(selectable) {
@@ -318,7 +332,7 @@ Fiz.DateFormElement.prototype.dateCell = function(cell, date, selectable)
 				self.closePicker();
 			};
 		})(date);
-		
+
 		// Provides crossbweekser compatible highlighting of table cells
 		cell.onmouseover = function() { Fiz.DateFormElement.highlight(this, true); };
 		cell.onmouseout = function() { Fiz.DateFormElement.highlight(this, false); };
@@ -329,7 +343,7 @@ Fiz.DateFormElement.prototype.dateCell = function(cell, date, selectable)
 		cell.onmouseout = null;
 		Fiz.addClass(cell, 'excluded');
 	}
-	
+
 	cell.textContent = date.getDate();
 
 	return cell;
@@ -449,12 +463,12 @@ Fiz.DateFormElement.prototype.setFilters = function(filters)
 					this.endLimit = startDate;
 				}
 			}
-			
+
 			filter.startDate = startDate;
 			filter.endDate = endDate;
 
 		}
-		
+
 		this.filters.push(filter);
 	}
 }
@@ -504,11 +518,11 @@ Fiz.DateFormElement.prototype.isExcluded = function(date)
 Fiz.DateFormElement.formatDate = function(date, format)
 {
 	if (!format) format = "m/d/Y";
-	
+
 	var month = (date.getMonth() + 1).toString();
 	var year = date.getFullYear().toString();
 	var day = date.getDate().toString();
-	
+
 	var paddedMonth = month;
 	while (paddedMonth.length < 2) {
 		paddedMonth = '0' + paddedMonth;
@@ -525,7 +539,7 @@ Fiz.DateFormElement.formatDate = function(date, format)
 	format = format.replace("Y", year);
 	format = format.replace("d", day);
 	format = format.replace("D", paddedDay);
-	
+
 	return format;
 }
 

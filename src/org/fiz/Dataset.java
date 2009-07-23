@@ -1,3 +1,18 @@
+/* Copyright (c) 2009 Stanford University
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
 package org.fiz;
 import java.io.*;
 import java.util.*;
@@ -835,10 +850,10 @@ public class Dataset implements Cloneable {
         return collectResults(value, wanted, quantity, null);
     }
 
-	
+
     /**
      * This is a general-purpose method to find the value associated
-     * with a given key. The value must be present in the top level of the 
+     * with a given key. The value must be present in the top level of the
 	 * dataset (i.e., {@code key} is not a path; use lookupPath if it is).
 	 * DesiredType is set to ANY and Quantity to FIRST_ONLY.
      * @param key                  Name of the desired value.
@@ -918,7 +933,7 @@ public class Dataset implements Cloneable {
 
     /**
      * This is a general-purpose method to find a value associated with
-     * a hierarchical path. DesiredType is set to ANY and Quantity to 
+     * a hierarchical path. DesiredType is set to ANY and Quantity to
 	 * FIRST_ONLY.
      * @param path                 A sequence of keys separated by dots.
      *                             For example, {@code a.b.c} refers to a value

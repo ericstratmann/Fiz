@@ -1,3 +1,18 @@
+/* Copyright (c) 2009 Stanford University
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
 package org.fiz.test;
 import java.io.*;
 import java.lang.*;
@@ -82,13 +97,13 @@ public class TestUtil {
         }
         Assert.assertEquals(message, expected, matcher.group());
     }
-    
+
     /**
-     * Asserts that the specified file at directory/subpath exists, is 
+     * Asserts that the specified file at directory/subpath exists, is
      * a file, and contains the specified contents.
-     * 
+     *
      * @param directory     The directory containing the file to check.
-     * @param subpath       The subpath from the directory to the file 
+     * @param subpath       The subpath from the directory to the file
      *                      to check.
      * @param contents      The contents that the file should contain.
      */
@@ -97,22 +112,22 @@ public class TestUtil {
         Assert.assertTrue(subpath + " exists", fileToCheck.exists());
         Assert.assertTrue(subpath + " is a file", fileToCheck.isFile());
         try {
-            Assert.assertEquals("Contents of " + subpath, contents, 
+            Assert.assertEquals("Contents of " + subpath, contents,
                     Util.readFile(fileToCheck.getAbsolutePath()).toString());
         } catch (FileNotFoundException fnfe) {
             Assert.assertTrue("Could not read contents of " + subpath, false);
         }
     }
-    
+
     /**
-     * Asserts that the specified directory at directory/subpath exists, 
+     * Asserts that the specified directory at directory/subpath exists,
      * is a directory, and contains the specified number of items.
-     * 
-     * @param directory     The directory containing the directory to 
+     *
+     * @param directory     The directory containing the directory to
      *                      check.
-     * @param subpath       The subpath from the directory to the 
+     * @param subpath       The subpath from the directory to the
      *                      directory to check.
-     * @param size          The number of items that the directory should 
+     * @param size          The number of items that the directory should
      *                      contain.
      */
     public static void assertDirSize(String directory, String subpath, int size) {
@@ -120,7 +135,7 @@ public class TestUtil {
         Assert.assertTrue(subpath + " exists", dirToCheck.exists());
         Assert.assertTrue(subpath + " is a directory", dirToCheck.isDirectory());
         Assert.assertEquals("Number of items in " + subpath, size, dirToCheck.list().length);
-        
+
     }
 
     /**

@@ -3,7 +3,7 @@
  * This file defines styles for DateFormElements that use the default
  * class.  Many of the styles are inherited from those defined in css.yaml.
  */
- 
+
 .DateFormElement {
  	position: relative;
 }
