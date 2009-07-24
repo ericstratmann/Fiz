@@ -1,0 +1,59 @@
+/* AutocompleteFormElement.css -
+ *
+ * This file defines styles for AutocompleteFormElements that use the default
+ * class.  Many of the styles are inherited from those defined in css.yaml.
+ */
+ 
+ .AutocompleteFormElement {
+	position: relative;
+}
+
+ .AutocompleteFormElement input {
+ 	width: @formElementWidth;
+ 	font-family: @fontFamily;
+ 	font-size: 100%;
+ 	border: @standardBorder;
+ 	padding: 1px 3px 1px 3px;
+ 	margin: 0px;
+}
+
+.AutocompleteFormElement input:focus {
+    border: @accentBorder;
+    background: @activeBackground;
+}
+
+.AutocompleteFormElement a {
+	cursor: pointer;
+}
+
+.AutocompleteFormElement .query {
+	margin-bottom: 5px;
+	color: #cccccc;
+}
+
+.AutocompleteFormElement .dropdown {
+ 	width: @formElementWidth;
+	position: absolute;	
+	display: none;
+	font-size: .8em;
+	z-index: 999;
+}
+
+.AutocompleteFormElement .dropdown ul {
+	background: #ffffff;
+	width: 100%;
+	list-style: none;
+	border: @standardBorder;
+	padding: 3px;
+	margin: 0;
+}
+
+.AutocompleteFormElement .dropdown li {
+	border: 1px solid #ffffff;
+	padding: 2px;	
+}
+
+.AutocompleteFormElement .dropdown li.highlight {
+	background: @activeBackground;
+	border: @accentBorder;
+}
