@@ -158,3 +158,31 @@ Fiz.getKeyCode = function(e) {
 		return e.which;
 	}
 }
+
+Fiz.addEvent = function(target, type, callback, captures) {
+	if (target.addEventListener) {
+		target.addEventListener(type, callback, captures);
+	} else if (target.attachEvent) {
+		// Internet Explorer
+		target.attachEvent('on' + type, function() {
+			callback(window.event);
+		}, captures);
+	} else {
+		// Internet Explorer 5 for Mac and general case support
+		target['on' + type] = function() {
+			callback(window.event);
+		};
+	}
+}
+
+Fiz.getTextContent = function(target) {
+    return target.innerText || target.textContent;
+}
+
+Fiz.setTextContent = function(target, text) {
+    if (document.getElementsByTagName("body")[0].innerText == undefined) {
+        target.textContent = text;
+    } else {
+        target.innerText = text;
+    }
+}

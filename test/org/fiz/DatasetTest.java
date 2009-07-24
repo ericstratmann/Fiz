@@ -18,6 +18,7 @@ package org.fiz;
 import java.io.*;
 import java.util.*;
 
+import org.fiz.Dataset;
 import org.fiz.test.*;
 
 /**
@@ -826,9 +827,10 @@ public class DatasetTest extends junit.framework.TestCase {
     }
 
     public void test_serialize_noArgs() {
+        Dataset.debugEnabled = true;
         Dataset d = new Dataset("first", "12345", "second", "x");
-        assertEquals("result", "(6.second1.x\n" +
-                "5.first5.12345)", d.serialize());
+        assertEquals("result", "(5.first5.12345\n" +
+                "6.second1.x)", d.serialize());
     }
 
     public void test_set() {
@@ -839,6 +841,7 @@ public class DatasetTest extends junit.framework.TestCase {
     }
 
     public void test_toJavascript() {
+        Dataset.debugEnabled = true;
         StringBuilder out = new StringBuilder("var obj = ");
         Dataset d = new Dataset("name", "Alice", "age", "32");
         d.toJavascript(out);
@@ -1089,12 +1092,33 @@ public class DatasetTest extends junit.framework.TestCase {
     }
 
     public void test_javascriptForSubtree_emptyDataset() {
+        Dataset.debugEnabled = true;
         StringBuilder out = new StringBuilder("var obj = ");
         Dataset d = new Dataset();
         d.toJavascript(out);
         assertEquals("generated Javascript", "var obj = {}", out.toString());
     }
+    public void test_javascriptForSubtree_debugEnabled() {
+        Dataset.debugEnabled = true;
+        StringBuilder out = new StringBuilder();
+        Dataset d = YamlDataset.newStringInstance(
+                "  d: Third\n" +
+                "  a: First\n" +
+                "  c:\n" +
+                "    ee: First\n" +
+                "    nn: Third\n" +
+                "    ss: Fifth\n" +
+                "    pp: Fourth\n" +
+                "    kk: Second\n");
+        d.toJavascript(out);
+        assertEquals("generated Javascript",
+                "{a: \"First\", c: {ee: \"First\", kk: \"Second\", " +
+                "nn: \"Third\", pp: \"Fourth\", ss: \"Fifth\"}, " +
+                "d: \"Third\"}",
+                out.toString());
+    }
     public void test_javascriptForSubtree_nestedDatasets() {
+        Dataset.debugEnabled = true;
         StringBuilder out = new StringBuilder();
         Dataset d = YamlDataset.newStringInstance("child:\n" +
                 "  name: Alice\n" +
@@ -1108,6 +1132,7 @@ public class DatasetTest extends junit.framework.TestCase {
                 out.toString());
     }
     public void test_javascriptForSubtree_listOfChildren() {
+        Dataset.debugEnabled = true;
         StringBuilder out = new StringBuilder();
         Dataset d = YamlDataset.newStringInstance("child:\n" +
                 "  - name: Alice\n" +
@@ -1121,6 +1146,7 @@ public class DatasetTest extends junit.framework.TestCase {
                 out.toString());
     }
     public void test_javascriptForSubtree_quoteStringCharacters() {
+        Dataset.debugEnabled = true;
         StringBuilder out = new StringBuilder();
         Dataset d = new Dataset("value", "xyz&<\n\"\'\0");
         d.toJavascript(out);

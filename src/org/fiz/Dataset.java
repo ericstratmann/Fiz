@@ -36,6 +36,11 @@ import java.util.*;
  */
 
 public class Dataset implements Cloneable {
+    
+    // If set to true, the dataset is sorted before being output in various
+    // formats
+    public static boolean debugEnabled = false;
+    
     /**
      * Instances of this enum are passed to Dataset.lookup to indicate
      * what sort of value is desired as a result.
@@ -1274,7 +1279,11 @@ public class Dataset implements Cloneable {
             throws IOException {
         out.append('{');
         String prefix = "";
-        for (Object nameObject: map.keySet()) {
+        Collection keySet = map.keySet();
+        if (debugEnabled) {
+            keySet = new TreeSet<String>(keySet);
+        }
+        for (Object nameObject: keySet) {
             String name = (String) nameObject;
             out.append(prefix);
             out.append(name);

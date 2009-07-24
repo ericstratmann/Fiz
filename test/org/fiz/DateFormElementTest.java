@@ -15,6 +15,7 @@
 
 package org.fiz;
 
+import org.fiz.Dataset;
 import org.fiz.test.*;
 
 import java.util.*;
@@ -39,12 +40,18 @@ public class DateFormElementTest extends junit.framework.TestCase {
         element.render(cr, new Dataset(), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start DateFormElement cal1 -->\n" +
-                "<div class=\"DateFormElement\" id=\"cal1\">\n" +
-                "  <input type=\"text\" name=\"cal1\" id=\"cal1_input\" onblur=\"Fiz.ids.cal1.validateAndUpdate()\" value=\"January 14, 2008\" />\n" +
-                "  <img src=\"/static/fiz/images/calendar-icon.gif\" id=\"cal1_icon\" alt=\"Pick a date\" />\n" +
+                "<div class=\"DateFormElement\" id=\"cal1_container\">\n" + 
+                "  <input type=\"text\" name=\"cal1\" id=\"cal1\" " +
+                "onblur=\"Fiz.ids.cal1.validateAndUpdate()\" " +
+                "onkeyup=\"Fiz.ids.cal1.validateAndDisplay()\" " +
+                "value=\"January 14, 2008\" />\n" +
+                "  <img src=\"/static/fiz/images/calendar-icon.gif\" " +
+                "id=\"cal1_icon\" alt=\"Pick a date\" " +
+                "onclick=\"Fiz.ids.cal1.togglePicker()\" />\n" +
                 "  <div id=\"cal1_picker\" class=\"picker\">\n" +
                 "    <div id=\"cal1_header\" class=\"header\"></div>\n" +
-                "    <a onclick=\"Fiz.ids.cal1.closePicker()\" class=\"close-button\">[x]</a>\n" +
+                "    <a onclick=\"Fiz.ids.cal1.closePicker()\" " +
+                "class=\"close-button\">[x]</a>\n" +
                 "    <table id=\"cal1_table\">\n" +
                 "      <col class=\"col-Su\" />\n" +
                 "      <col class=\"col-M\" />\n" +
@@ -54,23 +61,43 @@ public class DateFormElementTest extends junit.framework.TestCase {
                 "      <col class=\"col-F\" />\n" +
                 "      <col class=\"col-Sa\" />\n" +
                 "      <thead>\n" +
-                "        <tr><th>Su</th><th>M</th><th>Tu</th><th>W</th><th>Th</th><th>F</th><th>Sa</th></tr>\n" +
+                "        <tr><th>Su</th><th>M</th><th>Tu</th><th>W</th>" +
+                "<th>Th</th><th>F</th><th>Sa</th></tr>\n" +
                 "      </thead>\n" +
                 "      <tbody id=\"cal1_grid\">\n" +
-                "        <tr class=\"even\"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>\n" +
-                "        <tr class=\"odd\"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>\n" +
-                "        <tr class=\"even\"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>\n" +
-                "        <tr class=\"odd\"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>\n" +
-                "        <tr class=\"even\"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>\n" +
-                "        <tr class=\"odd\"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>\n" +
+                "        <tr class=\"even\"><td></td><td></td><td></td>" +
+                "<td></td><td></td><td></td><td></td></tr>\n" +
+                "        <tr class=\"odd\"><td></td><td></td><td></td>" +
+                "<td></td><td></td><td></td><td></td></tr>\n" +
+                "        <tr class=\"even\"><td></td><td></td><td></td>" +
+                "<td></td><td></td><td></td><td></td></tr>\n" +
+                "        <tr class=\"odd\"><td></td><td></td><td></td>" +
+                "<td></td><td></td><td></td><td></td></tr>\n" +
+                "        <tr class=\"even\"><td></td><td></td><td></td>" +
+                "<td></td><td></td><td></td><td></td></tr>\n" +
+                "        <tr class=\"odd\"><td></td><td></td><td></td>" +
+                "<td></td><td></td><td></td><td></td></tr>\n" +
                 "      </tbody>\n" +
                 "    </table>\n" +
                 "    <div id=\"cal1_navigation\" class=\"nav\">\n" +
-                "      <a onclick=\"Fiz.ids.cal1.prevYear()\" id=\"cal1_prevYear\" class=\"arrow-prev-year\"><img src=\"/static/fiz/images/arrow-left-double.gif\" alt=\"Previous Year\" /></a>\n" +
-                "      <a onclick=\"Fiz.ids.cal1.prevMonth()\" id=\"cal1_prevMonth\" class=\"arrow-prev-month\"><img src=\"/static/fiz/images/arrow-left.gif\" alt=\"Previous Month\" /></a>\n" +
-                "      <a onclick=\"Fiz.ids.cal1.today()\" class=\"arrow-today\">Today</a>\n" +
-                "      <a onclick=\"Fiz.ids.cal1.nextMonth()\" id=\"cal1_nextMonth\" class=\"arrow-next-month\"><img src=\"/static/fiz/images/arrow-right.gif\" alt=\"Next Month\" /></a>\n" +
-                "      <a onclick=\"Fiz.ids.cal1.nextYear()\" id=\"cal1_nextYear\" class=\"arrow-next-year\"><img src=\"/static/fiz/images/arrow-right-double.gif\" alt=\"Next Year\" /></a>\n" +
+                "      <a onclick=\"Fiz.ids.cal1.prevYear()\" " +
+                "id=\"cal1_prevYear\" class=\"arrow-prev-year\">" +
+                "<img src=\"/static/fiz/images/arrow-left-double.gif\" " +
+                "alt=\"Previous Year\" /></a>\n" +
+                "      <a onclick=\"Fiz.ids.cal1.prevMonth()\" " +
+                "id=\"cal1_prevMonth\" class=\"arrow-prev-month\">" +
+                "<img src=\"/static/fiz/images/arrow-left.gif\" " +
+                "alt=\"Previous Month\" /></a>\n" +
+                "      <a onclick=\"Fiz.ids.cal1.today()\" " +
+                "class=\"arrow-today\">Today</a>\n" +
+                "      <a onclick=\"Fiz.ids.cal1.nextMonth()\" " +
+                "id=\"cal1_nextMonth\" class=\"arrow-next-month\">" +
+                "<img src=\"/static/fiz/images/arrow-right.gif\" " +
+                "alt=\"Next Month\" /></a>\n" +
+                "      <a onclick=\"Fiz.ids.cal1.nextYear()\" " +
+                "id=\"cal1_nextYear\" class=\"arrow-next-year\">" +
+                "<img src=\"/static/fiz/images/arrow-right-double.gif\" " +
+                "alt=\"Next Year\" /></a>\n" +
                 "    </div>\n" +
                 "  </div>\n" +
                 "</div>\n" +
@@ -79,12 +106,14 @@ public class DateFormElementTest extends junit.framework.TestCase {
         out.insert(0, "<form action=\"a/b/c\">\n");
         out.append("</form>\n");
         assertEquals("accumulated Javascript",
-                "Fiz.ids.cal1 = new Fiz.DateFormElement('cal1', 'm/d/Y', 'bottom');\n",
+                "Fiz.ids.cal1 = new Fiz.DateFormElement('cal1', " +
+                "'m/d/Y', 'bottom');\n",
                  cr.getHtml().jsCode.toString());
         TestUtil.assertSubstring("CSS file names", "DateFormElement.css",
                 cr.getHtml().getCssFiles());
         assertEquals("Javascript file names",
-                "static/fiz/DateFormElement.js, static/fiz/Fiz.js, static/fiz/date.js",
+                "static/fiz/DateFormElement.js, " +
+                "static/fiz/Fiz.js, static/fiz/date.js",
                 cr.getHtml().getJsFiles());
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
@@ -99,7 +128,8 @@ public class DateFormElementTest extends junit.framework.TestCase {
         StringBuilder out = cr.getHtml().getBody();
         element.render(cr, new Dataset(), out);
         assertEquals("accumulated Javascript",
-                "Fiz.ids.cal1 = new Fiz.DateFormElement('cal1', 'm/d/Y', 'right');\n",
+                "Fiz.ids.cal1 = new Fiz.DateFormElement('cal1', " +
+                "'m/d/Y', 'right');\n",
                  cr.getHtml().jsCode.toString());
     }
 
@@ -113,7 +143,8 @@ public class DateFormElementTest extends junit.framework.TestCase {
         StringBuilder out = cr.getHtml().getBody();
         element.render(cr, new Dataset(), out);
         assertEquals("accumulated Javascript",
-                "Fiz.ids.cal1 = new Fiz.DateFormElement('cal1', 'm-d-Y', 'bottom');\n",
+                "Fiz.ids.cal1 = new Fiz.DateFormElement('cal1', " +
+                "'m-d-Y', 'bottom');\n",
                  cr.getHtml().jsCode.toString());
     }
 
@@ -131,12 +162,18 @@ public class DateFormElementTest extends junit.framework.TestCase {
         element.render(cr, new Dataset(), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start DateFormElement cal1 -->\n" +
-                "<div class=\"DateFormElement\" id=\"cal1\">\n" +
-                "  <input type=\"text\" name=\"cal1\" id=\"cal1_input\" onblur=\"Fiz.ids.cal1.validateAndUpdate()\" value=\"January 14, 2008\" />\n" +
-                "  <img src=\"test.jpg\" id=\"cal1_icon\" alt=\"Pick a date\" />\n" +
+                "<div class=\"DateFormElement\" id=\"cal1_container\">\n" + 
+                "  <input type=\"text\" name=\"cal1\" id=\"cal1\" " +
+                "onblur=\"Fiz.ids.cal1.validateAndUpdate()\" " +
+                "onkeyup=\"Fiz.ids.cal1.validateAndDisplay()\" " +
+                "value=\"January 14, 2008\" />\n" +
+                "  <img src=\"test.jpg\" id=\"cal1_icon\" " +
+                "alt=\"Pick a date\" " +
+                "onclick=\"Fiz.ids.cal1.togglePicker()\" />\n" +
                 "  <div id=\"cal1_picker\" class=\"picker\">\n" +
                 "    <div id=\"cal1_header\" class=\"header\"></div>\n" +
-                "    <a onclick=\"Fiz.ids.cal1.closePicker()\" class=\"close-button\">[x]</a>\n" +
+                "    <a onclick=\"Fiz.ids.cal1.closePicker()\" " +
+                "class=\"close-button\">[x]</a>\n" +
                 "    <table id=\"cal1_table\">\n" +
                 "      <col class=\"col-Su\" />\n" +
                 "      <col class=\"col-M\" />\n" +
@@ -146,23 +183,43 @@ public class DateFormElementTest extends junit.framework.TestCase {
                 "      <col class=\"col-F\" />\n" +
                 "      <col class=\"col-Sa\" />\n" +
                 "      <thead>\n" +
-                "        <tr><th>Su</th><th>M</th><th>Tu</th><th>W</th><th>Th</th><th>F</th><th>Sa</th></tr>\n" +
+                "        <tr><th>Su</th><th>M</th><th>Tu</th><th>W</th>" +
+                "<th>Th</th><th>F</th><th>Sa</th></tr>\n" +
                 "      </thead>\n" +
                 "      <tbody id=\"cal1_grid\">\n" +
-                "        <tr class=\"even\"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>\n" +
-                "        <tr class=\"odd\"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>\n" +
-                "        <tr class=\"even\"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>\n" +
-                "        <tr class=\"odd\"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>\n" +
-                "        <tr class=\"even\"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>\n" +
-                "        <tr class=\"odd\"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>\n" +
+                "        <tr class=\"even\"><td></td><td></td><td></td>" +
+                "<td></td><td></td><td></td><td></td></tr>\n" +
+                "        <tr class=\"odd\"><td></td><td></td><td></td>" +
+                "<td></td><td></td><td></td><td></td></tr>\n" +
+                "        <tr class=\"even\"><td></td><td></td><td></td>" +
+                "<td></td><td></td><td></td><td></td></tr>\n" +
+                "        <tr class=\"odd\"><td></td><td></td><td></td>" +
+                "<td></td><td></td><td></td><td></td></tr>\n" +
+                "        <tr class=\"even\"><td></td><td></td><td></td>" +
+                "<td></td><td></td><td></td><td></td></tr>\n" +
+                "        <tr class=\"odd\"><td></td><td></td><td></td>" +
+                "<td></td><td></td><td></td><td></td></tr>\n" +
                 "      </tbody>\n" +
                 "    </table>\n" +
                 "    <div id=\"cal1_navigation\" class=\"nav\">\n" +
-                "      <a onclick=\"Fiz.ids.cal1.prevYear()\" id=\"cal1_prevYear\" class=\"arrow-prev-year\"><img src=\"/static/fiz/images/arrow-left-double.gif\" alt=\"Previous Year\" /></a>\n" +
-                "      <a onclick=\"Fiz.ids.cal1.prevMonth()\" id=\"cal1_prevMonth\" class=\"arrow-prev-month\"><img src=\"/static/fiz/images/arrow-left.gif\" alt=\"Previous Month\" /></a>\n" +
-                "      <a onclick=\"Fiz.ids.cal1.today()\" class=\"arrow-today\">Today</a>\n" +
-                "      <a onclick=\"Fiz.ids.cal1.nextMonth()\" id=\"cal1_nextMonth\" class=\"arrow-next-month\"><img src=\"/static/fiz/images/arrow-right.gif\" alt=\"Next Month\" /></a>\n" +
-                "      <a onclick=\"Fiz.ids.cal1.nextYear()\" id=\"cal1_nextYear\" class=\"arrow-next-year\"><img src=\"/static/fiz/images/arrow-right-double.gif\" alt=\"Next Year\" /></a>\n" +
+                "      <a onclick=\"Fiz.ids.cal1.prevYear()\" " +
+                "id=\"cal1_prevYear\" class=\"arrow-prev-year\">" +
+                "<img src=\"/static/fiz/images/arrow-left-double.gif\" " +
+                "alt=\"Previous Year\" /></a>\n" +
+                "      <a onclick=\"Fiz.ids.cal1.prevMonth()\" " +
+                "id=\"cal1_prevMonth\" class=\"arrow-prev-month\">" +
+                "<img src=\"/static/fiz/images/arrow-left.gif\" " +
+                "alt=\"Previous Month\" /></a>\n" +
+                "      <a onclick=\"Fiz.ids.cal1.today()\" " +
+                "class=\"arrow-today\">Today</a>\n" +
+                "      <a onclick=\"Fiz.ids.cal1.nextMonth()\" " +
+                "id=\"cal1_nextMonth\" class=\"arrow-next-month\">" +
+                "<img src=\"/static/fiz/images/arrow-right.gif\" " +
+                "alt=\"Next Month\" /></a>\n" +
+                "      <a onclick=\"Fiz.ids.cal1.nextYear()\" " +
+                "id=\"cal1_nextYear\" class=\"arrow-next-year\">" +
+                "<img src=\"/static/fiz/images/arrow-right-double.gif\" " +
+                "alt=\"Next Year\" /></a>\n" +
                 "    </div>\n" +
                 "  </div>\n" +
                 "</div>\n" +
@@ -174,6 +231,7 @@ public class DateFormElementTest extends junit.framework.TestCase {
     }
 
     public void test_render_exclude() {
+        Dataset.debugEnabled = true;
         DateFormElement element = new DateFormElement(
                 new Dataset(
                         "id", "cal1",
@@ -185,13 +243,19 @@ public class DateFormElementTest extends junit.framework.TestCase {
         StringBuilder out = cr.getHtml().getBody();
         element.render(cr, new Dataset(), out);
         assertEquals("accumulated Javascript",
-                "Fiz.ids.cal1 = new Fiz.DateFormElement('cal1', 'm-d-Y', 'bottom');\n" +
-                "Fiz.ids.cal1.setFilters({filter: [{type: \"dayOfWeek\", dayOfWeek: \"6\"}, " +
-                "{type: \"date\", date: \"January 12, 2005\"}, {month: \"7\", day: \"23\", " +
-                "type: \"annualDate\"}, {startDate: \"August 13, 2010\", type: \"range\", " +
-                "endDate: \"September 11, 2010\"}, {startDate: \"null\", type: \"range\", " +
-                "endDate: \"June 24, 2009\"}, {startDate: \"September 3, 2011\", type: " +
-                "\"range\", endDate: \"null\"}]});\n",
+                "Fiz.ids.cal1 = new Fiz.DateFormElement(" +
+                "'cal1', 'm-d-Y', 'bottom');\n" +
+                "Fiz.ids.cal1.setFilters(" +
+                "{filter: [{dayOfWeek: \"6\", type: \"dayOfWeek\"}, " +
+                "{date: \"January 12, 2005\", type: \"date\"}, " +
+                "{day: \"23\", month: \"7\", " +
+                "type: \"annualDate\"}, " +
+                "{endDate: \"September 11, 2010\", " +
+                "startDate: \"August 13, 2010\", type: \"range\"}, " +
+                "{endDate: \"June 24, 2009\", startDate: \"null\", " +
+                "type: \"range\"}, " +
+                "{endDate: \"null\", startDate: \"September 3, 2011\", " +
+                "type: \"range\"}]});\n",
                  cr.getHtml().jsCode.toString());
     }
 
