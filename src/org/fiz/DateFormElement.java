@@ -35,39 +35,44 @@ import java.util.regex.MatchResult;
  *                      the calendar pops up to the {@code right} or to the
  *                      {@code bottom} of the input field.
  *   dateFormat:        (optional) Defaults to {@code m/d/Y}. Specifies the
- *                      format of the date in the input field. The following
- *                      specifiers may be used:
- *                          d: day without leading 0s (1, 2, ... , 30, 31)
- *                          D: day with leading 0s (01, 02, ... , 30, 31)
- *                          m: month without leading 0s (1, 2, ... , 11, 12)
- *                          M: month with leading 0s (01, 02, ... , 11, 12)
- *                          y: year in two-digit form (88, 89, ... , 01, 02)
- *                          Y: year in four-digit form (1988, ... , 2002)
+ *                      format of the date in the input field. The format syntax
+ *                      is described below.
  *   calendarIcon:      (optional) Defaults to /static/fiz/calendar-icon.gif.
  *                      Decides which icon to use on the right of the form field
  *                      for opening the calendar.
  *   exclude:           (optional) Specifies the days to exclude from selection
- *                      on the calendar. The following specifiers may be used:
- *                          {day_of_week}:     
- *                              Monday, Tuesday, ... , Saturday, Sunday
- *                          today:
- *                              replaced with the current date
- *                          {m}/{d}{/{Y}}?:
- *                              Specifies specific dates to omit. If the year is
+ *                      on the calendar. The syntax and specifies for the
+ *                      exclude property are described below.
+ *                                         
+ * The {@code dateFormat} property allows a developer to specify the format
+ * of the date displayed to the user in the {@code <input>} field. The following
+ * specifiers may be used:
+ *   d:                 day without leading 0s (1, 2, ... , 30, 31)
+ *   D:                 day with leading 0s (01, 02, ... , 30, 31)
+ *   m:                 month without leading 0s (1, 2, ... , 11, 12)
+ *   M:                 month with leading 0s (01, 02, ... , 11, 12)
+ *   y:                 year in two-digit form (88, 89, ... , 01, 02)
+ *   Y:                 year in four-digit form (1988, ... , 2002)
+ *                          
+ * The {@code exclude} property is a comma-separated list of filter rules used
+ * to determine whether a date is selectable or not. The following specifiers
+ * may be used:
+ *   {day_of_week}:             Monday, Tuesday, ... , Saturday, Sunday
+ *   today:                     replaced with the current date
+ *   {m}/{d}{/{Y}}?:            Specifies specific dates to omit. If the year is
  *                              left out, then the date is omitted on an annual
  *                              basis.
- *                          {number} {unit} {ago?}:
- *                              Specifies a relative date. The optional
+ *   {number} {unit} {ago?}:    Specifies a relative date. The optional
  *                              {@code ago} flag specifies a relative date in
  *                              the past e.g. 12 months ago, 3 days.
- *                      The following syntax may be used:
- *                          {start_date?}:{end_date?}: 
- *                              {@code start_date} and {@code end_date} can be
- *                              replaced with any of the specifiers above. If
- *                              either the {@code start_date} or the
- *                              {@code end_date} are omitted, then the range
- *                              goes infinitely into the past or infinitely into
- *                              the future respectively.
+ * 
+ * The following syntax may be used:
+ *   {start_date?}:{end_date?}:     {@code start_date} and {@code end_date} can
+ *                                  be replaced with any of the specifiers
+ *                                  above. If either the {@code start_date} or
+ *                                  the {@code end_date} are omitted, then the
+ *                                  range goes infinitely into the past or
+ *                                  infinitely into the future respectively.
  */
 public class DateFormElement extends FormElement {
 
