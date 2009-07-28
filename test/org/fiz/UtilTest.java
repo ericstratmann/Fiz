@@ -26,7 +26,7 @@ import org.fiz.test.*;
 
 public class UtilTest extends junit.framework.TestCase {
     // The following classes used for testing invokeStaticMethod.
-    protected static class Test {
+    protected static class Dummy {
         public static String checkDataset(Dataset d, String key) {
             return d.check(key);
         }
@@ -61,7 +61,7 @@ public class UtilTest extends junit.framework.TestCase {
     public void test_clearCache_methodCache() {
         Util.methodCache.clear();
         Util.methodCacheMisses = 0;
-        Method method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+        Method method = Util.findMethod("org.fiz.UtilTest$Dummy.checkDataset",
                 new Dataset(), "age");
         assertEquals("cache size before clearing", 1, Util.methodCache.size());
         Util.clearCache();
@@ -159,18 +159,18 @@ public class UtilTest extends junit.framework.TestCase {
     public void test_findMethod_basics() {
         Util.methodCache.clear();
         Util.methodCacheMisses = 0;
-        Method method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+        Method method = Util.findMethod("org.fiz.UtilTest$Dummy.checkDataset",
                 new Dataset(), "age");
         assertEquals("name of method", "checkDataset", method.getName());
     }
     public void test_findMethod_presentInCache() {
         Util.methodCache.clear();
         Util.methodCacheMisses = 0;
-        Method method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+        Method method = Util.findMethod("org.fiz.UtilTest$Dummy.checkDataset",
                 new Dataset(), "age");
         assertEquals("name of method", "checkDataset", method.getName());
         assertEquals("cache misses", 1, Util.methodCacheMisses);
-        method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+        method = Util.findMethod("org.fiz.UtilTest$Dummy.checkDataset",
                 new Dataset(), "age");
         assertEquals("name of method", "checkDataset", method.getName());
         assertEquals("cache misses", 1, Util.methodCacheMisses);
@@ -182,32 +182,32 @@ public class UtilTest extends junit.framework.TestCase {
 
         // Lookup up three different methods: same name, but different
         // #'s and/or types of arguments.
-        Method method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+        Method method = Util.findMethod("org.fiz.UtilTest$Dummy.checkDataset",
                 new Dataset(), "age");
         assertEquals("# arguments", 2, method.getParameterTypes().length);
         assertEquals("cache misses", 1, Util.methodCacheMisses);
-        method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+        method = Util.findMethod("org.fiz.UtilTest$Dummy.checkDataset",
                 new Dataset());
         assertEquals("# arguments", 1, method.getParameterTypes().length);
         assertEquals("cache misses", 2, Util.methodCacheMisses);
-        method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+        method = Util.findMethod("org.fiz.UtilTest$Dummy.checkDataset",
                 new Dataset(), new Dataset());
         assertEquals("# arguments", 2, method.getParameterTypes().length);
         assertEquals("cache misses", 3, Util.methodCacheMisses);
 
         // Now lookup each method, and invoke it to make sure we got the
         // right variant in each case.
-        method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+        method = Util.findMethod("org.fiz.UtilTest$Dummy.checkDataset",
                 new Dataset(), "age");
         assertEquals("method result", "28", method.invoke(null,
                 new Dataset("name", "Alice", "age", "28"), "age"));
         assertEquals("cache misses", 3, Util.methodCacheMisses);
-        method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+        method = Util.findMethod("org.fiz.UtilTest$Dummy.checkDataset",
                 new Dataset());
         assertEquals("method result", "Alice", method.invoke(null,
                 new Dataset("name", "Alice", "age", "28")));
         assertEquals("cache misses", 3, Util.methodCacheMisses);
-        method = Util.findMethod("org.fiz.UtilTest$Test.checkDataset",
+        method = Util.findMethod("org.fiz.UtilTest$Dummy.checkDataset",
                 new Dataset(), new Dataset());
         assertEquals("method result", "Bill", method.invoke(null,
                 new Dataset("name", "Alice"), new Dataset("name", "Bill")));
@@ -253,7 +253,7 @@ public class UtilTest extends junit.framework.TestCase {
 
     public void test_invokeStaticMethod_basics() {
         assertEquals("result", "34",
-                Util.invokeStaticMethod("org.fiz.UtilTest$Test.checkDataset",
+                Util.invokeStaticMethod("org.fiz.UtilTest$Dummy.checkDataset",
                 new Dataset("name", "Alice", "age", "34"), "age"));
     }
     public void test_invokeStaticMethod_cantFindMethod() {
@@ -274,11 +274,11 @@ public class UtilTest extends junit.framework.TestCase {
         Config.setDataset("main", new Dataset("searchPackages", "org.fiz"));
         boolean gotException = false;
         try {
-            Util.invokeStaticMethod("UtilTest$Test.foo", "abc");
+            Util.invokeStaticMethod("UtilTest$Dummy.foo", "abc");
         }
         catch (InternalError e) {
             assertEquals("exception message",
-                    "method \"UtilTest$Test.foo\" isn't static " +
+                    "method \"UtilTest$Dummy.foo\" isn't static " +
                     "(Util.invokeStaticMethod)",
                     e.getMessage());
             gotException = true;
@@ -289,12 +289,12 @@ public class UtilTest extends junit.framework.TestCase {
         Config.setDataset("main", new Dataset("searchPackages", "org.fiz"));
         boolean gotException = false;
         try {
-            Util.invokeStaticMethod("UtilTest$Test.throwError",
+            Util.invokeStaticMethod("UtilTest$Dummy.throwError",
                     "sample error message");
         }
         catch (InternalError e) {
             assertEquals("exception message",
-                    "exception in method \"UtilTest$Test.throwError\" " +
+                    "exception in method \"UtilTest$Dummy.throwError\" " +
                     "invoked by Util.invokeStaticMethod: sample error message",
                     e.getMessage());
             gotException = true;

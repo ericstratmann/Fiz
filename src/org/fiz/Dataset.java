@@ -36,11 +36,6 @@ import java.util.*;
  */
 
 public class Dataset implements Cloneable {
-    
-    // If set to true, the dataset is sorted before being output in various
-    // formats
-    public static boolean debugEnabled = false;
-    
     /**
      * Instances of this enum are passed to Dataset.lookup to indicate
      * what sort of value is desired as a result.
@@ -197,6 +192,10 @@ public class Dataset implements Cloneable {
 
     // Used to simulate I/O errors during testing.
     protected boolean generateIoException = false;
+
+    // If set to true, the dataset is sorted before being output in various
+    // formats.  Used in testing to ensure reproducible results.
+    protected static boolean sortOutput = false;
 
     /**
      * Construct an empty dataset.
@@ -1280,7 +1279,7 @@ public class Dataset implements Cloneable {
         out.append('{');
         String prefix = "";
         Collection keySet = map.keySet();
-        if (debugEnabled) {
+        if (sortOutput) {
             keySet = new TreeSet<String>(keySet);
         }
         for (Object nameObject: keySet) {
@@ -1465,7 +1464,11 @@ public class Dataset implements Cloneable {
         // the serialized representation.
         out.append('(');
         String prefix = "";
-        for (Object nameObject: map.keySet()) {
+        Collection keySet = map.keySet();
+        if (sortOutput) {
+            keySet = new TreeSet<String>(keySet);
+        }
+        for (Object nameObject: keySet) {
             String name = (String) nameObject;
             out.append(prefix);
             out.append(name.length());

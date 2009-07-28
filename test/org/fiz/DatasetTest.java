@@ -827,7 +827,7 @@ public class DatasetTest extends junit.framework.TestCase {
     }
 
     public void test_serialize_noArgs() {
-        Dataset.debugEnabled = true;
+        Dataset.sortOutput = true;
         Dataset d = new Dataset("first", "12345", "second", "x");
         assertEquals("result", "(5.first5.12345\n" +
                 "6.second1.x)", d.serialize());
@@ -841,7 +841,7 @@ public class DatasetTest extends junit.framework.TestCase {
     }
 
     public void test_toJavascript() {
-        Dataset.debugEnabled = true;
+        Dataset.sortOutput = true;
         StringBuilder out = new StringBuilder("var obj = ");
         Dataset d = new Dataset("name", "Alice", "age", "32");
         d.toJavascript(out);
@@ -1092,14 +1092,14 @@ public class DatasetTest extends junit.framework.TestCase {
     }
 
     public void test_javascriptForSubtree_emptyDataset() {
-        Dataset.debugEnabled = true;
+        Dataset.sortOutput = true;
         StringBuilder out = new StringBuilder("var obj = ");
         Dataset d = new Dataset();
         d.toJavascript(out);
         assertEquals("generated Javascript", "var obj = {}", out.toString());
     }
     public void test_javascriptForSubtree_debugEnabled() {
-        Dataset.debugEnabled = true;
+        Dataset.sortOutput = true;
         StringBuilder out = new StringBuilder();
         Dataset d = YamlDataset.newStringInstance(
                 "  d: Third\n" +
@@ -1118,7 +1118,7 @@ public class DatasetTest extends junit.framework.TestCase {
                 out.toString());
     }
     public void test_javascriptForSubtree_nestedDatasets() {
-        Dataset.debugEnabled = true;
+        Dataset.sortOutput = true;
         StringBuilder out = new StringBuilder();
         Dataset d = YamlDataset.newStringInstance("child:\n" +
                 "  name: Alice\n" +
@@ -1132,7 +1132,7 @@ public class DatasetTest extends junit.framework.TestCase {
                 out.toString());
     }
     public void test_javascriptForSubtree_listOfChildren() {
-        Dataset.debugEnabled = true;
+        Dataset.sortOutput = true;
         StringBuilder out = new StringBuilder();
         Dataset d = YamlDataset.newStringInstance("child:\n" +
                 "  - name: Alice\n" +
@@ -1146,7 +1146,7 @@ public class DatasetTest extends junit.framework.TestCase {
                 out.toString());
     }
     public void test_javascriptForSubtree_quoteStringCharacters() {
-        Dataset.debugEnabled = true;
+        Dataset.sortOutput = true;
         StringBuilder out = new StringBuilder();
         Dataset d = new Dataset("value", "xyz&<\n\"\'\0");
         d.toJavascript(out);
@@ -1335,13 +1335,15 @@ public class DatasetTest extends junit.framework.TestCase {
     }
 
     public void test_serializeSubtree_basics() {
+        Dataset.sortOutput = true;
         Dataset d = new Dataset("name", "Alice", "age", "36",
                 "child", new Dataset("name", "Bill"));
-        assertEquals("serialized result", "(5.child(4.name4.Bill)\n" +
-                "3.age2.36\n" +
+        assertEquals("serialized result", "(3.age2.36\n" +
+                "5.child(4.name4.Bill)\n" +
                 "4.name5.Alice)", d.serialize());
     }
     public void test_serializeSubtree_listOfChildren() {
+        Dataset.sortOutput = true;
         Dataset d = new Dataset("child", new Dataset("name", "Bill"));
         d.addChild("child", new Dataset("name", "Carol"));
         d.addChild("child", new Dataset("name", "David"));

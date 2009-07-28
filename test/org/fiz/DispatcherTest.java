@@ -35,6 +35,7 @@ public class DispatcherTest extends junit.framework.TestCase {
         dispatcher.clearCaches = false;
         dispatcher.init(new ServletConfigFixture(
                 new ServletContextFixture()));
+        ClientRequest.testSkipTokenCheck = true;
         Config.setDataset("main", new Dataset("searchPackages", "org.fiz"));
     }
 

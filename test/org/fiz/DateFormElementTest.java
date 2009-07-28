@@ -40,7 +40,7 @@ public class DateFormElementTest extends junit.framework.TestCase {
         element.render(cr, new Dataset(), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start DateFormElement cal1 -->\n" +
-                "<div class=\"DateFormElement\" id=\"cal1_container\">\n" + 
+                "<div class=\"DateFormElement\" id=\"cal1_container\">\n" +
                 "  <input type=\"text\" name=\"cal1\" id=\"cal1\" " +
                 "onblur=\"Fiz.ids.cal1.validateAndUpdate()\" " +
                 "onkeyup=\"Fiz.ids.cal1.validateAndDisplay()\" " +
@@ -162,7 +162,7 @@ public class DateFormElementTest extends junit.framework.TestCase {
         element.render(cr, new Dataset(), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start DateFormElement cal1 -->\n" +
-                "<div class=\"DateFormElement\" id=\"cal1_container\">\n" + 
+                "<div class=\"DateFormElement\" id=\"cal1_container\">\n" +
                 "  <input type=\"text\" name=\"cal1\" id=\"cal1\" " +
                 "onblur=\"Fiz.ids.cal1.validateAndUpdate()\" " +
                 "onkeyup=\"Fiz.ids.cal1.validateAndDisplay()\" " +
@@ -231,7 +231,7 @@ public class DateFormElementTest extends junit.framework.TestCase {
     }
 
     public void test_render_exclude() {
-        Dataset.debugEnabled = true;
+        Dataset.sortOutput = true;
         DateFormElement element = new DateFormElement(
                 new Dataset(
                         "id", "cal1",
