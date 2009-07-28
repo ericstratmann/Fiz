@@ -355,7 +355,7 @@ public class Template {
      * @return                     A String containing the result of the
      *                             expansion.
      */
-    public static String expandJavascript(CharSequence template, Dataset data,
+    public static String expandJs(CharSequence template, Dataset data,
             Object ... indexedData)
             throws MissingValueError, SyntaxError {
         ParseInfo info = new ParseInfo(template, new StringBuilder(),
@@ -381,7 +381,7 @@ public class Template {
      * @return                     A String containing the results of the
      *                             expansion.
      */
-    public static String expandJavascript(CharSequence template,
+    public static String expandJs(CharSequence template,
             Object ... indexedData) throws MissingValueError, SyntaxError {
         ParseInfo info = new ParseInfo(template, new StringBuilder(),
                 SpecialChars.JAVASCRIPT, null, indexedData);
@@ -407,7 +407,7 @@ public class Template {
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
      */
-    public static void appendJavascript(StringBuilder out,
+    public static void appendJs(StringBuilder out,
             CharSequence template, Dataset data, Object... indexedData)
             throws MissingValueError, SyntaxError {
         ParseInfo info = new ParseInfo(template, out, SpecialChars.JAVASCRIPT,
@@ -431,7 +431,7 @@ public class Template {
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
      */
-    public static void appendJavascript(StringBuilder out,
+    public static void appendJs(StringBuilder out,
             CharSequence template, Object... indexedData)
             throws MissingValueError, SyntaxError {
         ParseInfo info = new ParseInfo(template, out, SpecialChars.JAVASCRIPT,

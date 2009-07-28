@@ -321,7 +321,7 @@ public class FormSection extends Section {
 
         // Invoke a Javascript method, passing it information about
         // the form element plus the HTML.
-        cr.evalJavascript(Template.expandJavascript(
+        cr.evalJavascript(Template.expandJs(
                 "Fiz.ids.@1.elementError(\"@(1)_@2\", \"@3\");\n",
                 id, elementId, html));
     }

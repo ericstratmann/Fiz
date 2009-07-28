@@ -215,7 +215,7 @@ public class TabSection extends Section{
                 // Javascript code to modify the DOM so that the new selected
                 // tab will appear selected (no need for this in the URL case
                 // because an entirely new page will be displayed).
-                Template.appendJavascript(javascript, "Fiz.TabSection.selectTab(\"@1\"); ",
+                Template.appendJs(javascript, "Fiz.TabSection.selectTab(\"@1\"); ",
                         tabId);
                 String ajaxUrl = tab.check("ajaxUrl");
                 if (ajaxUrl != null) {
@@ -225,7 +225,7 @@ public class TabSection extends Section{
                     // Javascript action.
                     String jsTemplate = tab.check("javascript");
                     if (jsTemplate != null) {
-                        Template.appendJavascript(javascript, jsTemplate, data);
+                        Template.appendJs(javascript, jsTemplate, data);
                     }
                 }
                 Html.escapeHtmlChars(javascript, out);

@@ -60,7 +60,7 @@ public class PerfInteractor extends Interactor {
         } else {
             double average = (System.nanoTime() - startTime)/
                     (1000000.0 * (MAX_SUBMIT_COUNT-1));
-            cr.evalJavascript(Template.expandJavascript(
+            cr.evalJavascript(Template.expandJs(
                     "document.getElementById(\"submitMs\").innerHTML = " +
                     "\"@1 ms\";\n", String.format("%.2f", average)));
             submitCount = 0;

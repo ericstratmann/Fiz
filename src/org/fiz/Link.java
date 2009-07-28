@@ -184,7 +184,7 @@ public class Link implements Formatter {
             } else {
                 // Javascript code.
                 expandedJs = new StringBuilder(javascript.length());
-                Template.appendJavascript(expandedJs, javascript, data);
+                Template.appendJs(expandedJs, javascript, data);
             }
             Template.appendHtml(out, "<a href=\"#\" onclick=\"@1 return false;\"",
                     expandedJs);

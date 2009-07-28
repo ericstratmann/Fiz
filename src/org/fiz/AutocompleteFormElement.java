@@ -17,11 +17,9 @@ package org.fiz;
 
 import java.io.Serializable;
 
-import org.fiz.Template.SpecialChars;
-
 /**
  * The AutocompleteFormElement helps users fill in a field by providing
- * suggestions or options for completing what the user has already typed. It 
+ * suggestions or options for completing what the user has already typed. It
  * supports the following properties:
  *   class:             (optional) Class attribute to use for the {@code <div>}
  *                      containing this element; defaults to DateFormElement.
@@ -44,7 +42,7 @@ import org.fiz.Template.SpecialChars;
  *   choiceName:        (optional) Identifies the field in each record returned
  *                      by the Ajax which contains the value to be used for
  *                      the autocompletion choice. Defaults to "choice."
- *                      
+ *
  * The response to a DataRequest generated from {@code requestFactory} consists
  * of a dataset with one {@code record} child for each autocomplete choice.
  * Each autocomplete choice will be a dataset containing one key-value pair
@@ -80,7 +78,7 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
     /**
      * Construct an AutocompleteFormElement from a set of properties that define
      * its configuration.
-     * 
+     *
      * @param properties        Dataset whose values are used to configure the
      *                          element. See the class documentation above for
      *                          a list of supported values.
@@ -104,7 +102,7 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
      *                              AutocompleteFormElement, and a
      *                              {@code userInput} value, which is the value
      *                              for which we are trying to autocomplete, in
-     *                              the main dataset. 
+     *                              the main dataset.
      */
     public static void ajaxQuery(ClientRequest cr) {
         Dataset main = cr.getMainDataset();
@@ -112,7 +110,7 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
                 cr.getPageProperty(main.get("id"));
 
         String query = main.get("userInput");
-        
+
         DataRequest request = (DataRequest) Util.invokeStaticMethod(
                 pageProperty.requestFactory, query);
 
@@ -128,15 +126,15 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
                 // Extracts the position of the query to highlight it
                 int queryIndex = value.toLowerCase()
                 		.indexOf(query.toLowerCase());
-                String js1 = Template.expandJavascript(
+                String js1 = Template.expandJs(
                         "Fiz.ids.@1.selectChoice(this, true)", pageProperty.id);
-                String js2 = Template.expandJavascript(
+                String js2 = Template.expandJs(
                         "Fiz.ids.@1.highlightChoice(this)", pageProperty.id);
 
                 if (queryIndex == -1) {
                     Template.appendHtml(html, "<li onclick=\"@1\" " +
                             "onmouseover=\"@2\">@3</li>", js1, js2,value
-                    );                    
+                    );
                 } else {
                     Template.appendHtml(html, "<li onclick=\"@1\" " +
                             "onmouseover=\"@2\">@3<strong>@4</strong>@5</li>",
@@ -149,7 +147,7 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
                 }
             }
             html.append("</ul>");
-            cr.updateElement(pageProperty.id + "_dropdown", html.toString());            
+            cr.updateElement(pageProperty.id + "_dropdown", html.toString());
             cr.evalJavascript("Fiz.ids.@1.showDropdown();\n",
                     pageProperty.id);
         } else {
@@ -157,12 +155,12 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
             cr.evalJavascript("Fiz.ids.@1.hideDropdown(true);\n",
                     pageProperty.id);
         }
-        
+
     }
 
     /**
      * This method is invoked to generate HTML for this form element.
-     * 
+     *
      * @param cr                Overall information about the client
      *                          request being serviced.
      * @param data              Data for the form (a CompoundDataset
@@ -175,7 +173,7 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
         cr.setPageProperty(pageProperty.id, pageProperty);
         cr.setAuthToken();
 
-        Template.appendHtml(out, 
+        Template.appendHtml(out,
                 "\n<!-- Start AutocompleteFormElement @id -->\n" +
                 "<div class=\"@class?{AutocompleteFormElement}\" " +
                 "id=\"@(id)_container\">\n", properties);

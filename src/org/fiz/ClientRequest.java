@@ -261,7 +261,7 @@ public class ClientRequest {
         getHtml().includeJsFile("static/fiz/Fiz.js");
         String html = Template.expandHtml(template, data);
         StringBuilder javascript = new StringBuilder();
-        Template.appendJavascript(javascript, "Fiz.addBulletinMessage(\"@1\", \"@2\");\n",
+        Template.appendJs(javascript, "Fiz.addBulletinMessage(\"@1\", \"@2\");\n",
                 divClass, html);
         evalJavascript(javascript);
     }
@@ -341,7 +341,7 @@ public class ClientRequest {
         if (jsCode == null) {
             jsCode = new StringBuilder(template.length() + 20);
         }
-        Template.appendJavascript(jsCode, template, data);
+        Template.appendJs(jsCode, template, data);
     }
 
     /**
@@ -363,7 +363,7 @@ public class ClientRequest {
         if (jsCode == null) {
             jsCode = new StringBuilder(template.length() + 20);
         }
-        Template.appendJavascript(jsCode, template, indexedData);
+        Template.appendJs(jsCode, template, indexedData);
     }
 
     /**
@@ -806,7 +806,7 @@ public class ClientRequest {
             }
         } else {
             jsCode = null;
-            evalJavascript(Template.expandJavascript(
+            evalJavascript(Template.expandJs(
                     "document.location.href = \"@1\";\n", url));
         }
     }
@@ -988,7 +988,7 @@ public class ClientRequest {
      *                             {@code innerHTML} property.
      */
     public void updateElement(String id, String html) {
-        evalJavascript(Template.expandJavascript(
+        evalJavascript(Template.expandJs(
                 "document.getElementById(\"@1\").innerHTML = \"@2\";\n",
                 id, html));
     }
@@ -1079,7 +1079,7 @@ public class ClientRequest {
 
         // Download the page id to the browser so that it will be included
         // in future form posts and Ajax requests.
-        evalJavascript(Template.expandJavascript("Fiz.pageId = \"@1\";\n",
+        evalJavascript(Template.expandJs("Fiz.pageId = \"@1\";\n",
                 pageId));
         return pageId;
     }

@@ -191,33 +191,33 @@ public class TemplateTest extends junit.framework.TestCase {
                 out.toString());
     }
 
-    public void test_expandJavascript() {
+    public void test_expandJs() {
         Dataset data = new Dataset("name", "\"Alice\n", "age", "28");
-        String result = Template.expandJavascript("name: @name, age: @2",
+        String result = Template.expandJs("name: @name, age: @2",
                 data, "abc", "a\tb");
         assertEquals("output string", "name: \\\"Alice\\n, age: a\\tb",
                 result);
     }
 
-    public void test_expandJavascript_noDataset() {
-        String result = Template.expandJavascript("name: @1, age: @2",
+    public void test_expandJs_noDataset() {
+        String result = Template.expandJs("name: @1, age: @2",
                 "\"Alice\n", "a\tb");
         assertEquals("output string", "name: \\\"Alice\\n, age: a\\tb",
                 result);
     }
 
-    public void test_appendJavascript() {
+    public void test_appendJs() {
         Dataset data = new Dataset("name", "\"Alice\n", "age", "28");
         StringBuilder out = new StringBuilder("123");
-        Template.appendJavascript(out, "name: @name, age: @2",
+        Template.appendJs(out, "name: @name, age: @2",
                 data, "abc", "a\tb");
         assertEquals("output string", "123name: \\\"Alice\\n, age: a\\tb",
                 out.toString());
     }
 
-    public void test_appendJavascript_noDataset() {
+    public void test_appendJs_noDataset() {
         StringBuilder out = new StringBuilder("123");
-        Template.appendJavascript(out, "name: @1, age: @2", "\"Alice\n", "25");
+        Template.appendJs(out, "name: @1, age: @2", "\"Alice\n", "25");
         assertEquals("output string", "123name: \\\"Alice\\n, age: 25",
                 out.toString());
     }
