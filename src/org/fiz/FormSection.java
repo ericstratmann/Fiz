@@ -95,6 +95,19 @@ package org.fiz;
  *   configuration dataset, where <i>elementId</i> is the {@code id}
  *   property for the form element.
  * The help text is raw text, not HTML or a template.
+ *
+ * FormSection automatically sets the following {@code class} attributes
+ * for use in CSS:
+ *   diagnostic:     The {@code <div>} containing an error diagnostic
+ *                   for a form element.
+ *   label:          The {@code <td>} element containing a label.
+ *   control:        The {@code <td>} element containing a form control such
+ *                   as a text entry.
+ *   submit:         The {@code <td>} element containing the submit button.
+ *   sideBySide:     The {@code <table>} containing the form, if a
+ *                   side-by-side layout is being used.
+ *   vertical:       The {@code <table>} containing the form, if a
+ *                   vertical layout is being used.
  */
 public class FormSection extends Section {
     /**

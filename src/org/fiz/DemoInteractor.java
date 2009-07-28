@@ -341,7 +341,7 @@ public class DemoInteractor extends Interactor {
 										new TemplateSection("<h2>Simple shopping cart:</h2>\n"),
 										new TableSection(
 												new Dataset("request", "cart", "noHeader", "true",
-														"class", "shoppingCart", "lastRowClass", "last"),
+														"class", "shoppingCart"),
 														new Column("Item", "@item"),
 														new Column("Price", "@price"))
 		);

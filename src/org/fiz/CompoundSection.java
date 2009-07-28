@@ -41,6 +41,11 @@ import java.util.*;
  *                   Used to find the section in Javascript, e.g. to make it
  *                   visible or invisible.  Must be unique among all id's
  *                   for the page.
+ *
+ * CompoundSection automatically sets the following {@code class} attributes
+ * for use in CSS:
+ *   compoundBody:   The {@code <tr>} element containing all of the nested
+ *                   child sections.
  */
 public class CompoundSection extends Section implements TableLayoutContainer {
     // The following variables are copies of the constructor arguments by

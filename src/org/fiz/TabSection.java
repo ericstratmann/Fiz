@@ -63,6 +63,23 @@ package org.fiz;
  *   javascript:     (optional) Template for Javascript code to invoke when
  *                   the tab is clicked. This property is ignored if
  *                   {@code url} or {@code ajaxUrl} is specified.
+ *
+ * TabSection automatically sets the following {@code class} attributes
+ * for use in CSS:
+ *   left:           A {@code <td>} element containing the left portion of
+ *                   each non-selected tab.
+ *   mid:            A {@code <td>} element containing the middle portion of
+ *                   each non-selected tab.
+ *   right:          A {@code <td>} element containing the right portion of
+ *                   each non-selected tab.
+ *   leftSelected:   A {@code <td>} element containing the left portion of
+ *                   the selected tab.
+ *   midSelected:    A {@code <td>} element containing the middle portion of
+ *                   the selected tab.
+ *   rightSelected:  A {@code <td>} element containing the right portion of
+ *                   the selected tab.
+ *   spacer:         A {@code <td>} element that separates adjacent tabs.
+ *   rightSpacer:    A {@code <td>} element to the right of the rightmost tab.
  */
 public class TabSection extends Section{
     // The following variables are copies of constructor arguments.  See

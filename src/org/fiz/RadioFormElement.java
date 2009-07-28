@@ -42,6 +42,10 @@ package org.fiz;
  *                   in a related group has a different {@code value}
  *                   property.  This property must not contain any characters
  *                   that are special in HTML ({@code <>&"}).
+ *
+ * RadioFormElement automatically sets the following {@code class} attributes
+ * for use in CSS:
+ *   extra:          The {@code <div>} containing {@code extra}.
  */
 public class RadioFormElement extends FormElement {
     // The following variable contains the {@code value} property.

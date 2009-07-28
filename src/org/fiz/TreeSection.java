@@ -93,6 +93,16 @@ import java.util.*;
  * When the element is expanded, "-expanded" is appended to its style name,
  * so that it will select a different entry in the {@code styles}
  * configuration dataset.
+ *
+ * TreeSection automatically sets the following {@code class} attributes
+ * for use in CSS:
+ *   left:           The {@code <td>} for the left portion of each tree node,
+ *                   which displays the connections between nodes including
+ *                   +/- box.
+ *   right:          The {@code <td>} for the right portion of each tree node,
+ *                   which displays identifying information about the node
+ *                   such as text or an image.
+ *   nested:         A {@code <div>} containing all of the children of a node.
  */
 public class TreeSection extends Section implements DirectAjax {
     // One object of the following class is stored as a page property

@@ -88,7 +88,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 "    <td>12</td>\n" +
                 "    <td class=\"right\">85</td>\n" +
                 "  </tr>\n" +
-                "  <tr class=\"odd\">\n" +
+                "  <tr class=\"last odd\">\n" +
                 "    <td class=\"left\">David</td>\n" +
                 "    <td>66</td>\n" +
                 "    <td class=\"right\">220</td>\n" +
@@ -149,7 +149,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 "<!-- Start TableSection id.44 -->\n" +
                 "<table id=\"id.44\" class=\"TableSection\" " +
                 "cellspacing=\"0\">\n" +
-                "  <tr class=\"even\">\n" +
+                "  <tr class=\"last even\">\n" +
                 "    <td class=\"left\">David</td>\n" +
                 "    <td class=\"right\">66</td>\n" +
                 "  </tr>\n" +
@@ -175,7 +175,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 "    <td class=\"left\"></td>\n" +
                 "    <td class=\"right\">Age</td>\n" +
                 "  </tr>\n" +
-                "  <tr class=\"even\">\n" +
+                "  <tr class=\"last even\">\n" +
                 "    <td class=\"left\"><a href=\"/a/b?name=" +
                 "David\">David</a></td>\n" +
                 "    <td class=\"right\">66</td>\n" +
@@ -197,7 +197,7 @@ public class TableSectionTest extends junit.framework.TestCase {
                 "<!-- Start TableSection id.44 -->\n" +
                 "<table id=\"id.44\" class=\"TableSection\" " +
                 "cellspacing=\"0\">\n" +
-                "  <tr class=\"even\">\n" +
+                "  <tr class=\"last even\">\n" +
                 "    <td class=\"left\">David</td>\n" +
                 "    <td class=\"right\">66</td>\n" +
                 "  </tr>\n" +
@@ -279,30 +279,8 @@ public class TableSectionTest extends junit.framework.TestCase {
                 "<!-- Start TableSection id.44 -->\n" +
                 "<table id=\"id.44\" class=\"TableSection\" " +
                 "cellspacing=\"0\">\n" +
-                "  <tr class=\"even\">\n" +
+                "  <tr class=\"last even\">\n" +
                 "    <td class=\"left\">David from California</td>\n" +
-                "    <td class=\"right\">66</td>\n" +
-                "  </tr>\n" +
-                "</table>\n" +
-                "<!-- End TableSection id.44 -->\n",
-                cr.getHtml().getBody().toString());
-        TestUtil.assertXHTML(cr.getHtml().toString());
-    }
-    public void test_render_lastRowClass() {
-        cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
-        TableSection table = new TableSection(
-                new Dataset("request", "getPerson", "id", "id.44",
-                "noHeader", "true", "lastRowClass", "last"),
-                new Column("Name", "@name"),
-                new Column("Age", "@age"));
-        cr.showSections(table);
-        String html = cr.getHtml().getBody().toString();
-        assertEquals("generated HTML", "\n" +
-                "<!-- Start TableSection id.44 -->\n" +
-                "<table id=\"id.44\" class=\"TableSection\" " +
-                "cellspacing=\"0\">\n" +
-                "  <tr class=\"last\">\n" +
-                "    <td class=\"left\">David</td>\n" +
                 "    <td class=\"right\">66</td>\n" +
                 "  </tr>\n" +
                 "</table>\n" +

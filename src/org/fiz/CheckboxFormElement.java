@@ -17,7 +17,7 @@ package org.fiz;
 
 /**
  * The CheckboxFormElement class allows boolean values to be entered in
- * forms using an {@code <input class="checkbox">} HTML element.  It
+ * forms using an {@code <input type="checkbox">} HTML element.  It
  * supports the following properties:
  *   class:          (optional) Class attribute to use for the <div>
  *                   containing this element; defaults to CheckboxFormElement.
@@ -39,6 +39,10 @@ package org.fiz;
  *   trueValue:      (optional) String that appears in query and update
  *                   requests if the form element is checked.  Defaults
  *                   to {@code true}.
+ *
+ * CheckboxFormElement automatically sets the following {@code class}
+ * attributes for use in CSS:
+ *   extra:          The {@code <div>} containing {@code extra}.
  */
 public class CheckboxFormElement extends FormElement {
     // The following variables contain the external values (the values

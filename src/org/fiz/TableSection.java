@@ -40,11 +40,6 @@ import java.util.*;
  *                   Defaults to "TableSection.error".
  *   id:             (optional) Used as the {@code id} attribute for the
  *                   HTML table that displays the TableSection.
- *   lastRowClass:   (optional) If this property is defined, its value will
- *                   be used as the class for the bottom row in the table.
- *                   This can be used to display the bottom row differently,
- *                   e.g. for totals.
- *                   TODO: eliminate this property and just set the last row's class automatically.
  *   noHeader:       (optional) If this property is defined, then the
  *                   header row for the table will not be displayed, even
  *                   if some of the columns offer header information.
@@ -59,19 +54,22 @@ import java.util.*;
  *                   child dataset for that row will be passed to each of the
  *                   Column objects.
  *
- * When rendering the table TableSection automatically sets {@code class}
- * attributes for some of the elements in the table:
- *   * The {@code <tr>} for the table's header row will have class
- *     {@code header}.
- *   * The {@code <tr>} for first non-header row in the table will
- *     have class {@code odd}, as will every other row after that.
- *   * The {@code <tr>} for second  non-header row in the table will
- *     have class {@code even}, as will every other row after that.
- *   * The {@code <tr>} for the last wrote in the table will have
- *     class {@code last}.  This row will also have class {@code odd}
- *     or {@code even}.
- *   * The leftmost {@code <td>} for each row will have class {@code first}.
- *   * The rightmost {@code <td>} for each row will have class {@code last}.
+ * TableSection automatically sets the following {@code class} attributes
+ * for use in CSS (some elements may have more than one class):
+ *   header:         The {@code <tr>} for the table's header row.
+ *   odd:            The {@code <tr>} for the first non-header row in the
+ *                   table, and every other row after that.
+ *   even:           The {@code <tr>} for second non-header row in the
+ *                   table, and every other row after that.
+ *   last:           The {@code <tr>} for the last row in the table.
+ *   left:           The leftmost {@code <td>} for each row.
+ *   right:          The rightmost {@code <td>} for each row.
+ *   error:          If an error occurs in the data request for the table
+ *                   then the first row of the table (which displays the
+ *                   error message) will have this class.
+ *   empty:          If there is no data for the table then the first row
+ *                   of the table (which displays {@code emptyTemplate})
+ *                   will have this class.
  */
 public class TableSection extends Section {
     // The following variables are copies of constructor arguments.  See
@@ -119,7 +117,6 @@ public class TableSection extends Section {
         Html html = cr.getHtml();
         StringBuilder out = html.getBody();
         Dataset mainDataset = cr.getMainDataset();
-        String lastRowClass = properties.check("lastRowClass");
 
         // The following dataset will eventually include the data from
         // the current row plus the main dataset.
@@ -199,10 +196,10 @@ public class TableSection extends Section {
                 for (int i = 0; i < rows.size(); i++) {
                     dataForRow.setComponent(0, rows.get(i));
                     out.append("  <tr class=\"");
-                    if ((i == (rows.size()-1)) && (lastRowClass != null)) {
-                        out.append(lastRowClass);
-                        out.append("\">\n");
-                    } else if ((i & 1) != 0) {
+                    if (i == (rows.size()-1)) {
+                        out.append("last ");
+                    }
+                    if ((i & 1) != 0) {
                         out.append("odd\">\n");
                     } else {
                         out.append("even\">\n");

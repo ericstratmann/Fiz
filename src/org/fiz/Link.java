@@ -49,6 +49,15 @@ package org.fiz;
  *              confirm before the URL is visited, and this text is a
  *              template for the confirmation message (passed to the
  *              Javascript{@code confirm} function).
+ *
+ * Link automatically sets the following {@code class} attributes
+ * for use in CSS (some elements may have more than one class):
+ *   Link:      Used for the {@code <img>} containing an image, if there is
+ *              an image.  If the link contains both text and an image, this
+ *              class is also used for a {@code <table>} containing the text
+ *              and image.
+ *   text:      Used for a {@code <td>} containing the text, if the link
+ *              contains both text and image.
  */
 
 public class Link implements Formatter {
