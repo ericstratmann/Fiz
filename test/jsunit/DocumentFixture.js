@@ -72,6 +72,16 @@ Document.prototype.getElementById = function(id) {
     return null;
 }
 
+Document.prototype.getElementsByTagName = function(tag) {
+    var children = [];
+    for (var i in this.ids) {
+        if (tag == this.ids[i].tagName) {
+            children.push(this.ids[i]);
+        }
+    }
+    return children;
+}
+
 Document.prototype.createElement = function(tagName) {
     var element;
     if (this.newElements.length > 0) {
