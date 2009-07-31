@@ -62,7 +62,7 @@ public class CheckboxFormElementTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder();
         element.render(cr, new Dataset("id11", "111"), out);
         assertEquals("HTML", "<div class=\"CheckboxFormElement\">" +
-                "<input type=\"checkbox\" name=\"id11\" id=\"id11\" " +
+                "<input type=\"checkbox\" id=\"id11\" name=\"id11\" " +
                 "value=\"true\" checked=\"checked\" /></div>",
                 out.toString());
         assertEquals("CSS includes", "CheckboxFormElement.css",
@@ -74,7 +74,7 @@ public class CheckboxFormElementTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder();
         element.render(new ClientRequestFixture(), new Dataset(), out);
         assertEquals("HTML", "<div class=\"xyzzy\"><input type=\"checkbox\" " +
-                "name=\"id11\" id=\"id11\" value=\"true\" /></div>",
+                "id=\"id11\" name=\"id11\" value=\"true\" /></div>",
                 out.toString());
     }
     public void test_render_extraTemplate() {
@@ -84,7 +84,7 @@ public class CheckboxFormElementTest extends junit.framework.TestCase {
         element.render(new ClientRequestFixture(),
                 new Dataset("name", "Alice"), out);
         assertEquals("HTML", "<div class=\"CheckboxFormElement\">" +
-                "<input type=\"checkbox\" name=\"id11\" id=\"id11\" " +
+                "<input type=\"checkbox\" id=\"id11\" name=\"id11\" " +
                 "value=\"true\" /><span class=\"extra\" onclick=\"" +
                 "el=getElementById(&quot;id11&quot;); el.checked=" +
                 "!el.checked;\">extra: Alice</span></div>",

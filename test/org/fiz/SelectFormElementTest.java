@@ -88,7 +88,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         element.render(cr, new Dataset(), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
-                "<select name=\"id11\" class=\"SelectFormElement\">\n" +
+                "<select id=\"id11\" name=\"id11\" class=\"SelectFormElement\">\n" +
                 "  <option value=\"&lt;apple&gt;\">&lt;Apple&gt;</option>\n" +
                 "  <option value=\"banana\">Banana</option>\n" +
                 "</select>\n" +
@@ -112,7 +112,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         element.render(cr, new Dataset("id11", "grape"), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
-                "<select name=\"id11\" class=\"SelectFormElement\">\n" +
+                "<select id=\"id11\" name=\"id11\" class=\"SelectFormElement\">\n" +
                 "  <option value=\"apple\">Apple</option>\n" +
                 "  <option selected=\"selected\" value=\"grape\">" +
                 "Grape</option>\n" +
@@ -143,7 +143,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 "  - value: grape\n"), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
-                "<select name=\"id11\" class=\"SelectFormElement\" " +
+                "<select id=\"id11\" name=\"id11\" class=\"SelectFormElement\" " +
                 "multiple=\"multiple\">\n" +
                 "  <option selected=\"selected\" value=\"apple\">" +
                 "Apple</option>\n" +
@@ -173,7 +173,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         element.render(cr, new Dataset(), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
-                "<select name=\"id11\" class=\"SelectFormElement\">\n" +
+                "<select id=\"id11\" name=\"id11\" class=\"SelectFormElement\">\n" +
                 "  <option value=\"banana\">Banana</option>\n" +
                 "</select>\n" +
                 "<!-- End SelectFormElement @id -->\n",
@@ -205,7 +205,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         element.render(cr, new Dataset(), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
-                "<select name=\"id11\" class=\"SelectFormElement\">\n" +
+                "<select id=\"id11\" name=\"id11\" class=\"SelectFormElement\">\n" +
                 "  <option value=\"peach\">Peach</option>\n" +
                 "  <option value=\"pear\">Pear</option>\n" +
                 "</select>\n" +
@@ -229,7 +229,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 "  - value: grape\n"), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
-                "<select name=\"id11\" class=\"xyzzy\" size=\"5\">\n" +
+                "<select id=\"id11\" name=\"id11\" class=\"xyzzy\" size=\"5\">\n" +
                 "  <option value=\"apple\">Apple</option>\n" +
                 "</select>\n" +
                 "<!-- End SelectFormElement @id -->\n",
@@ -250,7 +250,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         element.render(cr, new Dataset("id 11", "2008"), out);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
-                "<select name=\"id11\" class=\"SelectFormElement\">\n" +
+                "<select id=\"id11\" name=\"id11\" class=\"SelectFormElement\">\n" +
                 "  <option value=\"2008\">2008</option>\n" +
                 "  <option value=\"2009\">2009</option>\n" +
                 "</select>\n" +

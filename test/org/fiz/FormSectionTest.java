@@ -324,7 +324,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new EntryFormElement("name", "Name:"));
         cr.showSections(form);
         TestUtil.assertMatchingSubstring("form element displaying name",
-                "<input type=\"text\" name=\"name\" " +
+                "<input type=\"text\" id=\"name\" name=\"name\" " +
                 "class=\"EntryFormElement\" value=\"David\" />",
                 cr.getHtml().getBody().toString(), "<input[^>]*text[^>]*>");
     }
@@ -336,7 +336,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new EntryFormElement("name", "Name:"));
         cr.showSections(form);
         TestUtil.assertMatchingSubstring("form element displaying name",
-                "<input type=\"text\" name=\"name\" " +
+                "<input type=\"text\" id=\"name\" name=\"name\" " +
                 "class=\"EntryFormElement\" value=\"California\" />",
                 cr.getHtml().getBody().toString(), "<input[^>]*text[^>]*>");
     }
@@ -351,7 +351,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new EntryFormElement("name", "Name:"));
         cr.showSections(form);
         TestUtil.assertMatchingSubstring("form element displaying name",
-                "<input type=\"text\" name=\"name\" " +
+                "<input type=\"text\" id=\"name\" name=\"name\" " +
                 "class=\"EntryFormElement\" value=\"Fred\" />",
                 cr.getHtml().getBody().toString(), "<input[^>]*text[^>]*>");
     }
@@ -362,7 +362,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new EntryFormElement("name", "Name:"));
         cr.showSections(form);
         TestUtil.assertMatchingSubstring("form element displaying name",
-                "<input type=\"text\" name=\"name\" " +
+                "<input type=\"text\" id=\"name\" name=\"name\" " +
                 "class=\"EntryFormElement\" value=\"Alice\" />",
                 cr.getHtml().getBody().toString(), "<input[^>]*text[^>]*>");
     }
@@ -469,13 +469,14 @@ public class FormSectionTest extends junit.framework.TestCase {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
                 "buttonStyle", "", "postUrl", "x/y"), new TemplateFormElement(
-                new Dataset("id", "id11", "template", "xyz")));
+                new Dataset("id", "id11", "template",
+                "<div id=\"id11\">xyz</div>")));
         cr.showSections(form);
         TestUtil.assertMatchingSubstring("form contents",
                 "<table cellspacing=\"0\" class=\"sideBySide\">\n" +
                 "    <tr id=\"form1_id11\">\n" +
-                "      <td class=\"label\"></td>\n" +
-                "      <td class=\"control\">xyz<div " +
+                "      <td class=\"label\"><label for=\"id11\"></label></td>\n" +
+                "      <td class=\"control\"><div id=\"id11\">xyz</div><div " +
                 "id=\"form1_id11_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
@@ -489,15 +490,16 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "form1", "request", "getPerson",
                 "buttonStyle", "", "postUrl", "x/y"),
                 new TemplateFormElement(
-                        new Dataset("id", "id2", "template", "element html")),
+                        new Dataset("id", "id2", "template",
+                        "<div id=\"id2\">html</div>")),
                 new HiddenFormElement("name"),
                 new HiddenFormElement("iq"));
         cr.showSections(form);
         TestUtil.assertMatchingSubstring("form contents",
                 "<table cellspacing=\"0\" class=\"sideBySide\">\n" +
                 "    <tr id=\"form1_id2\">\n" +
-                "      <td class=\"label\"></td>\n" +
-                "      <td class=\"control\">element html" +
+                "      <td class=\"label\"><label for=\"id2\"></label></td>\n" +
+                "      <td class=\"control\"><div id=\"id2\">html</div>" +
                 "<div id=\"form1_id2_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
@@ -530,10 +532,11 @@ public class FormSectionTest extends junit.framework.TestCase {
     public void test_sideBySideElement_renderLabelReturnsFalse() {
         cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         TemplateFormElement element1 = new TemplateFormElement(
-                new Dataset("id", "id1", "template", "element 1 html",
-                "span", "true"));
+                new Dataset("id", "id1", "template",
+                "<div id=\"id1\">html 1</div>", "span", "true"));
         TemplateFormElement element2 = new TemplateFormElement(
-                new Dataset("id", "id2", "template", "element 2 html"));
+                new Dataset("id", "id2", "template",
+                "<div id=\"id2\">html 2</div>"));
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
                 "buttonStyle", "", "postUrl", "x/y"), element1, element2);
@@ -541,13 +544,14 @@ public class FormSectionTest extends junit.framework.TestCase {
         TestUtil.assertMatchingSubstring("form contents",
                 "<table cellspacing=\"0\" class=\"sideBySide\">\n" +
                 "    <tr id=\"form1_id1\">\n" +
-                "      <td class=\"control\" colspan=\"2\">element 1 html" +
+                "      <td class=\"control\" colspan=\"2\">" +
+                "<div id=\"id1\">html 1</div>" +
                 "<div id=\"form1_id1_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
                 "    <tr id=\"form1_id2\">\n" +
-                "      <td class=\"label\"></td>\n" +
-                "      <td class=\"control\">element 2 html" +
+                "      <td class=\"label\"><label for=\"id2\"></label></td>\n" +
+                "      <td class=\"control\"><div id=\"id2\">html 2</div>" +
                 "<div id=\"form1_id2_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
@@ -558,10 +562,11 @@ public class FormSectionTest extends junit.framework.TestCase {
     public void test_sideBySideElement_helpText() {
         cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         TemplateFormElement element1 = new TemplateFormElement(
-                new Dataset("id", "id1", "template", "element 1 html",
-                "help", "Sample help text"));
+                new Dataset("id", "id1", "template",
+                "<div id=\"id1\">html 1</div>", "help", "Sample help text"));
         TemplateFormElement element2 = new TemplateFormElement(
-                new Dataset("id", "id2", "template", "element 2 html"));
+                new Dataset("id", "id2", "template",
+                "<div id=\"id2\">html 2</div>"));
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
                 "buttonStyle", "", "postUrl", "x/y"), element1, element2);
@@ -569,14 +574,14 @@ public class FormSectionTest extends junit.framework.TestCase {
         TestUtil.assertMatchingSubstring("form contents",
                 "<table cellspacing=\"0\" class=\"sideBySide\">\n" +
                 "    <tr id=\"form1_id1\" title=\"Sample help text\">\n" +
-                "      <td class=\"label\"></td>\n" +
-                "      <td class=\"control\">element 1 html" +
+                "      <td class=\"label\"><label for=\"id1\"></label></td>\n" +
+                "      <td class=\"control\"><div id=\"id1\">html 1</div>" +
                 "<div id=\"form1_id1_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
                 "    <tr id=\"form1_id2\">\n" +
-                "      <td class=\"label\"></td>\n" +
-                "      <td class=\"control\">element 2 html" +
+                "      <td class=\"label\"><label for=\"id2\"></label></td>\n" +
+                "      <td class=\"control\"><div id=\"id2\">html 2</div>" +
                 "<div id=\"form1_id2_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
@@ -595,17 +600,17 @@ public class FormSectionTest extends junit.framework.TestCase {
         TestUtil.assertMatchingSubstring("form contents",
                 "<table cellspacing=\"0\" class=\"sideBySide\">\n" +
                 "    <tr id=\"form1_name\">\n" +
-                "      <td class=\"label\">Name:</td>\n" +
+                "      <td class=\"label\"><label for=\"name\">Name:</label></td>\n" +
                 "      <td class=\"control\"><input type=\"text\" " +
-                "name=\"name\" class=\"EntryFormElement\" " +
+                "id=\"name\" name=\"name\" class=\"EntryFormElement\" " +
                 "value=\"David\" />" +
                 "<div id=\"form1_name_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
                 "    <tr id=\"form1_age\">\n" +
-                "      <td class=\"label\">Age:</td>\n" +
+                "      <td class=\"label\"><label for=\"age\">Age:</label></td>\n" +
                 "      <td class=\"control\"><input type=\"text\" " +
-                "name=\"age\" class=\"EntryFormElement\" " +
+                "id=\"age\" name=\"age\" class=\"EntryFormElement\" " +
                 "value=\"66\" /><div id=\"form1_age_diagnostic\" " +
                 "class=\"diagnostic\" style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
@@ -617,11 +622,11 @@ public class FormSectionTest extends junit.framework.TestCase {
     public void test_verticalElement_renderLabelReturnsFalse() {
         cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         TemplateFormElement element1 = new TemplateFormElement(
-                new Dataset("id", "id1", "template", "element 1 html",
-                "span", "true"));
+                new Dataset("id", "id1", "template",
+                "<div id=\"id1\">html 1</div>", "span", "true"));
         TemplateFormElement element2 = new TemplateFormElement(
-                new Dataset("id", "id2", "template", "element 2 html",
-                "label", "sample"));
+                new Dataset("id", "id2", "template",
+                "<div id=\"id2\">html 2</div>", "label", "sample"));
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson",
                 "buttonStyle", "", "layout", "vertical", "postUrl", "x/y"),
@@ -630,13 +635,13 @@ public class FormSectionTest extends junit.framework.TestCase {
         TestUtil.assertMatchingSubstring("form contents",
                 "<table cellspacing=\"0\" class=\"vertical\">\n" +
                 "    <tr id=\"form1_id1\"><td>\n" +
-                "      <div class=\"control\">element 1 html" +
+                "      <div class=\"control\"><div id=\"id1\">html 1</div>" +
                 "<div id=\"form1_id1_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></div>\n" +
                 "    </td></tr>\n" +
                 "    <tr id=\"form1_id2\"><td>\n" +
-                "      <div class=\"label\">sample</div>\n" +
-                "      <div class=\"control\">element 2 html" +
+                "      <label for=\"id2\">sample</label>\n" +
+                "      <div class=\"control\"><div id=\"id2\">html 2</div>" +
                 "<div id=\"form1_id2_diagnostic\" class=\"diagnostic\" " +
                 "style=\"display:none\"></div></div>\n" +
                 "    </td></tr>\n" +
@@ -683,17 +688,17 @@ public class FormSectionTest extends junit.framework.TestCase {
         TestUtil.assertMatchingSubstring("form contents",
                 "<table cellspacing=\"0\" class=\"vertical\">\n" +
                 "    <tr id=\"form1_name\"><td>\n" +
-                "      <div class=\"label\">Name:</div>\n" +
+                "      <label for=\"name\">Name:</label>\n" +
                 "      <div class=\"control\"><input type=\"text\" " +
-                "name=\"name\" class=\"EntryFormElement\" " +
+                "id=\"name\" name=\"name\" class=\"EntryFormElement\" " +
                 "value=\"David\" />" +
                 "<div id=\"form1_name_diagnostic\" " +
                 "class=\"diagnostic\" style=\"display:none\"></div></div>\n" +
                 "    </td></tr>\n" +
                 "    <tr id=\"form1_age\"><td>\n" +
-                "      <div class=\"label\">Age:</div>\n" +
+                "      <label for=\"age\">Age:</label>\n" +
                 "      <div class=\"control\"><input type=\"text\" " +
-                "name=\"age\" class=\"EntryFormElement\" " +
+                "id=\"age\" name=\"age\" class=\"EntryFormElement\" " +
                 "value=\"66\" /><div id=\"form1_age_diagnostic\" " +
                 "class=\"diagnostic\" style=\"display:none\"></div></div>\n" +
                 "    </td></tr>\n" +

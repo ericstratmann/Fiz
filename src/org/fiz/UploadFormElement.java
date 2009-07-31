@@ -88,8 +88,8 @@ public class UploadFormElement extends FormElement {
     public void render(ClientRequest cr, Dataset data,
             StringBuilder out) {
         cr.getHtml().includeCssFile("UploadFormElement.css");
-        Template.appendHtml(out, "<input type=\"file\" name=\"@id\" " +
-                "class=\"@class?{UploadFormElement}\" />",
+        Template.appendHtml(out, "<input type=\"file\" id=\"@id\" " +
+                "name=\"@id\" class=\"@class?{UploadFormElement}\" />",
                 properties);
     }
 }

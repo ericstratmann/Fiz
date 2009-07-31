@@ -50,7 +50,7 @@ public class TextAreaFormElementTest extends junit.framework.TestCase {
                 "id11", "label22");
         StringBuilder out = new StringBuilder();
         element.render(cr, new Dataset(), out);
-        assertEquals("HTML", "<textarea name=\"id11\" " +
+        assertEquals("HTML", "<textarea id=\"id11\" name=\"id11\" " +
                 "class=\"TextAreaFormElement\" rows=\"10\"></textarea>",
                 out.toString());
         assertEquals("CSS includes", "TextAreaFormElement.css",
@@ -63,8 +63,8 @@ public class TextAreaFormElementTest extends junit.framework.TestCase {
                 "rows", "6"));
         StringBuilder out = new StringBuilder();
         element.render(cr, new Dataset("id11", "Line 1\n<Line 2>\n"), out);
-        assertEquals("HTML", "<textarea name=\"id11\" class=\"xyzzy\" " +
-                "rows=\"6\">Line 1\n" +
+        assertEquals("HTML", "<textarea id=\"id11\" name=\"id11\" " +
+                "class=\"xyzzy\" rows=\"6\">Line 1\n" +
                 "&lt;Line 2&gt;\n" +
                 "</textarea>",
                 out.toString());

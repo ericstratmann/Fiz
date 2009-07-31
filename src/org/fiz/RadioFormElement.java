@@ -78,7 +78,7 @@ public class RadioFormElement extends FormElement {
         cr.getHtml().includeCssFile("RadioFormElement.css");
         String actual = data.check(id);
         Template.appendHtml(out, "<div class=\"@class?{RadioFormElement}\">" +
-                "<input type=\"radio\" name=\"@id\" id=\"@id.@value\" " +
+                "<input type=\"radio\" name=\"@id\" id=\"@(id)_@value\" " +
                 "value=\"@value\"", properties);
         if ((actual != null) && (actual.equals(value))) {
             out.append(" checked=\"checked\"");

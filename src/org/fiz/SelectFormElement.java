@@ -166,7 +166,7 @@ public class SelectFormElement extends FormElement {
         }
         cr.getHtml().includeCssFile("SelectFormElement.css");
         Template.appendHtml(out, "\n<!-- Start SelectFormElement @id -->\n" +
-                "<select name=\"@id\" " +
+                "<select id=\"@id\" name=\"@id\" " +
                 "class=\"@class?{SelectFormElement}\" " +
                 "{{size=\"@height\"}} {{multiple=\"@multiple\"}}>\n",
                 properties);

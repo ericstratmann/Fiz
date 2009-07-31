@@ -109,7 +109,7 @@ public class PasswordFormElementTest extends junit.framework.TestCase {
         assertEquals("CSS includes", "PasswordFormElement.css",
                 cr.getHtml().getCssFiles());
         assertEquals("generated HTML",
-                "<input type=\"password\" name=\"secret\" " +
+                "<input type=\"password\" id=\"secret\" name=\"secret\" " +
                 "class=\"PasswordFormElement\" />",
                 out.toString());
     }
@@ -120,7 +120,7 @@ public class PasswordFormElementTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder();
         element.render(cr, new Dataset(), out);
         assertEquals("generated HTML",
-                "<input type=\"password\" name=\"secret\" " +
+                "<input type=\"password\" id=\"secret\" name=\"secret\" " +
                 "class=\"xyzzy\" />",
                 out.toString());
     }

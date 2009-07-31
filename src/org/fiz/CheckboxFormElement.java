@@ -123,7 +123,7 @@ public class CheckboxFormElement extends FormElement {
         cr.getHtml().includeCssFile("CheckboxFormElement.css");
         String value = data.check(id);
         Template.appendHtml(out, "<div class=\"@class?{CheckboxFormElement}\">" +
-                "<input type=\"checkbox\" name=\"@id\" id=\"@id\" " +
+                "<input type=\"checkbox\" id=\"@id\" name=\"@id\" " +
                 "value=\"true\"", properties);
         if ((value != null) && (value.equals(trueValue))) {
             out.append(" checked=\"checked\"");

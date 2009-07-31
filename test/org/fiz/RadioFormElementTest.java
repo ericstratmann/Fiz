@@ -34,7 +34,7 @@ public class RadioFormElementTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder();
         element.render(cr, new Dataset("id11", "111"), out);
         assertEquals("HTML", "<div class=\"RadioFormElement\">" +
-                "<input type=\"radio\" name=\"id11\" id=\"id11.222\" " +
+                "<input type=\"radio\" name=\"id11\" id=\"id11_222\" " +
                 "value=\"222\" /></div>",
                 out.toString());
         assertEquals("CSS includes", "RadioFormElement.css",
@@ -47,7 +47,7 @@ public class RadioFormElementTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder();
         element.render(cr, new Dataset("id11", "111"), out);
         assertEquals("HTML", "<div class=\"xyzzy\">" +
-                "<input type=\"radio\" name=\"id11\" id=\"id11.222\" " +
+                "<input type=\"radio\" name=\"id11\" id=\"id11_222\" " +
                 "value=\"222\" /></div>",
                 out.toString());
     }
@@ -58,7 +58,7 @@ public class RadioFormElementTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder();
         element.render(cr, new Dataset(), out);
         assertEquals("HTML", "<div class=\"RadioFormElement\">" +
-                "<input type=\"radio\" name=\"id11\" id=\"id11.222\" " +
+                "<input type=\"radio\" name=\"id11\" id=\"id11_222\" " +
                 "value=\"222\" /></div>",
                 out.toString());
     }
@@ -69,7 +69,7 @@ public class RadioFormElementTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder();
         element.render(cr, new Dataset("id11", "222"), out);
         assertEquals("HTML", "<div class=\"RadioFormElement\">" +
-                "<input type=\"radio\" name=\"id11\" id=\"id11.222\" " +
+                "<input type=\"radio\" name=\"id11\" id=\"id11_222\" " +
                 "value=\"222\" checked=\"checked\" /></div>",
                 out.toString());
     }
@@ -81,7 +81,7 @@ public class RadioFormElementTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder();
         element.render(cr, new Dataset("id11", "111", "name", "Alice"), out);
         assertEquals("HTML", "<div class=\"xyzzy\"><input type=\"radio\" " +
-                "name=\"id11\" id=\"id11.222\" value=\"222\" /><span " +
+                "name=\"id11\" id=\"id11_222\" value=\"222\" /><span " +
                 "class=\"extra\" onclick=\"getElementById" +
                 "(&quot;id11.222&quot;).checked=true;\">" +
                 "template: Alice</span></div>",

@@ -100,7 +100,8 @@ package org.fiz;
  * for use in CSS:
  *   diagnostic:     The {@code <div>} containing an error diagnostic
  *                   for a form element.
- *   label:          The {@code <td>} element containing a label.
+ *   label:          The {@code <td>} element containing a form label (only
+ *                   in side-by-side forms).
  *   control:        The {@code <td>} element containing a form control such
  *                   as a text entry.
  *   submit:         The {@code <td>} element containing the submit button.
@@ -108,6 +109,7 @@ package org.fiz;
  *                   side-by-side layout is being used.
  *   vertical:       The {@code <table>} containing the form, if a
  *                   vertical layout is being used.
+ * Form labels are always rendered inside <label> elements.
  */
 public class FormSection extends Section {
     /**
@@ -530,7 +532,8 @@ public class FormSection extends Section {
         Template.appendHtml(out, "    <tr id=\"@(1)_@2\" {{title=\"@3\"}}>\n",
                 id, elementId, getHelpText(element));
         int startingLength = out.length();
-        out.append("      <td class=\"label\">");
+        Template.appendHtml(out,
+                "      <td class=\"label\"><label for=\"@1\">", elementId);
         if (!element.renderLabel(cr, data, out)) {
             // This element requests that we not display any label and
             // instead let the control span both columns.  Erase the
@@ -540,7 +543,7 @@ public class FormSection extends Section {
             out.append("      <td class=\"control\" " +
                     "colspan=\"2\">");
         } else {
-            out.append("</td>\n      <td class=\"control\">");
+            out.append("</label></td>\n      <td class=\"control\">");
         }
         element.render(cr, data, out);
 
@@ -569,14 +572,15 @@ public class FormSection extends Section {
         Template.appendHtml(out, "    <tr id=\"@(1)_@2\" {{title=\"@3\"}}><td>\n",
                 id, elementId, getHelpText(element));
         int rowStart = out.length();
-        out.append("      <div class=\"label\">");
+        Template.appendHtml(out, "      <label for=\"@1\">",
+                elementId);
         int labelStart = out.length();
         if (!element.renderLabel(cr, data, out)
                 || (labelStart == out.length())) {
             // No label for this element; discard the entire row.
             out.setLength(rowStart);
         } else {
-            out.append("</div>\n");
+            out.append("</label>\n");
         }
         out.append("      <div class=\"control\">");
         element.render(cr, data, out);

@@ -35,7 +35,7 @@ public class EntryFormElementTest extends junit.framework.TestCase {
         assertEquals("CSS includes", "EntryFormElement.css",
                 cr.getHtml().getCssFiles());
         assertEquals("generated HTML",
-                "<input type=\"text\" name=\"age\" " +
+                "<input type=\"text\" id=\"age\" name=\"age\" " +
                 "class=\"EntryFormElement\" " +
                 "value=\"&lt;confidential&gt;\" />",
                 out.toString());
@@ -48,7 +48,7 @@ public class EntryFormElementTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder();
         element.render(cr, new Dataset("age", "<confidential>"), out);
         assertEquals("generated HTML",
-                "<input type=\"text\" name=\"age\" " +
+                "<input type=\"text\" id=\"age\" name=\"age\" " +
                 "class=\"class16\" value=\"&lt;confidential&gt;\" />",
                 out.toString());
     }
@@ -60,7 +60,8 @@ public class EntryFormElementTest extends junit.framework.TestCase {
         StringBuilder out = new StringBuilder();
         element.render(cr, new Dataset(), out);
         assertEquals("generated HTML",
-                "<input type=\"text\" name=\"age\" class=\"class16\" />",
+                "<input type=\"text\" id=\"age\" name=\"age\" " +
+                "class=\"class16\" />",
                 out.toString());
     }
 }
