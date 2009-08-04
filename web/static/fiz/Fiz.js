@@ -109,18 +109,8 @@ Fiz.clearBulletinBeforeNextAdd = function() {
 Fiz.addClass = function(target, className)
 {
 	if (target.className.match(className) == null) {
-	    // Trim off whitespace characters
-	    target.className = target.className.replace(/^\s+|\s+$/g, '');
-	    
-		// Split at whitespace characters
-        var classes = (target.className == '' ?
-                [] : target.className.split(/\s+/));
-        
-		// Add the new class
-		classes.push(className);
-
-		// ... And finally, put it all together again
- 		target.className = classes.join(' ');
+	    target.className += (target.className == '')
+	            ? className : ' ' +  className; 
  	}
 }
 
@@ -132,9 +122,6 @@ Fiz.addClass = function(target, className)
 Fiz.removeClass = function(target, className)
 {
     if (target.className.match(className) != null) {
-        // Trim off whitespace characters
-        target.className = target.className.replace(/^\s+|\s+$/g, '');
-        
         // Split at whitespace characters
         var classes = (target.className == '' ?
                 [] : target.className.split(/\s+/));

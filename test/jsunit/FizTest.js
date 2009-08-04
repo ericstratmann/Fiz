@@ -100,11 +100,11 @@ FizTest.test_removeClass = function() {
     Fiz.addClass(target, "second_class");
     Fiz.addClass(target, "third_class");
 
-    Fiz.removeClass(target, "first_class");
-    assertEqual("second_class third_class", target.className);
     Fiz.removeClass(target, "fake_class");
-    assertEqual("second_class third_class", target.className);
+    assertEqual("first_class second_class third_class", target.className);
     Fiz.removeClass(target, "second_class");
+    assertEqual("first_class third_class", target.className);
+    Fiz.removeClass(target, "first_class");
     assertEqual("third_class", target.className);
     Fiz.removeClass(target, "third_class");
     assertEqual("", target.className);
