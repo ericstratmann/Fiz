@@ -27,6 +27,9 @@ import org.fiz.test.*;
 public class UtilTest extends junit.framework.TestCase {
     // The following classes used for testing invokeStaticMethod.
     protected static class Dummy {
+        
+        private Dummy() {}
+        
         public static String checkDataset(Dataset d, String key) {
             return d.check(key);
         }
