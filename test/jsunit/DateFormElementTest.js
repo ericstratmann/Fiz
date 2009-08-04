@@ -163,14 +163,14 @@ DateFormElementTest.test_closePicker = function() {
 	assertEqual("none", formElem.picker.style.display, "Visibility of picker");
 }
 
-DateFormElementTest.test_redraw = function() {
+DateFormElementTest.test_redraw_basic = function() {
 	var header = document.addElementWithId("cal1_header");
 	var grid = document.addElementWithId("cal1_grid");
 	for(var i = 0; i < 6; i++) {
 		var row = document.addElementWithId("row-" + (i + 1), {tagName: "tr"});
 		for(var j = 0; j < 7; j++) {
 			row.appendChild(document.addElementWithId(
-			        "cell-" + (i + 1) + "-" + (j + 1),  {tagName: "td"}));
+			        "cell-" + (i + 1) + "-" + (j + 1),  {tagName: "td", textContent: ""}));
 		}
 		grid.appendChild(row);
 		row.__defineGetter__("childNodes", function() {
@@ -314,8 +314,8 @@ DateFormElementTest.test_dateCell = function() {
 	assertEqual(null, sameCell.onclick, "Not Selectable: onclick");
 	assertEqual(null, sameCell.onmouseover, "Not Selectable: onmouseover");
 	assertEqual(null, sameCell.onmouseout, "Not Selectable: onmouseout");
-	assertEqual("excluded", sameCell.className, "sameCell.className");
-	assertEqual(4, sameCell.textContent, "sameCell.textContent");
+	assertEqual("excluded", sameCell.className, "Not Selectable: className");
+	assertEqual(4, sameCell.textContent, "Not Selectable: textContent");
 }
 
 DateFormElementTest.test_setDisplayedDate = function() {

@@ -185,7 +185,7 @@ Fiz.AutocompleteFormElement.prototype.selectChoice = function(choice, done)
     if (null == choice) {
         this.input.value = this.lastUserInput;
     } else {
-        this.input.value = Fiz.getTextContent(choice);        
+        this.input.value = Fiz.getText(choice);        
     }
     
     this.lastInputValue = this.input.value;

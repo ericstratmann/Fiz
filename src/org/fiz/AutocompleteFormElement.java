@@ -20,7 +20,8 @@ import java.io.Serializable;
 /**
  * The AutocompleteFormElement helps users fill in a field by providing
  * suggestions or options for completing what the user has already typed. It
- * supports the following properties:
+ * supports the following properties (additional properties applicable to all
+ * form elements may be found in {@link FormElement}):
  *   class:             (optional) Class attribute to use for the {@code <div>}
  *                      containing this element; defaults to DateFormElement.
  *   id:                (required) Name for this FormElement; must be unique
@@ -48,6 +49,12 @@ import java.io.Serializable;
  * Each autocomplete choice will be a dataset containing one key-value pair
  * where the key is specified by the {@code choiceName} parameter and the value
  * will be shown in the autocomplete dropdown.
+ *
+ * AutocompleteFormElement automatically sets the following {@code class}
+ * attributes for use in CSS:
+ *   dropdown:       The {@code <div>} containing the autocomplete dropdown.
+ *   highlight:      The {@code <li>} containing the currently highlighted
+ *                   choice in the dropdown.
  */
 public class AutocompleteFormElement extends FormElement implements DirectAjax {
 
@@ -178,7 +185,7 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
                 "<div class=\"@class?{AutocompleteFormElement}\" " +
                 "id=\"@(id)_container\">\n", properties);
         Template.appendHtml(out,
-                "  <input type=\"text\" id=\"@(id)\" " +
+                "  <input type=\"text\" id=\"@id\" name=\"@id\" " +
                 "onkeyup=\"Fiz.ids.@id.refreshMenu()\" " +
                 "onkeydown=\"Fiz.ids.@id.captureKeydown(event)\" " +
                 "onblur=\"Fiz.ids.@id.hideDropdown()\" " +

@@ -175,7 +175,7 @@ Fiz.DateFormElement.prototype.redraw = function()
     var curDayOfWeek = this.dDate.getDay();
     
     // Update heading with new month and year displayed
-    Fiz.setTextContent(document.getElementById(this.id + '_header'),
+    Fiz.setText(document.getElementById(this.id + '_header'),
             Fiz.DateFormElement.i18n.monthNamesLong[curMonth] + ' ' + curYear);
 
     // Get calendar information for the previous and next months
@@ -356,7 +356,7 @@ Fiz.DateFormElement.prototype.dateCell = function(cell, date, selectable)
         Fiz.addClass(cell, 'excluded');
     }
     
-    Fiz.setTextContent(cell, date.getDate());
+    Fiz.setText(cell, date.getDate());
 
     return cell;
 }

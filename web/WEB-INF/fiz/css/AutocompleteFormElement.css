@@ -26,11 +26,6 @@
 	cursor: pointer;
 }
 
-.AutocompleteFormElement .query {
-	margin-bottom: 5px;
-	color: #cccccc;
-}
-
 .AutocompleteFormElement .dropdown {
  	width: @formElementWidth;
 	position: absolute;	

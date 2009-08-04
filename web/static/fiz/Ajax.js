@@ -158,9 +158,11 @@ Fiz.Ajax.prototype.error = function(message) {
  * @param object                   Object consisting of a hierarchical
  *                                 collection of scalar properties, nested
  *                                 objects, and arrays of nested objects.
+ * @param hideHeader               Ignores the authentication and page id when
+ *                                 serializing the object
  * @return                         String representing {@code object}.
  */
-Fiz.Ajax.serialize = function(object) {
+Fiz.Ajax.serialize = function(object, hideHeader) {
     // Iterate over all of the values in the object.  Each value can be
     // either an array of nested objects, a single nested object, or a
     // scalar value.
@@ -175,12 +177,12 @@ Fiz.Ajax.serialize = function(object) {
             if (length > 0) {
                 result += prefix + name.length + "." + name;
                 for (var i = 0; i < length; i++) {
-                    result += Fiz.Ajax.serialize(value[i]);
+                    result += Fiz.Ajax.serialize(value[i], true);
                 }
             }
         } else if ((typeof value) == "object") {
             result += prefix + name.length + "." + name +
-                    Fiz.Ajax.serialize(value);
+                    Fiz.Ajax.serialize(value, true);
         } else {
             // Simple scalar value.
             value = value.toString();
@@ -190,16 +192,18 @@ Fiz.Ajax.serialize = function(object) {
         prefix = "\n";
     }
 
-    // If an authentication token is available, include that in the request
-    // (is used by the server to prevent request forgeries).
-    if (Fiz.auth) {
-        result += prefix + "8.fiz_auth" + Fiz.auth.length + "." + Fiz.auth;
-    }
-    // If a page identifier has been assigned, include that in the request
-    // (it will allow the server to access saved data for this page).
-    if (Fiz.pageId) {
-        result += prefix + "10.fiz_pageId" + Fiz.pageId.length + "." +
-                  Fiz.pageId;
+    if (!hideHeader) {
+        // If an authentication token is available, include that in the request
+        // (is used by the server to prevent request forgeries).
+        if (Fiz.auth) {
+            result += prefix + "8.fiz_auth" + Fiz.auth.length + "." + Fiz.auth;
+        }
+        // If a page identifier has been assigned, include that in the request
+        // (it will allow the server to access saved data for this page).
+        if (Fiz.pageId) {
+            result += prefix + "10.fiz_pageId" + Fiz.pageId.length + "." +
+                      Fiz.pageId;
+        }
     }
     result += ")";
     return result;

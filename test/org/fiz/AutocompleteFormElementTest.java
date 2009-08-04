@@ -166,7 +166,7 @@ public class AutocompleteFormElementTest extends junit.framework.TestCase {
 		assertEquals("generated HTML", "\n" +
 				"<!-- Start AutocompleteFormElement auto -->\n" +
 				"<div class=\"AutocompleteFormElement\" id=\"auto_container\">\n" +
-				"  <input type=\"text\" id=\"auto\" " +
+				"  <input type=\"text\" id=\"auto\" name=\"auto\" " +
                 "onkeyup=\"Fiz.ids.auto.refreshMenu()\" " +
                 "onkeydown=\"Fiz.ids.auto.captureKeydown(event)\" " +
                 "onblur=\"Fiz.ids.auto.hideDropdown()\" />\n" +

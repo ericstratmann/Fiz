@@ -22,7 +22,8 @@ import java.util.regex.MatchResult;
 /**
  * The DateFormElement allows users to input time and date either manually (in a
  * variety of formats) or through a customizable, JS-driven calendar object. It
- * supports the following properties:
+ * supports the following properties (additional properties applicable to all
+ * form elements may be found in {@link FormElement}):
  *   class:             (optional) Class attribute to use for the {@code <div>}
  *                      containing this element; defaults to DateFormElement.
  *   id:                (required) Name for this FormElement; must be unique
@@ -73,6 +74,21 @@ import java.util.regex.MatchResult;
  *                                  the {@code end_date} are omitted, then the
  *                                  range goes infinitely into the past or
  *                                  infinitely into the future respectively.
+ *
+ * DateFormElement automatically sets the following {@code class} attributes
+ * for use in CSS:
+ *   picker:         The {@code <div>} containing the calendar dropdown.
+ *   header:         The {@code <div>} containing the currently displayed
+ *                   calendar month / year.
+ *   nav:            The {@code <div>} containing the calendar navigation.
+ *   close-button:   The {@code <a>} for the close button in the top-right
+ *                   of the calendar.
+ *   cur-month:      The {@code <td>} elements in the calendar representing a
+ *                   day in the currently displayed month.
+ *   cur-day:        The {@code <td>} in the calendar representing the currently
+ *                   selected date.
+ *   excluded:       The {@code <td>} elements in the calendar representing days
+ *                   that have been omitted from selection.
  */
 public class DateFormElement extends FormElement {
 

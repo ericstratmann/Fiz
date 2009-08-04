@@ -101,48 +101,68 @@ Fiz.clearBulletinBeforeNextAdd = function() {
     Fiz.clearOldBulletin = true;
 }
 
-Fiz.addClass = function(elem, className)
+/**
+ * Adds {@code class} to {@code target}'s classes
+ * @param target            (Element) See above
+ * @param class             (String) See above
+ */
+Fiz.addClass = function(target, className)
 {
-	if(undefined == elem.className) {
-		elem.className = '';
+	if (undefined == target.className) {
+		target.className = '';
 	}
-	if(elem.className.match(className) == null) {
-		// Trim off the white spaces
-		elem.className = elem.className.replace(/^\s+|\s+$/g, '');
-
+	if (target.className.match(className) == null) {
+	    // Trim off whitespace characters
+	    target.className = target.className.replace(/^\s+|\s+$/g, '');
+	    
 		// Split at whitespace characters
-		var classes = (elem.className == '' ?
-				[] : elem.className.split(/\s+/));
-
+        var classes = (target.className == '' ?
+                [] : target.className.split(/\s+/));
+        
 		// Add the new class
 		classes.push(className);
 
 		// ... And finally, put it all together again
- 		elem.className = classes.join(' ');
+ 		target.className = classes.join(' ');
  	}
 }
 
-Fiz.removeClass = function(elem, className)
+/**
+ * Removes {@code class} from {@code target}'s classes
+ * @param target            (Element) See above
+ * @param class             (String) See above
+ */
+Fiz.removeClass = function(target, className)
 {
-	if(undefined == elem.className) {
-		elem.className = '';
+	if (undefined == target.className) {
+		target.className = '';
 	}
-	elem.className = elem.className.replace(className, '');
+	target.className = target.className.replace(className, '');
 }
 
-Fiz.findPos = function(obj)
+/**
+ * Adds {@code class} to {@code elem}'s classes
+ * @param elem              (Element) See above
+ * @param class             (String) See above
+ */
+Fiz.findAbsolutePosition = function(target)
 {
 	var curleft = 0;
 	var curtop = 0;
-	if(obj.offsetParent) {
+	if (target.offsetParent) {
 		do {
-			curleft += obj.offsetLeft;
-			curtop += obj.offsetTop;
-		} while(obj = obj.offsetParent);
+			curleft += target.offsetLeft;
+			curtop += target.offsetTop;
+		} while (target = target.offsetParent);
  	}
 	return [curleft,curtop];
 }
 
+/**
+ * Provides a cross-browser compatible way to stops the event {@code e} from
+ * propogating further through the stack of DOM elements.
+ * @param e                 (Event) See above
+ */
 Fiz.cancelBubble = function(e)
 {
 	var e;
@@ -151,7 +171,13 @@ Fiz.cancelBubble = function(e)
  	if (e.stopPropagation) { e.stopPropagation(); }
 }
 
-Fiz.getKeyCode = function(e) {
+/**
+ * Provides a cross-browser compatible way to fetch the key code value of the
+ * event {@code e}.
+ * @param e                 (Event) See above
+ */
+Fiz.getKeyCode = function(e)
+{
 	if (window.event) {
 		return e.keyCode;
 	} else {
@@ -159,7 +185,16 @@ Fiz.getKeyCode = function(e) {
 	}
 }
 
-Fiz.addEvent = function(target, type, callback, captures) {
+/**
+ * Provides a cross-browser compatible way to bind event listeners to
+ * DOM elements.
+ * @param target
+ * @param type
+ * @param callback
+ * @param captures
+ */
+Fiz.addEvent = function(target, type, callback, captures)
+{
 	if (target.addEventListener) {
 		target.addEventListener(type, callback, captures);
 	} else if (target.attachEvent) {
@@ -175,12 +210,25 @@ Fiz.addEvent = function(target, type, callback, captures) {
 	}
 }
 
-Fiz.getTextContent = function(target) {
+/**
+ * Provides a cross-browser compatible way to retrieve the text value of
+ * {@code target}.
+ * @param target                    (Element) See above
+ */
+Fiz.getText = function(target)
+{
     return target.innerText || target.textContent;
 }
 
-Fiz.setTextContent = function(target, text) {
-    if (document.getElementsByTagName("body")[0].innerText == undefined) {
+/**
+ * Provides a cross-browser compatible way to set the text value of
+ * {@code target}.
+ * @param target                    (Element) See above
+ * @param text                      (String) Text content we want to set
+ */
+Fiz.setText = function(target, text)
+{
+    if (target.innerText == undefined) {
         target.textContent = text;
     } else {
         target.innerText = text;
