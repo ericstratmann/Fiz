@@ -20,296 +20,280 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 -->
 <project name="fiz" default="javadoc" basedir=".">
 
-    <target name="clean" description="Remove all generated files">
-        <delete dir="${outdir}"/>
-    </target>
+	<target name="clean" description="Remove all generated files">
+		<delete dir="${outdir}" />
+	</target>
 
-    <target name="compile" description="Compile from source">
-        <!-- Compile the sources -->
-        <mkdir dir="${classdir}"/>
-        <javac srcdir="src" destdir="${classdir}" classpathref="classpath" />
-        <!-- Create the jar file for these tools -->
-        <mkdir dir="${genlibdir}"/>
-        <jar destfile="${genlibdir}/fiz.jar" basedir="${classdir}"/>
-    </target>
+	<target name="compile" description="Compile from source">
+		<!-- Compile the sources -->
+		<mkdir dir="${classdir}" />
+		<javac srcdir="src" destdir="${classdir}" classpathref="classpath" />
+		<!-- Create the jar file for these tools -->
+		<mkdir dir="${genlibdir}" />
+		<jar destfile="${genlibdir}/fiz.jar" basedir="${classdir}" />
+	</target>
 
-    <target name="compile-test" depends="compile"
-            description="Compile unit tests">
-        <mkdir dir="${testclassdir}"/>
-        <javac destdir="${testclassdir}" srcdir="test">
-            <classpath refid="classpath.test"/>
-        </javac>
-    </target>
+	<target name="compile-test" depends="compile" description="Compile unit tests">
+		<mkdir dir="${testclassdir}" />
+		<javac destdir="${testclassdir}" srcdir="test">
+			<classpath refid="classpath.test" />
+		</javac>
+	</target>
 
-    <target name="test" depends="compile,compile-test"
-            description="Execute unit tests" >
-        <antcall target="test-java"/>
-        <antcall target="test-js"/>
-    </target>
+	<target name="test" depends="compile,compile-test" description="Execute unit tests">
+		<antcall target="test-java" />
+		<antcall target="test-js" />
+	</target>
 
-    <target name="test-java" depends="compile,compile-test"
-            description="Excecute java unit tests">
+	<target name="test-java" depends="compile,compile-test" description="Excecute java unit tests">
         <junit fork="yes">
             <classpath refid="classpath.test" />
-            <formatter type="brief" usefile="false"/>
-            <sysproperty key="fiz.location" value="."/>
+            <formatter type="brief" usefile="false" />
+            <sysproperty key="fiz.location" value="." />
 
-            <batchtest>
+            <batchtest if="testname">
                 <fileset dir="${testclassdir}">
-                    <include name="**/*Test.class"/>
+                    <include name="**/${testname}Test.class" />
                 </fileset>
             </batchtest>
-
+            <batchtest unless="testname">
+                <fileset dir="${testclassdir}">
+                    <include name="**/*Test.class" />
+                </fileset>
+            </batchtest>
         </junit>
-    </target>
+	</target>
 
-    <target name="test-js" depends="compile"
-            description="Execute javascript unit tests">
-        <java classname="org.mozilla.javascript.tools.shell.Main">
-            <classpath refid="classpath.test" />
-            <arg value="test/jsunit/jsunit.js" />
-            <arg value="-quiet" />
-            <arg value="test/jsunit" />
-        </java>
-    </target>
+	<target name="test-js" depends="compile" description="Execute javascript unit tests">
+		<java classname="org.mozilla.javascript.tools.shell.Main">
+			<classpath refid="classpath.test" />
+			<arg value="test/jsunit/jsunit.js" />
+			<arg value="-quiet" />
+			<arg value="test/jsunit" />
+		</java>
+	</target>
 
-    <target name="javadoc" depends="compile">
-        <javadoc sourcepath="src"
-                 destdir="${docdir}"
-                 public="true"
-                 Windowtitle="Fiz documentation"
-                 docletpath="${classdir}"
-                 doclet="org.fiz.FizDoc">
-            <classpath>
-                <path refid="classpath"/>
-                <pathelement location="C:/Program Files/Java/jdk1.6.0_13/lib/tools.jar" />
-            </classpath>
-        </javadoc>
-        <concat destfile="${docdir}/stylesheet.css" append="true">
-            <filelist dir="." files="javadoc.css"/>
-        </concat>
-    </target>
+	<target name="javadoc" depends="compile">
+		<javadoc sourcepath="src" destdir="${docdir}" public="true" Windowtitle="Fiz documentation" docletpath="${classdir}" doclet="org.fiz.FizDoc">
+			<classpath>
+				<path refid="classpath" />
+				<pathelement location="C:/Program Files/Java/jdk1.6.0_13/lib/tools.jar" />
+			</classpath>
+		</javadoc>
+		<concat destfile="${docdir}/stylesheet.css" append="true">
+			<filelist dir="." files="javadoc.css" />
+		</concat>
+	</target>
 
-    <target name="jslint">
-        <jslint>
-            <formatter type="plain" />
-            <fileset dir="test/jsunit" includes="*.js" />
-            <fileset dir="web/static/fiz" includes="*.js" />
-        </jslint>
-    </target>
+	<target name="jslint">
+		<jslint>
+			<formatter type="plain" />
+			<fileset dir="test/jsunit" includes="*.js" />
+			<fileset dir="web/static/fiz" includes="*.js" />
+		</jslint>
+	</target>
 
-    <!-- Builds a demo application that showcases some of the default
+	<!-- Builds a demo application that showcases some of the default
     sections that come with Fiz -->
-    <target name="build-demo" description="Builds the Fiz demo application"
-            depends="compile,compile-test">
-        <delete dir="${demodir}"/>
+	<target name="build-demo" description="Builds the Fiz demo application" depends="compile,compile-test">
+		<delete dir="${demodir}" />
 
-        <!-- Classes and libraries -->
-        <mkdir dir="${demodir}/WEB-INF/lib"/>
-        <jar destfile="${demodir}/WEB-INF/lib/fiz.jar"
-                basedir="${classdir}"/>
-        <copy todir="${demodir}/WEB-INF/lib">
-            <fileset dir="${libdir}"/>
-        </copy>
-        <mkdir dir="${demodir}/WEB-INF/classes"/>
-        <copy todir="${demodir}/WEB-INF/classes"
-                file="src/log4j.properties"/>
+		<!-- Classes and libraries -->
+		<mkdir dir="${demodir}/WEB-INF/lib" />
+		<jar destfile="${demodir}/WEB-INF/lib/fiz.jar" basedir="${classdir}" />
+		<copy todir="${demodir}/WEB-INF/lib">
+			<fileset dir="${libdir}" />
+		</copy>
+		<mkdir dir="${demodir}/WEB-INF/classes" />
+		<copy todir="${demodir}/WEB-INF/classes" file="src/log4j.properties" />
 
-        <!-- Other run-time files needed by Fiz -->
-        <mkdir dir="${demodir}/WEB-INF/fiz/config"/>
-        <copy todir="${demodir}/WEB-INF/fiz/config">
-            <fileset dir="web/WEB-INF/fiz/config"/>
-        </copy>
-        <mkdir dir="${demodir}/WEB-INF/fiz/css"/>
-        <copy todir="${demodir}/WEB-INF/fiz/css">
-            <fileset dir="web/WEB-INF/fiz/css"/>
-        </copy>
-        <mkdir dir="${demodir}/static/fiz"/>
-        <copy todir="${demodir}/static/fiz">
-            <fileset dir="web/static/fiz"/>
-        </copy>
-        <mkdir dir="${demodir}/WEB-INF/demo"/>
-        <copy todir="${demodir}/WEB-INF/demo">
-            <fileset dir="web/WEB-INF/demo"/>
-        </copy>
-        <copy todir="${demodir}/WEB-INF" file="web/WEB-INF/web.xml"/>
-    </target>
+		<!-- Other run-time files needed by Fiz -->
+		<mkdir dir="${demodir}/WEB-INF/fiz/config" />
+		<copy todir="${demodir}/WEB-INF/fiz/config">
+			<fileset dir="web/WEB-INF/fiz/config" />
+		</copy>
+		<mkdir dir="${demodir}/WEB-INF/fiz/css" />
+		<copy todir="${demodir}/WEB-INF/fiz/css">
+			<fileset dir="web/WEB-INF/fiz/css" />
+		</copy>
+		<mkdir dir="${demodir}/static/fiz" />
+		<copy todir="${demodir}/static/fiz">
+			<fileset dir="web/static/fiz" />
+		</copy>
+		<mkdir dir="${demodir}/WEB-INF/demo" />
+		<copy todir="${demodir}/WEB-INF/demo">
+			<fileset dir="web/WEB-INF/demo" />
+		</copy>
+		<copy todir="${demodir}/WEB-INF" file="web/WEB-INF/web.xml" />
+	</target>
 
-    <target name="build-installer" description="Creates the Fiz installer"
-            depends="compile, javadoc">
-        <delete dir="${installerdir}"/>
+	<target name="build-installer" description="Creates the Fiz installer" depends="compile, javadoc">
+		<delete dir="${installerdir}" />
 
-        <!-- Ant scripts -->
-        <mkdir dir="${installerdir}/antscripts"/>
-        <copy todir="${installerdir}/antscripts">
-            <fileset dir="antscripts"/>
-        </copy>
+		<!-- Ant scripts -->
+		<mkdir dir="${installerdir}/antscripts" />
+		<copy todir="${installerdir}/antscripts">
+			<fileset dir="antscripts" />
+		</copy>
 
-        <!-- Executable scripts -->
-        <mkdir dir="${installerdir}/shellscripts"/>
-        <copy todir="${installerdir}/shellscripts">
-            <fileset dir="shellscripts"/>
-        </copy>
+		<!-- Executable scripts -->
+		<mkdir dir="${installerdir}/shellscripts" />
+		<copy todir="${installerdir}/shellscripts">
+			<fileset dir="shellscripts" />
+		</copy>
 
-        <!-- Source files -->
-        <mkdir dir="${installerdir}/src"/>
-        <copy todir="${installerdir}/src">
-            <fileset dir="src" />
-        </copy>
-        <copy todir="${installerdir}">
-            <filelist dir="." files="build.xml, javadoc.css" />
-        </copy>
+		<!-- Source files -->
+		<mkdir dir="${installerdir}/src" />
+		<copy todir="${installerdir}/src">
+			<fileset dir="src" />
+		</copy>
+		<copy todir="${installerdir}">
+			<filelist dir="." files="build.xml, javadoc.css" />
+		</copy>
 
-        <mkdir dir="${installerdir}/test"/>
-        <copy todir="${installerdir}/test">
-            <fileset dir="test" />
-        </copy>
+		<mkdir dir="${installerdir}/test" />
+		<copy todir="${installerdir}/test">
+			<fileset dir="test" />
+		</copy>
 
-        <!-- Classes and libraries -->
-        <mkdir dir="${installerdir}/lib"/>
-        <manifest file="${outdir}/MANIFEST.MF">
-            <attribute name="Built-By" value="${user.name}"/>
-            <attribute name="Implementation-Title" value="Fiz Core"/>
-            <attribute name="Implementation-Version" value="${version}"/>
-            <attribute name="Implementation-Vendor"
-                       value="Stanford University"/>
-        </manifest>
-        <jar destfile="${installerdir}/lib/fiz.jar" basedir="${classdir}"
-                manifest="${outdir}/MANIFEST.MF"/>
-        <copy todir="${installerdir}/lib">
-            <fileset dir="${libdir}"/>
-        </copy>
-        <mkdir dir="${installerdir}/web/WEB-INF/classes"/>
-        <copy todir="${installerdir}/web/WEB-INF/classes"
-                file="src/log4j.properties"/>
+		<!-- Classes and libraries -->
+		<mkdir dir="${installerdir}/lib" />
+		<manifest file="${outdir}/MANIFEST.MF">
+			<attribute name="Built-By" value="${user.name}" />
+			<attribute name="Implementation-Title" value="Fiz Core" />
+			<attribute name="Implementation-Version" value="${version}" />
+			<attribute name="Implementation-Vendor" value="Stanford University" />
+		</manifest>
+		<jar destfile="${installerdir}/lib/fiz.jar" basedir="${classdir}" manifest="${outdir}/MANIFEST.MF" />
+		<copy todir="${installerdir}/lib">
+			<fileset dir="${libdir}" />
+		</copy>
+		<mkdir dir="${installerdir}/web/WEB-INF/classes" />
+		<copy todir="${installerdir}/web/WEB-INF/classes" file="src/log4j.properties" />
 
-        <!-- Other run-time files needed by Fiz -->
-        <mkdir dir="${installerdir}/web/WEB-INF/fiz/config"/>
-        <copy todir="${installerdir}/web/WEB-INF/fiz/config">
-            <fileset dir="web/WEB-INF/fiz/config"/>
-        </copy>
-        <mkdir dir="${installerdir}/web/WEB-INF/fiz/css"/>
-        <copy todir="${installerdir}/web/WEB-INF/fiz/css">
-            <fileset dir="web/WEB-INF/fiz/css"/>
-        </copy>
-        <mkdir dir="${installerdir}/web/static/fiz"/>
-        <copy todir="${installerdir}/web/static/fiz">
-            <fileset dir="web/static/fiz"/>
-        </copy>
-        <mkdir dir="${installerdir}/web/WEB-INF/demo"/>
-        <copy todir="${installerdir}/web/WEB-INF/demo">
-            <fileset dir="web/WEB-INF/demo"/>
-        </copy>
-        <copy todir="${installerdir}/web/WEB-INF" file="web/WEB-INF/web.xml"/>
+		<!-- Other run-time files needed by Fiz -->
+		<mkdir dir="${installerdir}/web/WEB-INF/fiz/config" />
+		<copy todir="${installerdir}/web/WEB-INF/fiz/config">
+			<fileset dir="web/WEB-INF/fiz/config" />
+		</copy>
+		<mkdir dir="${installerdir}/web/WEB-INF/fiz/css" />
+		<copy todir="${installerdir}/web/WEB-INF/fiz/css">
+			<fileset dir="web/WEB-INF/fiz/css" />
+		</copy>
+		<mkdir dir="${installerdir}/web/static/fiz" />
+		<copy todir="${installerdir}/web/static/fiz">
+			<fileset dir="web/static/fiz" />
+		</copy>
+		<mkdir dir="${installerdir}/web/WEB-INF/demo" />
+		<copy todir="${installerdir}/web/WEB-INF/demo">
+			<fileset dir="web/WEB-INF/demo" />
+		</copy>
+		<copy todir="${installerdir}/web/WEB-INF" file="web/WEB-INF/web.xml" />
 
-        <!-- Application specific files -->
-        <mkdir dir="${installerdir}/app"/>
-        <copy todir="${installerdir}/app">
-            <fileset dir="app"/>
-        </copy>
-        <copy todir="${installerdir}/app/web/WEB-INF" file="web/WEB-INF/web.xml"/>
+		<!-- Application specific files -->
+		<mkdir dir="${installerdir}/app" />
+		<copy todir="${installerdir}/app">
+			<fileset dir="app" />
+		</copy>
+		<copy todir="${installerdir}/app/web/WEB-INF" file="web/WEB-INF/web.xml" />
 
-        <!-- Extension specific files -->
-        <mkdir dir="${installerdir}/ext"/>
-        <copy todir="${installerdir}/ext">
-            <fileset dir="ext"/>
-        </copy>
+		<!-- Extension specific files -->
+		<mkdir dir="${installerdir}/ext" />
+		<copy todir="${installerdir}/ext">
+			<fileset dir="ext" />
+		</copy>
 
-        <!-- Documentation -->
-        <mkdir dir="${installerdir}/javadoc"/>
-        <copy todir="${installerdir}/javadoc">
-            <fileset dir="${docdir}"/>
-        </copy>
+		<!-- Documentation -->
+		<mkdir dir="${installerdir}/javadoc" />
+		<copy todir="${installerdir}/javadoc">
+			<fileset dir="${docdir}" />
+		</copy>
 
-        <!-- Create archives -->
-        <zip destfile="${installerdir}/fiz-${version}.zip">
-            <zipfileset dir="${installerdir}" prefix="fiz-${version}"/>
-        </zip>
-    </target>
+		<!-- Create archives -->
+		<zip destfile="${installerdir}/fiz-${version}.zip">
+			<zipfileset dir="${installerdir}" prefix="fiz-${version}" />
+		</zip>
+	</target>
 
-    <target name="package"
-            description="Packages the Fiz distribution so that it can be uploaded to the Fiz website"
-            depends="build-installer">
-        <delete dir="${packagedir}"/>
+	<target name="package" description="Packages the Fiz distribution so that it can be uploaded to the Fiz website" depends="build-installer">
+		<delete dir="${packagedir}" />
 
-        <mkdir dir="${packagedir}"/>
+		<mkdir dir="${packagedir}" />
 
-        <!-- Documentation -->
-        <zip destfile="${packagedir}/fiz-doc-${version}.zip">
-            <zipfileset dir="${docdir}" prefix="fiz-doc-${version}"/>
-        </zip>
+		<!-- Documentation -->
+		<zip destfile="${packagedir}/fiz-doc-${version}.zip">
+			<zipfileset dir="${docdir}" prefix="fiz-doc-${version}" />
+		</zip>
 
-        <!-- Installer -->
-        <copy todir="${packagedir}">
-            <fileset file="${installerdir}/fiz-${version}.zip"/>
-        </copy>
+		<!-- Installer -->
+		<copy todir="${packagedir}">
+			<fileset file="${installerdir}/fiz-${version}.zip" />
+		</copy>
 
-        <!-- Create archives -->
-        <zip destfile="${packagedir}/fiz-pkg-${version}.zip"
-             basedir="${packagedir}" />
-    </target>
+		<!-- Create archives -->
+		<zip destfile="${packagedir}/fiz-pkg-${version}.zip" basedir="${packagedir}" />
+	</target>
 
-    <target name="install" description="Installs Fiz" depends="checkOS">
-        <antcall target="${install.target}"/>
-    </target>
+	<target name="install" description="Installs Fiz" depends="checkOS">
+		<antcall target="${install.target}" />
+	</target>
 
-    <target name="checkOS">
-        <condition property="install.target" value="install-windows">
-            <os family="windows"/>
-        </condition>
-        <condition property="install.target" value="install-mac">
-            <os family="mac"/>
-        </condition>
-        <condition property="install.target" value="install-unix">
-            <os family="unix"/>
-        </condition>
-    </target>
+	<target name="checkOS">
+		<condition property="install.target" value="install-windows">
+			<os family="windows" />
+		</condition>
+		<condition property="install.target" value="install-mac">
+			<os family="mac" />
+		</condition>
+		<condition property="install.target" value="install-unix">
+			<os family="unix" />
+		</condition>
+	</target>
 
-    <target name="install-windows" description="OS specific target for Windows"
-            depends="prepare-scripts">
-    </target>
+	<target name="install-windows" description="OS specific target for Windows" depends="prepare-scripts">
+	</target>
 
-    <target name="install-mac" description="OS specific target for MacOS"
-            depends="prepare-scripts">
-        <chmod file="bin/fiz" perm="ugo+x"/>
-    </target>
+	<target name="install-mac" description="OS specific target for MacOS" depends="prepare-scripts">
+		<chmod file="bin/fiz" perm="ugo+x" />
+	</target>
 
-    <target name="install-unix" description="OS specific target for Unix"
-            depends="prepare-scripts">
-        <chmod file="bin/fiz" perm="ugo+x"/>
-    </target>
+	<target name="install-unix" description="OS specific target for Unix" depends="prepare-scripts">
+		<chmod file="bin/fiz" perm="ugo+x" />
+	</target>
 
-    <target name="prepare-scripts"
-            description="Replaces tokens in the Fiz script files">
-        <!-- First delete the old versions of the scripts, if any -->
-        <delete file="bin/fiz.bat"/>
-        <delete file="bin/fiz"/>
-        <!-- Create the bin directory in case it doesn't exist -->
-        <mkdir dir="bin"/>
-        <!-- Copy the original versions -->
-        <copy file="shellscripts/fiz.bat.in" tofile="bin/fiz.bat"/>
-        <copy file="shellscripts/fiz.in" tofile="bin/fiz"/>
-        <!-- Replace tokens -->
-        <replace file="bin/fiz.bat" token="@@FIZ_HOME" value="${basedir}"/>
-        <replace file="bin/fiz.bat" token="@@SERVER_URL" value="${serverurl}"/>
-        <replace file="bin/fiz" token="@@FIZ_HOME" value="${basedir}"/>
-        <replace file="bin/fiz" token="@@SERVER_URL" value="${serverurl}"/>
-    </target>
+	<target name="prepare-scripts" description="Replaces tokens in the Fiz script files">
+		<!-- First delete the old versions of the scripts, if any -->
+		<delete file="bin/fiz.bat" />
+		<delete file="bin/fiz" />
+		<!-- Create the bin directory in case it doesn't exist -->
+		<mkdir dir="bin" />
+		<!-- Copy the original versions -->
+		<copy file="shellscripts/fiz.bat.in" tofile="bin/fiz.bat" />
+		<copy file="shellscripts/fiz.in" tofile="bin/fiz" />
+		<!-- Replace tokens -->
+		<replace file="bin/fiz.bat" token="@@FIZ_HOME" value="${basedir}" />
+		<replace file="bin/fiz.bat" token="@@SERVER_URL" value="${serverurl}" />
+		<replace file="bin/fiz" token="@@FIZ_HOME" value="${basedir}" />
+		<replace file="bin/fiz" token="@@SERVER_URL" value="${serverurl}" />
+	</target>
 
-    <!-- The version number that is embedded in the fiz.jar library file -->
-    <property name="version" value="0.5"/>
+	<!-- The version number that is embedded in the fiz.jar library file -->
+	<property name="version" value="0.5" />
 
-    <!-- The directory containing Java libraries (.jar files) -->
-    <property name="libdir" value="lib"/>
+	<!-- The directory containing Java libraries (.jar files) -->
+	<property name="libdir" value="lib" />
 
-    <!-- The directory for the files generated by the build -->
-    <property name="outdir" value="out"/>
+	<!-- The directory for the files generated by the build -->
+	<property name="outdir" value="out" />
 
-    <!-- The directory in which distributions are created -->
-    <property name="distdir" value="${outdir}/dist"/>
+	<!-- The directory in which distributions are created -->
+	<property name="distdir" value="${outdir}/dist" />
 
-    <!-- The directory in which the demo application is created -->
-    <property name="demodir" value="${outdir}/demo"/>
+	<!-- The directory in which the demo application is created -->
+	<property name="demodir" value="${outdir}/demo" />
+
+	<!-- The directory in which Java classes are compiled -->
+	<property name="classdir" value="${outdir}/classes" />
 
     <!-- The directory in which Java classes are compiled -->
     <property name="classdir" value="${outdir}/classes"/>
@@ -317,41 +301,40 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <!-- The directory in which generated libraries are compiled -->
     <property name="genlibdir" value="${outdir}/lib"/>
 
-    <!-- The directory in which Java test classes are compiled. -->
-    <property name="testclassdir" value="${outdir}/tests" />
+	<!-- The directory in which Java test classes are compiled. -->
+	<property name="testclassdir" value="${outdir}/tests" />
 
-    <!-- The directory in which Javadocs are created -->
-    <property name="docdir" value="${outdir}/javadoc"/>
+	<!-- The directory in which Javadocs are created -->
+	<property name="docdir" value="${outdir}/javadoc" />
 
-    <!-- The directory in which the Fiz installer is created -->
-    <property name="installerdir" value="${outdir}/installer"/>
+	<!-- The directory in which the Fiz installer is created -->
+	<property name="installerdir" value="${outdir}/installer" />
 
-    <!-- The directory in which the Fiz platform is packaged for upload to the
+	<!-- The directory in which the Fiz platform is packaged for upload to the
     server -->
-    <property name="packagedir" value="${outdir}/package"/>
+	<property name="packagedir" value="${outdir}/package" />
 
-    <!-- The URL that hosts Fiz and extensions (the Fiz website). -->
-    <property name="serverurl" value="http://fiz.stanford.edu"/>
+	<!-- The URL that hosts Fiz and extensions (the Fiz website). -->
+	<property name="serverurl" value="http://fiz.stanford.edu" />
 
-    <path id="classpath">
-        <pathelement location="${libdir}/ant.jar" />
-        <pathelement location="${libdir}/commons-fileupload-1.2.1.jar" />
-        <pathelement location="${libdir}/commons-io-1.4.jar" />
-        <pathelement location="${libdir}/js.jar" />
-        <pathelement location="${libdir}/jyaml.jar" />
-        <pathelement location="${libdir}/log4j.jar" />
-        <pathelement location="${libdir}/mysql-connector-java-5.1.7-bin.jar" />
-        <pathelement location="${libdir}/servlet.jar"/>
-        <pathelement location="${libdir}/junit.jar" />
-    </path>
+	<path id="classpath">
+		<pathelement location="${libdir}/ant.jar" />
+		<pathelement location="${libdir}/commons-codec-1.3.jar" />
+		<pathelement location="${libdir}/commons-fileupload-1.2.1.jar" />
+		<pathelement location="${libdir}/commons-io-1.4.jar" />
+		<pathelement location="${libdir}/js.jar" />
+		<pathelement location="${libdir}/jyaml.jar" />
+		<pathelement location="${libdir}/log4j.jar" />
+		<pathelement location="${libdir}/servlet.jar" />
+		<pathelement location="${libdir}/junit.jar" />
+	</path>
 
-    <path id="classpath.test">
-        <pathelement location="${classdir}" />
-        <pathelement location="${testclassdir}" />
-        <path refid="classpath" />
-    </path>
+	<path id="classpath.test">
+		<pathelement location="${classdir}" />
+		<pathelement location="${testclassdir}" />
+		<path refid="classpath" />
+	</path>
 
-    <taskdef name="jslint" classname="net.happygiraffe.jslint.ant.JSLintTask"
-             classpath="${libdir}/jslint4java-1.2.1.jar"/>
+	<taskdef name="jslint" classname="net.happygiraffe.jslint.ant.JSLintTask" classpath="${libdir}/jslint4java-1.2.1.jar" />
 
 </project>
