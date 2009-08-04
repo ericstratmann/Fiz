@@ -83,3 +83,103 @@ FizTest.test_clearBulletinBeforeNextAdd = function() {
     Fiz.clearBulletinBeforeNextAdd();
     assertEqual(true, Fiz.clearOldBulletin, "Fiz.clearOldBulletin");
 };
+
+FizTest.test_addClass = function() {
+    var target = document.addElementWithId("target", {className: ''});
+    Fiz.addClass(target, "first_class");
+    assertEqual("first_class", target.className);
+    Fiz.addClass(target, "second_class");
+    assertEqual("first_class second_class", target.className);
+    Fiz.addClass(target, "first_class");
+    assertEqual("first_class second_class", target.className);
+}
+
+FizTest.test_removeClass = function() {
+    var target = document.addElementWithId("target", {className: ''});
+    Fiz.addClass(target, "first_class");
+    Fiz.addClass(target, "second_class");
+    Fiz.addClass(target, "third_class");
+
+    Fiz.removeClass(target, "first_class");
+    assertEqual("second_class third_class", target.className);
+    Fiz.removeClass(target, "fake_class");
+    assertEqual("second_class third_class", target.className);
+    Fiz.removeClass(target, "second_class");
+    assertEqual("third_class", target.className);
+    Fiz.removeClass(target, "third_class");
+    assertEqual("", target.className);
+}
+
+FizTest.test_findAbsolutePosition = function() {
+    var superParent = document.addElementWithId("superParent",
+            {offsetLeft: 0, offsetTop: 0, offsetParent: null});
+    var parent = document.addElementWithId("parent",
+            {offsetLeft: 15, offsetTop: 12, offsetParent: superParent});
+    var child = document.addElementWithId("child",
+            {offsetLeft: 32, offsetTop: 2, offsetParent: parent});
+    
+    assertEqual("0,0", Fiz.findAbsolutePosition(superParent).join(","), "super parent");
+    assertEqual("15,12", Fiz.findAbsolutePosition(parent).join(","), "parent");
+    assertEqual("47,14", Fiz.findAbsolutePosition(child).join(","), "child");
+}
+
+FizTest.test_cancelBubble = function() {
+    var event = {
+            stopPropagation: logFunction("stopPropogation"),
+            cancelBubble: false
+    };
+    Fiz.cancelBubble(event);
+    assertEqual(true, event.cancelBubble, "Cancel bubble");
+    assertEqual("stopPropogation()\n", jsunit.log, "Stop propagation")
+}
+
+FizTest.test_getKeyCode = function() {
+    var event = {which: 13, keyCode: 42};
+    assertEqual(13, Fiz.getKeyCode(event), "e.which");
+    
+    window.event = {keyCode: 42};
+    assertEqual(42, Fiz.getKeyCode(event), "e.keyCode");
+}
+
+FizTest.test_addEvent_firefox = function() {
+    var firefox = { addEventListener: logFunction("addEventListener") };
+    Fiz.addEvent(firefox, "mouseover", "callback", false);
+    assertEqual("addEventListener(mouseover, callback, false)\n", jsunit.log, "firefox");
+}
+
+FizTest.test_addEvent_ie = function() {
+    jsunit.log = "";
+    var ie = { attachEvent: logFunction("attachEvent") };
+    Fiz.addEvent(ie, "mouseover", "callback", false);
+    assertEqual("attachEvent(onmouseover, \n" +
+            "function () {\n" +
+            "    callback(window.event);\n" +
+            "}\n" +
+            ", false)\n", jsunit.log, "ie");
+}
+
+FizTest.test_addEvent_old = function() {
+    jsunit.log = "";
+    var old = {};
+    Fiz.addEvent(old, "mouseover", logFunction("callback"), false);
+    old.onmouseover();
+    assertEqual("callback([object Object])\n", jsunit.log, "old");
+}
+
+FizTest.test_getText = function() {
+    var innerText = document.addElementWithId("innerText", {innerText: "inner"});
+    assertEqual("inner", Fiz.getText(innerText), "innerText");
+
+    var textContent = document.addElementWithId("textContent", {textContent: "text"});
+    assertEqual("text", Fiz.getText(textContent), "textContent");
+}
+
+FizTest.test_setText = function() {
+    var textContent = document.addElementWithId("textContent", {textContent: "text"});
+    Fiz.setText(textContent, "text_changed");
+    assertEqual("text_changed", textContent.textContent, "textContent");
+
+    var innerText = document.addElementWithId("innerText", {innerText: "inner"});
+    Fiz.setText(innerText, "inner_changed");
+    assertEqual("inner_changed", innerText.innerText, "innerText");
+}
