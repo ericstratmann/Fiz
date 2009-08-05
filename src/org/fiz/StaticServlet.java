@@ -16,6 +16,7 @@
 package org.fiz;
 
 import java.io.*;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
 import org.apache.log4j.*;
@@ -111,7 +112,7 @@ public class StaticServlet extends HttpServlet {
             }
             response.setContentType(mimeType);
             response.setHeader("Content-Disposition",
-                    "filename=\"" + fileName + "\"");
+                    "filename=\"" + new File(fileName).getName() + "\"");
 
             // Write the contents of fileSource into the servlet response
             // stream.
