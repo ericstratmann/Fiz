@@ -169,8 +169,8 @@ public class ClientRequest {
     // than this will be written temporarily to disk.  Used for testing.
     protected int testSizeThreshold = 0;
 
-	// Used to generate unique ids. Records last id used for each string
-	protected HashMap<String, Integer> idsMap = new HashMap<String, Integer>();
+    // Used to generate unique ids. Records last id used for each string
+    protected HashMap<String, Integer> idsMap = new HashMap<String, Integer>();
 
     // Page properties for the current page.  Null means no properties have
     // been referenced in the current request.
@@ -1269,6 +1269,6 @@ public class ClientRequest {
         }
 
         idsMap.put(base, lastVal);
-        return base + Integer.toString(lastVal);
+        return base + Integer.toString(lastVal, 10);
     }
 }

@@ -118,7 +118,8 @@ public class DemoInteractor extends Interactor {
 			new Dataset("id", "form1", "request", "getFormData",
 					"postUrl", "postSideBySide"),
 			new EntryFormElement(new Dataset("id", "name",
-					"label", "Name:", "help", "Enter customer name here")),
+
+											 "label", "Name:", "help", "Enter customer name here")),
 			new EntryFormElement("age", "Age:"),
 			new EntryFormElement("state", "Home state:"),
 			new DateFormElement(new Dataset("id", "expiration",
@@ -157,6 +158,15 @@ public class DemoInteractor extends Interactor {
 					new HiddenFormElement("mascot")
 	);
 
+	FormSection expandableForm = new FormSection(
+			new Dataset("id", "form1", "request", "getFormData",
+						"postUrl", "postSideBySide", "layout", "vertical"),
+			new ExpandableFormElement(new Dataset("id", "group"),
+									  new EntryFormElement(new Dataset("id", "groupid", "label", "Group ID:")),
+									  new ExpandableFormElement(new Dataset("id", "person"),
+																new EntryFormElement(new Dataset("id", "name", "label", "Name:")),
+																new EntryFormElement(new Dataset("id", "age", "label", "Age:"))))
+	);
 	public static DataRequest autocompleteRequest(String query) {
 		query = query.toLowerCase();
 
@@ -236,8 +246,8 @@ public class DemoInteractor extends Interactor {
 		cr.addDataRequest("getFruits", RawDataManager.newRequest(fruitInfo));
 
 		cr.showSections(
-				new TemplateSection("<h1>Side-By-Side Form</h1>\n"),
-				sideBySideForm,
+				new TemplateSection("<h1>Side-By-Side form</h1>\n"),
+				expandableForm,
 				new TemplateSection("<h1>Vertical Form</h1>\n"),
 				verticalForm);
 	}
@@ -288,6 +298,63 @@ public class DemoInteractor extends Interactor {
 		cr.updateElement("text", "You clicked on tab \"" +
 				cr.getMainDataset().get("tab") +
 		"\", which caused this text to be updated via AJAX.");
+	}
+
+	/**
+	 * Displays a page with various demonstrations of the ChartSection
+	 * class.
+	 * @param cr                   Overall information about the client
+	 *                             request being serviced.
+	 */
+    public void chartSection(ClientRequest cr) {
+        Html html = cr.getHtml();
+        html.setTitle("ChartSection Demos");
+        cr.addDataRequest("someData", fileDataManager.newReadRequest("demo.yaml",
+        "someData"));
+        cr.addDataRequest("someData2", fileDataManager.newReadRequest("demo.yaml",
+        "someData2"));
+        cr.addDataRequest("fizUsers", fileDataManager.newReadRequest("demo.yaml",
+        "fizUsers"));
+        cr.addDataRequest("widgetSales", fileDataManager.newReadRequest("demo.yaml",
+        "widgetSales"));
+        cr.addDataRequest("gadgetSales", fileDataManager.newReadRequest("demo.yaml",
+        "gadgetSales"));
+        
+        Dataset chart1 =
+            new Dataset("request", "fizUsers", "xId", "month", "yId", "users",
+                        "legend", new Dataset("display", "false"),
+                        "xAxis", new Dataset("title", "Month", "majorGridWidth", "1"),
+                        "yAxis", new Dataset("title", "Number of Fiz Users",
+                                             "scale", "log", "logBase", "10"),
+                        "title", "Fiz Growth" );
+        Dataset chart2 =
+            new Dataset("titleColor", "blue", "borderWidth", "0",
+                        "type", "Line", "title", "Products sold at ACME", 
+                        "width", "700",
+                        "xAxis", new Dataset("title", "Year",
+                                             "majorGridWidth", "0"),
+                        "yAxis", new Dataset("majorGridWidth", "1"),
+                        "series", new Dataset("request", "widgetSales", "xId", "year", "color", "green",
+                                              "yId", "sales", "name", "Widgets"),
+                        "series", new Dataset("request", "gadgetSales", "xId", "year", "color", "purple",
+                                              "yId", "sales", "name", "Gadgets"));
+        
+        Dataset chart3 =
+            new Dataset("background", "gray",
+                        "xAxis", new Dataset("title", "Doodads",
+                                             "majorGridWidth", "1"),
+                        "yAxis", new Dataset("title", "Gizmos",
+                                             "majorGridWidth", "1"),
+                        "plot", new Dataset("request", "someData", "name", "Substance X",
+                                            "xId", "xVal", "yId", "yVal", "type", "Scatter",
+											"opacity", "1"),
+						"plot", new Dataset("request", "someData2", "name", "Substance Y",
+											"xId", "xVal", "yId", "yVal", "type", "Scatter",
+											"opacity", "1", "shape", "square"));
+
+		cr.showSections(new ChartSection(chart1),
+						new ChartSection(chart2),
+						new ChartSection(chart3));
 	}
 
 	/**
@@ -448,6 +515,7 @@ public class DemoInteractor extends Interactor {
 				"        - text:       Ellen\n" +
 				"          name:       ellen\n" +
 				"          expandable: 1\n" +
+
 				"        - text:       Frank\n" +
 				"        - text:       Grace\n" +
 				"carol:\n" +

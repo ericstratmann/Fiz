@@ -154,6 +154,7 @@ function runTests(file) {
             print(banner(jsunit.currentTestName) + " PASSED");
         }
 
+		
     }
 }
 
@@ -197,6 +198,7 @@ function parseArguments(options) {
         var option = options.shift();
         if (option === "-help") {
             printHelp();
+
             quit();
         } else if (option == "-path") {
             checkOptionValue(options, option);
@@ -281,10 +283,13 @@ function error(msg) {
     print("------------------------------");
 }
 
+
 /**
  * This function is invoked by individual tests to compare a test output
  * within expected value and generate an error if they are different.
  * @param expected                 Value that the test should have produced.
+
+
  * @param actual                   Value produced by the test.
  * @param description              (optional) Information about the test being
  *                                 perform, for use in error messages.  It
@@ -295,6 +300,8 @@ function assertEqual(expected, actual, description) {
     if (expected === actual) {
         return;
     }
+
+
     var message = "Error in test \"" + jsunit.currentTestName + "\"";
     if (description != null) {
         message += ": " + description;
@@ -325,6 +332,25 @@ function assertEqual(expected, actual, description) {
     }
     error(message);
 }
+
+/**
+ * This function is used to assert that two values are within an epsilon of
+ * each other. This is necessary due to floating point roundoff. The epsilon
+ * used is 10^-14.
+ */
+
+function assertFloatEqual(expected, actual, description) {
+    var message = "Error in test \"" + jsunit.currentTestName + "\"";
+	
+	if (typeof expected === "number" && typeof actual === "number" &&
+		Math.abs(expected - actual) < Math.pow(10, -14)) {
+		return;
+	}
+    message += "\nExpected value: " + valueAndType(expected) +
+
+	error(message);
+}
+
 
 /**
  * Load a Javascript file by searching all of the directories in the
@@ -366,7 +392,8 @@ function logFunction(name) {
     return function() {
         jsunit.log += name + "(";
         for (var i = 0; i < arguments.length; i++) {
-            jsunit.log += arguments[i];
+			jsunit.log += arguments[i];
+			
             if (i != arguments.length - 1) {
                 jsunit.log += ", ";
             }

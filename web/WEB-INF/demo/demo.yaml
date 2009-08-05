@@ -43,6 +43,7 @@ person:
         height: 73
         weight: 195
 
+		
 shoppingCart:
     record:
         - item:  Thin spaghetti
@@ -85,3 +86,132 @@ students:
         id:          4019329
         grad:        2012
         gpa:         3.7
+
+catsSaved:
+    record:
+      - day: Monday
+        cats: 2
+      - day: Tuesday
+        cats: 2
+      - day: Wednesday
+        cats: 0
+      - day: Thursday
+        cats: 3
+      - day: Friday
+        cats: 4
+
+catsSaved2:
+    record:
+      - day: Monday
+        cats: 3
+      - day: Tuesday
+        cats: 1
+      - day: Wednesday
+        cats: 4
+      - day: Thursday
+        cats: 1
+      - day: Friday
+        cats: 5
+
+someData:
+    record:
+      - xVal: 1
+        yVal: 3
+      - xVal: 4
+        yVal: 2
+      - xVal: 3
+        yVal: 6.4
+      - xVal: 4
+        yVal: 2
+      - xVal: 5
+        yVal: 3
+      - xVal: 2
+        yVal: 6.2
+      - xVal: 2
+        yVal: 5
+      - xVal: 7
+        yVal: 4
+
+someData2:
+    record:
+      - xVal: 2
+        yVal: 5
+      - xVal: 2
+        yVal: 3
+      - xVal: 6
+        yVal: 6.4
+      - xVal: 2
+        yVal: 2
+      - xVal: 1
+        yVal: 5
+      - xVal: 1
+        yVal: 2.2
+      - xVal: 3
+        yVal: 2
+      - xVal: 2
+        yVal: 1
+fizUsers:
+    record:
+      - month: June
+        users: 4
+      - month: July
+        users: 9
+      - month: Aug
+        users: 50
+      - month: Sept.
+        users: 125
+      - month: Oct.
+        users: 421
+      - month: Dec.
+        users: 1002
+
+
+widgetSales:
+    record:
+      - year: 1998
+        sales: 23
+      - year: 1999
+        sales: 52
+      - year: 2000
+        sales: 76
+      - year: 2001
+        sales: 50
+      - year: 2002
+        sales: 40
+      - year: 2003
+        sales: 56
+      - year: 2004
+        sales: 93
+      - year: 2005
+        sales: 123
+      - year: 2006
+        sales: 154
+      - year: 2007
+        sales: 150
+      - year: 2008
+        sales: 160
+
+gadgetSales:
+    record:
+      - year: 1998
+        sales: 32
+      - year: 1999
+        sales: 43
+      - year: 2000
+        sales: 45
+      - year: 2001
+        sales: 20
+      - year: 2002
+        sales: 25
+      - year: 2003
+        sales: 27
+      - year: 2004
+        sales: 52
+      - year: 2005
+        sales: 82
+      - year: 2006
+        sales: 134
+      - year: 2007
+        sales: 175
+      - year: 2008
+        sales: 203
