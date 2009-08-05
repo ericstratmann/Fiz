@@ -158,15 +158,6 @@ public class DemoInteractor extends Interactor {
 					new HiddenFormElement("mascot")
 	);
 
-	FormSection expandableForm = new FormSection(
-			new Dataset("id", "form1", "request", "getFormData",
-						"postUrl", "postSideBySide", "layout", "vertical"),
-			new ExpandableFormElement(new Dataset("id", "group"),
-									  new EntryFormElement(new Dataset("id", "groupid", "label", "Group ID:")),
-									  new ExpandableFormElement(new Dataset("id", "person"),
-																new EntryFormElement(new Dataset("id", "name", "label", "Name:")),
-																new EntryFormElement(new Dataset("id", "age", "label", "Age:"))))
-	);
 	public static DataRequest autocompleteRequest(String query) {
 		query = query.toLowerCase();
 
@@ -247,7 +238,7 @@ public class DemoInteractor extends Interactor {
 
 		cr.showSections(
 				new TemplateSection("<h1>Side-By-Side form</h1>\n"),
-				expandableForm,
+				sideBySideForm,
 				new TemplateSection("<h1>Vertical Form</h1>\n"),
 				verticalForm);
 	}
