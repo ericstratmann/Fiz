@@ -8,7 +8,7 @@ fi
 
 if [ $(if uname -o > /dev/null 2>&1; then echo `uname -o`; fi) = "Cygwin" ]; then
     # Use ; as the path separator for cygwin.
-    CLASSPATH="$FIZ_HOME"/lib/ant.jar;"$FIZ_HOME"/lib/ant-launcher.jar;"$FIZ_HOME"/lib/ant-nodeps.jar;"$FIZ_HOME"/lib/jyaml.jar;"$FIZ_HOME"/out/classes;"$FIZ_HOME"/lib/fiz.jar"
+    CLASSPATH=""$FIZ_HOME"/lib/ant.jar;"$FIZ_HOME"/lib/ant-launcher.jar;"$FIZ_HOME"/lib/ant-nodeps.jar;"$FIZ_HOME"/lib/jyaml.jar;"$FIZ_HOME"/out/classes;"$FIZ_HOME"/lib/fiz.jar"
 else
     CLASSPATH="$FIZ_HOME"/lib/ant.jar:"$FIZ_HOME"/lib/ant-launcher.jar:"$FIZ_HOME"/lib/ant-nodeps.jar:"$FIZ_HOME"/lib/jyaml.jar:"$FIZ_HOME"/out/classes:"$FIZ_HOME"/lib/fiz.jar
 fi
