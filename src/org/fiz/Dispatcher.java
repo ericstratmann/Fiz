@@ -156,11 +156,19 @@ public class Dispatcher extends HttpServlet {
         if (message.length() != 0) {
             logger.info("initialization parameters:" + message);
         }
-
-        Config.init(contextRoot + "/WEB-INF/app/config",
-                contextRoot + "/WEB-INF/app/ext",
-                contextRoot + "/WEB-INF/fiz/config",
-                contextRoot + "/WEB-INF/ext");
+        
+        // Determine all locations to search for configuration and css files
+        String[] extFolders = new File(contextRoot + "/WEB-INF/ext/").list();
+        
+        String[] configFolders = new String[extFolders.length + 3];
+        configFolders[0] = contextRoot + "/WEB-INF/app/config";
+        configFolders[1] = contextRoot + "/WEB-INF/app/ext";
+        configFolders[2] = contextRoot + "/WEB-INF/fiz/config";
+        for (int i=0; i<extFolders.length; i++) {
+            configFolders[i+3] = contextRoot + "/WEB-INF/ext/" + extFolders[i] + "/config";
+        }
+        Config.init(configFolders);
+        
         initMainConfigDataset(contextRoot);
         String debug = Config.getDataset("main").check("debug");
         clearCaches = (debug != null) && (debug.equals("1"));
@@ -168,10 +176,15 @@ public class Dispatcher extends HttpServlet {
         logger.info("main configuration dataset:\n    " +
                 Config.getDataset("main").toString().trim().replace(
                 "\n", "\n    "));
-        Css.init(contextRoot + "/WEB-INF/app/css",
-                contextRoot + "/WEB-INF/app/ext",
-                contextRoot + "/WEB-INF/fiz/css",
-                contextRoot + "/WEB-INF/ext");
+        
+        String[] cssFolders = new String[extFolders.length + 3];
+        cssFolders[0] = contextRoot + "/WEB-INF/app/css";
+        cssFolders[1] = contextRoot + "/WEB-INF/app/ext";
+        cssFolders[2] = contextRoot + "/WEB-INF/fiz/css";
+        for (int i=0; i<extFolders.length; i++) {
+            cssFolders[i+3] = contextRoot + "/WEB-INF/ext/" + extFolders[i] + "/css";
+        }
+        Css.init(cssFolders);
 
         // If you want more detailed logging, such as request URLs, uncomment
         // the following line.
