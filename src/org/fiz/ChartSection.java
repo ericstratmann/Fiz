@@ -21,7 +21,7 @@ import java.util.*;
 /**
  * A ChartSection generates a chart containing one or more plots, such as bar
  * line, and scatter plots. Each plot can have several series resulting in
- * "stacked" plots, such as a stacked bar plot. Data for the chart can be 
+ * "stacked" plots, such as a stacked bar plot. Data for the chart can be
  * automatically retrieved from a data request.
  *
  * A ChartSection supports the following properties:
@@ -41,8 +41,8 @@ import java.util.*;
  * yAxis datasets. Otherwise, the other four axis datasets should be used.
  *
  * The following properties are supported by datasets representing a plot:
- * type:       (Optional) Type of plot to draw. Currently supports @code{bar}
- *             @code{line}, and @code{scatter}. Defaults to @code{bar}
+ * type:       (Optional) Type of plot to draw. Currently supports {@code bar}
+ *             {@code line}, and {@code scatter}. Defaults to {@code bar}
  * series:     (Optional) One oe more child datasets, each describing one series
  * id:         (Optional) Used to name the Javascript object associated with
  *             this plot. If not given, it is automatically generated.
@@ -63,8 +63,7 @@ import java.util.*;
  *
  * In cases where there is only one series for a plot or one plot for the chart,
  * it is possible to "collapse" the datasets. This is done by not including the
-
- * @code{plot} or @code{series} parameter, and instead placing the parameters
+ * {@code plot} or {@code series} parameter, and instead placing the parameters
  * that would have been in that dataset in the chart or plot dataset.
  *
  * Before describing the different configuration options, here are a few
@@ -81,7 +80,6 @@ import java.util.*;
  * What follows is a complete descripiction of every configuration property.
  *
  * Chart wide properties:
- *
  * title:            Title displayed at the top of the chart
  * titleFont:        Font used to render the title
  * titleColor:       Color used to draw the title
@@ -93,12 +91,11 @@ import java.util.*;
  * plotBorderColor:  Color of the border surrounding the inner plot area
  * width:            Width of the chart in pixels
  * height:           Height of the chart in pixels
- * background:       Color for the background 
+ * background:       Color for the background
  *
  * Axis-specific properties.
  *
- * These properties should be specified in the dataset for the particular axis.
- *
+ * These properties should be specified in the dataset for the particular axis:
  * title:            Title to display next to the axis
  * titleFont:        Font used to render the axis' title
  * titleColor:       Color used to draw the axis' title
@@ -123,8 +120,7 @@ import java.util.*;
  *
  * Legend-specific properties.
  *
- * These properties should be specified in the dataset for the legend.
- *
+ * These properties should be specified in the dataset for the legend:
  * display:     "true" or "false". Whether to display the legend
  * textFont:    Font used to render text in the legend
  * textColor:   Color used to draw the text in the legend
@@ -134,7 +130,6 @@ import java.util.*;
  * it is set on a series, it applies to just the one. For example, you might
  * want to set the opacity for all the series, but set the name of each one
  * individually.
- *
  * name:          Name of the plot or series used to label it in the legend
  * nameFont:      Font used to render the name in the legend
  * opacity:       Float between 0 and 1 describing how opaque to draw the plot
@@ -143,10 +138,10 @@ import java.util.*;
  * showInLegend:  "true" or "false". Whether to display in the legend
  * display:       "true" or "false". Whether to draw the plot or series
  * xLocation:     If not all plots are using the regular bottom X axis and left
- *                Y Axis, can be set to one of "top", "right", "bottom", or 
+ *                Y Axis, can be set to one of "top", "right", "bottom", or
  *                "left" to indicate where this plot's X axis is.
  * yLocation:     If not all plots are using the regular bottom X axis and left
- *                Y Axis, can be set to one of "top", "right", "bottom", or 
+ *                Y Axis, can be set to one of "top", "right", "bottom", or
  *                "left" to indicate where this plot's Y axis is.
  *
  * Some of the types of plots have properties which are unique to that type
@@ -154,31 +149,28 @@ import java.util.*;
  * plots supported natively in Fiz, here are the properties for specific plots.
  *
  * Bar chart:
- *
  * borderWidth:  Width of each bar's border in pixels
  * borderColor:  Color of the border
- * 
+ *
  * Line Chart:
- * 
  * area:    "true" or "false". Whether to draw the area under a plot or not.
  * shape:   Which type of shape to draw at every point
  * width:   Width of the line in pixels
- * 
+ *
  * Scatter Chart:
- * 
  * shape:   Which type of shape to draw for the points
  */
 
 public class ChartSection extends Section {
     protected Dataset properties;
-    
+
     // Will contain the string "Fiz.ids.@1", where @1 is the id of the chart.
     // Since it used in every templated expansion we make it global to the object
-    protected String chart; 
-    
+    protected String chart;
+
     // Temporary string to hold the javascript we're going to output
-    protected StringBuilder js; 
-    
+    protected StringBuilder js;
+
     // Reference to the ClientRequest parameter to render()
     protected ClientRequest cr;
 
@@ -203,7 +195,7 @@ public class ChartSection extends Section {
                                     "minorTickLength", "minorGrid", "tickSide",
                                     "minorTickSide", "scale", "location",
                                     "showLabels", "labelFont", "labelColor"};
-    
+
     /**
      * Constructor for a ChartSection
      *
@@ -244,28 +236,28 @@ public class ChartSection extends Section {
         Template.appendRaw(js, "@1 = {};\n", chart);
         Template.appendRaw(js, "@1.chart = new Fiz.Chart(\"@2\");\n",
                         chart, id);
-        
-        
+
+
         ArrayList<Dataset> plots = properties.getChildren("plot");
         for (Dataset plot : plots) {
             addPlot(plot);
         }
-        
+
         if (plots.size() == 0) {
             addPlot(properties);
         }
-        
+
         setProperties(properties, "chart");
-        
+
         Template.appendRaw(js, "@1.chart.draw();\n", chart);
-        
+
         cr.evalJavascript(js);
     }
 
     /**
      * Adds a plot to chart, including creating the data for it and setting the
      * given properties on it, and finally adding it to the chart. Modifies the
-     * @code{js} variable.
+     * {@code js} variable.
      *
      * @param plot       Dataset describing the plot to add.
      */
@@ -309,7 +301,7 @@ public class ChartSection extends Section {
      * of "Bar"
      *
      * @param plot  Dataset describing the plot's properties
-     * @return      Name of the plot type (representing the js object 
+     * @return      Name of the plot type (representing the js object
      *              Fiz.Chart.ReturnValue)
      */
     protected String getTypeOfPlot(Dataset plot) {
@@ -321,7 +313,7 @@ public class ChartSection extends Section {
      * Adds javascript code to create an array with data for a plot. It takes
      * the request defined in the properties dataset to get the data to add
      * to the plot, using the xId and yId properties to get the proper data
-     * from the dataset. Modifies the @code{js} variable.
+     * from the dataset. Modifies the {@code js} variable.
      *
      * @param properties      Dataset describing the plot or series. Used for
      *                        the id, request, xId, and yId properties.
@@ -329,10 +321,10 @@ public class ChartSection extends Section {
     protected void addData(Dataset properties) {
         DataRequest req = cr.getDataRequest(properties.get("request"));
         Dataset response = req.getResponseOrAbort();
-        
+
         Template.appendRaw(js, "@1.@(2)_data = [", chart, properties.get("id"));
         ArrayList<Dataset> rows = response.getChildren("record");
-        
+
         if (rows.size() != 0) {
             String xIdVal = properties.get("xId");
             String yIdVal = properties.get("yId");
@@ -356,7 +348,7 @@ public class ChartSection extends Section {
      * all properties which are unique to the chart. If a property is in that
      * list, then we assume we set it on the chart. Otherwise on the plot or
      * series. We also make sure to avoid java reserved variables, such as
-     * xId, yId, request, etc. Modifies the @code{js} variable.
+     * xId, yId, request, etc. Modifies the {@code js} variable.
      *
      * @param plot       Dataset describing the plot
      * @param name       Name of the object to set the properties on
@@ -383,7 +375,7 @@ public class ChartSection extends Section {
                     }
                 }
             }
-            
+
         }
     }
 
@@ -399,7 +391,7 @@ public class ChartSection extends Section {
         if (end == "") {
             return start;
         }
-        
+
         return start + Character.toUpperCase(end.charAt(0)) + end.substring(1);
     };
 
@@ -417,12 +409,12 @@ public class ChartSection extends Section {
                 return true;
             }
         }
-        
+
         return false;
     }
-    
+
     /**
-     * Returns the @code{id} property of a dataset. If it does not have one, it 
+     * Returns the {@code id} property of a dataset. If it does not have one, it
 	 * generates a unique one and modifies the dataset to add it.
      *
      * @param properties      Dataset describing the plot's properties

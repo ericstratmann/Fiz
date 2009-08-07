@@ -277,7 +277,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 		<replace file="bin/fiz" token="@@SERVER_URL" value="${serverurl}" />
 	</target>
 
-	<!-- The version number that is embedded in the fiz.jar library file -->
+	<!-- The version number for Fiz (embedded in the fiz.jar library file
+	 and also used in a few other file names). Note: whenever you change this
+	 value you must also change the version number in Version.java. -->
 	<property name="version" value="0.5" />
 
 	<!-- The directory containing Java libraries (.jar files) -->

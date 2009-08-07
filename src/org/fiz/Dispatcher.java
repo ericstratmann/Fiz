@@ -144,6 +144,7 @@ public class Dispatcher extends HttpServlet {
         }
         String contextRoot = config.getServletContext().getRealPath("");
         logger.info("Fiz initializing with context root " + contextRoot);
+        logger.info("Fiz version: " + Version.version);
 
         // Log all of the initialization parameters, if any.
         StringBuilder message = new StringBuilder();
@@ -158,8 +159,8 @@ public class Dispatcher extends HttpServlet {
         }
 
         // Determine all locations to search for configuration and css files.
-        // We need to include /WEB-INF/ext/*/config and /WEB-INF/ext/*/css, 
-        // so we must enumerate all those directories and include them 
+        // We need to include /WEB-INF/ext/*/config and /WEB-INF/ext/*/css,
+        // so we must enumerate all those directories and include them
         // explicitly.
         File[] extFolders = new File(contextRoot + "/WEB-INF/ext/").listFiles();
 
