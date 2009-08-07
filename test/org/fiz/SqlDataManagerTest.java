@@ -22,7 +22,11 @@ import org.apache.log4j.*;
 import org.fiz.test.*;
 
 /**
- * Junit tests for the SqlDataManager class.
+ * Junit tests for the SqlDataManager class. In order for these tests
+ * to run you will need a local MySQL server with the following configuration:
+ *   * There must be a user named "test" with password "test"
+ *   * There must be a database named "test", which can be read and written
+ *     by user "test"
  */
 
 public class SqlDataManagerTest extends junit.framework.TestCase {
