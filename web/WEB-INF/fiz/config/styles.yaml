@@ -36,23 +36,8 @@ TreeSection:
     node-expanded:     <img src="/static/fiz/images/folder-open.gif" /><span class="label">@text</span>
 
 # The following styles are used to handle uncaught exceptions that
-# escape all the way out to the Fiz dispatcher.
+# escape all the way out to the Fiz dispatcher in a normal HTML request.
 uncaught:
-    # Used when there is an uncaught exception or error in the page generation
-    # code for an AJAX request.  This template is a text template, not an HTML
-    # template: it creates a text message that is returned to the browser.
-    ajax: >
-        An internal error (uncaught exception) occurred on the server
-        while handling an AJAX request: @message.  This page may not
-        function correctly without a refresh.
-
-    # Used when there is an uncaught exception or error in the handler for a
-    # form submission.  This template generates HTML that will appear in the
-    # bulletin.
-    post: >
-        An internal error (uncaught exception) occurred on the server
-        while handling the form submission: @message.
-
     # Used for uncaught exceptions in the page generation code for an HTML
     # request.
     html:             |
@@ -68,6 +53,26 @@ uncaught:
     # in the middle of a partially rendered HTML construct).
     clearHtml: true
 
-# The following style is used by ClientRequest.addErrorsToBulletin.
-bulletin:              @message
+# The following styles are used to generate HTML messages displayed
+# in the bulletin.
+bulletin:
+    # Used when there is an uncaught exception or error in the page generation
+    # code for an Ajax request.
+    uncaughtAjax: >
+        <div class="bulletinError">An internal error (uncaught exception)
+        occurred on the server while handling an Ajax request: @message.
+        This page may not function correctly without a refresh.</div>
 
+    # Used when there is an uncaught exception or error in the handler for a
+    # form submission.
+    uncaughtPost: >
+        <div class="bulletinError">An internal error (uncaught exception)
+        occurred on the server while handling the form submission:
+        @message.</div>
+
+    # Used when a UserError is generated in either a post request or an
+    # Ajax request.
+    userError: <div class="bulletinError">@message</div>
+
+    # Used when ClientRequest.addErrorsToBulletin is invoked.
+    error:     <div class="bulletinError">@message</div>

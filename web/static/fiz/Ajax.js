@@ -147,8 +147,8 @@ Fiz.Ajax.prototype.stateChange = function() {
  */
 Fiz.Ajax.prototype.error = function(message) {
     Fiz.clearBulletin();
-    Fiz.addBulletinMessage("bulletinError",
-            "Error in Ajax request for " + this.url + ": " + message);
+    Fiz.addBulletinMessage("<div class=\"bulletinError\">Error in " +
+            "Ajax request for " + this.url + ": " + message + "</div>");
 }
 
 /**

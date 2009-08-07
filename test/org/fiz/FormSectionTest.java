@@ -148,9 +148,8 @@ public class FormSectionTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
         assertEquals("javascript response",
-                "Fiz.addBulletinMessage(\"bulletinError\", \"bulletin: " +
-                "One or more of the input fields are invalid; " +
-                "see details below.\");\n" +
+                "Fiz.addBulletinMessage(\"error: One or more of the input " +
+                "fields are invalid; see details below.\");\n" +
                 "Fiz.ids.form1.elementError(\"form1_name\", " +
                 "\"<span class=\\\"error\\\">name error</span>\");\n" +
                 "Fiz.ids.form1.elementError(\"form1_age\", " +
@@ -166,14 +165,13 @@ public class FormSectionTest extends junit.framework.TestCase {
         cr.setClientRequestType(ClientRequest.Type.POST);
         Config.setDataset("styles", new Dataset("FormSection",
                 new Dataset("elementError", "element: @message"),
-                "bulletin", "bulletin: @message"));
+                "bulletin", new Dataset("error", "bulletin: @message")));
         form.displayErrors(cr, new Dataset("message", "<failure>",
                 "culprit", "age"), new Dataset("message", "error33",
                 "culprit", "name"));
         assertEquals("javascript response",
-                "Fiz.addBulletinMessage(\"bulletinError\", \"bulletin: " +
-                "One or more of the input fields are invalid; see " +
-                "details below.\");\n" +
+                "Fiz.addBulletinMessage(\"bulletin: One or more of the " +
+                "input fields are invalid; see details below.\");\n" +
                 "Fiz.ids.form1.elementError(\"form1_age\", " +
                 "\"element: &lt;failure&gt;\");\n" +
                 "Fiz.ids.form1.elementError(\"form1_name\", " +
@@ -181,6 +179,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.jsCode.toString());
     }
     public void test_displayErrors_errorButCulpritNotFound() {
+        Config.setDataset("styles", new Dataset("bulletin",
+                new Dataset("error", "bulletin: @message")));
         FormSection form = new FormSection(
                 new Dataset("id", "form1"),
                 new EntryFormElement("name", "Name:"),
@@ -189,11 +189,12 @@ public class FormSectionTest extends junit.framework.TestCase {
         form.displayErrors(cr, new Dataset("message", "<failure>",
                 "culprit", "height"));
         assertEquals("javascript response",
-                "Fiz.addBulletinMessage(\"bulletinError\", " +
-                "\"bulletin: &lt;failure&gt;\");\n",
+                "Fiz.addBulletinMessage(\"bulletin: &lt;failure&gt;\");\n",
                 cr.jsCode.toString());
     }
     public void test_displayErrors_errorWithNoCulpritValue() {
+        Config.setDataset("styles", new Dataset("bulletin",
+                new Dataset("error", "bulletin: @message")));
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "request", "getPerson"),
                 new EntryFormElement("name", "Name:"),
@@ -201,8 +202,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         cr.setClientRequestType(ClientRequest.Type.POST);
         form.displayErrors(cr, new Dataset("message", "<failure>"));
         assertEquals("javascript response",
-                "Fiz.addBulletinMessage(\"bulletinError\", " +
-                "\"bulletin: &lt;failure&gt;\");\n",
+                "Fiz.addBulletinMessage(\"bulletin: &lt;failure&gt;\");\n",
                 cr.jsCode.toString());
     }
 
@@ -216,16 +216,15 @@ public class FormSectionTest extends junit.framework.TestCase {
         // to verify that it is available.
         Config.setDataset("styles", new Dataset(
                 "style22", "error for @name: @message",
-                "bulletin", "bulletin: @message"));
+                "bulletin", new Dataset("error", "bulletin: @message")));
         Dataset main = cr.getMainDataset();
         main.set("name", "Alice");
         main.set("age", "21");
         form.elementError(cr, "id11", new Dataset("message", "<failure>",
                 "culprit", "age"));
         assertEquals("javascript response",
-                "Fiz.addBulletinMessage(\"bulletinError\", \"bulletin: " +
-                "One or more of the input fields are invalid; see " +
-                "details below.\");\n" +
+                "Fiz.addBulletinMessage(\"bulletin: One or more of the " +
+                "input fields are invalid; see details below.\");\n" +
                 "Fiz.ids.form1.elementError(\"form1_id11\", \"error for " +
                 "Alice: &lt;failure&gt;\");\n",
                 cr.jsCode.toString());
@@ -277,12 +276,11 @@ public class FormSectionTest extends junit.framework.TestCase {
         cr.setClientRequestType(ClientRequest.Type.POST);
         Config.setDataset("styles", new Dataset(
                 "style22", "error message: @message",
-                "bulletin", "bulletin: @message"));
+                "bulletin", new Dataset("error", "bulletin: @message")));
         form.elementError(cr, "id11", "synthetic error");
         assertEquals("javascript response",
-                "Fiz.addBulletinMessage(\"bulletinError\", \"bulletin: " +
-                "One or more of the input fields are invalid; see " +
-                "details below.\");\n" +
+                "Fiz.addBulletinMessage(\"bulletin: One or more of the " +
+                "input fields are invalid; see details below.\");\n" +
                 "Fiz.ids.form1.elementError(\"form1_id11\", " +
                 "\"error message: synthetic error\");\n",
                 cr.jsCode.toString());

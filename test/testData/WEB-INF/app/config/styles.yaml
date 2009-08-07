@@ -1,9 +1,11 @@
 # This file provides a dummy version of styles.yaml for use during unit
 # tests.
 
-bulletin: "bulletin{{: @message}}"
+bulletin:
+    uncaughtAjax: "uncaughtAjax{{: @message}}"
+    uncaughtPost: "uncaughtPost{{: @message}}"
+    userError:    "userError{{: @message}}"
+    error:        "error{{: @message}}"
 uncaught:
-    ajax: "uncaughtAjax{{: @message}}"
-    post: "uncaughtPost{{: @message}}"
     html: "uncaught{{: @message}}"
     clearHtml: true

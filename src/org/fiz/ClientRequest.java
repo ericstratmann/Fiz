@@ -240,30 +240,20 @@ public class ClientRequest {
     }
 
     /**
-     * Expands a template to generate HTML and adds it to the bulletin
-     * as a new message.  If this is the first message added to the bulletin
-     * for this request, any previous bulletin contents are cleared.  This
-     * method can be invoked for either Ajax requests or normal requests
-     * and does the right thing in either case.
+     * Expands a template to generate HTML and adds it to the bulletin.  If
+     * this is the first message added to the bulletin for this request,
+     * any previous bulletin contents are cleared.  This method can be
+     * invoked for any kind of request (Ajax, post, etc.) and does the right
+     * thing in each case.
      * @param template             Template to expand to generate the HTML
      *                             for the bulletin message.
      * @param data                 Dataset to use when expanding
      *                             {@code template}.
-     * @param divClass             The HTML will be added to the bulletin as
-     *                             the contents of a new div element; this
-     *                             parameter specifies the class of that
-     *                             element (typically this selects CSS
-     *                             that determines how the message is
-     *                             displayed).
      */
-    public void addMessageToBulletin(String template, Dataset data,
-            String divClass) {
+    public void addMessageToBulletin(String template, Dataset data) {
         getHtml().includeJsFile("static/fiz/Fiz.js");
-        String html = Template.expandHtml(template, data);
-        StringBuilder javascript = new StringBuilder();
-        Template.appendJs(javascript, "Fiz.addBulletinMessage(\"@1\", \"@2\");\n",
-                divClass, html);
-        evalJavascript(javascript);
+        evalJavascript("Fiz.addBulletinMessage(\"@1\");\n",
+                Template.expandHtml(template, data));
     }
 
     /**
@@ -280,8 +270,8 @@ public class ClientRequest {
      */
     public void addErrorsToBulletin(Dataset... errors) {
         for (Dataset error : errors) {
-            addMessageToBulletin(Config.get("styles", "bulletin"), error,
-                    "bulletinError");
+            addMessageToBulletin(Config.getPath("styles", "bulletin.error"),
+                    error);
         }
     }
 

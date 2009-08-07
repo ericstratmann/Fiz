@@ -156,13 +156,13 @@ public class Dispatcher extends HttpServlet {
         if (message.length() != 0) {
             logger.info("initialization parameters:" + message);
         }
-        
+
         // Determine all locations to search for configuration and css files.
         // We need to include /WEB-INF/ext/*/config and /WEB-INF/ext/*/css, 
         // so we must enumerate all those directories and include them 
         // explicitly.
         File[] extFolders = new File(contextRoot + "/WEB-INF/ext/").listFiles();
-        
+
         ArrayList<String> configFolders = new ArrayList<String>();
         configFolders.add(contextRoot + "/WEB-INF/app/config");
         configFolders.add(contextRoot + "/WEB-INF/app/ext");
@@ -176,7 +176,7 @@ public class Dispatcher extends HttpServlet {
             }
         }
         Config.init(configFolders.toArray(new String[0]));
-        
+
         initMainConfigDataset(contextRoot);
         String debug = Config.getDataset("main").check("debug");
         clearCaches = (debug != null) && (debug.equals("1"));
@@ -184,7 +184,7 @@ public class Dispatcher extends HttpServlet {
         logger.info("main configuration dataset:\n    " +
                 Config.getDataset("main").toString().trim().replace(
                 "\n", "\n    "));
-        
+
         ArrayList<String> cssFolders = new ArrayList<String>();
         cssFolders.add(contextRoot + "/WEB-INF/app/css");
         cssFolders.add(contextRoot + "/WEB-INF/app/ext");
@@ -359,29 +359,17 @@ public class Dispatcher extends HttpServlet {
 
             // If this is an AJAX or post request then return the error
             // message in a protocol-specific fashion.
-            if (requestType == ClientRequest.Type.AJAX) {
+            if (requestType != ClientRequest.Type.NORMAL) {
+                String style;
                 if (cause instanceof UserError) {
-                    cr.addMessageToBulletin(StringUtil.ucFirst(basicMessage),
-                            null, "bulletinError");
+                    style = "bulletin.userError";
+                } else if (requestType == ClientRequest.Type.AJAX) {
+                    style = "bulletin.uncaughtAjax";
                 } else {
-                    cr.addMessageToBulletin(
-                            Config.getPath("styles", "uncaught.ajax"),
-                            new Dataset("message", basicMessage),
-                            "bulletinError");
+                    style = "bulletin.uncaughtPost";
                 }
-                cr.finish();
-                return;
-            }
-            if (requestType == ClientRequest.Type.POST) {
-                if (cause instanceof UserError) {
-                    cr.addMessageToBulletin(StringUtil.ucFirst(basicMessage),
-                            null, "bulletinError");
-                } else {
-                    cr.addMessageToBulletin(
-                            Config.getPath("styles", "uncaught.post"),
-                            new Dataset("message", basicMessage),
-                            "bulletinError");
-                }
+                cr.addMessageToBulletin(Config.getPath("styles", style),
+                        new Dataset("message", basicMessage));
                 cr.finish();
                 return;
             }

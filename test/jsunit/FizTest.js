@@ -23,17 +23,16 @@ FizTest.test_addBulletinMessage_clearOldBulletin = function() {
     var bulletin = document.addElementWithId("bulletin", {tagName: "div",
             innerHTML: "old contents"});
     Fiz.clearOldBulletin = true;
-    Fiz.addBulletinMessage("error", "Message #1");
-    assertEqual("", bulletin.innerHTML, "bulletin innerHTML");
+    Fiz.addBulletinMessage("Message #1");
+    assertEqual("Message #1", bulletin.innerHTML, "bulletin innerHTML");
     assertEqual(false, Fiz.clearOldBulletin, "Fiz.clearOldBulletin");
 };
 
 FizTest.test_addBulletinMessage_createBulletin = function() {
-    Fiz.addBulletinMessage("error", "Message #1");
+    Fiz.addBulletinMessage("Message #1");
     assertEqual("className:   bulletin\n" +
-            "firstChild:  div#1\n" +
             "id:          bulletin\n" +
-            "lastChild:   div#1\n" +
+            "innerHTML:   Message #1\n" +
             "nextSibling: paragraph1\n" +
             "parentNode:  unknown element\n" +
             "style:\n" +
@@ -41,28 +40,15 @@ FizTest.test_addBulletinMessage_createBulletin = function() {
             "tagName:     div\n",
             document.body.firstChild.toString(),
             "contents of first element in body");
-    assertEqual("Child #0:\n" +
-            "    className:  error\n" +
-            "    innerHTML:  Message #1\n" +
-            "    parentNode: bulletin\n" +
-            "    style:\n" +
-            "    tagName:    div\n",
-            document.body.firstChild.printChildren(),
-            "children of bulletin");
 };
 
 FizTest.test_addBulletinMessage_bulletinExists = function() {
-    var bulletin = document.addElementWithId("bulletin", {tagName: "div"});
-    Fiz.addBulletinMessage("error", "Message #1");
-    assertEqual("Child #0:\n" +
-            "    className:  error\n" +
-            "    innerHTML:  Message #1\n" +
-            "    parentNode: bulletin\n" +
-            "    style:\n" +
-            "    tagName:    div\n",
-            bulletin.printChildren(),
-            "contents of bulletin");
-};
+    var bulletin = document.addElementWithId("bulletin", {tagName: "div",
+            display: "none", innerHTML: "old contents"});
+    Fiz.addBulletinMessage("Message #1");
+    assertEqual("old contentsMessage #1", bulletin.innerHTML,
+            "updated innerHTML");
+}
 
 FizTest.test_clearBulletin = function() {
     Fiz.clearOldBulletin = true;
@@ -117,7 +103,7 @@ FizTest.test_findAbsolutePosition = function() {
             {offsetLeft: 15, offsetTop: 12, offsetParent: superParent});
     var child = document.addElementWithId("child",
             {offsetLeft: 32, offsetTop: 2, offsetParent: parent});
-    
+
     assertEqual("0,0", Fiz.findAbsolutePosition(superParent).join(","), "super parent");
     assertEqual("15,12", Fiz.findAbsolutePosition(parent).join(","), "parent");
     assertEqual("47,14", Fiz.findAbsolutePosition(child).join(","), "child");
@@ -136,7 +122,7 @@ FizTest.test_cancelBubble = function() {
 FizTest.test_getKeyCode = function() {
     var event = {which: 13, keyCode: 42};
     assertEqual(13, Fiz.getKeyCode(event), "e.which");
-    
+
     window.event = {keyCode: 42};
     assertEqual(42, Fiz.getKeyCode(event), "e.keyCode");
 }

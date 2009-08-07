@@ -98,24 +98,23 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_addMessageToBulletin() {
-        cr.addMessageToBulletin("name: @name", new Dataset("name", "<Alice>"),
-                "xyzzy");
+        cr.addMessageToBulletin("name: @name", new Dataset("name", "<Alice>"));
         assertEquals("javascript",
-                "Fiz.addBulletinMessage(\"xyzzy\", \"name: &lt;Alice&gt;\");\n",
+                "Fiz.addBulletinMessage(\"name: &lt;Alice&gt;\");\n",
                 cr.getHtml().jsCode.toString());
     }
 
     public void test_addErrorsToBulletin() {
         Config.setDataset("styles", new Dataset("bulletin",
-                "error: @message"));
+                new Dataset("error", "error: @message")));
         cr.addErrorsToBulletin(
                 new Dataset("message", "first"),
                 new Dataset("message", "second"),
                 new Dataset("message", "third"));
         assertEquals("Javascript code",
-                "Fiz.addBulletinMessage(\"bulletinError\", \"error: first\");\n" +
-                "Fiz.addBulletinMessage(\"bulletinError\", \"error: second\");\n" +
-                "Fiz.addBulletinMessage(\"bulletinError\", \"error: third\");\n",
+                "Fiz.addBulletinMessage(\"error: first\");\n" +
+                "Fiz.addBulletinMessage(\"error: second\");\n" +
+                "Fiz.addBulletinMessage(\"error: third\");\n",
                 cr.getHtml().jsCode.toString());
     }
 

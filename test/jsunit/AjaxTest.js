@@ -24,9 +24,8 @@ AjaxTest = {};
 Fiz.clearBulletin = function() {
     jsunit.log += "clearBulletin();";
 }
-Fiz.addBulletinMessage = function(className, message) {
-    jsunit.log += "addBulletinMessage(\"" + className + "\", \"" +
-            message + "\");";
+Fiz.addBulletinMessage = function(message) {
+    jsunit.log += "addBulletinMessage(\"" + message + "\");";
 }
 window.XMLHttpRequest = true;
 
@@ -47,9 +46,10 @@ AjaxTest.test_constructor_sendRequest_propertiesParameter = function() {
 AjaxTest.test_constructor_cantFindXmlHttp = function() {
     window.XMLHttpRequest = null;
     new Fiz.Ajax({url: "/a/b"}, {name: "Alice", age: 28});
-    assertEqual("clearBulletin();addBulletinMessage(\"bulletinError\", " +
-            "\"Error in Ajax request for /a/b: couldn't create " +
-            "XMLHttpRequest object\");",
+    assertEqual("clearBulletin();addBulletinMessage(" +
+            "\"<div class=\"bulletinError\">" +
+            "Error in Ajax request for /a/b: couldn't create " +
+            "XMLHttpRequest object</div>\");",
             jsunit.log, "jsunit.log");
     window.XMLHttpRequest = true;
 };
@@ -68,9 +68,10 @@ AjaxTest.test_constructor_setOnChangeHandler = function() {
     jsunit.log = "";
     ajax.xmlhttp.status = 400;
     ajax.xmlhttp.onreadystatechange();
-    assertEqual("clearBulletin();addBulletinMessage(\"bulletinError\", " +
-            "\"Error in Ajax request for /a/b: HTTP error 400: " +
-            "sample status message\");",
+    assertEqual("clearBulletin();addBulletinMessage(" +
+            "\"<div class=\"bulletinError\">" +
+            "Error in Ajax request for /a/b: HTTP error 400: " +
+            "sample status message</div>\");",
             jsunit.log, "jsunit.log");
 };
 
@@ -104,9 +105,10 @@ AjaxTest.test_stateChange_httpError = function() {
     jsunit.log = "";
     ajax.xmlhttp.status = 400;
     ajax.stateChange();
-    assertEqual("clearBulletin();addBulletinMessage(\"bulletinError\", " +
-            "\"Error in Ajax request for /a/b: HTTP error 400: " +
-            "sample status message\");",
+    assertEqual("clearBulletin();addBulletinMessage(" +
+            "\"<div class=\"bulletinError\">" +
+            "Error in Ajax request for /a/b: HTTP error 400: " +
+            "sample status message</div>\");",
             jsunit.log, "jsunit.log");
 };
 
@@ -116,10 +118,11 @@ AjaxTest.test_stateChange_errorInResponseJavascript = function() {
     ajax.xmlhttp.responseText = "x(;";
     ajax.stateChange();
     assertEqual("clearBulletin();" +
-            "addBulletinMessage(\"bulletinError\", " +
-            "\"Error in Ajax request for /a/b: error in Javascript " +
+            "addBulletinMessage(" +
+            "\"<div class=\"bulletinError\">" +
+            "Error in Ajax request for /a/b: error in Javascript " +
             "response (web/static/fiz/Ajax.js(eval):1): SyntaxError: " +
-            "syntax error\");",
+            "syntax error</div>\");",
             jsunit.log.replace(/\.js#\d*\(/, ".js("), "jsunit.log");
 };
 
@@ -136,10 +139,11 @@ AjaxTest.test_stateChange_evalAction_syntaxError = function() {
     jsunit.log = "";
     ajax.xmlhttp.responseText = "x(;";
     ajax.stateChange();
-    assertEqual("clearBulletin();addBulletinMessage(\"bulletinError\", " +
-            "\"Error in Ajax request for /a/b: error in Javascript " +
+    assertEqual("clearBulletin();addBulletinMessage(" +
+            "\"<div class=\"bulletinError\">" +
+            "Error in Ajax request for /a/b: error in Javascript " +
             "response (web/static/fiz/Ajax.js(eval):1): " +
-            "SyntaxError: syntax error\");",
+            "SyntaxError: syntax error</div>\");",
             jsunit.log.replace(/\.js#\d*\(/, ".js("), "jsunit.log");
 };
 
@@ -148,10 +152,11 @@ AjaxTest.test_stateChange_exceptionWithLineNumber = function() {
     jsunit.log = "";
     ajax.xmlhttp.responseText = "x(;";
     ajax.stateChange();
-    assertEqual("clearBulletin();addBulletinMessage(\"bulletinError\", " +
-            "\"Error in Ajax request for /a/b: error in Javascript response " +
+    assertEqual("clearBulletin();addBulletinMessage(" +
+            "\"<div class=\"bulletinError\">" +
+            "Error in Ajax request for /a/b: error in Javascript response " +
             "(web/static/fiz/Ajax.js(eval):1): SyntaxError: " +
-            "syntax error\");",
+            "syntax error</div>\");",
             jsunit.log.replace(/\.js#\d*\(/, ".js("), "jsunit.log");
 };
 
@@ -160,9 +165,10 @@ AjaxTest.test_stateChange_exceptionWithoutLineNumber = function() {
     jsunit.log = "";
     ajax.xmlhttp.responseText = "throw 'test exception';";
     ajax.stateChange();
-    assertEqual("clearBulletin();addBulletinMessage(\"bulletinError\", " +
-            "\"Error in Ajax request for /a/b: error in Javascript " +
-            "response: test exception\");",
+    assertEqual("clearBulletin();addBulletinMessage(" +
+            "\"<div class=\"bulletinError\">" +
+            "Error in Ajax request for /a/b: error in Javascript " +
+            "response: test exception</div>\");",
             jsunit.log.replace(/\.js#\d*\(/, ".js("), "jsunit.log");
 };
 
@@ -172,8 +178,9 @@ AjaxTest.test_error = function() {
     var ajax = new Fiz.Ajax({url: "/a/b"}, {});
     jsunit.log = "";
     ajax.error("message");
-    assertEqual("clearBulletin();addBulletinMessage(\"bulletinError\", " +
-            "\"Error in Ajax request for /a/b: message\");",
+    assertEqual("clearBulletin();addBulletinMessage(" +
+            "\"<div class=\"bulletinError\">" +
+            "Error in Ajax request for /a/b: message</div>\");",
             jsunit.log, "jsunit.log");
 };
 

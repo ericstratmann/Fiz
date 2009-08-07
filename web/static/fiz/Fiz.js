@@ -53,15 +53,12 @@ Fiz.clearOldBulletin = false;
  * Adds a message to the "bulletin" area at the top of the page.  First,
  * this function looks for a div with id {@code bulletin}, and creates one
  * if it doesn't already exist.  Then it makes that div visible, if it
- * wasn't already.  Then it appends a new div with class {@code className}
- * and contents {@code html} to the bulletin div.
- * @param className                Class to use for the div holding the new
- *                                 message.
- * @param html                     HTML for the new message.  This will become
-  *                                the innerHTML of a new div inside the
-  *                                bulletin.
+ * wasn't already.  Finally, it appends {@code html} to the current
+ * {@code innerHTML} for the bulletin div.
+ * @param html                     HTML for the new message.  This will be
+ *                                 appended to the bulletin's contents.
  */
-Fiz.addBulletinMessage = function(className, html) {
+Fiz.addBulletinMessage = function(html) {
     if (Fiz.clearOldBulletin) {
         Fiz.clearBulletin();
     }
@@ -75,10 +72,13 @@ Fiz.addBulletinMessage = function(className, html) {
         document.body.insertBefore(bulletin, document.body.firstChild);
     }
     bulletin.style.display = "";
-    var message = document.createElement("div");
-    message.className = className;
-    message.innerHTML = html;
-    bulletin.appendChild(message);
+    if (!bulletin.innerHTML) {
+        // This check is needed primarily for testing, where there is
+        // initially no innerHTML property.
+        bulletin.innerHTML =  html;
+    } else {
+        bulletin.innerHTML = bulletin.innerHTML + html;
+    }
 }
 
 /**
@@ -110,7 +110,7 @@ Fiz.addClass = function(target, className)
 {
 	if (target.className.match(className) == null) {
 	    target.className += (target.className == '')
-	            ? className : ' ' +  className; 
+	            ? className : ' ' +  className;
  	}
 }
 
@@ -125,7 +125,7 @@ Fiz.removeClass = function(target, className)
         // Split at whitespace characters
         var classes = (target.className == '' ?
                 [] : target.className.split(/\s+/));
-        
+
         // Remove the class
         for (var i = classes.length - 1; i >= 0; i--) {
             if (classes[i] == className) {
@@ -190,7 +190,7 @@ Fiz.getKeyCode = function(e)
  * @param target            (Element) Element to bind event to
  * @param type              (String) Event trigger (mouseover, click, etc...)
  * @param callback          (Function) Function to invoke when event occurs
- * @param capture           (Boolean) If set to true, all events of the 
+ * @param capture           (Boolean) If set to true, all events of the
  *                          specified type will be dispatched to the registered
  *                          element before being dispatched to any elements
  *                          beneath it in the DOM tree

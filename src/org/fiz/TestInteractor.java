@@ -190,6 +190,16 @@ public class TestInteractor extends Interactor {
         Template.appendHtml(body, "<a href=\"#\" onclick =\"@1; return false;\">" +
                 "Click me</a>\n",
                 Ajax.invoke(cr, "/static/bogus/nonexistent"));
+        body.append("<p>The following link issues an Ajax request " +
+                "that generates a UserError: ");
+        Template.appendHtml(body, "<a href=\"#\" onclick =\"@1; return false;\">" +
+                "Click me</a>\n",
+                Ajax.invoke(cr, "/test/ajaxUserError"));
+        body.append("<p>The following link issues an Ajax request " +
+                "that generates an uncaught exception: ");
+        Template.appendHtml(body, "<a href=\"#\" onclick =\"@1; return false;\">" +
+                "Click me</a>\n",
+                Ajax.invoke(cr, "/test/ajaxUncaught"));
         Link link3 = new Link(new Dataset("text", "Click here",
                 "ajaxUrl", "/test/ajaxUpdateTime"));
         body.append("<p>");
@@ -210,6 +220,14 @@ public class TestInteractor extends Interactor {
     public void ajaxPrintId(ClientRequest cr) throws IOException {
         logger.info("Main dataset:\n" + cr.getMainDataset().toString());
         logger.info("Page property: " + cr.getPageProperty("ajaxInfo"));
+    }
+
+    public void ajaxUserError(ClientRequest cr) {
+        throw new UserError("Ajax request generated a UserError");
+    }
+
+    public void ajaxUncaught(ClientRequest cr) {
+        new Dataset("name", "Alice").get("age");
     }
 
     static class TestFilter extends FilterOutputStream {
