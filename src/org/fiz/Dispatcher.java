@@ -157,17 +157,25 @@ public class Dispatcher extends HttpServlet {
             logger.info("initialization parameters:" + message);
         }
         
-        // Determine all locations to search for configuration and css files
-        String[] extFolders = new File(contextRoot + "/WEB-INF/ext/").list();
+        // Determine all locations to search for configuration and css files.
+        // We need to include /WEB-INF/ext/*/config and /WEB-INF/ext/*/css, 
+        // so we must enumerate all those directories and include them 
+        // explicitly.
+        File[] extFolders = new File(contextRoot + "/WEB-INF/ext/").listFiles();
         
-        String[] configFolders = new String[extFolders.length + 3];
-        configFolders[0] = contextRoot + "/WEB-INF/app/config";
-        configFolders[1] = contextRoot + "/WEB-INF/app/ext";
-        configFolders[2] = contextRoot + "/WEB-INF/fiz/config";
-        for (int i=0; i<extFolders.length; i++) {
-            configFolders[i+3] = contextRoot + "/WEB-INF/ext/" + extFolders[i] + "/config";
+        ArrayList<String> configFolders = new ArrayList<String>();
+        configFolders.add(contextRoot + "/WEB-INF/app/config");
+        configFolders.add(contextRoot + "/WEB-INF/app/ext");
+        configFolders.add(contextRoot + "/WEB-INF/fiz/config");
+        // Add the config folders for all extensions.
+        if (extFolders != null) {
+            for (File extFolder : extFolders) {
+                if (extFolder.isDirectory()) {
+                    configFolders.add(extFolder.getPath() + "/config");
+                }
+            }
         }
-        Config.init(configFolders);
+        Config.init(configFolders.toArray(new String[0]));
         
         initMainConfigDataset(contextRoot);
         String debug = Config.getDataset("main").check("debug");
@@ -177,14 +185,19 @@ public class Dispatcher extends HttpServlet {
                 Config.getDataset("main").toString().trim().replace(
                 "\n", "\n    "));
         
-        String[] cssFolders = new String[extFolders.length + 3];
-        cssFolders[0] = contextRoot + "/WEB-INF/app/css";
-        cssFolders[1] = contextRoot + "/WEB-INF/app/ext";
-        cssFolders[2] = contextRoot + "/WEB-INF/fiz/css";
-        for (int i=0; i<extFolders.length; i++) {
-            cssFolders[i+3] = contextRoot + "/WEB-INF/ext/" + extFolders[i] + "/css";
+        ArrayList<String> cssFolders = new ArrayList<String>();
+        cssFolders.add(contextRoot + "/WEB-INF/app/css");
+        cssFolders.add(contextRoot + "/WEB-INF/app/ext");
+        cssFolders.add(contextRoot + "/WEB-INF/fiz/css");
+        // Add the css folders for all extensions.
+        if (extFolders != null) {
+            for (File extFolder : extFolders) {
+                if (extFolder.isDirectory()) {
+                    cssFolders.add(extFolder.getPath() + "/css");
+                }
+            }
         }
-        Css.init(cssFolders);
+        Css.init(cssFolders.toArray(new String[0]));
 
         // If you want more detailed logging, such as request URLs, uncomment
         // the following line.

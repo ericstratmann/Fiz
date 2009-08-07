@@ -53,6 +53,12 @@ public class DispatcherTest extends junit.framework.TestCase {
                 Config.getSearchPath()[0]);
         assertEquals("Css path", "test/testData/WEB-INF/app/css",
                 Css.getSearchPath()[0]);
+        // Test to ensure that the extensions' config and css directories 
+        // were found.
+        assertEquals("Ext config path", "sampleExt/config",
+                Config.getSearchPath()[3].substring(26));
+        assertEquals("Ext css path", "sampleExt/css",
+                Css.getSearchPath()[3].substring(26));
         assertEquals("clearCaches variable", false,
                 dispatcher.clearCaches);
     }
