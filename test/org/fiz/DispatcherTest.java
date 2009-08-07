@@ -18,7 +18,6 @@ package org.fiz;
 import javax.servlet.*;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import org.apache.log4j.*;
 
@@ -95,7 +94,7 @@ public class DispatcherTest extends junit.framework.TestCase {
         assertEquals("clearCaches variable", false,
                 dispatcher.clearCaches);
         
-        assertTrue("WEB-INF/ext deleted", Util.deleteTree("test/testData/WEB-INF/ext"));
+        TestUtil.deleteTree("test/testData/WEB-INF/ext");
     }
 
     // Node tests for clearCaches: it is already exercised elsewhere.

@@ -327,6 +327,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 		<pathelement location="${libdir}/log4j.jar" />
 		<pathelement location="${libdir}/servlet.jar" />
 		<pathelement location="${libdir}/junit.jar" />
+		<pathelement location="${libdir}/mysql-connector-java-5.1.7-bin.jar" />
 	</path>
 
 	<path id="classpath.test">
