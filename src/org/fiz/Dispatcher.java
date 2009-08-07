@@ -170,7 +170,7 @@ public class Dispatcher extends HttpServlet {
         // Add the config folders for all extensions.
         if (extFolders != null) {
             for (File extFolder : extFolders) {
-                if (extFolder.isDirectory()) {
+                if (extFolder.isDirectory() && !extFolder.isHidden()) {
                     configFolders.add(extFolder.getPath() + "/config");
                 }
             }
@@ -192,7 +192,7 @@ public class Dispatcher extends HttpServlet {
         // Add the css folders for all extensions.
         if (extFolders != null) {
             for (File extFolder : extFolders) {
-                if (extFolder.isDirectory()) {
+                if (extFolder.isDirectory() && !extFolder.isHidden()) {
                     cssFolders.add(extFolder.getPath() + "/css");
                 }
             }

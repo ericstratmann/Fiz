@@ -16,6 +16,9 @@
 package org.fiz;
 
 import javax.servlet.*;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import org.apache.log4j.*;
 
@@ -45,22 +48,54 @@ public class DispatcherTest extends junit.framework.TestCase {
                 "unsupported URL \"/a/b/c\": smelled funny", e.getMessage());
     }
 
-    public void test_init() throws ServletException {
+    public void test_init_no_exts() throws ServletException {
+        // Ensure that no WEB-INF/ext directory was accidentally left around.
+        String toDelete = "test/testData/WEB-INF/ext";
+        if (new File(toDelete).exists()) {
+            assertTrue("WEB-INF/ext deleted", Util.deleteTree(toDelete));
+        }
+        
         ServletContextFixture context = new ServletContextFixture();
         ServletConfigFixture config = new ServletConfigFixture(context);
         dispatcher.init(config);
+        
         assertEquals("Config path", "test/testData/WEB-INF/app/config",
                 Config.getSearchPath()[0]);
         assertEquals("Css path", "test/testData/WEB-INF/app/css",
                 Css.getSearchPath()[0]);
+        assertEquals("Config path length", 3, Config.getSearchPath().length);
+        assertEquals("Css path length", 3, Css.getSearchPath().length);
+        
+        assertEquals("clearCaches variable", false,
+                dispatcher.clearCaches);
+    }
+
+    public void test_init_with_exts() throws ServletException {
+        ServletContextFixture context = new ServletContextFixture();
+        ServletConfigFixture config = new ServletConfigFixture(context);
+        
         // Test to ensure that the extensions' config and css directories 
-        // were found.
+        // can be found.
+        assertTrue("extConfig created", new File("test/testData/WEB-INF/ext/sampleExt/config").mkdirs());
+        assertTrue("extCss created", new File("test/testData/WEB-INF/ext/sampleExt/css").mkdirs());
+        
+        dispatcher.init(config);
+        
+        assertEquals("Config path", "test/testData/WEB-INF/app/config",
+                Config.getSearchPath()[0]);
+        assertEquals("Css path", "test/testData/WEB-INF/app/css",
+                Css.getSearchPath()[0]);
         assertEquals("Ext config path", "sampleExt/config",
                 Config.getSearchPath()[3].substring(26));
         assertEquals("Ext css path", "sampleExt/css",
                 Css.getSearchPath()[3].substring(26));
+        assertEquals("Config path length", 4, Config.getSearchPath().length);
+        assertEquals("Css path length", 4, Css.getSearchPath().length);
+        
         assertEquals("clearCaches variable", false,
                 dispatcher.clearCaches);
+        
+        assertTrue("WEB-INF/ext deleted", Util.deleteTree("test/testData/WEB-INF/ext"));
     }
 
     // Node tests for clearCaches: it is already exercised elsewhere.
