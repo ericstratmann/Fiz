@@ -109,8 +109,7 @@ public class Dispatcher extends HttpServlet {
     // The following object is used to gather performance statistics
     // for requests that cannot be mapped to an Interactor method
     // (i.e., all of the requests that don't get logged in methodMap).
-    protected UrlMethod unsupportedURL =
-            new UrlMethod(null, null);
+    protected UrlMethod unsupportedURL = new UrlMethod(null, null);
 
     // The following timer records performance statistics for requests
     // that cannot be mapped to an Interactor method.
@@ -257,9 +256,8 @@ public class Dispatcher extends HttpServlet {
         UrlMethod method = null;
         String methodName = null;
         ClientRequest cr = null;
-        ClientRequest.Type requestType =
-                ClientRequest.Type.NORMAL;
-        try {
+        ClientRequest.Type requestType = ClientRequest.Type.NORMAL;
+        dispatchUrl: try {
             if (logger.isTraceEnabled()) {
                 logger.trace("incoming " + request.getMethod() +
                         ": " + Util.getUrlWithQuery(request));
@@ -292,6 +290,18 @@ public class Dispatcher extends HttpServlet {
                 }
             }
             if ((endOfClass < 2) || (endOfMethod < (endOfClass+2))) {
+                if (pathInfo.length() == 0) {
+                    // This is the application's home URL; redirect to an
+                    // interactor if one has been specified.
+                    String homeUrl = Config.getDataset("main").check(
+                            "homeRedirectUrl");
+                    if (homeUrl != null) {
+                        cr = new ClientRequest(this, request, response);
+                        cr.redirect(homeUrl);
+                        cr.finish();
+                        break dispatchUrl;
+                    }
+                }
                 throw new UnsupportedUrlError(request.getRequestURI(),
                         "URL doesn't contain class name and/or method "
                         + "name");

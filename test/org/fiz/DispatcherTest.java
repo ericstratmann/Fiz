@@ -53,18 +53,18 @@ public class DispatcherTest extends junit.framework.TestCase {
         if (new File(toDelete).exists()) {
             assertTrue("WEB-INF/ext deleted", Util.deleteTree(toDelete));
         }
-        
+
         ServletContextFixture context = new ServletContextFixture();
         ServletConfigFixture config = new ServletConfigFixture(context);
         dispatcher.init(config);
-        
+
         assertEquals("Config path", "test/testData/WEB-INF/app/config",
                 Config.getSearchPath()[0]);
         assertEquals("Css path", "test/testData/WEB-INF/app/css",
                 Css.getSearchPath()[0]);
         assertEquals("Config path length", 3, Config.getSearchPath().length);
         assertEquals("Css path length", 3, Css.getSearchPath().length);
-        
+
         assertEquals("clearCaches variable", false,
                 dispatcher.clearCaches);
     }
@@ -72,14 +72,14 @@ public class DispatcherTest extends junit.framework.TestCase {
     public void test_init_with_exts() throws ServletException {
         ServletContextFixture context = new ServletContextFixture();
         ServletConfigFixture config = new ServletConfigFixture(context);
-        
-        // Test to ensure that the extensions' config and css directories 
+
+        // Test to ensure that the extensions' config and css directories
         // can be found.
         assertTrue("extConfig created", new File("test/testData/WEB-INF/ext/sampleExt/config").mkdirs());
         assertTrue("extCss created", new File("test/testData/WEB-INF/ext/sampleExt/css").mkdirs());
-        
+
         dispatcher.init(config);
-        
+
         assertEquals("Config path", "test/testData/WEB-INF/app/config",
                 Config.getSearchPath()[0]);
         assertEquals("Css path", "test/testData/WEB-INF/app/css",
@@ -90,10 +90,10 @@ public class DispatcherTest extends junit.framework.TestCase {
                 Css.getSearchPath()[3].substring(26));
         assertEquals("Config path length", 4, Config.getSearchPath().length);
         assertEquals("Css path length", 4, Css.getSearchPath().length);
-        
+
         assertEquals("clearCaches variable", false,
                 dispatcher.clearCaches);
-        
+
         TestUtil.deleteTree("test/testData/WEB-INF/ext");
     }
 
@@ -148,13 +148,22 @@ public class DispatcherTest extends junit.framework.TestCase {
                 "couldn't find method \"bogus\" with proper signature",
                 dispatcher.basicMessage);
     }
-    public void test_service_notEnoughInfoInUri() {
+    public void test_service_redirectHomePage() {
+        Config.setDataset("main", new Dataset("homeRedirectUrl", "x/y"));
+        ServletResponseFixture response = new ServletResponseFixture();
+        dispatcher.service(new ServletRequestFixture(""), response);
+        assertEquals("log information",
+                "setCharacterEncoding(\"UTF-8\"); sendRedirect(\"x/y\")",
+                response.log.toString());
+    }
+    public void test_service_redirectHomePageNoConfigInfo() {
         dispatcher.service(new ServletRequestFixture(null),
                 new ServletResponseFixture());
-        TestUtil.assertSubstring("no path info",
+        TestUtil.assertSubstring("no path info, no homeRedirectUrl",
                 "URL doesn't contain class name and/or method name",
                 dispatcher.basicMessage);
-        dispatcher.basicMessage = null;
+    }
+    public void test_service_notEnoughInfoInUrl() {
         dispatcher.service(new ServletRequestFixture("abc"),
                 new ServletResponseFixture());
         TestUtil.assertSubstring("no slashes",

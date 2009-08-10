@@ -426,15 +426,17 @@ public class ClientRequest {
         // If we get here, this is not a file download request.  First,
         // flush any accumulated Javascript in a fashion appropriate for
         // the kind of request.
-        PrintWriter writer;
-        try {
-            writer = servletResponse.getWriter();
-        }
-        catch (IOException e) {
-            logger.error("I/O error retrieving response writer in " +
-                    "ClientRequest.finish: " +
-                    StringUtil.lcFirst(e.getMessage()));
-            return;
+        PrintWriter writer = null;
+        if ((jsCode != null) || (html != null)) {
+            try {
+                writer = servletResponse.getWriter();
+            }
+            catch (IOException e) {
+                logger.error("I/O error retrieving response writer in " +
+                        "ClientRequest.finish: " +
+                        StringUtil.lcFirst(e.getMessage()));
+                return;
+            }
         }
         if (requestType == Type.AJAX) {
             if (jsCode != null) {
@@ -447,15 +449,13 @@ public class ClientRequest {
             FormSection.sendFormResponse(this, (jsCode != null) ? jsCode : "");
         }
 
-        if (requestType != Type.AJAX) {
+        if ((html != null) && (requestType != Type.AJAX)) {
             // This is an HTML request or a form post.  Transmit the
             // accumulated HTML, if any.
             servletResponse.setContentType("text/html");
-            if (html != null) {
-                html.print(writer);
-            }
+            html.print(writer);
         }
-        if (writer.checkError()) {
+        if ((writer != null) && writer.checkError()) {
             logger.error("I/O error sending response in " +
                     "ClientRequest.finish");
         }
@@ -786,7 +786,7 @@ public class ClientRequest {
      */
     public void redirect(CharSequence url) {
         if (requestType == Type.NORMAL) {
-            getHtml().clear();
+            html = null;
             try {
                 servletResponse.sendRedirect(url.toString());
             }
