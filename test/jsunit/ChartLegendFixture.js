@@ -20,6 +20,6 @@
 Fiz.Chart.Legend = function () {};
 Fiz.Chart.Legend.prototype.render = logFunction();
 Fiz.Chart.Legend.prototype.sizeRequired = function () {
-	logFunction()();
-	return 15;
+    logFunction()();
+    return 15;
 };

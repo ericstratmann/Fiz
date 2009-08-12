@@ -19,28 +19,28 @@
 // for use in testing.
 
 Fiz.Chart.Format = function (ctx, font) {
-	jsunit.log += "Format(" + font[0] + ", " + font[1] + ")\n";
-	this.ctx = ctx;
-	this.font = font[0]
-	this.color = font[1];
+    jsunit.log += "Format(" + font[0] + ", " + font[1] + ")\n";
+    this.ctx = ctx;
+    this.font = font[0]
+    this.color = font[1];
 };
 
 Fiz.Chart.Format.prototype.width = function(text) {
-//	jsunit.log += "width(text: " + text + "\n";
-	if (text !== null) {
-		return 20;
-	} else {
-		return 0;
-	}
+//  jsunit.log += "width(text: " + text + "\n";
+    if (text !== null) {
+        return 20;
+    } else {
+        return 0;
+    }
 };
 
 Fiz.Chart.Format.prototype.height = function(text) {
-//	jsunit.log += "height(text: " + text + "\n";
-	if (text !== null) {
-		return 20;
-	} else {
-		return 0;
-	}
+//  jsunit.log += "height(text: " + text + "\n";
+    if (text !== null) {
+        return 20;
+    } else {
+        return 0;
+    }
 };
 
 Fiz.Chart.Format.prototype.draw = logFunction("draw");

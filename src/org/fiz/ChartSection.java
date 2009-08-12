@@ -415,7 +415,7 @@ public class ChartSection extends Section {
 
     /**
      * Returns the {@code id} property of a dataset. If it does not have one, it
-	 * generates a unique one and modifies the dataset to add it.
+     * generates a unique one and modifies the dataset to add it.
      *
      * @param properties      Dataset describing the plot's properties
      * @param base            Base name to use for the id if it needs to be
@@ -423,14 +423,14 @@ public class ChartSection extends Section {
      *                        For example, foo might return foo0.
      * @return                The id associated with the dataset
      */
-	protected String getId(Dataset properties, String base) {
-		String id = properties.check("id");
-		if (id == null) {
-			id = cr.uniqueId(base);
-			properties.set("id", id);
-		}
+    protected String getId(Dataset properties, String base) {
+        String id = properties.check("id");
+        if (id == null) {
+            id = cr.uniqueId(base);
+            properties.set("id", id);
+        }
 
-		return id;
-	}
+        return id;
+    }
 
 }
