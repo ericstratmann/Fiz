@@ -2,7 +2,7 @@
 
 <!-- This is the controlling file used by Ant to manage builds for a Fiz
 application -->
-<project name="@@APPLICATION_NAME" default="compile" basedir=".">
+<project name="@APPLICATION_NAME@" default="compile" basedir=".">
 
     <target name="clean" description="Remove all generated files">
         <ant antfile="${antscriptsdir}/app.xml" target="clean"/>

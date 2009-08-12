@@ -46,6 +46,11 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     </target>
 
     <target name="test-java" depends="compile,compile-test" description="Excecute java unit tests">
+        <copy todir="${testclassdir}" file="${testlogger}">
+            <filterset>
+                <filter token="APPLICATION_NAME" value="fiz-test" />
+            </filterset>
+        </copy>
         <junit fork="yes">
             <classpath refid="classpath.test" />
             <formatter type="brief" usefile="false" />
@@ -105,7 +110,11 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
             <fileset dir="${libdir}" />
         </copy>
         <mkdir dir="${demodir}/WEB-INF/classes" />
-        <copy todir="${demodir}/WEB-INF/classes" file="src/log4j.properties" />
+        <copy todir="${demodir}/WEB-INF/classes" file="${srclogger}">
+            <filterset>
+                <filter token="APPLICATION_NAME" value="fiz-demo" />
+            </filterset>
+        </copy>
 
         <!-- Other run-time files needed by Fiz -->
         <mkdir dir="${demodir}/WEB-INF/fiz/config" />
@@ -315,6 +324,12 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <!-- The directory in which the Fiz platform is packaged for upload to the
     server -->
     <property name="packagedir" value="${outdir}/package" />
+
+    <!-- The log4j.properties file for deployment logging -->
+    <property name="srclogger" value="src/log4j.properties"/>
+
+    <!-- The log4j.properties file for test logging -->
+    <property name="testlogger" value="test/log4j.properties"/>
 
     <!-- The URL that hosts Fiz and extensions (the Fiz website). -->
     <property name="serverurl" value="http://fiz.stanford.edu" />
