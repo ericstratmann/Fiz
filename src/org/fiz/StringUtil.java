@@ -749,4 +749,24 @@ public final class StringUtil {
         }
         return Character.toUpperCase(first) + s.substring(1);
     }
+
+    /**
+     * Adds a suffix to the end of a filename, before the extension. If there
+     * is no extension, the suffix is appended to the filename.
+     *
+     * @param filename   Name of file to add a suffix to
+     * @param suffix     Suffix to add to file
+     */
+    public static String addSuffix(String filename, String suffix) {
+        int lastDot = filename.lastIndexOf(".");
+        
+        if (lastDot == -1) {
+            return filename + suffix;
+        }
+
+        return filename.substring(0, lastDot) + suffix +
+            filename.substring(lastDot);
+
+    }
+    
 }

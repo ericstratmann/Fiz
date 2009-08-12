@@ -376,4 +376,10 @@ public class StringUtilTest extends junit.framework.TestCase {
         assertEquals("must convert", "Bermuda", StringUtil.ucFirst("bermuda"));
         assertEquals("single character", "I", StringUtil.ucFirst("i"));
     }
+
+    public void test_addSuffix() {
+        assertEquals("no dot", "firstsecond", StringUtil.addSuffix("first", "second"));
+        assertEquals("regular", "test-foo.png",
+                     StringUtil.addSuffix("test.png", "-foo"));
+    }
 }
