@@ -14,15 +14,15 @@
  */
 
 Fiz.Chart.Series = function (data) {
-	this.data = data;
-	
-	this.config = { };
+    this.data = data;
+    
+    this.config = { };
 };
 
 Fiz.Chart.Series.prototype.set = function(name) {
-	this.config[name] = arguments[1];
+    this.config[name] = arguments[1];
 };
 
 Fiz.Chart.Series.prototype.get = function(name) {
-	return this.config[name];
+    return this.config[name];
 };

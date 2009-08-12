@@ -23,9 +23,9 @@
  * @param color     (String) Color of the text
  */
 Fiz.Chart.Format = function (ctx, font) {
-	this.ctx = ctx;
-	this.font = font[0];
-	this.color = font[1];
+    this.ctx = ctx;
+    this.font = font[0];
+    this.color = font[1];
 };
 
 /**
@@ -35,10 +35,10 @@ Fiz.Chart.Format = function (ctx, font) {
  * @return          (Integer) Width the text would take if drawn
  */
 Fiz.Chart.Format.prototype.width = function(text) {
-	this.save();
-	var size = this.ctx.measureText(text).width;
-	this.restore();
-	return size;
+    this.save();
+    var size = this.ctx.measureText(text).width;
+    this.restore();
+    return size;
 };
 
 /**
@@ -48,10 +48,10 @@ Fiz.Chart.Format.prototype.width = function(text) {
  * @return          (Integer) Height the text would take if drawn
  */
 Fiz.Chart.Format.prototype.height = function(text) {
-	this.save();
-	var size = this.ctx.measureText("M").width * 1;
-	this.restore();
-	return size;
+    this.save();
+    var size = this.ctx.measureText("M").width * 1;
+    this.restore();
+    return size;
 };
 
 
@@ -63,11 +63,11 @@ Fiz.Chart.Format.prototype.height = function(text) {
  * @param color     Optional. (String) Color of the text
  */
 Fiz.Chart.Format.prototype.draw = function(text, color) {
-	color = color || this.color;
-	this.save();
-	this.ctx.fillStyle = color;
-	this.ctx.fillText(text, 0, 0);
-	this.restore();
+    color = color || this.color;
+    this.save();
+    this.ctx.fillStyle = color;
+    this.ctx.fillText(text, 0, 0);
+    this.restore();
 };
 
 /**
@@ -76,13 +76,13 @@ Fiz.Chart.Format.prototype.draw = function(text, color) {
  * context.restore().A
  */
 Fiz.Chart.Format.prototype.save = function() {
-	this.oldFont = this.ctx.font;
-	this.ctx.font = this.font;
+    this.oldFont = this.ctx.font;
+    this.ctx.font = this.font;
 }
 
 /**
  * Private function to restore the old font.
  */
 Fiz.Chart.Format.prototype.restore = function() {
-	this.ctx.font = this.oldFont;
+    this.ctx.font = this.oldFont;
 };

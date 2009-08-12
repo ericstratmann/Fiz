@@ -23,11 +23,11 @@
 function Canvas() {};
 
 Canvas.prototype.getContext = function () {
-	return new Context();
+    return new Context();
 }
 
 Canvas.prototype.getAttribute = function () {
-	return 500;
+    return 500;
 }
 
 function Context() {this.constructor = "context"};
@@ -36,25 +36,25 @@ function chartLogFunction(name) {
     return function() {
         jsunit.log += name + "(";
         for (var i = 0; i < arguments.length; i++) {
-			if (arguments[i] && arguments[i].constructor === "context") {
-				jsunit.log += "ctx";
-			} else {
-				if (arguments[i] && typeof arguments[i] === "object") {
-					if (arguments[i].constructor === Array) {
-						jsunit.log += arguments[i];
-					} else {
-						jsunit.log += printObject(arguments[i]);
-					}
-				} else {
-					jsunit.log += arguments[i];
-				}
-			}
+            if (arguments[i] && arguments[i].constructor === "context") {
+                jsunit.log += "ctx";
+            } else {
+                if (arguments[i] && typeof arguments[i] === "object") {
+                    if (arguments[i].constructor === Array) {
+                        jsunit.log += arguments[i];
+                    } else {
+                        jsunit.log += printObject(arguments[i]);
+                    }
+                } else {
+                    jsunit.log += arguments[i];
+                }
+            }
             if (i != arguments.length - 1) {
                 jsunit.log += ", ";
             }
         }
         jsunit.log += ")\n";
-	}
+    }
 }
 
 Context.prototype.arc = chartLogFunction("arc");
@@ -75,24 +75,24 @@ Context.prototype.translate = chartLogFunction("translate");
 Context.prototype.transform = chartLogFunction("transform");
 Context.prototype.fillText = chartLogFunction("fillText");
 Context.prototype.measureText = function (string) {
-	chartLogFunction("measureText")(string);
-	return {width: string.length * 2};
+    chartLogFunction("measureText")(string);
+    return {width: string.length * 2};
 };
 /*
 
 function logSetter(name) {
-	return function (val) {
-		this[name] = val;
-		jsunit.log += name + " = " + val + "\n";
-	};
+    return function (val) {
+        this[name] = val;
+        jsunit.log += name + " = " + val + "\n";
+    };
 }
 */
 
 function addSetter(name) {
-	Context.prototype.__defineSetter__(name, function(val) {
-		//this[name] = val;
-		jsunit.log += name + " = " + val + "\n";
-	});
+    Context.prototype.__defineSetter__(name, function(val) {
+        //this[name] = val;
+        jsunit.log += name + " = " + val + "\n";
+    });
 };
 
 addSetter("fillStyle");

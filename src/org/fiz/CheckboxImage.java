@@ -38,83 +38,83 @@ import java.util.*;
 
 public class CheckboxImage implements Formatter {
 
-	/* Constructor properties */
-	protected String id;
-	protected String family;
+    /* Constructor properties */
+    protected String id;
+    protected String family;
     protected ArrayList<String> falseValues;
 
-	public static String[] DEFAULT_FALSE_VALS = {"0", "false", "null", ""};
-	public static String DEFAULT_FAMILY = "checkbox";
+    public static String[] DEFAULT_FALSE_VALS = {"0", "false", "null", ""};
+    public static String DEFAULT_FAMILY = "checkbox";
 
-	/**
-	 * Construct a CheckboxImage object with the given set of properties and
-	 * and ArryayList of false values
-	 * @param falseValues		An ArrayList of values considered false
-	 * @param properties		A collection of values describing the
-	 * 							configuration of the CheckboxImage; see
-	 * 							above for the supported values.
-	 */
-	public CheckboxImage(Dataset properties, ArrayList<String> falseValues) {
-		this.falseValues = falseValues;
-		id = properties.get("id");
-		family = properties.check("family");
+    /**
+     * Construct a CheckboxImage object with the given set of properties and
+     * and ArryayList of false values
+     * @param falseValues       An ArrayList of values considered false
+     * @param properties        A collection of values describing the
+     *                          configuration of the CheckboxImage; see
+     *                          above for the supported values.
+     */
+    public CheckboxImage(Dataset properties, ArrayList<String> falseValues) {
+        this.falseValues = falseValues;
+        id = properties.get("id");
+        family = properties.check("family");
 
-		if (family == null) {
-			family = DEFAULT_FAMILY;
-		}
+        if (family == null) {
+            family = DEFAULT_FAMILY;
+        }
 
-	}
+    }
 
-	/**
-	 * Construct a CheckboxImage object with the given set of properties and
-	 * and array of false values
-	 * @param falseValues		An array of values considered false
-	 * @param properties		A collection of values describing the
-	 * 							configuration of the CheckboxImage; see
-	 * 							above for the supported values.
-	 */
+    /**
+     * Construct a CheckboxImage object with the given set of properties and
+     * and array of false values
+     * @param falseValues       An array of values considered false
+     * @param properties        A collection of values describing the
+     *                          configuration of the CheckboxImage; see
+     *                          above for the supported values.
+     */
 
-	public CheckboxImage(Dataset properties, String ... falseValues) {
-		this(properties, new ArrayList<String>(Arrays.asList(falseValues)));
-	}
+    public CheckboxImage(Dataset properties, String ... falseValues) {
+        this(properties, new ArrayList<String>(Arrays.asList(falseValues)));
+    }
 
-	/**
-	 * Construct a CheckboxImage object with the given set of properties
-	 * using the default false values.
-	 * @param properties		A collection of values describing the
-	 * 							configuration of the CheckboxImage; see
-	 * 							above for the supported values.
-	 */
-	public CheckboxImage(Dataset properties) {
-		this(properties, DEFAULT_FALSE_VALS);
-	}
+    /**
+     * Construct a CheckboxImage object with the given set of properties
+     * using the default false values.
+     * @param properties        A collection of values describing the
+     *                          configuration of the CheckboxImage; see
+     *                          above for the supported values.
+     */
+    public CheckboxImage(Dataset properties) {
+        this(properties, DEFAULT_FALSE_VALS);
+    }
 
 
-	/**
-	 * Generates HTML for the the CheckboxImage, using properties passed to
-	 * the constructor and data passed into this method.
+    /**
+     * Generates HTML for the the CheckboxImage, using properties passed to
+     * the constructor and data passed into this method.
      * @param cr             Overall information about the client
      *                       request being serviced.
      * @param data           Values in this dataset are used to expand
-	 * 						 templates. We also use {@code id} passed to the
-	 * 						 constuctor to reference a column in this row which
-	 * 						 is used to select an image to display.
+     *                       templates. We also use {@code id} passed to the
+     *                       constuctor to reference a column in this row which
+     *                       is used to select an image to display.
      * @param out            HTML for the CheckboxImage is appended here.
-	 */
+     */
     public void render(ClientRequest cr, Dataset data, StringBuilder out) {
-		String key = data.get(id);
-		String src, alt;
-		String checked;
+        String key = data.get(id);
+        String src, alt;
+        String checked;
 
-		if (falseValues.contains(key)) {
-			checked = "false";
-			alt = "unchecked";
-		} else {
-			checked = "true";
-			alt = "checked";
-		}
+        if (falseValues.contains(key)) {
+            checked = "false";
+            alt = "unchecked";
+        } else {
+            checked = "true";
+            alt = "checked";
+        }
 
-		Template.appendHtml(out, "<img src=\"@1-@2.png\" alt=\"@3\" />",
+        Template.appendHtml(out, "<img src=\"@1-@2.png\" alt=\"@3\" />",
                 family, checked, alt);
-	}
+    }
 }

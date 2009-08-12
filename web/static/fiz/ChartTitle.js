@@ -23,9 +23,9 @@
  * @param format    (Chart.Format) Object used to format the title
  */
 Fiz.Chart.Title = function (ctx, title, format) {
-	this.ctx = ctx;
-	this.title = title;
-	this.format = format;
+    this.ctx = ctx;
+    this.title = title;
+    this.format = format;
 };
 
 
@@ -33,19 +33,19 @@ Fiz.Chart.Title = function (ctx, title, format) {
  * Draws the title on the chart, moving and rotating the canvas if necessary.
  */
 Fiz.Chart.Title.prototype.render = function(box) {
-	if (this.title === null || this.title === undefined) {
-		return;
-	}
-	
-	var format = new Fiz.Chart.Format(this.ctx, this.format);
-	this.ctx.save();
-	this.moveAndOrient(box);
-//	this.ctx.strokeRect(0, 0, box.width, box.height);
-	var x = box.width/2 - format.width(this.title)/2;
-	var y = format.height(this.title);
-	this.ctx.translate(x, y * 1.5);
-	format.draw(this.title);
-	this.ctx.restore();
+    if (this.title === null || this.title === undefined) {
+        return;
+    }
+    
+    var format = new Fiz.Chart.Format(this.ctx, this.format);
+    this.ctx.save();
+    this.moveAndOrient(box);
+//  this.ctx.strokeRect(0, 0, box.width, box.height);
+    var x = box.width/2 - format.width(this.title)/2;
+    var y = format.height(this.title);
+    this.ctx.translate(x, y * 1.5);
+    format.draw(this.title);
+    this.ctx.restore();
 };
 
 /*
@@ -56,13 +56,13 @@ Fiz.Chart.Title.prototype.render = function(box) {
  * @return          (Integer) Width in pixels required
  */
 Fiz.Chart.Title.prototype.sizeRequired = function () {
-	if (this.title === undefined || this.title === null) {
-		return 0;
-	}
-	var format = new Fiz.Chart.Format(this.ctx, this.format);
-	
-	// 2 is for aesthetic reasons to allow some padding
-	return format.height(this.title) * 2;
+    if (this.title === undefined || this.title === null) {
+        return 0;
+    }
+    var format = new Fiz.Chart.Format(this.ctx, this.format);
+    
+    // 2 is for aesthetic reasons to allow some padding
+    return format.height(this.title) * 2;
 };
 
 /**
@@ -72,12 +72,12 @@ Fiz.Chart.Title.prototype.sizeRequired = function () {
  * else we will draw the title too low.
  */
 Fiz.Chart.Title.prototype.moveAndOrient = function (box) {
-	var side = box.side;
-	if (side === "left") {
-		this.ctx.rotate(-Math.PI/2);
-	} else if (side === "bottom") {
-		this.ctx.translate(0, -box.height);
-	} else if (side === "right") {
-		this.ctx.rotate(-Math.PI/2);
-	}
+    var side = box.side;
+    if (side === "left") {
+        this.ctx.rotate(-Math.PI/2);
+    } else if (side === "bottom") {
+        this.ctx.translate(0, -box.height);
+    } else if (side === "right") {
+        this.ctx.rotate(-Math.PI/2);
+    }
 };

@@ -35,30 +35,30 @@
  * into a stacked bar chart.
  */
 Fiz.Chart.Bar = function () {
-	this.series = [];
-	this.barWidth = 1;
-	this.discrete = true;
-	
-	for (var i = 0; i < arguments.length; i += 1) {
-		if (Fiz.isArray(arguments[i])) {
-			this.series[i] = new Fiz.Chart.Series(arguments[i]);
-		}
-	}
+    this.series = [];
+    this.barWidth = 1;
+    this.discrete = true;
+    
+    for (var i = 0; i < arguments.length; i += 1) {
+        if (Fiz.isArray(arguments[i])) {
+            this.series[i] = new Fiz.Chart.Series(arguments[i]);
+        }
+    }
 
-	this.config = {
-		name: null,
-		axis: ["bottom", "left"],
-		opacity: 0.5,
-		border: [1, "black", "inside", [true, true, false, true]],
-		showInLegend: true,
-		allowRemove: true,
-		nameFormat: ["1em 'helvetiker'", "black"],
-		display: true,
-	};
+    this.config = {
+        name: null,
+        axis: ["bottom", "left"],
+        opacity: 0.5,
+        border: [1, "black", "inside", [true, true, false, true]],
+        showInLegend: true,
+        allowRemove: true,
+        nameFormat: ["1em 'helvetiker'", "black"],
+        display: true,
+    };
 
-	for (var name in this.config) {
-		this.set(name, this.config[name]);
-	}
+    for (var name in this.config) {
+        this.set(name, this.config[name]);
+    }
 };
 
 Fiz.Chart.Bar.prototype = new Fiz.Chart.Plot();
@@ -72,58 +72,58 @@ Fiz.Chart.Bar.prototype = new Fiz.Chart.Plot();
  * @param properties  See Bar.drawPlots documentation
  */
 Fiz.Chart.Bar.prototype.draw = function (ctx, properties) {
-	ctx.save();
-	ctx.translate(properties.barSpacer, 0);
-	ctx.globalAlpha = this.config.opacity;
-	
-	// If we are not 0 based (i.e., we have negative values), we need to draw
+    ctx.save();
+    ctx.translate(properties.barSpacer, 0);
+    ctx.globalAlpha = this.config.opacity;
+    
+    // If we are not 0 based (i.e., we have negative values), we need to draw
     // the bottom border of the plots.
-	if (this.yAxis.min < 0) {
-		this.config.border[3] = [true, true, true, true];
-	}
-	
-	var stacked = this.stack();
-	
-	for (var i = 0; i < stacked.length; i++) {
-		var yVals = stacked[i];
-		var totalY = 0;
-		for (j = 0; j < yVals.length; j += 1) {
-			
-			var x = i * properties.allWidth + properties.i * properties.barWidth;
-			
-			var height = yVals[j] - totalY;
-			var y = totalY - this.yAxis.zero();
-			
-			ctx.save();
-			ctx.fillStyle = this.series[j].config.color || this.config.color;
-			
-			ctx.translate(x, y);
-			Fiz.Chart.drawRect(ctx, properties.barWidth, height,
-							   this.config.border, ctx.fillStyle, [false, true, true, true]);
-			ctx.restore();
-			
-			totalY += height;
-		}
-	}
-	ctx.restore();
+    if (this.yAxis.min < 0) {
+        this.config.border[3] = [true, true, true, true];
+    }
+    
+    var stacked = this.stack();
+    
+    for (var i = 0; i < stacked.length; i++) {
+        var yVals = stacked[i];
+        var totalY = 0;
+        for (j = 0; j < yVals.length; j += 1) {
+            
+            var x = i * properties.allWidth + properties.i * properties.barWidth;
+            
+            var height = yVals[j] - totalY;
+            var y = totalY - this.yAxis.zero();
+            
+            ctx.save();
+            ctx.fillStyle = this.series[j].config.color || this.config.color;
+            
+            ctx.translate(x, y);
+            Fiz.Chart.drawRect(ctx, properties.barWidth, height,
+                               this.config.border, ctx.fillStyle, [false, true, true, true]);
+            ctx.restore();
+            
+            totalY += height;
+        }
+    }
+    ctx.restore();
 };
 
 Fiz.Chart.Bar.prototype.drawPlots = function (plots, ctx, config) {
-	
-	var width = plots[0].xAxis.size;
-	
-	var wEach = (plots[0].xAxis.size - config.barSpacer) / 
-			plots[0].xAxis.labels.length - config.barSpacer;
-	
-	var properties = {};
-	properties.barWidth = wEach / plots.length;
-	properties.allWidth = wEach + config.barSpacer;
-	properties.barSpacer = config.barSpacer;
-	
-	for (var i = 0; i < plots.length; i++) {
-		properties.i = i;
-		ctx.save();
-		plots[i].draw(ctx, properties);
-		ctx.restore();
-	}
+    
+    var width = plots[0].xAxis.size;
+    
+    var wEach = (plots[0].xAxis.size - config.barSpacer) / 
+            plots[0].xAxis.labels.length - config.barSpacer;
+    
+    var properties = {};
+    properties.barWidth = wEach / plots.length;
+    properties.allWidth = wEach + config.barSpacer;
+    properties.barSpacer = config.barSpacer;
+    
+    for (var i = 0; i < plots.length; i++) {
+        properties.i = i;
+        ctx.save();
+        plots[i].draw(ctx, properties);
+        ctx.restore();
+    }
 };

@@ -24,9 +24,9 @@
  * @param series    (Array<Chart.Series>) An array of all visible series.
  */
 Fiz.Chart.Legend = function (ctx, config, series) {
-	this.ctx = ctx;
-	this.config = config;
-	this.series = series;
+    this.ctx = ctx;
+    this.config = config;
+    this.series = series;
 };
 
 /*
@@ -35,47 +35,47 @@ Fiz.Chart.Legend = function (ctx, config, series) {
  * @param box       Bounding box for the section.
  */
 Fiz.Chart.Legend.prototype.render = function (box) {
-	if (this.config.display === "false" || this.config.display === false) {
-		return;
-	}
+    if (this.config.display === "false" || this.config.display === false) {
+        return;
+    }
 
-	if (this.series.length === 0) {
-		return;
-	}
-	
-	this.ctx.save();
-	if (this.config.location === "right") {
-		this.ctx.translate(0, -box.width); // move to the left edge
-	}
+    if (this.series.length === 0) {
+        return;
+    }
+    
+    this.ctx.save();
+    if (this.config.location === "right") {
+        this.ctx.translate(0, -box.width); // move to the left edge
+    }
 
-	// Currently only incremented by one each loop, but could be more in the
-	// future if we allow multiple lines per name
-	var linesUsed = 0;
+    // Currently only incremented by one each loop, but could be more in the
+    // future if we allow multiple lines per name
+    var linesUsed = 0;
 
-	var format;
-	for (var i = 0; i < this.series.length; i++) {
-		if (this.series[i].config.nameFormat) {
-			format = new Fiz.Chart.Format(this.ctx, this.series[i].config.nameFormat);
-		} else if (this.config.nameFormat) {
-			format = new Fiz.Chart.Format(this.ctx, this.config.nameFormat);
-		} else {
-			format = new Fiz.Chart.Format(this.ctx, ["1em helteviker", "black"]);
-		}
-		var lineHeight = format.height("x") * 1.5; // random string
-		var serie = this.series[i];
-		this.ctx.save();
-		this.ctx.translate(0, linesUsed * lineHeight);
-		this.ctx.fillStyle = serie.config.color;
-		this.ctx.globalAlpha = serie.config.opacity || 1;
+    var format;
+    for (var i = 0; i < this.series.length; i++) {
+        if (this.series[i].config.nameFormat) {
+            format = new Fiz.Chart.Format(this.ctx, this.series[i].config.nameFormat);
+        } else if (this.config.nameFormat) {
+            format = new Fiz.Chart.Format(this.ctx, this.config.nameFormat);
+        } else {
+            format = new Fiz.Chart.Format(this.ctx, ["1em helteviker", "black"]);
+        }
+        var lineHeight = format.height("x") * 1.5; // random string
+        var serie = this.series[i];
+        this.ctx.save();
+        this.ctx.translate(0, linesUsed * lineHeight);
+        this.ctx.fillStyle = serie.config.color;
+        this.ctx.globalAlpha = serie.config.opacity || 1;
 
-		this.ctx.fillRect(lineHeight/2, 0, lineHeight/2, lineHeight/2); // square
-		this.ctx.translate(lineHeight * 1.5, 10);
-		format.draw(serie.config.name, serie.config.color);
-		linesUsed++;
-		this.ctx.restore();
-	}
+        this.ctx.fillRect(lineHeight/2, 0, lineHeight/2, lineHeight/2); // square
+        this.ctx.translate(lineHeight * 1.5, 10);
+        format.draw(serie.config.name, serie.config.color);
+        linesUsed++;
+        this.ctx.restore();
+    }
 
-	this.ctx.restore();
+    this.ctx.restore();
 };
 
 /*
@@ -86,19 +86,19 @@ Fiz.Chart.Legend.prototype.render = function (box) {
  * @return     (Int) Width in pixels required
  */
 Fiz.Chart.Legend.prototype.sizeRequired = function () {
-	if (this.config.display === "false" || this.config.display === false ||
-		this.config.location !== "right" || this.series.length === 0) {
-		return 0;
-	}
+    if (this.config.display === "false" || this.config.display === false ||
+        this.config.location !== "right" || this.series.length === 0) {
+        return 0;
+    }
 
-	var max = 0;
-	for (i = 0; i < this.series.length; i++) {
-		var format = new Fiz.Chart.Format(this.ctx,
-					 this.series[i].config.nameFormat);
-		var len = format.width(this.series[i].config.name) * 1.2;
-		max = Math.max(max, len);
-	}
-	
-	var boxSpace = format.height("x") * 2.7;
-	return max + boxSpace
+    var max = 0;
+    for (i = 0; i < this.series.length; i++) {
+        var format = new Fiz.Chart.Format(this.ctx,
+                     this.series[i].config.nameFormat);
+        var len = format.width(this.series[i].config.name) * 1.2;
+        max = Math.max(max, len);
+    }
+    
+    var boxSpace = format.height("x") * 2.7;
+    return max + boxSpace
 };

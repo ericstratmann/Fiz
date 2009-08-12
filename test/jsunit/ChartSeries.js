@@ -9,12 +9,12 @@ include("static/fiz/ChartSeries.js");
 ChartSeriesTest = {};
 
 ChartSeriesTest.test_set = function () {
-	var series = new Fiz.Chart.Series();
-	series.set("foo", "bar");
-	assertEqual("bar", series.config.foo);
+    var series = new Fiz.Chart.Series();
+    series.set("foo", "bar");
+    assertEqual("bar", series.config.foo);
 };
 
 SeriesTest.test_get = function () {
-	series.config.bar = "foo";
-	assertEqual("foo", seriess.get("bar"));
+    series.config.bar = "foo";
+    assertEqual("foo", seriess.get("bar"));
 };

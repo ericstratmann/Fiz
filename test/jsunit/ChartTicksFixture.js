@@ -20,7 +20,7 @@
 
 Fiz.Chart.Ticks = {};
 Fiz.Chart.Ticks.sizeRequired = function(v) {
-	return v.length * 2;
+    return v.length * 2;
 };
 
 Fiz.Chart.Ticks.render = logFunction("render");

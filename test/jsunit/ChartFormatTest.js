@@ -25,47 +25,47 @@ include("CanvasFixture.js");
 ChartFormatTest = {};
 
 ChartFormatTest.setUp = function () {
-	this.canvas = new Canvas();
-	this.ctx = this.canvas.getContext("2d");
-	this.format = new Fiz.Chart.Format(this.ctx, ["1em arial", "green"]);
+    this.canvas = new Canvas();
+    this.ctx = this.canvas.getContext("2d");
+    this.format = new Fiz.Chart.Format(this.ctx, ["1em arial", "green"]);
 };
 
 ChartFormatTest.test_width = function () {
-	this.format.save = chartLogFunction("save");
-	this.format.restore = chartLogFunction("restore");
+    this.format.save = chartLogFunction("save");
+    this.format.restore = chartLogFunction("restore");
 
-	assertEqual(6, this.format.width("foo"), "return");
-	assertEqual("save()\nmeasureText(foo)\nrestore()\n", jsunit.log, "log");
+    assertEqual(6, this.format.width("foo"), "return");
+    assertEqual("save()\nmeasureText(foo)\nrestore()\n", jsunit.log, "log");
 };
 
 ChartFormatTest.test_height = function () {
-	this.format.save = chartLogFunction("save");
-	this.format.restore = chartLogFunction("restore");
-	
-	assertEqual(2, this.format.height("foo"), "return");
-	assertEqual("save()\nmeasureText(M)\nrestore()\n", jsunit.log);
+    this.format.save = chartLogFunction("save");
+    this.format.restore = chartLogFunction("restore");
+    
+    assertEqual(2, this.format.height("foo"), "return");
+    assertEqual("save()\nmeasureText(M)\nrestore()\n", jsunit.log);
 };
 
 ChartFormatTest.test_draw = function() {
-	this.format.save = chartLogFunction("save");
-	this.format.restore = chartLogFunction("restore");
-	
-	this.format.draw("foo");
-	assertEqual("save()\nfillStyle = green\nfillText(foo, 0, 0)\nrestore()\n",
-				jsunit.log);
+    this.format.save = chartLogFunction("save");
+    this.format.restore = chartLogFunction("restore");
+    
+    this.format.draw("foo");
+    assertEqual("save()\nfillStyle = green\nfillText(foo, 0, 0)\nrestore()\n",
+                jsunit.log);
 };
 
 ChartFormatTest.test_save = function () {
-	this.ctx.font = "foo";
-	jsunit.log = "";
+    this.ctx.font = "foo";
+    jsunit.log = "";
 
-	this.format.save();
-	assertEqual(undefined, this.format.oldFont, "old font"); // bug in setter code
-	assertEqual("font = 1em arial\n", jsunit.log, "cfx font");
+    this.format.save();
+    assertEqual(undefined, this.format.oldFont, "old font"); // bug in setter code
+    assertEqual("font = 1em arial\n", jsunit.log, "cfx font");
 };
 
 ChartFormatTest.test_restore = function () {
-	this.format.oldFont = "foo";
-	this.format.restore();
-	assertEqual("font = foo\n", jsunit.log, "cfx font");
+    this.format.oldFont = "foo";
+    this.format.restore();
+    assertEqual("font = foo\n", jsunit.log, "cfx font");
 };

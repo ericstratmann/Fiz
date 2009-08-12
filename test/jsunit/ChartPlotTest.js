@@ -21,53 +21,53 @@ include("static/fiz/ChartSeries.js");
 ChartPlotTest = {};
 
 ChartPlotTest.setUp = function () {
-	this.plot = new Fiz.Chart.Plot();
-	this.data = [[1, 5], [0, 4], [2, 2]];
-	
-	this.series = new Fiz.Chart.Series(this.data);
-	this.plot.series = [];
-	this.plot.series[0] = this.series;
+    this.plot = new Fiz.Chart.Plot();
+    this.data = [[1, 5], [0, 4], [2, 2]];
+    
+    this.series = new Fiz.Chart.Series(this.data);
+    this.plot.series = [];
+    this.plot.series[0] = this.series;
 
 };
 
 
 ChartPlotTest.test_hasDiscreteXAxis = function () {
-	this.plot.discrete = true;
-	assertEqual(true, this.plot.hasDiscreteXAxis(), "true");
-	
-	this.plot.discrete = false;
-	assertEqual(false, this.plot.hasDiscreteXAxis(), "false");
+    this.plot.discrete = true;
+    assertEqual(true, this.plot.hasDiscreteXAxis(), "true");
+    
+    this.plot.discrete = false;
+    assertEqual(false, this.plot.hasDiscreteXAxis(), "false");
 };
 
 /*
 ChartPlotTest.test_getBoundingBox = function () {
-	this.plot.discrete = false;
+    this.plot.discrete = false;
 
-	var boundary = this.plot.getBoundingBox();
-	assertEqual(2, boundary.minY, "min y");
-	assertEqual(5, boundary.maxY, "max y");
-	assertEqual(0, boundary.minX, "min x");
-	assertEqual(2, boundary.maxX, "max x");
+    var boundary = this.plot.getBoundingBox();
+    assertEqual(2, boundary.minY, "min y");
+    assertEqual(5, boundary.maxY, "max y");
+    assertEqual(0, boundary.minX, "min x");
+    assertEqual(2, boundary.maxX, "max x");
 };
 */
 ChartPlotTest.test_findVal = function () {
-	assertEqual(4, this.plot.findVal(this.series, 0), "found");
-	assertEqual(undefined, this.plot.findVal(this.series, 10), "not found");
+    assertEqual(4, this.plot.findVal(this.series, 0), "found");
+    assertEqual(undefined, this.plot.findVal(this.series, 10), "not found");
 };
 
 ChartPlotTest.test_set = function () {
-	this.plot.config = {};
-	this.plot.set("foo", "bar");
-	assertEqual("bar", this.plot.config.foo, "plot");
-	assertEqual("bar", this.plot.series[0].config.foo, "series");
+    this.plot.config = {};
+    this.plot.set("foo", "bar");
+    assertEqual("bar", this.plot.config.foo, "plot");
+    assertEqual("bar", this.plot.series[0].config.foo, "series");
 };
-	
+    
 ChartPlotTest.test_get = function () {
-	this.plot.config = {};
-	this.plot.config.foo = "bar";
-	assertEqual("bar", this.plot.get("foo"));
+    this.plot.config = {};
+    this.plot.config.foo = "bar";
+    assertEqual("bar", this.plot.get("foo"));
 };
 
 ChartPlotTest.test_getSeries = function () {
-	assertEqual(this.series, this.plot.getSeries(0));
+    assertEqual(this.series, this.plot.getSeries(0));
 };

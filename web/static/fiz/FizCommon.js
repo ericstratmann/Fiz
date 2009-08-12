@@ -27,13 +27,13 @@
  * @return          The index of the value or -1 if not found
  */
 Fiz.arrayIndexOf = function (array, value) {
-	for (var i = 0; i < array.length; i++) {
-		if (array[i] === value) {
-			return i;
-		}
-	}
-	
-	return -1;
+    for (var i = 0; i < array.length; i++) {
+        if (array[i] === value) {
+            return i;
+        }
+    }
+    
+    return -1;
 };
 
 /* 
@@ -43,7 +43,7 @@ Fiz.arrayIndexOf = function (array, value) {
  * @return          An inter r such that 0 <= r < n
  */
 Fiz.rand = function(n) {
-	return Math.floor(Math.random() * n);
+    return Math.floor(Math.random() * n);
 };
 
 /*
@@ -54,7 +54,7 @@ Fiz.rand = function(n) {
  */
 
 Fiz.isArray = function(obj) {
-	return obj && obj.constructor === Array;
+    return obj && obj.constructor === Array;
 };
 
 /**
@@ -68,27 +68,27 @@ Fiz.isArray = function(obj) {
  * @return          Copy of the object passed in
  */
 Fiz.deepCopy = function (oldObj) {
-	if (oldObj === null) {
-		return null;
-	}
+    if (oldObj === null) {
+        return null;
+    }
     var newObj = {};
     if (typeof(oldObj) === 'object') {
         if (Fiz.isArray(oldObj)) {
             var newObj = new Array();
-		}
+        }
         for (var i in oldObj) {   
             if (typeof(oldObj[i]) === 'object') {
-				if (i !== "ctx") {
-					newObj[i] = Fiz.deepCopy(oldObj[i]);
-				} else {
-					newObj[i] = oldObj[i];
-				}
+                if (i !== "ctx") {
+                    newObj[i] = Fiz.deepCopy(oldObj[i]);
+                } else {
+                    newObj[i] = oldObj[i];
+                }
             } else {
-				newObj[i] = oldObj[i];
+                newObj[i] = oldObj[i];
             }
         }
     } else {
-		newObj = oldObj;
-	}
+        newObj = oldObj;
+    }
     return newObj;
 }

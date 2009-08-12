@@ -29,7 +29,7 @@ Fiz.Chart.Plot = function () {};
  * @return          (Bool) Whether the plot has a discrete X axis
  */
 Fiz.Chart.Plot.prototype.hasDiscreteXAxis = function () {
-	return this.discrete;
+    return this.discrete;
 };
 
 /*
@@ -41,50 +41,50 @@ Fiz.Chart.Plot.prototype.hasDiscreteXAxis = function () {
  * @return          An object with minY, maxY, minX, maxX set
  */
 Fiz.Chart.Plot.prototype.getBoundingBox = function () {
-	var maxX, maxY;
-	var minX, minY;
-	var boundary = {};
+    var maxX, maxY;
+    var minX, minY;
+    var boundary = {};
 
-	if (this.series.length === 0) {
-		return {};
-	}
+    if (this.series.length === 0) {
+        return {};
+    }
 
-	// Get min and max x values
-	if (this.discrete === false) {
-		for (var i = 0; i < this.series[0].data.length; i++) {
-			var data = this.series[0].data[i];
-			if (maxX === undefined) {
-				minX = data[0];
-				maxX = data[0];
-			} else {
-				minX = Math.min(data[0], minX);
-				maxX = Math.max(data[0], maxX);
-			}
-		}
-		boundary.minX = minX;
-		boundary.maxX = maxX;
-	}
+    // Get min and max x values
+    if (this.discrete === false) {
+        for (var i = 0; i < this.series[0].data.length; i++) {
+            var data = this.series[0].data[i];
+            if (maxX === undefined) {
+                minX = data[0];
+                maxX = data[0];
+            } else {
+                minX = Math.min(data[0], minX);
+                maxX = Math.max(data[0], maxX);
+            }
+        }
+        boundary.minX = minX;
+        boundary.maxX = maxX;
+    }
 
-	// Get min and max y values
-	for (var i = 0; i < this.series[0].data.length; i++) {
-		var total = 0; // sum of all series if it's stacked
-		for (var j = 0; j < this.series.length; j++) {
-			var data = this.series[j].data[i];
-			total += data[1];
-		}
-		if (maxY === undefined) {
-			minY = total;
-			maxY = total;
-		} else {
-			minY = Math.min(total, minY);
-			maxY = Math.max(total, maxY);
-		}
-	}
-	
-	boundary.minY = minY;
-	boundary.maxY = maxY;
-	
-	return boundary;
+    // Get min and max y values
+    for (var i = 0; i < this.series[0].data.length; i++) {
+        var total = 0; // sum of all series if it's stacked
+        for (var j = 0; j < this.series.length; j++) {
+            var data = this.series[j].data[i];
+            total += data[1];
+        }
+        if (maxY === undefined) {
+            minY = total;
+            maxY = total;
+        } else {
+            minY = Math.min(total, minY);
+            maxY = Math.max(total, maxY);
+        }
+    }
+    
+    boundary.minY = minY;
+    boundary.maxY = maxY;
+    
+    return boundary;
 };
 
 /*
@@ -98,13 +98,13 @@ Fiz.Chart.Plot.prototype.getBoundingBox = function () {
  *                  undefined if the key is not present
  */
 Fiz.Chart.Plot.prototype.findVal = function (series, key) {
-	var data = series.data;
-	for (var i = 0; i < data.length; i += 1) {
-		if (data[i][0] === key) {
-			return data[i][1];
-		}
-	}
-	return undefined;
+    var data = series.data;
+    for (var i = 0; i < data.length; i += 1) {
+        if (data[i][0] === key) {
+            return data[i][1];
+        }
+    }
+    return undefined;
 };
 
 /**
@@ -115,13 +115,13 @@ Fiz.Chart.Plot.prototype.findVal = function (series, key) {
  * @param value     Value to set in config
  */
 Fiz.Chart.Plot.prototype.set = function(name, value) {
-	this.config[name] = value;
+    this.config[name] = value;
 
-	for (var i in this.series) {
-		if (this.series.hasOwnProperty(i)) {
-			this.series[i].config[name] = value;
-		}
-	}
+    for (var i in this.series) {
+        if (this.series.hasOwnProperty(i)) {
+            this.series[i].config[name] = value;
+        }
+    }
 };
 
 /**
@@ -131,7 +131,7 @@ Fiz.Chart.Plot.prototype.set = function(name, value) {
  * @return          Value of key in config object
  */
 Fiz.Chart.Plot.prototype.get = function(name) {
-	return this.config[name];
+    return this.config[name];
 };
 
 /**
@@ -141,36 +141,36 @@ Fiz.Chart.Plot.prototype.get = function(name) {
  * @return          (Chart.Series) Appropriate series
  */
 Fiz.Chart.Plot.prototype.getSeries = function(i) {
-	return this.series[i];
+    return this.series[i];
 };
 
 Fiz.Chart.Plot.prototype.drawPlots = function (plots, ctx) {
-	for (var i = 0; i < plots.length; i++) {
-		plots[i].draw(ctx);
-	}
+    for (var i = 0; i < plots.length; i++) {
+        plots[i].draw(ctx);
+    }
 };
 
 Fiz.Chart.Plot.prototype.stack = function () {
-	var allVals = [];
-	for (var i = 0; i < this.xAxis.labels.length; i++) {
-		var vals = [];
-		for (var j = 0; j < this.series.length; j++) {
-			var val = this.findVal(this.series[j], this.xAxis.labels[i]);
-			var previous = j === 0 ? 0 : vals[j - 1];
-			vals.push(val + previous);
-		}
-		vals = this.yAxis.positionOf(vals);
-		allVals.push(vals);
-	}
+    var allVals = [];
+    for (var i = 0; i < this.xAxis.labels.length; i++) {
+        var vals = [];
+        for (var j = 0; j < this.series.length; j++) {
+            var val = this.findVal(this.series[j], this.xAxis.labels[i]);
+            var previous = j === 0 ? 0 : vals[j - 1];
+            vals.push(val + previous);
+        }
+        vals = this.yAxis.positionOf(vals);
+        allVals.push(vals);
+    }
 
-	return allVals;
+    return allVals;
 };
 
 Fiz.Chart.Plot.prototype.addSeries = function (series) {
-	this.series.push(series);
-	for (var name in this.config) {
-		if (series.get(name) === undefined) {
-			series.set(name, this.config[name]);
-		}
-	}
+    this.series.push(series);
+    for (var name in this.config) {
+        if (series.get(name) === undefined) {
+            series.set(name, this.config[name]);
+        }
+    }
 };

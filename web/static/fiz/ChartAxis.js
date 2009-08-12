@@ -26,20 +26,20 @@
  * @param type      (String) "x" or "y" depending on what type of axis this is
  */
 Fiz.Chart.Axis = function (config, side, type) {
-	this.config = config;
-	if (this.config.scale === "log") {
-		this.config.logBase = parseInt(this.config.logBase, 10);
-	}
-	this.side = side;
-	this.type = type;
-	
-	this.plots = []; // List of plots on this axis
-	
-	// Whether this axis is discrete or not (continuous). We find this out by
-	// checking the plots on the axis.
-	this.discrete = undefined; // Whether this axis is discrete or not
-	                           // (continuous)
-	this.min = undefined; // Minimum value on this axis.
+    this.config = config;
+    if (this.config.scale === "log") {
+        this.config.logBase = parseInt(this.config.logBase, 10);
+    }
+    this.side = side;
+    this.type = type;
+    
+    this.plots = []; // List of plots on this axis
+    
+    // Whether this axis is discrete or not (continuous). We find this out by
+    // checking the plots on the axis.
+    this.discrete = undefined; // Whether this axis is discrete or not
+                               // (continuous)
+    this.min = undefined; // Minimum value on this axis.
     this.max = undefined // Maximum value on this axis
 };
 
@@ -48,19 +48,19 @@ Fiz.Chart.Axis = function (config, side, type) {
  * an X axis or a Y axis.
  */
 Fiz.Chart.Axis.prototype.isXAxis = function () {
-	return this.type === "x";
+    return this.type === "x";
 };
 
 /**
  * Adds a plot to out list of plots.
  */
 Fiz.Chart.Axis.prototype.addPlot = function (plot) {
-	this.plots.push(plot);
+    this.plots.push(plot);
 
-	this.setDiscreteness(plot);
-	this.setMinAndMax(plot);
-	this.setLabels(plot);
-	
+    this.setDiscreteness(plot);
+    this.setMinAndMax(plot);
+    this.setLabels(plot);
+    
 };
 
 /**
@@ -70,13 +70,13 @@ Fiz.Chart.Axis.prototype.addPlot = function (plot) {
  * @param plot      Plot object to check discreteness of
  */
 Fiz.Chart.Axis.prototype.setDiscreteness = function (plot) {
-	if (this.discrete === undefined)  {
-		this.discrete = plot.hasDiscreteXAxis() && this.isXAxis();
-	} else {
-		if (this.discrete !== plot.hasDiscreteXAxis() && this.isXAxis()) {
-			throw "Axis.addPlot: Plots disagree on discreteness";
-		}
-	}
+    if (this.discrete === undefined)  {
+        this.discrete = plot.hasDiscreteXAxis() && this.isXAxis();
+    } else {
+        if (this.discrete !== plot.hasDiscreteXAxis() && this.isXAxis()) {
+            throw "Axis.addPlot: Plots disagree on discreteness";
+        }
+    }
 };
 
 /*
@@ -86,11 +86,11 @@ Fiz.Chart.Axis.prototype.setDiscreteness = function (plot) {
  *
  */
 Fiz.Chart.Axis.prototype.setLabels = function (plot) {
-	if (this.discrete && this.isXAxis()) {
-		this.labels = this.getDiscreteAxisValues(plot);
-	} else {
-		this.labels = this.getContinuousAxisValues(plot);
-	}
+    if (this.discrete && this.isXAxis()) {
+        this.labels = this.getDiscreteAxisValues(plot);
+    } else {
+        this.labels = this.getContinuousAxisValues(plot);
+    }
 };
 
 /*
@@ -103,14 +103,14 @@ Fiz.Chart.Axis.prototype.setLabels = function (plot) {
  * @param return    An array of string labels
  */
 Fiz.Chart.Axis.prototype.getDiscreteAxisValues = function (plot) {
-	var labels = [];
-	
-	var data = plot.series[0].data;
-	for (var i = 0; i < data.length; i++) {
-		labels.push(data[i][0].toString());
-	}
-	
-	return labels;
+    var labels = [];
+    
+    var data = plot.series[0].data;
+    for (var i = 0; i < data.length; i++) {
+        labels.push(data[i][0].toString());
+    }
+    
+    return labels;
 };
 
 /*
@@ -126,35 +126,35 @@ Fiz.Chart.Axis.prototype.getDiscreteAxisValues = function (plot) {
  * @return          An array of string labels
  */
 Fiz.Chart.Axis.prototype.getContinuousAxisValues = function (plot) {
-	var tickConfig = this.config.ticks;
-	if (typeof tickConfig === "number") {
-		var ticks = [];
-		for (var i = this.min; i <= this.max; i += tickConfig) {
-			ticks.push(i);
-		}
-		return ticks;
-	} else if (Fiz.isArray(tickConfig)) {
-		return tickConfig;
-	} else {
-		if (this.config.scale == "log") {
-			var ticks = [];
-			for (i = this.rmin; i <= this.rmax; i *= this.config.logBase) {
-				ticks.push(i);
-			}
-			return ticks;
-		} else {
-			return this.generateTickMarks(this.min, this.max); 4
-		}
-	}
+    var tickConfig = this.config.ticks;
+    if (typeof tickConfig === "number") {
+        var ticks = [];
+        for (var i = this.min; i <= this.max; i += tickConfig) {
+            ticks.push(i);
+        }
+        return ticks;
+    } else if (Fiz.isArray(tickConfig)) {
+        return tickConfig;
+    } else {
+        if (this.config.scale == "log") {
+            var ticks = [];
+            for (i = this.rmin; i <= this.rmax; i *= this.config.logBase) {
+                ticks.push(i);
+            }
+            return ticks;
+        } else {
+            return this.generateTickMarks(this.min, this.max); 4
+        }
+    }
 };
 
 
 Fiz.Chart.Axis.prototype.getNSigFigs = function (number, n) {
-	var tmp = Math.log(number) * Math.LOG10E;
-	if (tmp < 0) {
-		tmp -= 1; // necessary because rounding works differently below 0
-	}
-	return parseInt(number / Math.pow(10, parseInt(tmp, 10) - (n - 1)), 10);
+    var tmp = Math.log(number) * Math.LOG10E;
+    if (tmp < 0) {
+        tmp -= 1; // necessary because rounding works differently below 0
+    }
+    return parseInt(number / Math.pow(10, parseInt(tmp, 10) - (n - 1)), 10);
 };
 
 /**
@@ -167,37 +167,37 @@ Fiz.Chart.Axis.prototype.getNSigFigs = function (number, n) {
  * @return          (Array<Int>) An array of tick mark locations
  */
 Fiz.Chart.Axis.prototype.generateTickMarks = function (min, max) {
-	var good = [10, 20, 50];
-	var minTicks = 3;
+    var good = [10, 20, 50];
+    var minTicks = 3;
 
-	var range = this.getNSigFigs(max - min, 2);
+    var range = this.getNSigFigs(max - min, 2);
 
-	for (var numTicks = minTicks; numTicks < 100; numTicks++) {
-		var num = (max - min) / numTicks;
-		var minTick = range / (numTicks + 1);
-		var excTick = range / (numTicks);
+    for (var numTicks = minTicks; numTicks < 100; numTicks++) {
+        var num = (max - min) / numTicks;
+        var minTick = range / (numTicks + 1);
+        var excTick = range / (numTicks);
 
-		for (var i = 0; i < good.length; i++) {
-			if ((minTick < good[i] && good[i] <= excTick) || 
-				(excTick <= good[i] && good[i] < minTick)) {
-				// we found a good number
-				
-				// Now we need to undo what we did before in converting to
-				// two sig figs
-				var log = Math.log((max - min) / numTicks)/Math.log(10);
-				if (log < 0) {
-					log -= 1;
-				}
-				
-				var val = good[i] * Math.pow(10, parseInt(log)-1);
-				var ticks = [];
-				for (var j = min; j <= max + .00000001; j += val) { // float roundoff
-					ticks.push(j);
-				}
-				return ticks;
-			}
-		}
-	}
+        for (var i = 0; i < good.length; i++) {
+            if ((minTick < good[i] && good[i] <= excTick) || 
+                (excTick <= good[i] && good[i] < minTick)) {
+                // we found a good number
+                
+                // Now we need to undo what we did before in converting to
+                // two sig figs
+                var log = Math.log((max - min) / numTicks)/Math.log(10);
+                if (log < 0) {
+                    log -= 1;
+                }
+                
+                var val = good[i] * Math.pow(10, parseInt(log)-1);
+                var ticks = [];
+                for (var j = min; j <= max + .00000001; j += val) { // float roundoff
+                    ticks.push(j);
+                }
+                return ticks;
+            }
+        }
+    }
 }
 /*
  * Sets the minimum and maximum values for the axis. This is done by looping
@@ -208,49 +208,49 @@ Fiz.Chart.Axis.prototype.generateTickMarks = function (min, max) {
  * @param axis      Axis object
  */
 Fiz.Chart.Axis.prototype.setMinAndMax = function (plot) {
-	if (this.discrete) {
-		return;
-	}
+    if (this.discrete) {
+        return;
+    }
 
-	var min, max;
-	var boundary = plot.getBoundingBox();
-	if (this.isXAxis()) {
-		if (this.min === undefined) {
-			min = boundary.minX;
-			max = boundary.maxX;
-		} else {
-			min = Math.min(this.min, boundary.minX);
-			max = Math.max(this.max, boundary.maxX);
-		}
-	} else {
-		if (this.min === undefined) {
-			min = boundary.minY;
-			max = boundary.maxY;
-		} else {
-			min = Math.min(min, boundary.minY) || boundary.minY;
-			max = Math.max(max, boundary.maxY) || boundary.maxY;
-		}
-	}
+    var min, max;
+    var boundary = plot.getBoundingBox();
+    if (this.isXAxis()) {
+        if (this.min === undefined) {
+            min = boundary.minX;
+            max = boundary.maxX;
+        } else {
+            min = Math.min(this.min, boundary.minX);
+            max = Math.max(this.max, boundary.maxX);
+        }
+    } else {
+        if (this.min === undefined) {
+            min = boundary.minY;
+            max = boundary.maxY;
+        } else {
+            min = Math.min(min, boundary.minY) || boundary.minY;
+            max = Math.max(max, boundary.maxY) || boundary.maxY;
+        }
+    }
 
-	if (this.config.scale == "linear" && min > 0) {
-		min = 0;
-	} else if (this.config.scale == "log") {
-		min = Math.pow(this.config.logBase, parseInt(
-			Math.log(min)/Math.log(this.config.logBase), 10));
-	}
-	if (this.config.scale == "linear" && max < 0) {
-		max = 0;
-	}
+    if (this.config.scale == "linear" && min > 0) {
+        min = 0;
+    } else if (this.config.scale == "log") {
+        min = Math.pow(this.config.logBase, parseInt(
+            Math.log(min)/Math.log(this.config.logBase), 10));
+    }
+    if (this.config.scale == "linear" && max < 0) {
+        max = 0;
+    }
 
-	if (this.min !== undefined) {
-		this.max = Math.max(this.max, max);
-		this.min = Math.min(this.min, min);
-	} else {
-		this.max = max;
-		this.min = min;
-	}
+    if (this.min !== undefined) {
+        this.max = Math.max(this.max, max);
+        this.min = Math.min(this.min, min);
+    } else {
+        this.max = max;
+        this.min = min;
+    }
 
-	this.fixValues(); // needed for log
+    this.fixValues(); // needed for log
 }
 
 
@@ -259,12 +259,12 @@ Fiz.Chart.Axis.prototype.setMinAndMax = function (plot) {
  * be called after setting the min and max values elsewhere.
  */
 Fiz.Chart.Axis.prototype.fixValues = function () {
-	if (this.config.scale == "log") {
-		this.rmin = this.min;
-		this.rmax = this.max;
-		this.min = Math.log(this.min)/Math.log(this.config.logBase);
-		this.max = Math.log(this.max)/Math.log(this.config.logBase);
-	}
+    if (this.config.scale == "log") {
+        this.rmin = this.min;
+        this.rmax = this.max;
+        this.min = Math.log(this.min)/Math.log(this.config.logBase);
+        this.max = Math.log(this.max)/Math.log(this.config.logBase);
+    }
 }
 
 /*
@@ -279,28 +279,28 @@ Fiz.Chart.Axis.prototype.fixValues = function () {
  */
 Fiz.Chart.Axis.prototype.positionOf = function (vals) {
 
-	var isNum = false;
-	if (typeof vals == "number") {
-		isNum = true;
-		vals = [vals];
-	}
+    var isNum = false;
+    if (typeof vals == "number") {
+        isNum = true;
+        vals = [vals];
+    }
 
 
-	var val;
-	for (var j = 0; j < vals.length; j++) {
-		if (this.config.scale === "log") {
-			val = Math.log(vals[j])/Math.log(this.config.logBase);
-		} else {
-			val = vals[j];
-		}
-		vals[j] = this.size * ((val - this.min) / (this.max - this.min));
-	}
-	
-	if (isNum) {
-		return vals[0];
-	} else {
-		return vals;
-	}
+    var val;
+    for (var j = 0; j < vals.length; j++) {
+        if (this.config.scale === "log") {
+            val = Math.log(vals[j])/Math.log(this.config.logBase);
+        } else {
+            val = vals[j];
+        }
+        vals[j] = this.size * ((val - this.min) / (this.max - this.min));
+    }
+    
+    if (isNum) {
+        return vals[0];
+    } else {
+        return vals;
+    }
 };
 
 /*
@@ -312,7 +312,7 @@ Fiz.Chart.Axis.prototype.positionOf = function (vals) {
  * @return          (Number) Chart coordinate
  */
 Fiz.Chart.Axis.prototype.logicalToChartCoords = function (val) {
-	return  this.size * ((val - this.min) / (this.max - this.min));
+    return  this.size * ((val - this.min) / (this.max - this.min));
 }
 
 /*
@@ -321,9 +321,9 @@ Fiz.Chart.Axis.prototype.logicalToChartCoords = function (val) {
  * then it always refers to the bottom of the chart.
  */
 Fiz.Chart.Axis.prototype.zero = function () {
-	if (this.config.scale == "linear") {
-		return this.logicalToChartCoords(0);
-	} else if (this.config.scale == "log") {
-		return 0;
-	}
+    if (this.config.scale == "linear") {
+        return this.logicalToChartCoords(0);
+    } else if (this.config.scale == "log") {
+        return 0;
+    }
 }

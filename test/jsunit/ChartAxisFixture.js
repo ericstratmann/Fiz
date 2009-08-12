@@ -19,22 +19,22 @@
 // for use in testing.
 
 Fiz.Chart.Axis = function (labels) {
-	this.labels = labels;
-	this.size = 20;
+    this.labels = labels;
+    this.size = 20;
 };
 
 Fiz.Chart.Axis.prototype.positionOf = function (n) {
-	if (typeof n === "number") {
-		return n * 2;
-	} else {
-		var arr = [];
-		for (var i = 0; i < n.length; i++) {
-			arr[i] = n[i] * 2;
-		}
-		return arr;
-	}
+    if (typeof n === "number") {
+        return n * 2;
+    } else {
+        var arr = [];
+        for (var i = 0; i < n.length; i++) {
+            arr[i] = n[i] * 2;
+        }
+        return arr;
+    }
 }
 
 Fiz.Chart.Axis.prototype.zero = function () {
-	return 30;
+    return 30;
 };

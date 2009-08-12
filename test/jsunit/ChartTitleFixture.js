@@ -21,6 +21,6 @@
 Fiz.Chart.Title = function () {};
 Fiz.Chart.Title.prototype.render = logFunction();
 Fiz.Chart.Title.prototype.sizeRequired = function () {
-	logFunction("sizeRequired")();
-	return 20;
+    logFunction("sizeRequired")();
+    return 20;
 };
