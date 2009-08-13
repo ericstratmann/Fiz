@@ -26,9 +26,9 @@ import java.util.*;
  * id -             (required) Name of column in dataset we are using to
  *                  select an image
  * family -         (optional) Family name for images to display. If the
- *                  base name is {@code x}, then images {@code x-true.png}
+ *                  family name is {@code x.png}, then images {@code x-true.png}
  *                  and {@code x-false.png} must exist.  Default value is
- *                  {@code checkbox}.
+ *                  {@code checkbox.png}.
  *
  * Additionally, if an array is passed in, it is used to define which values
  * count as false. All other values will be assumed to be true. If no array is
@@ -44,7 +44,7 @@ public class CheckboxImage implements Formatter {
     protected ArrayList<String> falseValues;
 
     public static String[] DEFAULT_FALSE_VALS = {"0", "false", "null", ""};
-    public static String DEFAULT_FAMILY = "checkbox";
+    public static String DEFAULT_FAMILY = "checkbox.png";
 
     /**
      * Construct a CheckboxImage object with the given set of properties and
@@ -107,14 +107,14 @@ public class CheckboxImage implements Formatter {
         String checked;
 
         if (falseValues.contains(key)) {
-            checked = "false";
+            checked = "-false";
             alt = "unchecked";
         } else {
-            checked = "true";
+            checked = "-true";
             alt = "checked";
         }
 
-        Template.appendHtml(out, "<img src=\"@1-@2.png\" alt=\"@3\" />",
-                family, checked, alt);
+        Template.appendHtml(out, "<img src=\"@1\" alt=\"@2\" />",
+                            StringUtil.addSuffix(family, checked), alt);
     }
 }

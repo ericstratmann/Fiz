@@ -200,7 +200,7 @@ public class DemoInteractor extends Interactor {
         Html html = cr.getHtml();
         html.setTitle("CompoundSection Demo");
         CompoundSection section = new CompoundSection (
-                new Dataset("borderFamily", "/static/fiz/images/borderBlueFilled",
+                new Dataset("borderFamily", "/static/fiz/images/borderBlueFilled.gif",
                         "background", "#f1f5fb"),
                         new TemplateSection ("<p>Here is some sample text " +
                         "to fill the body of this compound section.</p>\n"),
@@ -208,7 +208,7 @@ public class DemoInteractor extends Interactor {
                         "which follows the first.</p>\n")
         );
         CompoundSection section2 = new CompoundSection (
-                new Dataset("borderFamily", "/static/fiz/images/borderGrayFilled",
+                new Dataset("borderFamily", "/static/fiz/images/borderGrayFilled.gif",
                         "background", "#f5f5f5"),
                         new TemplateSection ("<p>This text provides the body " +
                                 "of the second compound section.  I will type " +
@@ -461,17 +461,17 @@ public class DemoInteractor extends Interactor {
         Dataset main = cr.getMainDataset();
         String edgeFamily = main.check("edgeFamily");
         if (edgeFamily == null) {
-            edgeFamily = "treeSolid";
+            edgeFamily = "treeSolid.gif";
         }
         cr.showSections(
                 new TemplateSection("<h1>TreeSection Demo</h1>\n" +
                         "<div id=\"p1\"><p>Current edge style: " +
                         "@edgeStyle?{treeSolid}</p></div>\n" +
-                        "<p><a href=\"tree?edgeFamily=treeSolid\">Change " +
+                        "<p><a href=\"tree?edgeFamily=treeSolid.gif\">Change " +
                         "edge style to treeSolid</a><br />\n" +
-                        "<a href=\"tree?edgeFamily=treeDotted\">Change " +
+                        "<a href=\"tree?edgeFamily=treeDotted.gif\">Change " +
                         "edge style to treeDotted</a><br />\n" +
-                        "<a href=\"tree?edgeFamily=treeNoLines\">Change " +
+                        "<a href=\"tree?edgeFamily=treeNoLines.gif\">Change " +
                 "edge style to treeNoLines</a></p>\n"),
                 new TreeSection(
                         new Dataset("id", "tree1", "requestFactory",

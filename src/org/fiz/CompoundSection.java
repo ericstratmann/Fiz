@@ -25,7 +25,7 @@ import java.util.*;
  *                   border).  Defaults to transparent.
  *   borderFamily:   (optional) Specifies the base name for a family of
  *                   images that will be used to display a border around this
- *                   section.  If this option has the value {@code x}, then
+ *                   section.  If this option has the value {@code x.gif}, then
  *                   there must exist images named {@code x-nw.gif},
  *                   {@code x-n.gif}, {@code x-ne.gif}, {@code x-e.gif},
  *                   {@code x-se.gif}, {@code x-s.gif}, {@code x-sw.gif},
@@ -129,23 +129,26 @@ public class CompoundSection extends Section implements TableLayoutContainer {
             Template.appendHtml(out, "<table {{id=\"@id\"}} {{class=\"@class\"}} " +
                     "cellspacing=\"0\">\n" +
                     "  <tr style=\"line-height: 0px;\">\n" +
-                    "    <td><img src=\"@borderFamily-nw.gif\" alt=\"\" />" +
+                    "    <td><img src=\"@1\" alt=\"\" />" +
                     "</td>\n" +
                     "    <td style=\"background-image: " +
-                    "url(@borderFamily-n.gif); " +
+                    "url(@2); " +
                     "background-repeat: repeat-x;\">" +
                     "</td>\n" +
-                    "    <td><img src=\"@borderFamily-ne.gif\" alt=\"\" />" +
+                    "    <td><img src=\"@3\" alt=\"\" />" +
                     "</td>\n" +
                     "  </tr>\n" +
                     "  <tr>\n" +
                     "    <td style=\"background-image: " +
-                    "url(@borderFamily-w.gif); " +
+                    "url(@4); " +
                     "background-repeat: repeat-y;\">" +
                     "</td>\n" +
                     "    <td class=\"compoundBody\" " +
                     "{{style=\"background: @background;\"}}>\n",
-                    properties);
+                                properties, StringUtil.addSuffix(borderFamily, "-nw"),
+                                StringUtil.addSuffix(borderFamily, "-n"),
+                                StringUtil.addSuffix(borderFamily, "-ne"),
+                                StringUtil.addSuffix(borderFamily, "-w"));
             if (layout != null) {
                 // If a table layout was specified, expand it using the
                 // TableLayout class.
@@ -187,21 +190,25 @@ public class CompoundSection extends Section implements TableLayoutContainer {
         if (borderFamily != null) {
             Template.appendHtml(out, "    </td>\n" +
                     "    <td style=\"background-image: " +
-                    "url(@borderFamily-e.gif); " +
+                    "url(@1); " +
                     "background-repeat: repeat-y;\">" +
                     "</td>\n" +
                     "  </tr>\n" +
                     "  <tr style=\"line-height: 0px;\">\n" +
-                    "    <td><img src=\"@borderFamily-sw.gif\" alt=\"\" />" +
+                    "    <td><img src=\"@2\" alt=\"\" />" +
                     "</td>\n" +
                     "    <td style=\"background-image: " +
-                    "url(@borderFamily-s.gif); " +
+                    "url(@3); " +
                     "background-repeat: repeat-x;\">" +
                     "</td>\n" +
-                    "    <td><img src=\"@borderFamily-se.gif\" alt=\"\" />" +
+                    "    <td><img src=\"@4\" alt=\"\" />" +
                     "</td>\n" +
                     "  </tr>\n" +
-                    "</table>\n", properties);
+                    "</table>\n", properties,
+                    StringUtil.addSuffix(borderFamily, "-e"),
+                    StringUtil.addSuffix(borderFamily, "-sw"),
+                    StringUtil.addSuffix(borderFamily, "-s"),
+                    StringUtil.addSuffix(borderFamily, "-se"));
         } else if (layout == null) {
             out.append("</div>\n");
         }

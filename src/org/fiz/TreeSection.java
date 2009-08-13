@@ -29,7 +29,7 @@ import java.util.*;
  *   edgeFamily:     (optional) Determines how to display the lines along
  *                   the left edge of the tree, which connect parents to their
  *                   children.  The value forms the base name for a family
- *                   of images.  If the value is {@code x}, then there
+ *                   of images.  If the value is {@code x.gif}, then there
  *                   must exist images {@code x-line.gif}, {@code x-leaf.gif},
  *                   {@code x-plus.gif}, and {@code x-minus.gif}.  See the
  *                   images themselves and the generated HTML for details
@@ -156,7 +156,7 @@ public class TreeSection extends Section implements DirectAjax {
                 properties.check("leafStyle"), properties.check("nodeStyle"),
                 properties.get("requestFactory"));
         if (pageProperty.edgeFamily == null) {
-            pageProperty.edgeFamily = "treeSolid";
+            pageProperty.edgeFamily = "treeSolid.gif";
         }
         if (pageProperty.leafStyle == null) {
             pageProperty.leafStyle = "TreeSection.leaf";
@@ -311,8 +311,9 @@ public class TreeSection extends Section implements DirectAjax {
             }
             Template.appendHtml(out, "    <td class=\"left\" " +
                     "style=\"background-image: url(/static/fiz/images/" +
-                    "@1-line.gif); background-repeat: @2;\"",
-                    pageProperty.edgeFamily, repeat);
+                    "@1); background-repeat: @2;\"",
+                    StringUtil.addSuffix(pageProperty.edgeFamily, "-line"),
+                    repeat);
             int midPoint = out.length();
 
             // If the element is expandable, generate an onclick handler
@@ -327,9 +328,9 @@ public class TreeSection extends Section implements DirectAjax {
             // element is expandable, or a horizontal line if this is a
             // leaf node.
             Template.appendHtml(out,
-                    "><img src=\"/static/fiz/images/@1-@2.gif\"></td>\n",
-                    pageProperty.edgeFamily,
-                    (expandable ? "plus": "leaf"));
+                    "><img src=\"/static/fiz/images/@1\"></td>\n",
+                    StringUtil.addSuffix(pageProperty.edgeFamily,
+                                         (expandable ? "-plus": "-leaf")));
 
             // Render the cell on the right, using a template selected by
             // the style.
@@ -351,8 +352,9 @@ public class TreeSection extends Section implements DirectAjax {
                 expandedRow.append(out.substring(rowStart, midPoint));
                 Template.appendHtml(expandedRow,
                         " onclick=\"Fiz.ids['@1'].unexpand();\">" +
-                        "<img src=\"/static/fiz/images/@2-minus.gif\"></td>\n",
-                        rowId, pageProperty.edgeFamily);
+                        "<img src=\"/static/fiz/images/@2\"></td>\n",
+                        rowId,
+                        StringUtil.addSuffix(pageProperty.edgeFamily, "-minus"));
                 expandedRow.append("    <td class=\"right\">");
                 Template.appendHtml(expandedRow,
                         styles.getPath(style + "-expanded"), child);
@@ -375,9 +377,10 @@ public class TreeSection extends Section implements DirectAjax {
                 if (!lastElement) {
                     Template.appendHtml(out,
                             "    <td style=\"background-image: " +
-                            "url(/static/fiz/images/@1-line.gif); " +
+                            "url(/static/fiz/images/@1); " +
                             "background-repeat: repeat-y;\">",
-                            pageProperty.edgeFamily);
+                            StringUtil.addSuffix(pageProperty.edgeFamily,
+                                                 "-line"));
                 } else {
                     out.append("    <td>");
                 }

@@ -35,7 +35,7 @@ public class CheckboxImageTest extends junit.framework.TestCase {
         out = new StringBuilder();
         falseVals = new ArrayList<String>(Arrays.asList(
             new String[] { "0", "false"}));
-        data = new Dataset("id", "foo", "family", "cb");
+        data = new Dataset("id", "foo", "family", "cb.png");
     }
 
     public void test_constructor_emptyProperties() {
@@ -50,26 +50,26 @@ public class CheckboxImageTest extends junit.framework.TestCase {
     public void test_constructor_propertiesAndArrayList() {
         cbs = new CheckboxImage(data, falseVals);
         assertEquals("foo", cbs.id);
-        assertEquals("cb", cbs.family);
+        assertEquals("cb.png", cbs.family);
         assertEquals("false", cbs.falseValues.get(1));
     }
 
     public void test_constructor_defaultFamily() {
         cbs = new CheckboxImage(new Dataset("id", "foo"));
-        assertEquals(cbs.family, "checkbox");
+        assertEquals(cbs.family, "checkbox.png");
     }
 
     public void test_constructor_propertiesAndArray() {
         cbs = new CheckboxImage(data, new String[] {"0", "false"});
         assertEquals("foo", cbs.id);
-        assertEquals("cb", cbs.family);
+        assertEquals("cb.png", cbs.family);
         assertEquals("false", cbs.falseValues.get(1));
     }
 
     public void test_constructor_propertiesAndVarArgs() {
         cbs = new CheckboxImage(data, "0", "false");
         assertEquals("foo", cbs.id);
-        assertEquals("cb", cbs.family);
+        assertEquals("cb.png", cbs.family);
     }
 
     public void test_constructor_defaultFalseVals() {

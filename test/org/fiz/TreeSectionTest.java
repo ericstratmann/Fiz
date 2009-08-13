@@ -50,7 +50,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "requestFactory", "getInfo"));
         assertEquals("class property", null,
                 tree.pageProperty.className);
-        assertEquals("edgeFamily property", "treeSolid",
+        assertEquals("edgeFamily property", "treeSolid.gif",
                 tree.pageProperty.edgeFamily);
         assertEquals("id property", "1234",
                 tree.pageProperty.id);
@@ -63,12 +63,12 @@ public class TreeSectionTest extends junit.framework.TestCase {
     }
     public void test_constructor_explicitProperties() {
         TreeSection tree = new TreeSection(new Dataset("class", "class10",
-                "edgeFamily", "family44","id", "1234",
+                "edgeFamily", "family44.gif","id", "1234",
                 "leafStyle", "style for leaves", "nodeStyle", "style for nodes",
                 "requestFactory", "getInfo"));
         assertEquals("class property", "class10",
                 tree.pageProperty.className);
-        assertEquals("edgeFamily property", "family44",
+        assertEquals("edgeFamily property", "family44.gif",
                 tree.pageProperty.edgeFamily);
         assertEquals("id property", "1234",
                 tree.pageProperty.id);
@@ -95,7 +95,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
     public void test_ajaxExpand() {
         cr.setClientRequestType(ClientRequest.Type.AJAX);
         TreeSection.PageProperty p = new TreeSection.PageProperty("TreeSection",
-                "treeSolid", "tree1", "TreeSection.leaf", "TreeSection.node",
+                "treeSolid.gif", "tree1", "TreeSection.leaf", "TreeSection.node",
                 "TreeSectionTest$RequestFactory.request");
         p.names.put("tree1_2", "node16");
         cr.setPageProperty("tree1",  p);
@@ -174,7 +174,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "expandable", "1"));
         children.add(new Dataset("name", "Bob"));
         TreeSection.PageProperty p = new TreeSection.PageProperty("TreeSection",
-                "treeSolid", "tree1", "TreeSection.leaf", "TreeSection.node",
+                "treeSolid.gif", "tree1", "TreeSection.leaf", "TreeSection.node",
                 "TreeSectionTest$RequestFactory.request");
         TreeSection.renderChildren(cr, p, children, "tree1_3", out);
         assertEquals("generated HTML", "  <tr id=\"tree1_3_0\">\n" +
@@ -212,7 +212,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
         children.add(new Dataset("name", "Alice", "id", "111",
                 "style", "xyzzy"));
         TreeSection.PageProperty p = new TreeSection.PageProperty("TreeSection",
-                "treeSolid", "tree1", "TreeSection.leaf", "TreeSection.node",
+                "treeSolid.gif", "tree1", "TreeSection.leaf", "TreeSection.node",
                 "none");
         TreeSection.renderChildren(cr, p, children, "tree1_3", out);
         assertEquals("generated HTML", "  <tr id=\"tree1_3_0\">\n" +
@@ -231,7 +231,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "expandable", "1"));
         children.add(new Dataset("name", "Bob"));
         TreeSection.PageProperty p = new TreeSection.PageProperty("TreeSection",
-                "treeSolid", "tree1", "TreeSection.leaf", "TreeSection.node",
+                "treeSolid.gif", "tree1", "TreeSection.leaf", "TreeSection.node",
                 "none");
         TreeSection.renderChildren(cr, p, children, "tree1_3", out);
         String javascript = cr.getHtml().jsCode.toString();
@@ -258,7 +258,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
         children.add(new Dataset("name", "Alice", "id", "111",
                 "expandable", "1"));
         TreeSection.PageProperty p = new TreeSection.PageProperty("TreeSection",
-                "treeSolid", "tree1", "TreeSection.leaf", "TreeSection.node",
+                "treeSolid.gif", "tree1", "TreeSection.leaf", "TreeSection.node",
                 "none");
         TreeSection.renderChildren(cr, p, children, "tree1_3", out);
         TestUtil.assertSubstring("generated HTML",

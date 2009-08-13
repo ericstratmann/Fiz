@@ -86,7 +86,7 @@ public class CompoundSectionTest extends junit.framework.TestCase {
 
     public void test_render_basics() {
         CompoundSection section = new CompoundSection(
-                new Dataset("borderFamily", "a/b/c"),
+                new Dataset("borderFamily", "a/b/c.gif"),
                 new TemplateSection("<h1>First section</h1>\n"),
                 new TemplateSection("<h1>Second section</h1>\n"));
         section.render(cr);
@@ -123,7 +123,7 @@ public class CompoundSectionTest extends junit.framework.TestCase {
     }
     public void test_render_idProperty() {
         CompoundSection section = new CompoundSection(
-                new Dataset("id", "test44", "borderFamily", "a/b/c"),
+                new Dataset("id", "test44", "borderFamily", "a/b/c.gif"),
                 new TemplateSection("<h1>First section</h1>\n"));
         section.render(cr);
         String html = cr.getHtml().getBody().toString();
@@ -137,7 +137,7 @@ public class CompoundSectionTest extends junit.framework.TestCase {
     }
     public void test_render_classProperty() {
         CompoundSection section = new CompoundSection(
-                new Dataset("class", "class22", "borderFamily", "a/b/c"),
+                new Dataset("class", "class22", "borderFamily", "a/b/c.gif"),
                 new TemplateSection("<h1>First section</h1>\n"));
         section.render(cr);
         String html = cr.getHtml().getBody().toString();
@@ -147,7 +147,7 @@ public class CompoundSectionTest extends junit.framework.TestCase {
     }
     public void test_render_backgroundProperty() {
         CompoundSection section = new CompoundSection(
-                new Dataset("background", "#ff0000", "borderFamily", "a/b/c"),
+                new Dataset("background", "#ff0000", "borderFamily", "a/b/c.gif"),
                 new TemplateSection("<h1>First section</h1>\n"));
         section.render(cr);
         String html = cr.getHtml().getBody().toString();
@@ -184,7 +184,7 @@ public class CompoundSectionTest extends junit.framework.TestCase {
                         "+-------+";
         CompoundSection section = new CompoundSection(
                 new Dataset("id", "test44",
-                        "borderFamily", "a/b/c",
+                        "borderFamily", "a/b/c.gif",
                         "layout", layout),
                 new TemplateSection(new Dataset("id", "first",
                         "template", "<h1>First section</h1>\n")));
