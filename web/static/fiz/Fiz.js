@@ -82,6 +82,65 @@ Fiz.addBulletinMessage = function(html) {
 }
 
 /**
+ * Adds the class to the target element
+ * @param target                    (Element) DOM element to add class to
+ * @param classNam                  (String) Class to add to target
+ */
+Fiz.addClass = function(target, className) {
+    if (target.className.match(className) == null) {
+        target.className += (target.className == '')
+                ? className : ' ' +  className; 
+    }
+}
+
+/**
+ * Provides a cross-browser compatible way to bind event listeners to
+ * DOM elements. Events bound using this function will pass the correct
+ * event object to the callback function, and the callback function will be
+ * invoked in the context of the optional {@code thisObj} argument.
+ * @param target                  (Element) Element to bind event to
+ * @param type                    (String) Event trigger (mouseover,click,
+ *                                etc...)
+ * @param callback                (Function) Function to invoke when event occurs
+ * @param thisObj                 (Object - optional) If incl
+ */
+Fiz.addEvent = function(target, type, callback, thisObj) {
+    if (target.addEventListener) {
+        target.addEventListener(type, function(event) {
+            callback.call(thisObj, event);
+        }, false);
+    } else if (target.attachEvent) {
+        // Internet Explorer
+        target.attachEvent('on' + type, function() {
+            callback.call(thisObj, window.event);
+        });
+    } else {
+        // Internet Explorer 5 for Mac and general case support
+        var curFunction = target['on' + type];
+        target['on' + type] = function() {
+            if (undefined != curFunction) {
+                curFunction();
+            }
+            callback(window.event);
+        };
+    }
+}
+
+/**
+ * Provides a cross-browser compatible way to stop the event {@code e} from
+ * propogating further through the stack of DOM elements (stops the event from
+ * bubbling up).
+ * @param e                         (Event) Event object from event caller
+ */
+Fiz.cancelBubble = function(e) {
+    try {
+        e.stopPropagation();
+    } catch (er) {
+        e.cancelBubble = true;
+    }
+}
+
+/**
  * Remove everything from the bulletin and make the bulletin invisible.
  */
 Fiz.clearBulletin = function() {
@@ -102,25 +161,51 @@ Fiz.clearBulletinBeforeNextAdd = function() {
 }
 
 /**
- * Adds {@code class} to {@code target}'s classes
- * @param target            (Element) See above
- * @param class             (String) See above
+ * Finds the position of an element in a page relative to the top-left corner
+ * of the page (the top-left position of the <html> element)
+ * @param elem                      (Element) DOM element whose position we are
+ *                                  trying to find
+ * @return                          (Array) [x,y] position of the element
  */
-Fiz.addClass = function(target, className)
-{
-	if (target.className.match(className) == null) {
-	    target.className += (target.className == '')
-	            ? className : ' ' +  className;
- 	}
+Fiz.findAbsolutePosition = function(target) {
+    var curleft = 0;
+    var curtop = 0;
+    if (target.offsetParent) {
+        do {
+            curleft += target.offsetLeft;
+            curtop += target.offsetTop;
+        } while (target = target.offsetParent);
+    }
+    return [curleft,curtop];
 }
 
 /**
- * Removes {@code class} from {@code target}'s classes
- * @param target            (Element) See above
- * @param class             (String) See above
+ * Provides a cross-browser compatible way to fetch the key code value of the
+ * event {@code e}.
+ * @param e                         (Event) Key event containing the key code
+ * @return                          (Integer) Key code for key that triggered
+ *                                  the event
  */
-Fiz.removeClass = function(target, className)
-{
+Fiz.getKeyCode = function(e) {
+    return e.keyCode || e.which;
+}
+
+/**
+ * Provides a cross-browser compatible way to retrieve the text value of
+ * {@code target}.
+ * @param target                    (Element) DOM element to extract text from
+ * @return                          (String) Text content of the element
+ */
+Fiz.getText = function(target) {
+    return target.innerText || target.textContent;
+}
+
+/**
+ * Removes the class from the target element
+ * @param target                    (Element) DOM element to remove class from
+ * @param className                 (String) Class to remove from target
+ */
+Fiz.removeClass = function(target, className) {
     if (target.className.match(className) != null) {
         // Split at whitespace characters
         var classes = (target.className == '' ?
@@ -130,6 +215,7 @@ Fiz.removeClass = function(target, className)
         for (var i = classes.length - 1; i >= 0; i--) {
             if (classes[i] == className) {
                 classes.splice(i, 1);
+                break;
             }
         }
 
@@ -139,97 +225,12 @@ Fiz.removeClass = function(target, className)
 }
 
 /**
- * Finds the position of an element in a page relative to the top-left corner
- * of the page (the top-left position of the <html> element)
- * @param elem              (Element) See above
- * @param class             (String) See above
- */
-Fiz.findAbsolutePosition = function(target)
-{
-	var curleft = 0;
-	var curtop = 0;
-	if (target.offsetParent) {
-		do {
-			curleft += target.offsetLeft;
-			curtop += target.offsetTop;
-		} while (target = target.offsetParent);
- 	}
-	return [curleft,curtop];
-}
-
-/**
- * Provides a cross-browser compatible way to stop the event {@code e} from
- * propogating further through the stack of DOM elements (stops the event from
- * bubbling up).
- * @param e                 (Event) See above
- */
-Fiz.cancelBubble = function(e)
-{
-	if (!e) { e = window.event; }
-	e.cancelBubble = true;
- 	if (e.stopPropagation) { e.stopPropagation(); }
-}
-
-/**
- * Provides a cross-browser compatible way to fetch the key code value of the
- * event {@code e}.
- * @param e                 (Event) See above
- */
-Fiz.getKeyCode = function(e)
-{
-	if (window.event) {
-		return e.keyCode;
-	} else {
-		return e.which;
-	}
-}
-
-/**
- * Provides a cross-browser compatible way to bind event listeners to
- * DOM elements.
- * @param target            (Element) Element to bind event to
- * @param type              (String) Event trigger (mouseover, click, etc...)
- * @param callback          (Function) Function to invoke when event occurs
- * @param capture           (Boolean) If set to true, all events of the
- *                          specified type will be dispatched to the registered
- *                          element before being dispatched to any elements
- *                          beneath it in the DOM tree
- */
-Fiz.addEvent = function(target, type, callback, capture)
-{
-	if (target.addEventListener) {
-		target.addEventListener(type, callback, capture);
-	} else if (target.attachEvent) {
-		// Internet Explorer
-		target.attachEvent('on' + type, function() {
-			callback(window.event);
-		}, capture);
-	} else {
-		// Internet Explorer 5 for Mac and general case support
-		target['on' + type] = function() {
-			callback(window.event);
-		};
-	}
-}
-
-/**
- * Provides a cross-browser compatible way to retrieve the text value of
- * {@code target}.
- * @param target                    (Element) See above
- */
-Fiz.getText = function(target)
-{
-    return target.innerText || target.textContent;
-}
-
-/**
  * Provides a cross-browser compatible way to set the text value of
  * {@code target}.
- * @param target                    (Element) See above
+ * @param target                    (Element) DOM element 
  * @param text                      (String) Text content we want to set
  */
-Fiz.setText = function(target, text)
-{
+Fiz.setText = function(target, text) {
     if (target.innerText == undefined) {
         target.textContent = text;
     } else {

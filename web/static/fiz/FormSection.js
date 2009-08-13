@@ -43,20 +43,49 @@ Fiz.FormSection = function(id) {
 Fiz.FormSection.currentForm = null;
 
 /**
+ * If there are any element-specific error messages for the form element with
+ * {@code id}, undisplay them.
+ * @param id                       Identifies a particular form element; used
+ *                                 as the base of various HTML element ids.
+ */
+Fiz.FormSection.prototype.clearElementError = function(id) {
+    for (var i in this.errorElements) {
+        if (this.errorElements[i] == id) {
+            this.errorElements.splice(i, 1);
+            break;
+        }
+    }
+    this.clearElementErrorDisplay(id);
+}
+
+/**
  * If there are any element-specific error messages displayed in this
  * form, undisplay them.
  */
 Fiz.FormSection.prototype.clearElementErrors = function() {
-    for (var i = 0, length = this.errorElements.length; i < length; i++) {
-        var id = this.errorElements[i];
-        var div = document.getElementById(id + "_diagnostic");
-        div.style.display = "none";
-
-        // Also, remove the "formError" class from the main row.
-        var row = document.getElementById(id);
-        row.className = "";
+    while (this.errorElements.length > 0) {
+        var id = this.errorElements[0];
+        this.clearElementErrorDisplay(id);
+        this.errorElements.shift();
     }
-    this.errorElements.length = 0;
+    
+    // Clear the error elements array
+    this.errorElements = [];
+}
+
+/**
+ * Clears the error-specific error messages displayed in this form. Invoked
+ * by clearElementError and clearElementErrors.
+ * @param id                       Identifies a particular form element; used
+ *                                 as the base of various HTML element ids.
+ */
+Fiz.FormSection.prototype.clearElementErrorDisplay = function(id) {
+    var div = document.getElementById(id + "_diagnostic");
+    div.style.display = "none";
+
+    // Also, remove the "formError" class from the main row.
+    var row = document.getElementById(id);
+    row.className = "";
 }
 
 /**
@@ -120,7 +149,6 @@ Fiz.FormSection.prototype.submit = function() {
  * This function is invoked by the HTML returned by a form response to the
  * invisible iframe for the form.  This method will delete the iframe and eval
  * its script argument.
- * @param formId                   Id for the form
  * @param script                   A Javascript script that should be
  *                                 eval-ed in the frame containing the
  *                                 original {@code <form>} element.

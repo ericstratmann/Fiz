@@ -4,7 +4,7 @@
  * AutocompleteFormElement class.  One Fiz.AutocompleteFormElement
  * is created for each AutocompleteFormElement Java object. 
  * Methods on the object are invoked for functions such as
- * populating the autcomplete list, fetching data from the server,
+ * populating the autocomplete list, fetching data from the server,
  * and navigating the list of results.
  *
  * Copyright (c) 2009 Stanford University
@@ -36,8 +36,7 @@ Fiz.Key = {
  * @param id                       Id for the {@code <div>} element
  *                                 that represents the autcomplete form.
  */
-Fiz.AutocompleteFormElement = function(id)
-{
+Fiz.AutocompleteFormElement = function(id) {
     // Set the id identifying the <input> element for this form
     // element and from which all related ids are derived
     this.id = id;
@@ -87,8 +86,9 @@ Fiz.AutocompleteFormElement = function(id)
  * @param e                    (Event) The event object containing information
  *                             about the keystroke and event type.
  */
-Fiz.AutocompleteFormElement.prototype.captureKeydown = function(e)
-{
+Fiz.AutocompleteFormElement.prototype.captureKeydown = function(e) {
+    e = e || window.event;
+    
     if (this.isOpen) {
         switch(Fiz.getKeyCode(e)) {
             // Move the user selection up the list of choices
@@ -134,8 +134,7 @@ Fiz.AutocompleteFormElement.prototype.captureKeydown = function(e)
  * This method opens up the autocomplete dropdown. If there is
  * currently no query, this method does nothing.
  */
-Fiz.AutocompleteFormElement.prototype.showDropdown = function()
-{
+Fiz.AutocompleteFormElement.prototype.showDropdown = function() {
     if (this.input.value == '') {
         this.hideDropdown();
         return;
@@ -160,8 +159,7 @@ Fiz.AutocompleteFormElement.prototype.showDropdown = function()
  * @param forceHide            (Boolean) Forces the dropdown to hide even if
  *                             the user has their mouse over the dropdown
  */
-Fiz.AutocompleteFormElement.prototype.hideDropdown = function(forceHide)
-{
+Fiz.AutocompleteFormElement.prototype.hideDropdown = function(forceHide) {
     if (forceHide) {
         this.keepOpen = false;
     }
@@ -179,8 +177,7 @@ Fiz.AutocompleteFormElement.prototype.hideDropdown = function(forceHide)
  * @param done                (Boolean) Hides the dropdown after selection
  *                            if true
  */
-Fiz.AutocompleteFormElement.prototype.selectChoice = function(choice, done)
-{    
+Fiz.AutocompleteFormElement.prototype.selectChoice = function(choice, done) {    
     // Select a new option
     if (null == choice) {
         this.input.value = this.lastUserInput;
@@ -204,8 +201,7 @@ Fiz.AutocompleteFormElement.prototype.selectChoice = function(choice, done)
  * This method highlights the user's current choice in the dropdown.
  * @param choice                    (Element) The element to highlight
  */
-Fiz.AutocompleteFormElement.prototype.highlightChoice = function(choice)
-{
+Fiz.AutocompleteFormElement.prototype.highlightChoice = function(choice) {
     // Clear the old highlighted element
     if (null != this.highlighted) {
         Fiz.removeClass(this.highlighted, 'highlight');
@@ -221,13 +217,12 @@ Fiz.AutocompleteFormElement.prototype.highlightChoice = function(choice)
 /**
  * This method moves the selection up on the dropdown list.
  */
-Fiz.AutocompleteFormElement.prototype.prevResult = function()
-{
+Fiz.AutocompleteFormElement.prototype.prevResult = function() {
     if (null == this.highlighted) {
         // The user is currently "focused" on the input field so
         // pressing up starts from the bottom of the autocomplete list
         this.selectChoice(document
-        		.getElementById(this.id + "_choices").lastChild);
+                .getElementById(this.id + "_choices").lastChild);
     } else {
         this.selectChoice(this.highlighted.previousSibling);
     }
@@ -236,13 +231,12 @@ Fiz.AutocompleteFormElement.prototype.prevResult = function()
 /**
  * This method moves the selection down on the dropdown list.
  */
-Fiz.AutocompleteFormElement.prototype.nextResult = function()
-{
+Fiz.AutocompleteFormElement.prototype.nextResult = function() {
     if (null == this.highlighted) {
         // The user is currently "focused" on the input field so
         // pressing up starts from the bottom of the autocomplete list
         this.selectChoice(document
-        		.getElementById(this.id + "_choices").firstChild);
+                .getElementById(this.id + "_choices").firstChild);
     } else {
         this.selectChoice(this.highlighted.nextSibling);
     }
@@ -251,14 +245,10 @@ Fiz.AutocompleteFormElement.prototype.nextResult = function()
 /**
  * This method generates an Ajax call that retrieves the autocomplete
  * results from the server.
- * @return                    (Fiz.Ajax) Returns the Ajax object for testing
- *                            purposes
  */
-Fiz.AutocompleteFormElement.prototype.refreshMenu = function()
-{
+Fiz.AutocompleteFormElement.prototype.refreshMenu = function() {
     if (this.input.value == '') {
         this.hideDropdown(true);
-        return null;
     } else {
         // We launch a new Ajax request if the form value has changed.
         if (this.input.value != this.lastInputValue) {
@@ -268,11 +258,10 @@ Fiz.AutocompleteFormElement.prototype.refreshMenu = function()
             this.highlighted = null;
             this.lastInputValue = this.input.value;
             this.lastUserInput = this.input.value;
-            return new Fiz.Ajax({
+            new Fiz.Ajax({
                     url: '/AutocompleteFormElement/ajaxQuery',
                     data: { id: this.id, userInput: this.input.value }
             });
         }
-        return null;
     }
 }

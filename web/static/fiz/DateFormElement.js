@@ -122,20 +122,20 @@ Fiz.DateFormElement.prototype.openPicker = function()
     // Find the location of the input field
     var x, y;
 
-	if (this.attachPosition == 'right') {
-		x = 3 + this.input.offsetWidth;
-		y = 0;
-	} else {
-		x = 0;
-		y = 3 + this.input.offsetHeight;
-	}
+    if (this.attachPosition == 'right') {
+        x = 3 + this.input.offsetWidth;
+        y = 0;
+    } else {
+        x = 0;
+        y = 3 + this.input.offsetHeight;
+    }
 
-	// Attach calendar picker to the input field
-	this.picker.style.top = y + 'px';
-	this.picker.style.left = x + 'px';
-	this.picker.style.display = 'block';
+    // Attach calendar picker to the input field
+    this.picker.style.top = y + 'px';
+    this.picker.style.left = x + 'px';
+    this.picker.style.display = 'block';
 
-	// Update the state of the picker to reflect
+    // Update the state of the picker to reflect
     // the value of the field it is attached to
     this.validateAndDisplay();
 
@@ -556,16 +556,16 @@ Fiz.DateFormElement.formatDate = function(date, format)
 
 /**
  * This function is used to toggle the highlight a date on mouseover.
- * @param elem                  (Element) The date cell to highlight
+ * @param target                (Element) The date cell to highlight
  * @param enable                (Boolean) true to highlight,
  *                              false to remove highlight
  */
-Fiz.DateFormElement.highlight = function(elem, enable)
+Fiz.DateFormElement.highlight = function(target, enable)
 {
     if (enable) {
-        Fiz.addClass(elem, 'hover');
+        Fiz.addClass(target, 'hover');
     } else {
-        Fiz.removeClass(elem, 'hover');
+        Fiz.removeClass(target, 'hover');
     }
 }
 
