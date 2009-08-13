@@ -67,7 +67,7 @@ Element.prototype.toString = function() {
 
 /**
  * Returns whether an element has any children or not
- * @return							See above
+ * @return                            See above
  */
 Element.prototype.hasChildNodes = function() {
     return (this.firstChild);
@@ -75,7 +75,7 @@ Element.prototype.hasChildNodes = function() {
 
 /**
  * Returns an array that contains all of the children of a particular element.
- * @return							See above
+ * @return                            See above
  */
 Element.prototype.getChildNodes = function() {
     var children = [];
@@ -90,7 +90,7 @@ Element.prototype.getChildNodes = function() {
  * Generates a list of children of the current element that are of the type
  * specified. IMPORTANT: Element must include a "tagName" property for this
  * function to find it.
- * @param tag							The type of element we are looking for
+ * @param tag                            The type of element we are looking for
  */
 Element.prototype.getElementsByTagName = function(tag) {
     var children = [];

@@ -154,7 +154,7 @@ function runTests(file) {
             print(banner(jsunit.currentTestName) + " PASSED");
         }
 
-		
+        
     }
 }
 
@@ -341,14 +341,14 @@ function assertEqual(expected, actual, description) {
 
 function assertFloatEqual(expected, actual, description) {
     var message = "Error in test \"" + jsunit.currentTestName + "\"";
-	
-	if (typeof expected === "number" && typeof actual === "number" &&
-		Math.abs(expected - actual) < Math.pow(10, -14)) {
-		return;
-	}
+    
+    if (typeof expected === "number" && typeof actual === "number" &&
+        Math.abs(expected - actual) < Math.pow(10, -14)) {
+        return;
+    }
     message += "\nExpected value: " + valueAndType(expected) +
 
-	error(message);
+    error(message);
 }
 
 
@@ -392,8 +392,8 @@ function logFunction(name) {
     return function() {
         jsunit.log += name + "(";
         for (var i = 0; i < arguments.length; i++) {
-			jsunit.log += arguments[i];
-			
+            jsunit.log += arguments[i];
+            
             if (i != arguments.length - 1) {
                 jsunit.log += ", ";
             }

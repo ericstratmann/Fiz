@@ -1,21 +1,24 @@
-// FormSectionTest.js --
-//
-// Jsunit tests for FormSection.js, organized in the standard fashion.
-//
-// Copyright (c) 2009 Stanford University
-// Permission to use, copy, modify, and distribute this software for any
-// purpose with or without fee is hereby granted, provided that the above
-// copyright notice and this permission notice appear in all copies.
-//
-// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-// WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-// ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-// WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-// ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-// OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+/* FormSectionTest.js --
+ *
+ * Jsunit tests for FormSection.js, organized in the standard fashion.
+ *
+ * Copyright (c) 2009 Stanford University
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR otherFields TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
 
 include("static/fiz/Fiz.js");
+include("static/fiz/FormElement.js");
 include("static/fiz/FormSection.js");
 
 // Following is a replacement for the Ajax constructor; it just logs
@@ -28,6 +31,32 @@ Fiz.Ajax = function(properties) {
 
 FormSectionTest = {};
 
+FormSectionTest.setUp = function() {
+    var form = document.addElementWithId("form1");    
+}
+
+FormSectionTest.test_clearElementError = function() {
+    var row1 = document.addElementWithId("row1", {className: "undefined"});
+    var diag1 = document.addElementWithId("row1_diagnostic",
+        {style: {display: "none"}, innerHTML: "xxx"});
+    var row2 = document.addElementWithId("row2", {className: "undefined"});
+    var diag2 = document.addElementWithId("row2_diagnostic",
+            {style: {display: "none"}, innerHTML: "yyy"});
+    var form = new Fiz.FormSection("form1");
+
+    form.elementError("row1", "error1");
+    form.elementError("row2", "error2");
+    form.clearElementError("row1");
+    assertEqual("none", diag1.style.display,
+            "diag1.style.display after call");
+    assertEqual("", row1.className, "row1.className after call");
+    assertEqual("", diag2.style.display,
+            "diag2.style.display after call");
+    assertEqual("formError", row2.className, "row2.className after call");
+    assertEqual("row2", form.errorElements.join(", "),
+            "form.errorElements after call");    
+}
+
 FormSectionTest.test_clearElementErrors = function() {
     var row1 = document.addElementWithId("row1", {className: "undefined"});
     var diag1 = document.addElementWithId("row1_diagnostic",
@@ -35,7 +64,7 @@ FormSectionTest.test_clearElementErrors = function() {
     var row2 = document.addElementWithId("row2", {className: "undefined"});
     var diag2 = document.addElementWithId("row2_diagnostic",
             {style: {display: "none"}, innerHTML: "yyy"});
-    var form = new Fiz.FormSection("form16");
+    var form = new Fiz.FormSection("form1");
 
     form.elementError("row1", "error1");
     form.elementError("row2", "error2");
@@ -48,6 +77,20 @@ FormSectionTest.test_clearElementErrors = function() {
     assertEqual("", row2.className, "row2.className after call");
     assertEqual("", form.errorElements.join(", "),
             "form.errorElements after call");
+    assertEqual(0, form.errorElements.length, "error elements array");
+};
+
+FormSectionTest.test_clearElementErrorDisplay = function() {
+    var row1 = document.addElementWithId("row1", {className: "undefined"});
+    var diag1 = document.addElementWithId("row1_diagnostic",
+        {style: {display: "none"}, innerHTML: "xxx"});
+    var form = new Fiz.FormSection("form1");
+
+    form.elementError("row1", "error1");
+    form.clearElementErrorDisplay("row1");
+    assertEqual("none", diag1.style.display,
+            "diag1.style.display after call");
+    assertEqual("", row1.className, "row1.className after call");
 };
 
 FormSectionTest.test_elementError = function() {
@@ -57,7 +100,7 @@ FormSectionTest.test_elementError = function() {
     var row2 = document.addElementWithId("row2", {className: "undefined"});
     var diag2 = document.addElementWithId("row2_diagnostic",
             {style: {display: "none"}, innerHTML: "yyy"});
-    var form = new Fiz.FormSection("form16");
+    var form = new Fiz.FormSection("form1");
 
     form.elementError("row1", "error1");
     assertEqual("row1", form.errorElements.join(", "),
@@ -113,7 +156,7 @@ FormSectionTest.test_submit_nonexistentPageIdElement = function() {
 };
 
 FormSectionTest.test_handleResponse = function() {
-    Fiz.ids.form1 = new Fiz.FormSection("formxx");
+    Fiz.ids.form1 = new Fiz.FormSection("form1");
     Fiz.ids.form1.handleResponse2 = function(script) {
         window.testLog = "handleResponse2 argument: " + script;
     }
