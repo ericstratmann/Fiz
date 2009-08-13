@@ -358,10 +358,10 @@ public class TreeSection extends Section implements DirectAjax {
                         styles.getPath(style + "-expanded"), child);
                 expandedRow.append("</td>\n");
                 expandedRow.append("  </tr>\n");
-                cr.evalJavascript(Template.expandJs(
+                cr.evalJavascript(
                         "Fiz.ids[\"@1\"] = new Fiz.TreeRow(\"@1\", " +
                         "\"@2\", \"@3\");\n", rowId,
-                        out.substring(rowStart), expandedRow));
+                        out.substring(rowStart), expandedRow);
 
                 // Finally, add an additional row to the table we are
                 // generating, which will hold the children of this element

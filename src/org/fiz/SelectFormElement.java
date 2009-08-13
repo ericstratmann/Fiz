@@ -34,7 +34,9 @@ import java.util.*;
  *     a scrolling list; the {@code height} option controls this aspect.
  *   * The form element can permit either a single selection or multiple
  *     selections; the {@code multiple} option controls this.
- *  The SelectFormElement class supports the following properties:
+ *  The SelectFormElement class supports the following properties
+ *  (additional properties applicable to all form elements may be found in
+ *  {@link FormElement}):
  *   choice:         (optional) Default location for the choice datasets, if
  *                   neither the {@code choiceRequest} nor the
  *                   {@code choiceName} property is specified.
@@ -45,22 +47,11 @@ import java.util.*;
  *                   the properties or in the result of the data request
  *                   specified by {@code choiceRequest}) containing the
  *                   choices; defaults to {@code choice}.
- *   class:          (optional) Class attribute to use for the {@code div}
- *                   containing the form element; defaults to
- *                   "SelectFormElement".
  *   height:         (optional) If this property is specified with a value
  *                   greater than 1, then the form element will be displayed
  *                   as a scrollable list with this many elements visible at
  *                   once; otherwise the form element will be displayed as
  *                   a drop-down menu.
- *   help:           (optional) Help text for this form element.  If this
- *                   property is omitted the form will look for help text
- *                   in the {@code help} configuration dataset.
- *   id:             (required) Name for this FormElement; must be unique
- *                   among all ids for the page.  This is used as the name
- *                   for the data value in input and output datasets and
- *                   also as the {@code name} attribute for the HTML form
- *                   element.
  *   multiple:       (optional) If specified, this property must have the
  *                   value {@code multiple}, which means that multiple
  *                   selections will be permitted.  In this case, the
@@ -69,8 +60,6 @@ import java.util.*;
  *                   each dataset will have a name given by the {@code id}
  *                   property, and it will contain a single element named
  *                   {@code value}, which holds that value.
- *   label:          (optional) Template for label to display next to the
- *                   FormElement to identify the element for the user.
  */
 
 public class SelectFormElement extends FormElement {
@@ -170,7 +159,11 @@ public class SelectFormElement extends FormElement {
                 "class=\"@class?{SelectFormElement}\" " +
                 "{{size=\"@height\"}} {{multiple=\"@multiple\"}}>\n",
                 properties);
-        for (Dataset choice: choices) {
+        
+        String allChoices = "";
+        for (int i = 0; i < choices.size(); i++) {
+            Dataset choice = choices.get(i);
+
             String selected = null;
             if (initialSelections.contains(choice.get("value"))) {
                 selected = "selected";
@@ -178,7 +171,13 @@ public class SelectFormElement extends FormElement {
             Template.appendHtml(out, "  <option {{selected=\"@1\"}} " +
                     "value=\"@value\">@name?{@value}</option>\n",
                     choice, selected);
+            
+            if (i > 0) {
+                allChoices += ",";
+            }
+            allChoices += choice.get("value");
         }
         out.append("</select>\n<!-- End SelectFormElement @id -->\n");
+        addValidator(new Dataset("type", "value", "valid", "allChoices"));
     }
 }

@@ -22,15 +22,6 @@ import java.io.Serializable;
  * suggestions or options for completing what the user has already typed. It
  * supports the following properties (additional properties applicable to all
  * form elements may be found in {@link FormElement}):
- *   class:             (optional) Class attribute to use for the {@code <div>}
- *                      containing this element; defaults to DateFormElement.
- *   id:                (required) Name for this FormElement; must be unique
- *                      among all ids for the page. This is used as the name
- *                      for the data value in query and update requests and
- *                      also as the {@code name} and {@code id} attribute for
- *                      the HTML input element.
- *   label:             (optional) Template for label to display next to the
- *                      input field to identify the element for the user.
  *   requestFactory:    (required) Identifies a factory method that takes a
  *                      single String argument and returns a DataRequest whose
  *                      response will contain possible autocomplete choices.
@@ -57,7 +48,6 @@ import java.io.Serializable;
  *                   choice in the dropdown.
  */
 public class AutocompleteFormElement extends FormElement implements DirectAjax {
-
     // One object of the following class is stored as a page property
     // for each AutocompleteFormElement in a page: it holds data that we
     // will need later on to process Ajax requests to request autocomplete
@@ -132,7 +122,7 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
 
                 // Extracts the position of the query to highlight it
                 int queryIndex = value.toLowerCase()
-                		.indexOf(query.toLowerCase());
+                        .indexOf(query.toLowerCase());
                 String js1 = Template.expandJs(
                         "Fiz.ids.@1.selectChoice(this, true)", pageProperty.id);
                 String js2 = Template.expandJs(
@@ -149,7 +139,7 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
                             value.substring(0, queryIndex),
                             value.substring(queryIndex, query.length()),
                             value.substring(queryIndex + query.length(),
-                            		value.length())
+                                    value.length())
                     );
                 }
             }

@@ -18,20 +18,9 @@ package org.fiz;
 /**
  * The UploadFormElement class implements form {@code <input>} elements
  * of type "file", which are used to upload files from the browser to the
- * server.  It supports the following properties:
- *   class:          (optional) Class attribute to use for the {@code input}
- *                   element; defaults to "UploadFormElement".
- *   help:           (optional) Help text for this form element.  If this
- *                   property is omitted the form will look for help text
- *                   in the {@code help} configuration dataset.
- *   id:             (required) Name for this FormElement; must be unique
- *                   among all ids for the page.  This is used as the
- *                   {@code name} attribute for the HTML input element
- *                   and is also used to identify this file upload to
- *                   methods such as ClientRequest.getUploadedFile and
- *                   ClientRequest.saveUploadedFile.
- *   label:          (optional) Template for label to display next to the
- *                   FormElement to identify the element for the user.
+ * server. See {@link FormElement} for a list of properties supported by 
+ * this form element.
+ * 
  * Note: unlike other form elements, there is no "data value" associated with
  * UploadFormElements (the form element always starts out empty, and the
  * {@code collect} method does nothing.  Is up to higher-level application

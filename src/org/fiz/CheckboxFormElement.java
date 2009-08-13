@@ -18,24 +18,13 @@ package org.fiz;
 /**
  * The CheckboxFormElement class allows boolean values to be entered in
  * forms using an {@code <input type="checkbox">} HTML element.  It
- * supports the following properties:
- *   class:          (optional) Class attribute to use for the <div>
- *                   containing this element; defaults to CheckboxFormElement.
+ * supports the following properties (additional properties applicable to all
+ * form elements may be found in {@link FormElement}):
  *   extra:          (optional) HTML template for additional information
  *                   to display to the right of the checkbox.
  *   falseValue:     (optional) String that appears in query and update
  *                   requests if the form element is not checked.  Defaults
  *                   to {@code false}.
- *   help:           (optional) Help text for this form element.  If this
- *                   property is omitted the form will look for help text
- *                   in the {@code help} configuration dataset.
- *   id:             (required) Name for this FormElement; must be unique
- *                   among all ids for the page.  This is used as the name
- *                   for the data value in input and output datasets and
- *                   also as the {@code name} attribute for the HTML input
- *                   element.
- *   label:          (optional) Template for label to display next to the
- *                   checkbox to identify the element for the user.
  *   trueValue:      (optional) String that appears in query and update
  *                   requests if the form element is checked.  Defaults
  *                   to {@code true}.

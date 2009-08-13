@@ -24,14 +24,6 @@ import java.util.regex.MatchResult;
  * variety of formats) or through a customizable, JS-driven calendar object. It
  * supports the following properties (additional properties applicable to all
  * form elements may be found in {@link FormElement}):
- *   class:             (optional) Class attribute to use for the {@code <div>}
- *                      containing this element; defaults to DateFormElement.
- *   id:                (required) Name for this FormElement; must be unique
- *                      among all ids for the page. This is used as the name for
- *                      the data value in query and update requests and also as
- *                      the {@code name} attribute for the HTML input element.
- *   label:             (optional) Template for label to display next to the
- *                      input field to identify the element for the user.
  *   attachPosition:    (optional) Defaults to {@code bottom}. Define whether
  *                      the calendar pops up to the {@code right} or to the
  *                      {@code bottom} of the input field.

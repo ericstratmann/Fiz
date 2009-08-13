@@ -17,20 +17,8 @@ package org.fiz;
 
 /**
  * The EntryFormElement class implements one-line text entries for forms,
- * using an {@code <input>} HTML element.  It supports the following
- * properties:
- *   class:          (optional) Class attribute to use for the {@code input}
- *                   element; defaults to "EntryFormElement".
- *   help:           (optional) Help text for this form element.  If this
- *                   property is omitted the form will look for help text
- *                   in the {@code help} configuration dataset.
- *   id:             (required) Name for this FormElement; must be unique
- *                   among all ids for the page.  This is used as the name
- *                   for the data value in input and output datasets and
- *                   also as the {@code name} attribute for the HTML input
- *                   element.
- *   label:          (optional) Template for label to display next to the
- *                   FormElement to identify the element for the user.
+ * using an {@code <input>} HTML element. See {@link FormElement} for a list of
+ * properties supported by this form element.
  */
 
 public class EntryFormElement extends FormElement {
@@ -55,7 +43,7 @@ public class EntryFormElement extends FormElement {
     public EntryFormElement(String id, String label) {
         super(new Dataset ("id", id, "label", label));
     }
-
+    
     /**
      * This method is invoked to generate HTML for this form element.
      * @param cr                   Overall information about the client
@@ -71,7 +59,6 @@ public class EntryFormElement extends FormElement {
         cr.getHtml().includeCssFile("EntryFormElement.css");
         Template.appendHtml(out, "<input type=\"text\" id=\"@id\" " +
                 "name=\"@id\" class=\"@class?{EntryFormElement}\" " +
-                "{{value=\"@1\"}} />",
-                properties, data.check(id));
+                "{{value=\"@1\"}} />", properties, data.check(id));
     }
 }

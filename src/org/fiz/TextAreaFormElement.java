@@ -18,18 +18,8 @@ package org.fiz;
 /**
  * The TextAreaFormElement class implements multi-line text entries for forms,
  * using a {@code <textarea>} HTML element.  It supports the following
- * properties:
- *   class:          (optional) Class attribute to use for the {@code textarea}
- *                   element; defaults to "TextareaFormElement".
- *   help:           (optional) Help text for this form element.  If this
- *                   property is omitted the form will look for help text
- *                   in the {@code help} configuration dataset.
- *   id:             (required) Name for this FormElement; must be unique
- *                   among all ids for the page.  This is used as the name
- *                   for the data value in input and output datasets and
- *                   also as the {@code name} attribute for the HTML element.
- *   label:          (optional) Template for label to display next to the
- *                   FormElement to identify the element for the user.
+ * properties (additional properties applicable to all form elements may be
+ * found in {@link FormElement}):
  *   rows:           (optional) Number of rows to display in the
  *                   {@code textarea} element.
  * Some browsers (e.g., IE) use CRLF sequences between lines in the

@@ -15,6 +15,8 @@
 
 package org.fiz;
 
+import java.util.*;
+
 /**
  * A FormSection displays a collection of text entries and/or other controls
  * that allow the user to input data and then submit the result.  FormSections
@@ -134,12 +136,35 @@ public class FormSection extends Section {
      * when they detect a problem with incoming form data.
      */
     public static class FormDataException extends Exception {
+        // Contains a list of all error messages from a form element that
+        // generated this FormDataException
+        List<Dataset> errorMessages = new ArrayList<Dataset>();
+        
         /**
-         * Construct a FormDataException with a given message.
+         * Construct a FormDataException with an initial error message.
          * @param message          Message describing the problem.
          */
-        public FormDataException(String message) {
-            super(message);
+        public FormDataException(String culprit, String message) {
+            super("Please use getMessages() to retrieve the error data " +
+                    "contained in this FormDataExeption.");
+            addMessage(culprit, message);
+        }
+
+        /**
+         * Adds another error message the the exception
+         * @param message          Message describing the problem
+         */
+        public void addMessage(String culprit, String message) {
+            errorMessages.add(new Dataset("culprit", culprit,
+                    "message", message));
+        }
+
+        /**
+         * Returns the list of error messages associated with this exception
+         * @return                 See above
+         */
+        public Dataset[] getMessages() {
+            return errorMessages.toArray(new Dataset[errorMessages.size()]);
         }
     }
 
@@ -183,6 +208,9 @@ public class FormSection extends Section {
     public FormSection(Dataset properties, FormElement ... elements) {
         this.properties = properties;
         this.elements = elements;
+        for (FormElement element : elements) {
+            element.setParentForm(this);
+        }
         id = properties.check("id");
         if (id == null) {
             id = "form";
@@ -192,10 +220,11 @@ public class FormSection extends Section {
         if (buttonStyle == null) {
             buttonStyle = "FormSection.button";
         }
+        
         helpConfig = Config.getDataset("help");
         nestedHelp = helpConfig.checkChild(id);
     }
-
+    
     /**
      * This method is invoked during the first phase of rendering a page to
      * create any special requests needed for the form;  we don't need any
@@ -233,19 +262,18 @@ public class FormSection extends Section {
 
         // Give each of the form elements a chance to collect and transform
         // the data for which it is responsible.
-        Dataset postData = new Dataset();
+        Dataset collectedData = new Dataset();
         Dataset main = cr.getMainDataset();
-        Dataset errorData = null;
+        Dataset[] errorData = null;
         for (FormElement element : elements) {
             try {
-                element.collect(cr, main, postData);
-            }
-            catch (FormDataException e) {
+                element.validate(main);
+                element.collect(cr, main, collectedData);
+            } catch (FormDataException e) {
                 // The data for this form element was invalid; generate
                 // AJAX actions to display an error message.
                 String id = element.getId();
-                errorData = new Dataset("message", e.getMessage(),
-                        "culprit", id);
+                errorData = e.getMessages();
                 elementError(cr, id, errorData);
             }
         }
@@ -255,7 +283,7 @@ public class FormSection extends Section {
         if (errorData != null) {
             throw new PostError(errorData);
         }
-        return postData;
+        return collectedData;
     }
 
     /**
@@ -293,39 +321,32 @@ public class FormSection extends Section {
      * about the error next to the form element.
      * @param cr                   Overall information about the client
      *                             request being serviced.
+     * @param formId               Identifier for the form section
      * @param elementId            Identifier for the form element
      *                             responsible for the error; typically the
      *                             same as the {@code culprit} value in
      *                             {@code errorData}.
-     * @param errorData            Dataset containing information about the
-     *                             error.
+     * @param elementErrorStyle    Error template for the form section
+     * @param errorData            One or more Datasets describing errors
      */
-    public void elementError(ClientRequest cr, String elementId,
-            Dataset errorData) {
+    public static void elementError(ClientRequest cr, 
+            String formId, String elementId,
+            String elementErrorStyle, Dataset ... errorData) {
         // Generate HTML for the error message.
         StringBuilder html = new StringBuilder(100);
-        String templateName = properties.check("elementErrorStyle");
-        if (templateName == null) {
-            templateName = "FormSection.elementError";
-        }
-        Template.appendHtml(html, Config.getPath("styles", templateName),
-                new CompoundDataset(errorData, cr.getMainDataset()));
-
-        // Display a bulletin message indicating that there are problems,
-        // but only generate one message regardless of how many errors have
-        // occurred during this post.
-        if (!anyElementErrors) {
-            cr.addErrorsToBulletin(new Dataset("message",
-                    "One or more of the input fields are invalid; " +
-                    "see details below."));
-            anyElementErrors = true;
+        String templateName = elementErrorStyle;
+        // We have multipe error messages. Display each of them.
+        for (Dataset error : errorData) {
+            Template.appendHtml(html, 
+                    Config.getPath("styles", templateName),
+                    new CompoundDataset(error, cr.getMainDataset()));                
         }
 
         // Invoke a Javascript method, passing it information about
         // the form element plus the HTML.
-        cr.evalJavascript(Template.expandJs(
+        cr.evalJavascript(
                 "Fiz.ids.@1.elementError(\"@(1)_@2\", \"@3\");\n",
-                id, elementId, html));
+                formId, elementId, html);
     }
 
 
@@ -345,6 +366,34 @@ public class FormSection extends Section {
     public void elementError(ClientRequest cr, String elementId,
             String message) {
         elementError(cr, elementId, new Dataset("message", message));
+    }
+
+    /**
+     * When an error is detected in form data and the problem can be traced
+     * to a particular form element, this method will display information
+     * about the error next to the form element.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     * @param elementId            Identifier for the form element
+     *                             responsible for the error; typically the
+     *                             same as the {@code culprit} value in
+     *                             {@code errorData}.
+     * @param errorData            One or more Datasets describing errors
+     */
+    public void elementError(ClientRequest cr, String elementId,
+            Dataset ... errorData) {
+        // Display a bulletin message indicating that there are problems,
+        // but only generate one message regardless of how many errors have
+        // occurred during this post.
+        if (!anyElementErrors) {
+            cr.addErrorsToBulletin(new Dataset("message",
+                    "One or more of the input fields are invalid; " +
+                    "see details below."));
+            anyElementErrors = true;
+        }
+
+        FormSection.elementError(cr, checkId(), elementId, 
+                checkElementErrorStyle(), errorData);
     }
 
     /**
@@ -406,7 +455,8 @@ public class FormSection extends Section {
         //   Javascript).
         Template.appendHtml(out, "\n<!-- Start FormSection @id -->\n" +
                 "<div id=\"@(id)_target\" style=\"display:none;\"></div>\n" +
-                "<form id=\"@id\" class=\"@class?{FormSection}\" " +
+                "<form id=\"@id\" " +
+                "class=\"@class?{FormSection}\" " +
                 "onsubmit=\"return Fiz.ids.@id.submit();\" " +
                 "action=\"@postUrl?{post}\" method=\"post\" " +
                 "enctype=\"multipart/form-data\">\n" +
@@ -424,6 +474,23 @@ public class FormSection extends Section {
         cr.evalJavascript("Fiz.ids.@id = new Fiz.FormSection(\"@id\");\n",
                 properties);
         html.includeJsFile("static/fiz/FormSection.js");
+    }
+
+    /**
+     * Return the {@code elementErrorStyle} property for this section, or null
+     * if no such property exists.
+     * @return                     See above.
+     */
+    protected String checkElementErrorStyle() {
+        if (properties != null) {
+            String result = properties.check("elementErrorStyle");
+            if (result == null) {
+                return "FormSection.elementError";
+            } else {
+                return result;
+            }
+        }
+        return null;
     }
 
     /**
@@ -546,6 +613,7 @@ public class FormSection extends Section {
             out.append("</label></td>\n      <td class=\"control\">");
         }
         element.render(cr, data, out);
+        element.renderValidators(cr);
 
         // Create an extra <div> underneath the control for displaying
         // error messages pertaining to this form element.
@@ -584,6 +652,7 @@ public class FormSection extends Section {
         }
         out.append("      <div class=\"control\">");
         element.render(cr, data, out);
+        element.renderValidators(cr);
 
         // Create an extra <div> underneath the control for displaying
         // error messages pertaining to this form element.

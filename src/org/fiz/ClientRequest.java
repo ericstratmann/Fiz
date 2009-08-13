@@ -796,8 +796,7 @@ public class ClientRequest {
             }
         } else {
             jsCode = null;
-            evalJavascript(Template.expandJs(
-                    "document.location.href = \"@1\";\n", url));
+            evalJavascript("document.location.href = \"@1\";\n", url);
         }
     }
 
@@ -978,9 +977,8 @@ public class ClientRequest {
      *                             {@code innerHTML} property.
      */
     public void updateElement(String id, String html) {
-        evalJavascript(Template.expandJs(
-                "document.getElementById(\"@1\").innerHTML = \"@2\";\n",
-                id, html));
+        evalJavascript("document.getElementById(\"@1\").innerHTML = \"@2\";\n",
+                id, html);
     }
 
     /**
@@ -1069,8 +1067,7 @@ public class ClientRequest {
 
         // Download the page id to the browser so that it will be included
         // in future form posts and Ajax requests.
-        evalJavascript(Template.expandJs("Fiz.pageId = \"@1\";\n",
-                pageId));
+        evalJavascript("Fiz.pageId = \"@1\";\n", pageId);
         return pageId;
     }
 
