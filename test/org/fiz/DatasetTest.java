@@ -96,7 +96,7 @@ public class DatasetTest extends junit.framework.TestCase {
     public void test_constructor_keysAndValuesObjects_typeError() {
         boolean gotException = false;
         try {
-            Dataset d = new Dataset("a", new int[] {1, 2, 3});
+            new Dataset("a", new int[] {1, 2, 3});
         }
         catch (ClassCastException e) {
             assertEquals("exception message",
@@ -761,11 +761,11 @@ public class DatasetTest extends junit.framework.TestCase {
                 Dataset.DesiredType.STRING, Dataset.Quantity.FIRST_ONLY));
     }
 
-	public void test_lookup_withOneArgument() {
+    public void test_lookup_withOneArgument() {
         Dataset d = new Dataset("a", "a_value", "b", "b_value");
         assertEquals("existing value", "b_value", d.lookup("b"));
         assertEquals("nonexistent value", null, d.lookup("bogus"));
-	}
+    }
 
     public void test_lookup_withExtraArgument() {
         ArrayList<Object> out = new ArrayList<Object>();

@@ -60,11 +60,61 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "fiz.ClientRequest.sessionToken", "OK");
     }
 
+    public void test_FormDataException_constructor() {
+        FormSection.FormDataException exception = 
+            new FormSection.FormDataException("elem", "<test error>");
+        assertEquals("Message array", 1, exception.errorMessages.size());
+        assertEquals("Error message",
+                "culprit: elem\n" +
+                "message: <test error>\n",
+                exception.errorMessages.get(0).toString());
+    }
+
+    public void test_FormDataException_addMessage() {
+        FormSection.FormDataException exception = 
+            new FormSection.FormDataException("elem", "<test error>");
+        
+        exception.addMessage("elem2", "<another test>");
+        assertEquals("Message array", 2, exception.errorMessages.size());
+        assertEquals("Error message 1",
+                "culprit: elem\n" +
+                "message: <test error>\n",
+                exception.errorMessages.get(0).toString());
+        assertEquals("Error message 2",
+                "culprit: elem2\n" +
+                "message: <another test>\n",
+                exception.errorMessages.get(1).toString());
+    }
+
+    public void test_FormDataException_getMessage() {
+        FormSection.FormDataException exception = 
+            new FormSection.FormDataException("elem", "<test error>");
+        
+        exception.addMessage("elem2", "<another test>");
+        assertEquals("Message array", 2, exception.errorMessages.size());
+        assertEquals("Error message 1",
+                "culprit: elem\n" +
+                "message: <test error>\n",
+                exception.getMessages()[0].toString());
+        assertEquals("Error message 2",
+                "culprit: elem2\n" +
+                "message: <another test>\n",
+                exception.getMessages()[1].toString());
+    }
+    
     public void test_constructor_defaultId() {
         FormSection form = new FormSection(
                 new Dataset());
         assertEquals("id variable", "form", form.id);
         assertEquals("id property", "form", form.properties.get("id"));
+    }
+    public void test_constructor_setParent() {
+        FormElementFixture elem1 = new FormElementFixture("id1");
+        FormElementFixture elem2 = new FormElementFixture("id2");
+        FormSection form = new FormSection(
+                new Dataset(), elem1, elem2);
+        assertEquals("elem1 parent", form, elem1.parentForm);
+        assertEquals("elem2 parent", form, elem2.parentForm);
     }
     public void test_constructor_defaultButtonStyle() {
         FormSection form = new FormSection(
@@ -82,7 +132,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "form1", "buttonStyle", "explicit"));
         assertEquals("buttonStyle", "explicit", form.buttonStyle);
     }
-
+    
     public void test_addDataRequests() {
         Config.setDataset("dataRequests", YamlDataset.newStringInstance(
                 "getPerson:\n" +
@@ -115,6 +165,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "name: Alice\n",
                 result.toString());
     }
+        
     public void test_collectFormData_validationErrors() {
         // The following class generates an exception in its collect method.
         class ErrorFormElement extends FormElement{
@@ -125,7 +176,7 @@ public class FormSectionTest extends junit.framework.TestCase {
             }
             public void collect(ClientRequest cr, Dataset in, Dataset out)
                     throws FormSection.FormDataException {
-                throw new FormSection.FormDataException(message);
+                throw new FormSection.FormDataException(id, message);
             }
             public void render(ClientRequest cr, Dataset data,
                     StringBuilder out) {}
@@ -142,8 +193,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         }
         catch (FormSection.PostError e) {
             gotException = true;
-        assertEquals("Error datasets", "culprit: age\n" +
-                "message: age error\n",
+        assertEquals("Error datasets", "culprit: age\nmessage: age error\n",
                 StringUtil.join(e.getErrorData(), "\n"));
         }
         assertEquals("exception happened", true, gotException);
@@ -206,7 +256,30 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.jsCode.toString());
     }
 
-    public void test_elementError_basics() {
+    public void test_elementError_basicString() {
+        FormSection form = new FormSection(
+                new Dataset("id", "form1", "elementErrorStyle", "style22"),
+                new EntryFormElement("name", "Name:"),
+                new EntryFormElement("age", "Age:"));
+        cr.setClientRequestType(ClientRequest.Type.POST);
+        // Make sure that the template references data in the main dataset,
+        // to verify that it is available.
+        Config.setDataset("styles", new Dataset(
+                "style22", "error for @name: @message",
+                "bulletin", new Dataset("error", "bulletin: @message")));
+        Dataset main = cr.getMainDataset();
+        main.set("name", "Alice");
+        main.set("age", "21");
+        form.elementError(cr, "id11", "<failure>");
+        assertEquals("javascript response",
+                "Fiz.addBulletinMessage(\"bulletin: " +
+                "One or more of the input fields are invalid; see " +
+                "details below.\");\n" +
+                "Fiz.ids.form1.elementError(\"form1_id11\", \"error for " +
+                "Alice: &lt;failure&gt;\");\n",
+                cr.jsCode.toString());
+    }
+    public void test_elementError_basicDataset() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "elementErrorStyle", "style22"),
                 new EntryFormElement("name", "Name:"),
@@ -267,7 +340,24 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "\"default style: &lt;failure&gt;\");\n",
                 cr.jsCode.toString());
     }
-
+    public void test_elementError_multipleErrors() {
+        FormSection form = new FormSection(
+                new Dataset("id", "form1"),
+                new EntryFormElement("name", "Name:"),
+                new EntryFormElement("age", "Age:"));
+        form.anyElementErrors = true;
+        cr.setClientRequestType(ClientRequest.Type.POST);
+        Config.setDataset("styles", new Dataset("FormSection",
+                new Dataset("elementError", "default style: @message ")));
+        form.elementError(cr, "id11", new Dataset("culprit", "age",
+                        "message", "test1"),
+                new Dataset("culprit", "age",
+                        "message", "test2"));
+        assertEquals("javascript response",
+                "Fiz.ids.form1.elementError(\"form1_id11\", " +
+                "\"default style: test1 default style: test2 \");\n",
+                cr.jsCode.toString());
+    }
     public void test_elementError_messageArgument() {
         FormSection form = new FormSection(
                 new Dataset("id", "form1", "elementErrorStyle", "style22"),
@@ -395,7 +485,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "onsubmit=\"return Fiz.ids.form1.submit();\" " +
                 "action=\"x/y\" method=\"post\" " +
                 "enctype=\"multipart/form-data\">\n" +
-                "  <input type=\"hidden\" name=\"fiz_auth\" value=\"OK\" />\n" +
+                "  <input type=\"hidden\" name=\"fiz_auth\" " +
+                "value=\"OK\" />\n" +
                 "  <input id=\"form1_fizPageId\" type=\"hidden\" " +
                 "name=\"fiz_pageId\" />\n" +
                 "  <table",
@@ -412,7 +503,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "onsubmit=\"return Fiz.ids.form1.submit();\" " +
                 "action=\"post\" method=\"post\" " +
                 "enctype=\"multipart/form-data\">\n" +
-                "  <input type=\"hidden\" name=\"fiz_auth\" value=\"OK\" />\n" +
+                "  <input type=\"hidden\" name=\"fiz_auth\" " +
+                "value=\"OK\" />\n" +
                 "  <input id=\"form1_fizPageId\" type=\"hidden\" " +
                 "name=\"fiz_pageId\" />\n" +
                 "  <table",
@@ -431,6 +523,13 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("Javascript files",
                 "static/fiz/Ajax.js, static/fiz/Fiz.js, static/fiz/FormSection.js",
                 cr.getHtml().getJsFiles());
+    }
+
+    public void test_checkElementErrorStyle() {
+        FormSection form = new FormSection(
+                new Dataset("id", "form1", "request", "getPerson",
+                        "elementErrorStyle", "error"));
+        assertEquals("element error style", "error", form.checkElementErrorStyle());
     }
 
     public void test_getHelpText() {
@@ -502,8 +601,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "style=\"display:none\"></div></td>\n" +
                 "    </tr>\n" +
                 "  </table>\n" +
-                "  <input type=\"hidden\" name=\"name\" value=\"David\" />\n" +
-                "  <input type=\"hidden\" name=\"iq\" />\n" +
+                "  <input type=\"hidden\" id=\"name\" name=\"name\" value=\"David\" />\n" +
+                "  <input type=\"hidden\" id=\"iq\" name=\"iq\" />\n" +
                 "</form>",
                 cr.getHtml().getBody().toString(), "<table.*</form>");
         TestUtil.assertXHTML( cr.getHtml().toString());

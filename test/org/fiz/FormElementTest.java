@@ -15,6 +15,10 @@
 
 package org.fiz;
 
+import java.util.ArrayList;
+
+import org.fiz.test.ClientRequestFixture;
+
 /**
  * Junit tests for the FormElement class.
  */
@@ -29,10 +33,21 @@ public class FormElementTest extends junit.framework.TestCase {
             // Do nothing.
         }
     }
-
+    
+    // This is a sample validation function used to test custom validators
+    public static String validateTest(String id, Dataset properties,
+            Dataset formData) {
+        if (formData.get(id).equals(properties.get("test"))) {
+            return null;
+        } else {
+            return FormValidator.errorMessage("Validation failed",
+                    properties, formData);
+        }
+    }
+         
     // No tests for addDataRequests: it doesn't do anything.
 
-    public void test_constructor() {
+    public void test_constructor_basic() {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "4815162342", "name", "Alice"));
         assertEquals("properties dataset", "id:   4815162342\n" +
@@ -40,6 +55,83 @@ public class FormElementTest extends junit.framework.TestCase {
         assertEquals("element id", "4815162342", element.id);
     }
 
+    public void test_constructor_required() {
+        FormElementFixture element = new FormElementFixture(new Dataset(
+                "id", "4815162342", "name", "Alice", "required", "true"));
+        assertEquals("validator set", "type: required\n",
+                element.validatorData.validators.get(0).toString());
+    }
+
+    // No tests for addDataRequests: it doesn't do anything.
+    
+    public void test_addValidator() {
+        FormElementFixture element = new FormElementFixture(new Dataset(
+                "id", "elem", "label", "elem_label",
+                "validator", new Dataset("type", "required")));
+        
+        element.addValidator(new Dataset("type", "match"));
+        
+        assertEquals("validators", 2, element.validatorData.validators.size());
+        
+        assertEquals("validator required",
+                "type: required\n",
+                element.validatorData.validators.get(0).toString());
+        assertEquals("validator match",
+                "type: match\n",
+                element.validatorData.validators.get(1).toString());
+    }
+
+    public void test_ajaxValidate_success() {
+        ClientRequest cr = new ClientRequestFixture();
+        cr.setClientRequestType(ClientRequest.Type.AJAX);
+        ArrayList<Dataset> validators = new ArrayList<Dataset>();
+        validators.add(new Dataset("type", "range", "min", "98", "max", "100"));
+        FormElement.ValidatorData v = new FormElement.ValidatorData("elem");
+        v.parentId = "form";
+        v.elementErrorStyle = "FormSection.elementError";
+        cr.setPageProperty("elem_validation",  v);
+        cr.jsCode = null;
+        cr.mainDataset = new Dataset(
+                "elementsToValidate", "elem",
+                "formData", new Dataset("elem", "99"));
+        FormElement.ajaxValidate(cr);
+        assertEquals("Ajax javascript",
+                "Fiz.ids.form.clearElementError(\"form_elem\");\n",
+                cr.jsCode.toString());
+    }
+
+    public void test_ajaxValidate_failure() {
+        ClientRequest cr = new ClientRequestFixture();
+        cr.setClientRequestType(ClientRequest.Type.AJAX);
+        ArrayList<Dataset> validators = new ArrayList<Dataset>();
+        validators.add(new Dataset("type", "range", "min", "98", "max", "100",
+                "errorMessage", "test: @type @min @max"));
+        FormElement.ValidatorData v = new FormElement.ValidatorData("elem");
+        v.parentId = "form";
+        v.elementErrorStyle = "FormSection.elementError";
+        v.validators = validators;
+        cr.setPageProperty("elem_validation",  v);
+        cr.jsCode = null;
+        cr.mainDataset = new Dataset(
+                "elementsToValidate", "elem",
+                "formData", new Dataset("elem", "101"));
+        FormElement.ajaxValidate(cr);
+        assertEquals("Ajax javascript",
+                "Fiz.ids.form.elementError(\"form_elem\", \"" +
+                "<span class=\\\"error\\\">" +
+                "test: range 98 100" +
+                "</span>\");\n",
+                cr.jsCode.toString());
+    }
+
+    public void test_checkProperty() {
+        FormElementFixture element = new FormElementFixture(new Dataset(
+                "id", "name", "age", "8"));
+        assertEquals("existing property", "8", element.checkProperty("age"));
+        assertEquals("nonexistent property", null,
+                element.checkProperty("bogus"));
+    }
+        
     public void test_collect() throws FormSection.FormDataException {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "name", "name", "Alice"));
@@ -58,21 +150,13 @@ public class FormElementTest extends junit.framework.TestCase {
         assertEquals("output dataset", "age:  30\n" +
                 "name: Bob\n", out.toString());
     }
-
+    
     public void test_getId() {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "name", "age", "8"));
         assertEquals("return value", "name", element.getId());
     }
-
-    public void test_checkProperty() {
-        FormElementFixture element = new FormElementFixture(new Dataset(
-                "id", "name", "age", "8"));
-        assertEquals("existing property", "8", element.checkProperty("age"));
-        assertEquals("nonexistent property", null,
-                element.checkProperty("bogus"));
-    }
-
+    
     public void test_renderLabel_withTemplate() {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "age", "label", "Age of @name:"));
@@ -91,6 +175,50 @@ public class FormElementTest extends junit.framework.TestCase {
         assertEquals("generated HTML", "", out.toString());
     }
 
+    public void test_renderValidators_noParent() {
+        ClientRequest cr = new ClientRequestFixture();
+        cr.jsCode = null;
+        FormElementFixture element = new FormElementFixture(new Dataset(
+                "id", "name", "label", "noParent"));
+        element.renderValidators(cr);
+        
+        assertEquals("Generated javascript", "", cr.getHtml().jsCode.toString());
+        assertEquals("Javascript file names", "", cr.getHtml().getJsFiles());
+    }
+
+    public void test_renderValidators_multipleValidators() {
+        ClientRequest cr = new ClientRequestFixture();
+        FormElementFixture element = new FormElementFixture(new Dataset(
+                "id", "elem", "label", "elem_label",
+                "validator", new Dataset("type", "range", "min", "98", "max", "100"),
+                "validator", new Dataset("type", "match", "fields", "test1,test2", 
+                        "otherFields", "test1,test2")));
+        Config.init("test/testData/WEB-INF/app/config", "web/WEB-INF/fiz/config");
+        new FormSection(
+                new Dataset("id", "form1",
+                        "request", "getFormData",
+                        "postUrl", "postForm"),
+                element);
+        
+        element.renderValidators(cr);
+        
+        assertEquals("Generated javascript",
+                "Fiz.auth = \"JHB9AM69@$6=TAF*J \";\n" +
+                "Fiz.FormElement.attachValidator(" +
+                "\"test1\", \"elem\", \"test1,test2\");\n" +
+                "Fiz.FormElement.attachValidator(" +
+                "\"test2\", \"elem\", \"test1,test2\");\n" +
+                "Fiz.FormElement.attachValidator(" +
+                "\"elem\", \"elem\", \"elem,test1,test2\");\n" +
+                "Fiz.pageId = \"3\";\n",
+                cr.getHtml().jsCode.toString());
+        assertEquals("Page property", element.validatorData,
+                cr.getPageProperty("elem_validation"));
+        assertEquals("Javascript file names", 
+                "static/fiz/Ajax.js, static/fiz/Fiz.js, static/fiz/FormElement.js",
+                cr.getHtml().getJsFiles());
+    }
+
     public void test_responsibleFor() {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "age"));
@@ -98,5 +226,172 @@ public class FormElementTest extends junit.framework.TestCase {
                 element.responsibleFor("age"));
         assertEquals("not responsible for this element", false,
                 element.responsibleFor("name"));
+    }
+
+    public void test_setParentForm() {
+        FormElementFixture element = new FormElementFixture(new Dataset(
+                "id", "name", "name", "Alice"));
+        Config.init("test/testData/WEB-INF/app/config", "web/WEB-INF/fiz/config");
+        FormSection section = new FormSection(
+                new Dataset("id", "form1",
+                        "request", "getFormData",
+                        "postUrl", "postForm"),
+                element);
+        
+        assertEquals("form parent", section, element.parentForm);
+    }
+
+    public void test_validate_basic() throws FormSection.FormDataException {
+        ClientRequest cr = new ClientRequestFixture();
+        ArrayList<Dataset> validators = new ArrayList<Dataset>();
+        validators.add(new Dataset("type", "range", "min", "98", "max", "100"));
+        FormElement element = new FormElementFixture(
+                new Dataset("id", "id11",
+                        "label", "id11_label",
+                        "validate", new Dataset(
+                                "type", "range", "min", "98", "max", "100")));
+        cr.setPageProperty("elem_validation",  element.validatorData);
+        cr.jsCode = null;
+        cr.mainDataset = new Dataset(
+                "elementsToValidate", "elem",
+                "formData", new Dataset("elem", "98"));
+
+        boolean gotException = false;
+        try {
+            element.validate(cr.getMainDataset().getChild("formData"));
+        } catch (FormSection.FormDataException e) {
+            
+        }
+        assertEquals("exception did not happen", false, gotException);
+    }
+
+    public void test_validate_success_builtIn() throws FormSection.FormDataException {
+        ClientRequest cr = new ClientRequestFixture();
+        ArrayList<Dataset> validators = new ArrayList<Dataset>();
+        validators.add(new Dataset("type", "range", "min", "98", "max", "100"));
+        FormElement.ValidatorData v = new FormElement.ValidatorData("elem");
+        v.parentId = "form";
+        v.elementErrorStyle = "FormSection.elementError";
+        v.validators = validators;
+        cr.setPageProperty("elem_validation",  v);
+        cr.jsCode = null;
+        cr.mainDataset = new Dataset(
+                "elementsToValidate", "elem",
+                "formData", new Dataset("elem", "98"));
+    
+        boolean gotException = false;
+        try {
+            FormElement.validate(v, cr.getMainDataset().getChild("formData"));
+        } catch (FormSection.FormDataException e) {
+            
+        }
+        assertEquals("exception did not happen", false, gotException);
+    }
+
+    public void test_validate_success_custom() throws FormSection.FormDataException {
+        ClientRequest cr = new ClientRequestFixture();
+        ArrayList<Dataset> validators = new ArrayList<Dataset>();
+        validators.add(new Dataset("type", "FormElementTest.validateTest",
+                        "test", "98"));
+        FormElement.ValidatorData v = new FormElement.ValidatorData("elem");
+        v.parentId = "form";
+        v.elementErrorStyle = "FormSection.elementError";
+        v.validators = validators;
+        cr.setPageProperty("elem_validation",  v);
+        cr.jsCode = null;
+        cr.mainDataset = new Dataset(
+                "elementsToValidate", "elem",
+                "formData", new Dataset("elem", "98"));
+    
+        boolean gotException = false;
+        try {
+            FormElement.validate(v, cr.getMainDataset().getChild("formData"));
+        } catch (FormSection.FormDataException e) {}
+        assertEquals("exception did not happen", false, gotException);
+    }
+
+    public void test_validate_success_multiple() throws FormSection.FormDataException {
+        ClientRequest cr = new ClientRequestFixture();
+        ArrayList<Dataset> validators = new ArrayList<Dataset>();
+        validators.add(new Dataset("type", "range", "min", "98", "max", "100"));
+        validators.add(new Dataset("type", "FormElementTest.validateTest",
+                        "test", "98"));
+        FormElement.ValidatorData v = new FormElement.ValidatorData("elem");
+        v.parentId = "form";
+        v.elementErrorStyle = "FormSection.elementError";
+        v.validators = validators;
+        cr.setPageProperty("elem_validation",  v);
+        cr.jsCode = null;
+        cr.mainDataset = new Dataset(
+                "elementsToValidate", "elem",
+                "formData", new Dataset("elem", "98"));
+    
+        boolean gotException = false;
+        try {
+            FormElement.validate(v, cr.getMainDataset().getChild("formData"));
+        } catch (FormSection.FormDataException e) {}
+        assertEquals("exception did not happen", false, gotException);
+    }
+
+    public void test_validate_failure_builtIn() {
+        ClientRequest cr = new ClientRequestFixture();
+        ArrayList<Dataset> validators = new ArrayList<Dataset>();
+        validators.add(new Dataset("type", "range", "min", "98", "max", "100",
+                "errorMessage", "test: @type @min @max"));
+        validators.add(new Dataset("type", "length", "min", "10", "max", "12",
+                        "errorMessage", "test: @type @min @max"));
+        FormElement.ValidatorData v = new FormElement.ValidatorData("elem");
+        v.parentId = "form";
+        v.elementErrorStyle = "FormSection.elementError";
+        v.validators = validators;
+        cr.setPageProperty("elem_validation",  v);
+        cr.jsCode = null;
+        cr.mainDataset = new Dataset(
+                "elementsToValidate", "elem",
+                "formData", new Dataset("elem", "97"));
+        
+        boolean gotException = false;
+        try {
+            FormElement.validate(v, cr.getMainDataset()
+                    .getChild("formData"));
+        } catch (FormSection.FormDataException e) {
+            assertEquals("exception message - range",
+                    "culprit: elem\n" +
+                    "message: \"test: range 98 100\"\n", e.getMessages()[0].toString());
+            assertEquals("exception message - length",
+                    "culprit: elem\n" +
+                    "message: \"test: length 10 12\"\n", e.getMessages()[1].toString());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+
+    public void test_validate_failure_custom() {
+        ClientRequest cr = new ClientRequestFixture();
+        ArrayList<Dataset> validators = new ArrayList<Dataset>();
+        validators.add(new Dataset("type", "FormElementTest.validateTest",
+                "test", "test_value", "errorMessage", "test_error"));
+        FormElement.ValidatorData v = new FormElement.ValidatorData("elem");
+        v.parentId = "form";
+        v.elementErrorStyle = "FormSection.elementError";
+        v.validators = validators;
+        cr.setPageProperty("elem_validation",  v);
+        cr.jsCode = null;
+        cr.mainDataset = new Dataset(
+                "elementsToValidate", "elem",
+                "formData", new Dataset("elem", "fake_value"));
+    
+        boolean gotException = false;
+        try {
+            FormElement.validate(v, cr.getMainDataset()
+                    .getChild("formData"));
+        } 
+        catch (FormSection.FormDataException e) {
+            assertEquals("exception message",
+                    "culprit: elem\n" +
+                    "message: test_error\n", e.getMessages()[0].toString());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
     }
 }

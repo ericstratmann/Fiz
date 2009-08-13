@@ -22,17 +22,25 @@ import org.fiz.test.*;
  */
 public class CheckboxFormElementTest extends junit.framework.TestCase {
     public void test_constructor() {
+        Dataset.sortOutput = true;
         CheckboxFormElement element = new CheckboxFormElement(
                 new Dataset("id", "44", "trueValue", "111",
                 "falseValue", "000"));
         assertEquals("explicit trueValue", "111", element.trueValue);
         assertEquals("explicit falseValue", "000", element.falseValue);
+        assertEquals("explicit properties dataset",
+                "falseValue: 000\n" +
+                "id:         44\n" +
+                "trueValue:  111\n", element.properties.toString());
         element = new CheckboxFormElement(new Dataset("id", "44"));
         assertEquals("default trueValue", "true", element.trueValue);
         assertEquals("default falseValue", "false", element.falseValue);
+        assertEquals("default properties dataset",
+                "id: 44\n", element.properties.toString());
     }
 
     public void test_constructor_withIdAndLabel() {
+        Dataset.sortOutput = true;
         CheckboxFormElement element = new CheckboxFormElement(
                 "id11", "label22");
         assertEquals("properties dataset", "id:    id11\n" +

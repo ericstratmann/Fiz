@@ -28,76 +28,17 @@ public class PasswordFormElementTest extends junit.framework.TestCase {
                 "label: label22\n", element.properties.toString());
     }
 
-    public void test_collect_validateOK()
-            throws FormSection.FormDataException {
-        ClientRequest cr = new ClientRequestFixture();
+    public void test_constructor_withDuplicate() {
+        Dataset.sortOutput = true;
         PasswordFormElement element = new PasswordFormElement(
-                new Dataset("id", "secret", "duplicate", "secret2"));
-        Dataset out = new Dataset();
-        element.collect(cr, new Dataset("secret", "value2",
-                "secret2", "value2"), out);
-        assertEquals("collected dataset", "", out.toString());
-    }
-    public void test_collect_validateFailedFirstMissing() {
-        ClientRequest cr = new ClientRequestFixture();
-        PasswordFormElement element = new PasswordFormElement(
-                new Dataset("id", "secret", "duplicate", "secret2"));
-        boolean gotException = false;
-        Dataset d = new Dataset("a", "a_value");
-        try {
-            element.collect(cr, new Dataset("secret2", "value2"),
-                    new Dataset());
-        }
-        catch (FormSection.FormDataException e) {
-            assertEquals("exception message",
-                    "the passwords are not the same", e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-    public void test_collect_validateFailedSecondMissing() {
-        ClientRequest cr = new ClientRequestFixture();
-        PasswordFormElement element = new PasswordFormElement(
-                new Dataset("id", "secret", "duplicate", "secret2"));
-        boolean gotException = false;
-        Dataset d = new Dataset("a", "a_value");
-        try {
-            element.collect(cr, new Dataset("secret", "xyzzy"),
-                    new Dataset());
-        }
-        catch (FormSection.FormDataException e) {
-            assertEquals("exception message",
-                    "the passwords are not the same", e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-    public void test_collect_validateFailed() {
-        ClientRequest cr = new ClientRequestFixture();
-        PasswordFormElement element = new PasswordFormElement(
-                new Dataset("id", "secret", "duplicate", "secret2"));
-        boolean gotException = false;
-        Dataset d = new Dataset("a", "a_value");
-        try {
-            element.collect(cr, new Dataset("secret", "xyzzy",
-                    "secret2", "bogus"),new Dataset());
-        }
-        catch (FormSection.FormDataException e) {
-            assertEquals("exception message",
-                    "the passwords are not the same", e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-    public void test_collect_justCopyValue()
-            throws FormSection.FormDataException {
-        ClientRequest cr = new ClientRequestFixture();
-        PasswordFormElement element = new PasswordFormElement(
-                new Dataset("id", "secret"));
-        Dataset out = new Dataset();
-        element.collect(cr, new Dataset("secret", "xyzzy",
-                "secret2", "value2"), out);
-        assertEquals("collected dataset", "secret: xyzzy\n", out.toString());
+                new Dataset("id", "id11",
+                        "label", "label22",
+                        "duplicate", "id22"));
+        assertEquals("validator", "" +
+                "errorMessage: Password does not match\n" +
+                "otherFields:  id22\n" +
+                "type:         duplicate\n",
+                element.validatorData.validators.get(0).toString());
     }
 
     public void test_render_defaultClass() {
