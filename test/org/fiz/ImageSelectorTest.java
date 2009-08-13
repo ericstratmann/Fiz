@@ -23,13 +23,11 @@ import org.fiz.test.*;
 
 public class ImageSelectorTest extends junit.framework.TestCase {
     protected ClientRequest cr;
-    protected StringBuilder out;
     protected Dataset testRow;
     protected ImageSelector is;
 
     public void setUp() {
         cr = new ClientRequestFixture();
-        out = new StringBuilder();
         testRow = new Dataset("foo", "bar");
     }
 
@@ -61,7 +59,7 @@ public class ImageSelectorTest extends junit.framework.TestCase {
         Dataset data = new Dataset("id", "baz", "map", new Dataset());
         is = new ImageSelector(data);
         try {
-            is.render(cr, testRow, out);
+            is.render(cr, testRow);
         } catch (Dataset.MissingValueError e) {
             assertEquals("couldn't find dataset element \"baz\"",
                 e.getMessage());
@@ -74,7 +72,7 @@ public class ImageSelectorTest extends junit.framework.TestCase {
         Dataset data = new Dataset("id", "foo", "map", new Dataset());
         is = new ImageSelector(data);
         try {
-            is.render(cr, testRow, out);
+            is.render(cr, testRow);
         } catch (Dataset.MissingValueError e) {
             assertEquals("couldn't find dataset element \"bar\"",
                 e.getMessage());
@@ -87,9 +85,9 @@ public class ImageSelectorTest extends junit.framework.TestCase {
         Dataset data = new Dataset("id", "foo", "map", new Dataset(
                 "default", "default.png"));
         is = new ImageSelector(data);
-        is.render(cr, testRow, out);
+        is.render(cr, testRow);
         assertEquals("<img src=\"default.png\" alt=\"bar\" />",
-                out.toString());
+                cr.getHtml().getBody().toString());
 
     }
 
@@ -97,8 +95,8 @@ public class ImageSelectorTest extends junit.framework.TestCase {
         Dataset data = new Dataset("id", "foo", "map", new Dataset(
                 "bar", "bar.png"));
         is = new ImageSelector(data);
-        is.render(cr, testRow, out);
-        assertEquals("<img src=\"bar.png\" alt=\"bar\" />", out.toString());
+        is.render(cr, testRow);
+        assertEquals("<img src=\"bar.png\" alt=\"bar\" />", cr.getHtml().getBody().toString());
     }
 
     public void test_render_valueIsDatasetNoSrc() {
@@ -106,7 +104,7 @@ public class ImageSelectorTest extends junit.framework.TestCase {
                 "bar", new Dataset()));
         is = new ImageSelector(data);
         try {
-            is.render(cr, testRow, out);
+            is.render(cr, testRow);
         } catch (Dataset.MissingValueError e) {
             assertEquals("couldn't find dataset element \"src\"",
                 e.getMessage());
@@ -120,16 +118,16 @@ public class ImageSelectorTest extends junit.framework.TestCase {
                 "bar", new Dataset(
                 "src", "bar.png", "alt", "baz")));
         is = new ImageSelector(data);
-        is.render(cr, testRow, out);
-        assertEquals("<img src=\"bar.png\" alt=\"baz\" />", out.toString());
+        is.render(cr, testRow);
+        assertEquals("<img src=\"bar.png\" alt=\"baz\" />", cr.getHtml().getBody().toString());
     }
 
     public void test_render_valueIsDatasetWithoutAlt() {
         Dataset data = new Dataset("id", "foo", "map", new Dataset(
                 "bar", new Dataset("src", "bar.png")));
         is = new ImageSelector(data);
-        is.render(cr, testRow, out);
-        assertEquals("<img src=\"bar.png\" alt=\"bar\" />", out.toString());
+        is.render(cr, testRow);
+        assertEquals("<img src=\"bar.png\" alt=\"bar\" />", cr.getHtml().getBody().toString());
     }
 
     public void test_render_useTemplate() {
@@ -139,8 +137,8 @@ public class ImageSelectorTest extends junit.framework.TestCase {
         // It's a weird template to make sure escaping works properly
         testRow.set("a", "a <\"~");
         is = new ImageSelector("foo", map);
-        is.render(cr, testRow, out);
+        is.render(cr, testRow);
         assertEquals("<img src=\"a+%3c%22%7e\" alt=\"a &lt;&quot;~\" />",
-            out.toString());
+            cr.getHtml().getBody().toString());
     }
 }

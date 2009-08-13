@@ -39,25 +39,23 @@ public class UploadFormElementTest extends junit.framework.TestCase {
     public void test_render() {
         ClientRequest cr = new ClientRequestFixture();
         UploadFormElement element = new UploadFormElement("age", "Age:");
-        StringBuilder out = new StringBuilder();
-        element.render(cr, new Dataset("age", "<confidential>"), out);
+        element.render(cr, new Dataset("age", "<confidential>"));
         assertEquals("CSS includes", "UploadFormElement.css",
                 cr.getHtml().getCssFiles());
         assertEquals("generated HTML",
                 "<input type=\"file\" id=\"age\" name=\"age\" " +
                 "class=\"UploadFormElement\" />",
-                out.toString());
+                cr.getHtml().getBody().toString());
     }
     public void test_render_explicitClass() {
         ClientRequest cr = new ClientRequestFixture();
         UploadFormElement element = new UploadFormElement(
                 new Dataset("id", "age", "label", "Age:",
                 "class", "class16"));
-        StringBuilder out = new StringBuilder();
-        element.render(cr, new Dataset("age", "<confidential>"), out);
+        element.render(cr, new Dataset("age", "<confidential>"));
         assertEquals("generated HTML",
                 "<input type=\"file\" id=\"age\" name=\"age\" " +
                 "class=\"class16\" />",
-                out.toString());
+                cr.getHtml().getBody().toString());
     }
 }

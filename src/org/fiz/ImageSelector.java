@@ -32,7 +32,7 @@ package org.fiz;
  * is {@code default}. If that key exists, it is used to find the default
  * image if a particular key is not found.
  */
-public class ImageSelector implements Formatter {
+public class ImageSelector extends Formatter {
 
     /* Constructor properties */
     protected String id;
@@ -71,10 +71,10 @@ public class ImageSelector implements Formatter {
      *                       templates. We also use {@code id} passed to the
      *                       constuctor to reference a column in this row which
      *                       is used to select an image to display.
-     * @param out            HTML for the ImageSelector is appended here.
      */
-    public void render(ClientRequest cr, Dataset data, StringBuilder out) {
+    public void render(ClientRequest cr, Dataset data) {
 
+        StringBuilder out = cr.getHtml().getBody();
         String src, alt = null;
         String key = data.get(id);
         Object value = map.lookup(key);

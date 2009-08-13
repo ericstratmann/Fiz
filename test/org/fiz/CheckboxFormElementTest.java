@@ -67,35 +67,33 @@ public class CheckboxFormElementTest extends junit.framework.TestCase {
         ClientRequest cr = new ClientRequestFixture();
         CheckboxFormElement element = new CheckboxFormElement(
                 new Dataset("id", "id11", "trueValue", "111"));
-        StringBuilder out = new StringBuilder();
-        element.render(cr, new Dataset("id11", "111"), out);
+        element.render(cr, new Dataset("id11", "111"));
         assertEquals("HTML", "<div class=\"CheckboxFormElement\">" +
                 "<input type=\"checkbox\" id=\"id11\" name=\"id11\" " +
                 "value=\"true\" checked=\"checked\" /></div>",
-                out.toString());
+                cr.getHtml().getBody().toString());
         assertEquals("CSS includes", "CheckboxFormElement.css",
                 cr.getHtml().getCssFiles());
     }
     public void test_render_explicitClassNoInitialValue() {
         CheckboxFormElement element = new CheckboxFormElement(
                 new Dataset("id", "id11", "class", "xyzzy"));
-        StringBuilder out = new StringBuilder();
-        element.render(new ClientRequestFixture(), new Dataset(), out);
+        ClientRequest cr = new ClientRequestFixture();
+        element.render(cr, new Dataset());
         assertEquals("HTML", "<div class=\"xyzzy\"><input type=\"checkbox\" " +
                 "id=\"id11\" name=\"id11\" value=\"true\" /></div>",
-                out.toString());
+                cr.getHtml().getBody().toString());
     }
     public void test_render_extraTemplate() {
         CheckboxFormElement element = new CheckboxFormElement(
                 new Dataset("id", "id11", "extra", "extra: @name"));
-        StringBuilder out = new StringBuilder();
-        element.render(new ClientRequestFixture(),
-                new Dataset("name", "Alice"), out);
+        ClientRequest cr = new ClientRequestFixture();
+        element.render(cr, new Dataset("name", "Alice"));
         assertEquals("HTML", "<div class=\"CheckboxFormElement\">" +
                 "<input type=\"checkbox\" id=\"id11\" name=\"id11\" " +
                 "value=\"true\" /><span class=\"extra\" onclick=\"" +
                 "el=getElementById(&quot;id11&quot;); el.checked=" +
                 "!el.checked;\">extra: Alice</span></div>",
-                out.toString());
+                cr.getHtml().getBody().toString());
     }
 }

@@ -48,11 +48,10 @@ public class HiddenFormElement extends FormElement {
      * @param data                 Data for the form (a CompoundDataset
      *                             including both form data, if any, and the
      *                             global dataset).
-     * @param out                  Generated HTML is appended here.
      */
     @Override
-    public void render(ClientRequest cr, Dataset data,
-            StringBuilder out) {
+    public void render(ClientRequest cr, Dataset data) {
+        StringBuilder out = cr.getHtml().getBody();
         Template.appendHtml(out, "<input type=\"hidden\" id=\"@id\" " +
                 "name=\"@id\" {{value=\"@1\"}} />", properties, data.check(id));
     }

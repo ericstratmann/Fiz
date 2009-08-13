@@ -119,11 +119,11 @@ public class DateFormElement extends FormElement {
      *                          request being serviced.
      * @param data              Data for the form (a CompoundDataset including
      *                          both form data, if any, and the global dataset).
-     * @param out               Generated HTML is appended here.
      */
     @Override
-    public void render(ClientRequest cr, Dataset data, StringBuilder out) {
+    public void render(ClientRequest cr, Dataset data) {
 
+        StringBuilder out = cr.getHtml().getBody();
         // Create the form fields in HTML
         Template.appendHtml(out, "\n<!-- Start DateFormElement @id -->\n" +
                 "<div class=\"@class?{DateFormElement}\" " +

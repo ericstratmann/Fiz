@@ -68,11 +68,10 @@ public class PasswordFormElement extends FormElement {
      * @param data                 Data for the form (a CompoundDataset
      *                             including both form data, if any, and the
      *                             global dataset).  Ignored here.
-     * @param out                  Generated HTML is appended here.
      */
     @Override
-    public void render(ClientRequest cr, Dataset data,
-            StringBuilder out) {
+    public void render(ClientRequest cr, Dataset data) {
+        StringBuilder out = cr.getHtml().getBody();
         cr.getHtml().includeCssFile("PasswordFormElement.css");
         Template.appendHtml(out, "<input type=\"password\" id=\"@id\" " +
                 "name=\"@id\" class=\"@class?{PasswordFormElement}\" />",

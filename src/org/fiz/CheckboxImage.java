@@ -36,7 +36,7 @@ import java.util.*;
  * "null", and "" (the empty string).
  */
 
-public class CheckboxImage implements Formatter {
+public class CheckboxImage extends Formatter {
 
     /* Constructor properties */
     protected String id;
@@ -99,9 +99,9 @@ public class CheckboxImage implements Formatter {
      *                       templates. We also use {@code id} passed to the
      *                       constuctor to reference a column in this row which
      *                       is used to select an image to display.
-     * @param out            HTML for the CheckboxImage is appended here.
      */
-    public void render(ClientRequest cr, Dataset data, StringBuilder out) {
+    public void render(ClientRequest cr, Dataset data) {
+        StringBuilder out = cr.getHtml().getBody();
         String key = data.get(id);
         String src, alt;
         String checked;

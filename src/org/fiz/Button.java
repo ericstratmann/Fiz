@@ -37,7 +37,7 @@ package org.fiz;
  *                   is specified.
  */
 
-public class Button implements Formatter {
+public class Button extends Formatter {
     // The following variable is a copy of the constructor argument
     // by the same name.
     protected Dataset properties;
@@ -57,10 +57,9 @@ public class Button implements Formatter {
      *                             request being serviced.
      * @param data                 Values in this dataset are used to
      *                             expand templates from the properties.
-     * @param out                  HTML for the Button is appended here.
      */
-    public void render(ClientRequest cr, Dataset data, StringBuilder out) {
-        Button.render(cr, properties, data, out);
+    public void render(ClientRequest cr, Dataset data) {
+        Button.render(cr, properties, data);
     }
 
     /**
@@ -71,10 +70,10 @@ public class Button implements Formatter {
      *                             see description above.
      * @param data                 Values in this dataset are used to
      *                             expand templates from the properties.
-     * @param out                  HTML for the Button is appended here.
      */
     public static void render(ClientRequest cr,  Dataset properties,
-            Dataset data, StringBuilder out) {
+            Dataset data) {
+        StringBuilder out = cr.getHtml().getBody();
         StringBuilder javascript;
         String ajaxUrl = properties.check("ajaxUrl");
         if (ajaxUrl != null) {

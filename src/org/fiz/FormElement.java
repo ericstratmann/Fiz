@@ -53,7 +53,7 @@ import org.fiz.FormSection.FormDataException;
  *                   additional usage and implementation information, including
  *                   the method prototype for implementing custom validators.
  */
-public abstract class FormElement implements Formatter, DirectAjax {    
+public abstract class FormElement extends Formatter implements DirectAjax {    
     // An object of the following class is stored as a page property if this
     // form element contains validation: it holds data that we will need later
     // on to process Ajax requests to validate the value of the form element
@@ -242,18 +242,6 @@ public abstract class FormElement implements Formatter, DirectAjax {
         return id;
     }
     
-    /**
-     * This method is invoked during the final phase of rendering a page;
-     * it generates HTML for the element.
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     * @param data                 Data for the form (a CompoundDataset
-     *                             including both form data, if any, and the
-     *                             global dataset).
-     * @param out                  Generated HTML is appended here.
-     */
-    public abstract void render(ClientRequest cr, Dataset data,
-            StringBuilder out);
 
     /**
      * This method is invoked by FormSection to generate HTML to display
@@ -265,15 +253,14 @@ public abstract class FormElement implements Formatter, DirectAjax {
      * @param data                 Data for the form (a CompoundDataset
      *                             including both form data, if any, and the
      *                             main dataset).
-     * @param out                  Generated HTML is appended here.
      * @return                     True is always returned (false means
      *                             no label should be displayed and the
      *                             result of the {@code html} method should
      *                             span both the label and control areas
      *                             for this element).
      */
-    public boolean renderLabel(ClientRequest cr, Dataset data,
-            StringBuilder out) {
+    public boolean renderLabel(ClientRequest cr, Dataset data) {
+        StringBuilder out = cr.getHtml().getBody();
         String template = properties.check("label");
         if (template != null) {
             Template.appendHtml(out, template, data);

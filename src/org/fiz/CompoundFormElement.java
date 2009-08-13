@@ -120,11 +120,9 @@ public class CompoundFormElement extends FormElement {
      * @param data                 Data for the form (a CompoundDataset
      *                             including both form data, if any, and the
      *                             global dataset).
-     * @param out                  Generated HTML is appended here.
      */
     @Override
-    public void render(ClientRequest cr, Dataset data,
-            StringBuilder out) {
+    public void render(ClientRequest cr, Dataset data) {
         // If we have our own data request, combine its output with the
         // incoming data from the form.
         String requestName = properties.check("request");
@@ -144,11 +142,12 @@ public class CompoundFormElement extends FormElement {
         String template = properties.check("template");
         if (template == null) {
             for (FormElement component : components) {
-                component.render(cr, data, out);
+                component.render(cr, data);
             }
             return;
         }
 
+        StringBuilder out = cr.getHtml().getBody();
         // There exists a template.  First, generate HTML for each of the
         // component FormElements.  Then use the template to combine those
         // results.
@@ -158,7 +157,7 @@ public class CompoundFormElement extends FormElement {
             // Use {@code out} to generate the HTML for each component;
             // once the HTML has been saved in a separate string, truncate
             // {@code out} back to its original length again.
-            components[i].render(cr, data, out);
+            components[i].render(cr, data);
             componentHtml[i] = out.substring(outLength);
             out.setLength(outLength);
         }

@@ -15,6 +15,8 @@
 
 package org.fiz;
 
+import org.fiz.test.*;
+
 /**
  * Junit tests for the TemplateFormElement class.
  */
@@ -22,36 +24,36 @@ public class TemplateFormElementTest extends junit.framework.TestCase {
     // No tests for constructor: nothing interesting to test.
 
     public void test_render() {
+        ClientRequest cr = new ClientRequestFixture();
         TemplateFormElement element = new TemplateFormElement(new Dataset(
                 "id", "id11", "template", "name: @name"));
-        StringBuilder out = new StringBuilder();
-        element.render(null, new Dataset("name", "<Alice>"), out);
+        element.render(cr, new Dataset("name", "<Alice>"));
         assertEquals("generated HTML", "name: &lt;Alice&gt;",
-                out.toString());
+                cr.getHtml().getBody().toString());
     }
 
     public void test_renderLabel_span() {
+        ClientRequest cr = new ClientRequestFixture();
         TemplateFormElement element = new TemplateFormElement(new Dataset(
                 "id", "id11", "label", "name: @name", "span", "true"));
-        StringBuilder out = new StringBuilder();
         assertEquals ("renderLabel return value", false,
-                element.renderLabel(null, new Dataset("name", "<Alice>"), out));
-        assertEquals("generated HTML", "", out.toString());
+                element.renderLabel(cr, new Dataset("name", "<Alice>")));
+        assertEquals("generated HTML", "", cr.getHtml().getBody().toString());
     }
     public void test_renderLabel_noSpan() {
+        ClientRequest cr = new ClientRequestFixture();
         TemplateFormElement element = new TemplateFormElement(new Dataset(
                 "id", "id11", "label", "name: @name"));
-        StringBuilder out = new StringBuilder();
         assertEquals ("renderLabel return value", true,
-                element.renderLabel(null, new Dataset("name", "<Alice>"), out));
-        assertEquals("generated HTML", "name: &lt;Alice&gt;", out.toString());
+                element.renderLabel(cr, new Dataset("name", "<Alice>")));
+        assertEquals("generated HTML", "name: &lt;Alice&gt;", cr.getHtml().getBody().toString());
     }
     public void test_renderLabel_noSpanNoLabel() {
+        ClientRequest cr = new ClientRequestFixture();
         TemplateFormElement element = new TemplateFormElement(new Dataset(
                 "id", "id11"));
-        StringBuilder out = new StringBuilder();
         assertEquals ("renderLabel return value", true,
-                element.renderLabel(null, new Dataset("name", "<Alice>"), out));
-        assertEquals("generated HTML", "", out.toString());
+                element.renderLabel(cr, new Dataset("name", "<Alice>")));
+        assertEquals("generated HTML", "", cr.getHtml().getBody().toString());
     }
 }

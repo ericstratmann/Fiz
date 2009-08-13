@@ -54,11 +54,10 @@ public class TemplateFormElement extends FormElement {
      * @param data                 Data for the form (a CompoundDataset
      *                             including both form data, if any, and the
      *                             global dataset).
-     * @param out                  Generated HTML is appended here.
      */
     @Override
-    public void render(ClientRequest cr, Dataset data,
-            StringBuilder out) {
+    public void render(ClientRequest cr, Dataset data) {
+        StringBuilder out = cr.getHtml().getBody();
         Template.appendHtml(out, properties.get("template"), data);
     }
 
@@ -70,7 +69,6 @@ public class TemplateFormElement extends FormElement {
      * @param data                 Data for the form (a CompoundDataset
      *                             including both form data, if any, and the
      *                             main dataset).
-     * @param out                  Generated HTML is appended here.
      * @return                     True is normally returned; false means
      *                             no label should be displayed and the
      *                             result of the {@code html} method should
@@ -78,12 +76,11 @@ public class TemplateFormElement extends FormElement {
      *                             for this element.
      */
     @Override
-    public boolean renderLabel(ClientRequest cr, Dataset data,
-            StringBuilder out) {
+    public boolean renderLabel(ClientRequest cr, Dataset data) {
         String span = properties.check("span");
         if ((span != null) && (span.equals("true"))) {
             return false;
         }
-        return super.renderLabel(cr, data, out);
+        return super.renderLabel(cr, data);
     }
 }

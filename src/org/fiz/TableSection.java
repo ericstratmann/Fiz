@@ -146,7 +146,7 @@ public class TableSection extends Section {
                 int headerStart = out.length();
                 Formatter f = columns[col];
                 if (f instanceof Column) {
-                    ((Column) f).renderHeader(cr, out);
+                    ((Column) f).renderHeader(cr);
                 }
                 if (out.length() > headerStart) {
                     anyHeaders = true;
@@ -206,7 +206,7 @@ public class TableSection extends Section {
                     }
                     for (int col = 0; col < columns.length; col++) {
                         printTd(col, out);
-                        columns[col].render(cr, dataForRow, out);
+                        columns[col].render(cr, dataForRow);
                         out.append("</td>\n");
                     }
                     out.append("  </tr>\n");

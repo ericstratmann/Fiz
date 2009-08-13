@@ -32,8 +32,8 @@ public class FormSectionTest extends junit.framework.TestCase {
         public FormElementFixture(String id) {
             super(new Dataset("id", id));
         }
-        public void render(ClientRequest cr, Dataset data, StringBuilder out) {
-            out.append(html);
+        public void render(ClientRequest cr, Dataset data) {
+            cr.getHtml().getBody().append(html);
         }
         public void addDataRequests(ClientRequest cr, boolean empty) {
             log.append("addDataRequests " + id + " " +
@@ -178,8 +178,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                     throws FormSection.FormDataException {
                 throw new FormSection.FormDataException(id, message);
             }
-            public void render(ClientRequest cr, Dataset data,
-                    StringBuilder out) {}
+            public void render(ClientRequest cr, Dataset data) {}
         }
 
         FormSection form = new FormSection(

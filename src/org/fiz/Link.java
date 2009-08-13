@@ -60,7 +60,7 @@ package org.fiz;
  *              contains both text and image.
  */
 
-public class Link implements Formatter {
+public class Link extends Formatter {
     /**
      * Instances of this enum are used to indicate how to display a
      * Link.
@@ -157,9 +157,9 @@ public class Link implements Formatter {
      *                             request being serviced.
      * @param data                 Values in this dataset are used to
      *                             expand templates from the properties.
-     * @param out                  HTML for the Link is appended here.
      */
-    public void render(ClientRequest cr, Dataset data, StringBuilder out) {
+    public void render(ClientRequest cr, Dataset data) {
+        StringBuilder out = cr.getHtml().getBody();
         boolean displayText = (displayForm != DisplayForm.ICON)
                 && (text != null);
         boolean displayIcon = (displayForm != DisplayForm.TEXT)
@@ -200,7 +200,7 @@ public class Link implements Formatter {
             // it allows the text to wrap cleanly (i.e. not under the image).
             out.append("<table class=\"Link\" cellspacing=\"0\">"
                     + "<tr><td>");
-            renderIcon(cr, data, out);
+            renderIcon(data, out);
             out.append("</td><td class=\"text\">");
             Template.appendHtml(out, text, data);
             out.append("</td></tr></table>");
@@ -209,7 +209,7 @@ public class Link implements Formatter {
             Template.appendHtml(out, text, data);
         } else {
             // Display only an image.
-            renderIcon(cr, data, out);
+            renderIcon(data, out);
         }
 
         // Finish off the link.
@@ -249,8 +249,7 @@ public class Link implements Formatter {
      * @param data                 Used for expanding "alt" template.
      * @param out                  HTML gets appended here.
      */
-    protected void renderIcon(ClientRequest cr, Dataset data,
-            StringBuilder out) {
+    protected void renderIcon(Dataset data, StringBuilder out) {
         StringBuilder expandedUrl = new StringBuilder(iconUrl.length());
         Template.appendUrl(expandedUrl, iconUrl, data);
         out.append("<img class=\"Link\" src=\"");

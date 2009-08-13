@@ -29,7 +29,7 @@ public class FormElementTest extends junit.framework.TestCase {
         public FormElementFixture(Dataset properties) {
             super(properties);
         }
-        public void render(ClientRequest cr, Dataset data, StringBuilder out) {
+        public void render(ClientRequest cr, Dataset data) {
             // Do nothing.
         }
     }
@@ -160,19 +160,18 @@ public class FormElementTest extends junit.framework.TestCase {
     public void test_renderLabel_withTemplate() {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "age", "label", "Age of @name:"));
-        StringBuilder out = new StringBuilder();
-        element.renderLabel(null, new Dataset("name", "<Bob>", "age", "30"),
-                out);
-        assertEquals("generated HTML", "Age of &lt;Bob&gt;:", out.toString());
+        ClientRequest cr = new ClientRequestFixture();
+        element.renderLabel(cr, new Dataset("name", "<Bob>", "age", "30"));
+        assertEquals("generated HTML", "Age of &lt;Bob&gt;:",
+                     cr.getHtml().getBody().toString());
     }
 
     public void test_renderLabel_noTemplate() {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "<age>"));
-        StringBuilder out = new StringBuilder();
-        element.renderLabel(null, new Dataset("name", "<Bob>", "age", "30"),
-                out);
-        assertEquals("generated HTML", "", out.toString());
+        ClientRequest cr = new ClientRequestFixture();
+        element.renderLabel(cr, new Dataset("name", "<Bob>", "age", "30"));
+        assertEquals("generated HTML", "", cr.getHtml().getBody().toString());
     }
 
     public void test_renderValidators_noParent() {

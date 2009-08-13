@@ -80,12 +80,12 @@ public class TestInteractor extends Interactor {
         Link link = new Link(new Dataset("text", "See select value",
                 "javascript", "alert(\"Select value: \" + " +
                 "document.getElementById(\"select1\").value);"));
-        link.render(cr, cr.getMainDataset(), body);
+        link.render(cr, cr.getMainDataset());
         body.append("<br />\n");
         Link link2 = new Link(new Dataset("text", "See checkbox value",
                 "javascript", "alert(\"Checkbox value: \" + " +
                 "document.getElementById(\"check1\").value);"));
-        link2.render(cr, cr.getMainDataset(), body);
+        link2.render(cr, cr.getMainDataset());
     }
 
     public void showTime(ClientRequest cr) {
@@ -96,7 +96,7 @@ public class TestInteractor extends Interactor {
                 "ajaxUrl", "test/ajaxUpdateTime"));
         body.append("<h1>Ajax Demo</h1>\n" +
                 "<p>This page demonstrates a simple Ajax updater.  ");
-        link.render(cr, cr.getMainDataset(), body);
+        link.render(cr, cr.getMainDataset());
         body.append(" to update the time below.</p>\n" +
                 "<p>Latest date/time from Ajax: " +
                 "<span id=\"updateMe\">None</span></p>\n");
@@ -170,14 +170,14 @@ public class TestInteractor extends Interactor {
                 "<p>", globalData);
         Link link = new Link(new Dataset("text", "Go to page @next",
                 "url", "link?current=@next"));
-        link.render(cr, globalData, body);
+        link.render(cr, globalData);
         body.append("</p>\n");
         body.append("<p>The following link uses Javascript to display " +
                 "an alert: ");
         Link link2 = new Link(new Dataset("text", "Click me",
                 "javascript",
                 "alert(\"Her name is @name, favorite saying @saying\");"));
-        link2.render(cr, globalData, body);
+        link2.render(cr, globalData);
         body.append("</p>\n");
         body.append("<p>The following link sends an Ajax request to the " +
                 "server, which will log the current page id: ");
@@ -203,17 +203,17 @@ public class TestInteractor extends Interactor {
         Link link3 = new Link(new Dataset("text", "Click here",
                 "ajaxUrl", "/test/ajaxUpdateTime"));
         body.append("<p>");
-        link3.render(cr, globalData, body);
+        link3.render(cr, globalData);
         body.append(" to update the time below.</p>\n" +
                 "<p>Latest date/time from Ajax: " +
                 "<span id=\"updateMe\">None</span></p>\n");
         Link link4 = new Link(new Dataset("text", "Click here.",
                 "ajaxUrl", "ajaxPerf"));
         body.append("Want to measure the round-trip latency for Ajax?  ");
-        link4.render(cr, globalData, body);
+        link4.render(cr, globalData);
         body.append("  Or, ");
         Button.render(cr, new Dataset("text", "Click", "ajaxUrl", "ajaxPerf"),
-                new Dataset(), body);
+                new Dataset());
         body.append("<span id=\"perf\"></span>\n");
     }
 

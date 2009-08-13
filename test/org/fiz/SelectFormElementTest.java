@@ -85,7 +85,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 "    value: banana\n"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
-        element.render(cr, new Dataset(), out);
+        element.render(cr, new Dataset());
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
                 "<select id=\"id11\" name=\"id11\" class=\"SelectFormElement\">\n" +
@@ -109,7 +109,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 "    value: grape\n"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
-        element.render(cr, new Dataset("id11", "grape"), out);
+        element.render(cr, new Dataset("id11", "grape"));
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
                 "<select id=\"id11\" name=\"id11\" class=\"SelectFormElement\">\n" +
@@ -140,7 +140,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         element.render(cr, YamlDataset.newStringInstance(
                 "id11:\n" +
                 "  - value:  apple\n" +
-                "  - value: grape\n"), out);
+                "  - value: grape\n"));
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
                 "<select id=\"id11\" name=\"id11\" class=\"SelectFormElement\" " +
@@ -170,7 +170,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 "    value: banana\n"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
-        element.render(cr, new Dataset(), out);
+        element.render(cr, new Dataset());
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
                 "<select id=\"id11\" name=\"id11\" class=\"SelectFormElement\">\n" +
@@ -189,7 +189,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         cr.addDataRequest("error", RawDataManager.newError(new Dataset(
                 "message", "sample <error>", "value", "47")));
         StringBuilder out = cr.getHtml().getBody();
-        element.render(cr, new Dataset(), out);
+        element.render(cr, new Dataset());
         assertEquals("Javascript for HTML",
                 "Fiz.addBulletinMessage(\"error: sample &lt;error&gt;\");\n",
                 cr.getHtml().jsCode.toString());
@@ -201,7 +201,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         ClientRequest cr = new ClientRequestFixture();
         cr.addDataRequest("getFruits", RawDataManager.newRequest(fruits));
         StringBuilder out = cr.getHtml().getBody();
-        element.render(cr, new Dataset(), out);
+        element.render(cr, new Dataset());
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
                 "<select id=\"id11\" name=\"id11\" class=\"SelectFormElement\">\n" +
@@ -225,7 +225,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         element.render(cr, YamlDataset.newStringInstance(
                 "id11:\n" +
                 "  - value:  apple\n" +
-                "  - value: grape\n"), out);
+                "  - value: grape\n"));
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
                 "<select id=\"id11\" name=\"id11\" class=\"xyzzy\" size=\"5\">\n" +
@@ -246,7 +246,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 "  - value: 2009\n"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
-        element.render(cr, new Dataset("id 11", "2008"), out);
+        element.render(cr, new Dataset("id 11", "2008"));
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
                 "<select id=\"id11\" name=\"id11\" class=\"SelectFormElement\">\n" +

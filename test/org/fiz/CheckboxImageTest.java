@@ -32,7 +32,6 @@ public class CheckboxImageTest extends junit.framework.TestCase {
 
     public void setUp() {
         cr = new ClientRequestFixture();
-        out = new StringBuilder();
         falseVals = new ArrayList<String>(Arrays.asList(
             new String[] { "0", "false"}));
         data = new Dataset("id", "foo", "family", "cb.png");
@@ -82,7 +81,7 @@ public class CheckboxImageTest extends junit.framework.TestCase {
         cbs = new CheckboxImage(data);
         testRow = new Dataset("bar", "null");
         try {
-            cbs.render(cr, testRow, out);
+            cbs.render(cr, testRow);
         } catch (Dataset.MissingValueError e) {
             return;
         }
@@ -92,17 +91,17 @@ public class CheckboxImageTest extends junit.framework.TestCase {
     public void test_render_useFalseImg() {
         cbs = new CheckboxImage(data, falseVals);
         testRow = new Dataset("foo", "0");
-        cbs.render(cr, testRow, out);
+        cbs.render(cr, testRow);
         assertEquals("<img src=\"cb-false.png\" alt=\"unchecked\" />",
-            out.toString());
+                     cr.getHtml().getBody().toString());
 
     }
 
     public void test_render_useTrueImg() {
         cbs = new CheckboxImage(data, falseVals);
         testRow = new Dataset("foo", "1");
-        cbs.render(cr, testRow, out);
+        cbs.render(cr, testRow);
         assertEquals("<img src=\"cb-true.png\" alt=\"checked\" />",
-            out.toString());
+                     cr.getHtml().getBody().toString());
     }
 }

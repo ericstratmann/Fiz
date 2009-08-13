@@ -162,7 +162,7 @@ public class AutocompleteFormElementTest extends junit.framework.TestCase {
                         "requestFactory", "getQuery"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
-        element.render(cr, new Dataset(), out);
+        element.render(cr, new Dataset());
         assertEquals("generated HTML", "\n" +
                 "<!-- Start AutocompleteFormElement auto -->\n" +
                 "<div class=\"AutocompleteFormElement\" id=\"auto_container\">\n" +

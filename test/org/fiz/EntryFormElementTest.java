@@ -30,38 +30,35 @@ public class EntryFormElementTest extends junit.framework.TestCase {
     public void test_html() {
         ClientRequest cr = new ClientRequestFixture();
         EntryFormElement element = new EntryFormElement("age", "Age:");
-        StringBuilder out = new StringBuilder();
-        element.render(cr, new Dataset("age", "<confidential>"), out);
+        element.render(cr, new Dataset("age", "<confidential>"));
         assertEquals("CSS includes", "EntryFormElement.css",
                 cr.getHtml().getCssFiles());
         assertEquals("generated HTML",
                 "<input type=\"text\" id=\"age\" name=\"age\" " +
                 "class=\"EntryFormElement\" " +
                 "value=\"&lt;confidential&gt;\" />",
-                out.toString());
+                 cr.getHtml().getBody().toString());
     }
     public void test_render_explicitClass() {
         ClientRequest cr = new ClientRequestFixture();
         EntryFormElement element = new EntryFormElement(
                 new Dataset("id", "age", "label", "Age:",
                 "class", "class16"));
-        StringBuilder out = new StringBuilder();
-        element.render(cr, new Dataset("age", "<confidential>"), out);
+        element.render(cr, new Dataset("age", "<confidential>"));
         assertEquals("generated HTML",
                 "<input type=\"text\" id=\"age\" name=\"age\" " +
                 "class=\"class16\" value=\"&lt;confidential&gt;\" />",
-                out.toString());
+                 cr.getHtml().getBody().toString());
     }
     public void test_render_noValue() {
         ClientRequest cr = new ClientRequestFixture();
         EntryFormElement element = new EntryFormElement(
                 new Dataset("id", "age", "label", "Age:",
                 "class", "class16"));
-        StringBuilder out = new StringBuilder();
-        element.render(cr, new Dataset(), out);
+        element.render(cr, new Dataset());
         assertEquals("generated HTML",
                 "<input type=\"text\" id=\"age\" name=\"age\" " +
                 "class=\"class16\" />",
-                out.toString());
+                 cr.getHtml().getBody().toString());
     }
 }

@@ -24,7 +24,7 @@ package org.fiz;
  * generate HTML for the column header.
  *
  */
-public class Column implements Formatter {
+public class Column extends Formatter {
     // The following variables hold copies of constructor arguments;
     // see the constructors for details.
     protected String label;
@@ -67,11 +67,11 @@ public class Column implements Formatter {
      *                             a compound dataset that includes
      *                             row-specific data and the main dataset
      *                             for {@code cr}).
-     * @param out                  HTML gets appended here.
      */
-    public void render(ClientRequest cr, Dataset rowData, StringBuilder out) {
+    public void render(ClientRequest cr, Dataset rowData) {
+        StringBuilder out = cr.getHtml().getBody();
         if (formatter != null) {
-            formatter.render(cr, rowData, out);
+            formatter.render(cr, rowData);
         } else {
             Template.appendHtml(out, template, rowData);
         }
@@ -82,9 +82,8 @@ public class Column implements Formatter {
      * the {@code <td>} element).
      * @param cr                   Overall information about the client
      *                             request being serviced.
-     * @param out                  HTML gets appended here.
      */
-    public void renderHeader(ClientRequest cr, StringBuilder out) {
-        Html.escapeHtmlChars(label, out);
+    public void renderHeader(ClientRequest cr) {
+        Html.escapeHtmlChars(label, cr.getHtml().getBody());
     }
 }

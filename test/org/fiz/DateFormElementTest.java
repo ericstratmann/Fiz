@@ -37,7 +37,7 @@ public class DateFormElementTest extends junit.framework.TestCase {
                 new Dataset("id", "cal1", "label", "Calendar"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
-        element.render(cr, new Dataset(), out);
+        element.render(cr, new Dataset());
         assertEquals("generated HTML", "\n" +
                 "<!-- Start DateFormElement cal1 -->\n" +
                 "<div class=\"DateFormElement\" id=\"cal1_container\">\n" +
@@ -126,7 +126,7 @@ public class DateFormElementTest extends junit.framework.TestCase {
                         "attachPosition", "right"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
-        element.render(cr, new Dataset(), out);
+        element.render(cr, new Dataset());
         assertEquals("accumulated Javascript",
                 "Fiz.ids.cal1 = new Fiz.DateFormElement('cal1', " +
                 "'m/d/Y', 'right');\n",
@@ -141,7 +141,7 @@ public class DateFormElementTest extends junit.framework.TestCase {
                         "dateFormat", "m-d-Y"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
-        element.render(cr, new Dataset(), out);
+        element.render(cr, new Dataset());
         assertEquals("accumulated Javascript",
                 "Fiz.ids.cal1 = new Fiz.DateFormElement('cal1', " +
                 "'m-d-Y', 'bottom');\n",
@@ -159,7 +159,7 @@ public class DateFormElementTest extends junit.framework.TestCase {
                         "calendarIcon", "test.jpg"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
-        element.render(cr, new Dataset(), out);
+        element.render(cr, new Dataset());
         assertEquals("generated HTML", "\n" +
                 "<!-- Start DateFormElement cal1 -->\n" +
                 "<div class=\"DateFormElement\" id=\"cal1_container\">\n" +
@@ -241,7 +241,7 @@ public class DateFormElementTest extends junit.framework.TestCase {
                         "8/13/2010:9/11/2010, :6/24/2009, 9/3/2011:"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
-        element.render(cr, new Dataset(), out);
+        element.render(cr, new Dataset());
         assertEquals("accumulated Javascript",
                 "Fiz.ids.cal1 = new Fiz.DateFormElement(" +
                 "'cal1', 'm-d-Y', 'bottom');\n" +

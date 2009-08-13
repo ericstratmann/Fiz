@@ -31,12 +31,11 @@ public class RadioFormElementTest extends junit.framework.TestCase {
         ClientRequest cr = new ClientRequestFixture();
         RadioFormElement element = new RadioFormElement(
                 new Dataset("id", "id11", "value", "222"));
-        StringBuilder out = new StringBuilder();
-        element.render(cr, new Dataset("id11", "111"), out);
+        element.render(cr, new Dataset("id11", "111"));
         assertEquals("HTML", "<div class=\"RadioFormElement\">" +
                 "<input type=\"radio\" name=\"id11\" id=\"id11_222\" " +
                 "value=\"222\" /></div>",
-                out.toString());
+                cr.getHtml().getBody().toString());
         assertEquals("CSS includes", "RadioFormElement.css",
                 cr.getHtml().getCssFiles());
     }
@@ -44,47 +43,43 @@ public class RadioFormElementTest extends junit.framework.TestCase {
         ClientRequest cr = new ClientRequestFixture();
         RadioFormElement element = new RadioFormElement(
                 new Dataset("id", "id11", "value", "222", "class", "xyzzy"));
-        StringBuilder out = new StringBuilder();
-        element.render(cr, new Dataset("id11", "111"), out);
+        element.render(cr, new Dataset("id11", "111"));
         assertEquals("HTML", "<div class=\"xyzzy\">" +
                 "<input type=\"radio\" name=\"id11\" id=\"id11_222\" " +
                 "value=\"222\" /></div>",
-                out.toString());
+                cr.getHtml().getBody().toString());
     }
     public void test_render_noInitialValue() {
         ClientRequest cr = new ClientRequestFixture();
         RadioFormElement element = new RadioFormElement(
                 new Dataset("id", "id11", "value", "222"));
-        StringBuilder out = new StringBuilder();
-        element.render(cr, new Dataset(), out);
+        element.render(cr, new Dataset());
         assertEquals("HTML", "<div class=\"RadioFormElement\">" +
                 "<input type=\"radio\" name=\"id11\" id=\"id11_222\" " +
                 "value=\"222\" /></div>",
-                out.toString());
+                cr.getHtml().getBody().toString());
     }
     public void test_render_initiallyChecked() {
         ClientRequest cr = new ClientRequestFixture();
         RadioFormElement element = new RadioFormElement(
                 new Dataset("id", "id11", "value", "222"));
-        StringBuilder out = new StringBuilder();
-        element.render(cr, new Dataset("id11", "222"), out);
+        element.render(cr, new Dataset("id11", "222"));
         assertEquals("HTML", "<div class=\"RadioFormElement\">" +
                 "<input type=\"radio\" name=\"id11\" id=\"id11_222\" " +
                 "value=\"222\" checked=\"checked\" /></div>",
-                out.toString());
+                cr.getHtml().getBody().toString());
     }
     public void test_render_extraTemplate() {
         ClientRequest cr = new ClientRequestFixture();
         RadioFormElement element = new RadioFormElement(
                 new Dataset("id", "id11", "value", "222", "class", "xyzzy",
                         "extra", "template: @name"));
-        StringBuilder out = new StringBuilder();
-        element.render(cr, new Dataset("id11", "111", "name", "Alice"), out);
+        element.render(cr, new Dataset("id11", "111", "name", "Alice"));
         assertEquals("HTML", "<div class=\"xyzzy\"><input type=\"radio\" " +
                 "name=\"id11\" id=\"id11_222\" value=\"222\" /><span " +
                 "class=\"extra\" onclick=\"getElementById" +
                 "(&quot;id11.222&quot;).checked=true;\">" +
                 "template: Alice</span></div>",
-                out.toString());
+                cr.getHtml().getBody().toString());
     }
 }

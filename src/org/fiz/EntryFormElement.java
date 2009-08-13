@@ -51,11 +51,10 @@ public class EntryFormElement extends FormElement {
      * @param data                 Data for the form (a CompoundDataset
      *                             including both form data, if any, and the
      *                             global dataset).
-     * @param out                  Generated HTML is appended here.
      */
     @Override
-    public void render(ClientRequest cr, Dataset data,
-            StringBuilder out) {
+    public void render(ClientRequest cr, Dataset data) {
+        StringBuilder out = cr.getHtml().getBody();
         cr.getHtml().includeCssFile("EntryFormElement.css");
         Template.appendHtml(out, "<input type=\"text\" id=\"@id\" " +
                 "name=\"@id\" class=\"@class?{EntryFormElement}\" " +

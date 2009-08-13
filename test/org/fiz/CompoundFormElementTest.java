@@ -37,8 +37,8 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
                     ((empty) ? "empty" : "not empty") + "\n");
         }
         @Override
-        public void render(ClientRequest cr, Dataset data, StringBuilder out) {
-            Template.appendHtml(out, template, data);
+        public void render(ClientRequest cr, Dataset data) {
+            Template.appendHtml(cr.getHtml().getBody(), template, data);
         }
     }
 
@@ -90,10 +90,10 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
                 new Dataset("id", "id11", "template", "@1, @2"),
                 new ElementFixture("name", "name @name"),
                 new ElementFixture("age", "age @age"));
-        StringBuilder out = new StringBuilder();
-        element.render(null, new Dataset("name", "Alice", "age", "35",
-                "height", "65"), out);
-        assertEquals("result HTML", "name Alice, age 35", out.toString());
+        ClientRequest cr = new ClientRequestFixture();
+        element.render(cr, new Dataset("name", "Alice", "age", "35",
+                "height", "65"));
+        assertEquals("result HTML", "name Alice, age 35", cr.getHtml().getBody().toString());
     }
     public void test_render_errorInRequest() {
         CompoundFormElement element = new CompoundFormElement(
@@ -104,10 +104,9 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
         ClientRequest cr = new ClientRequestFixture();
         cr.addDataRequest("error", RawDataManager.newError(new Dataset(
                 "message", "sample <error>", "value", "47")));
-        StringBuilder out = new StringBuilder();
         element.render(cr, new Dataset("name", "Alice", "age", "35",
-                "height", "65"), out);
-        assertEquals("result HTML", "name Alice, age 35", out.toString());
+                "height", "65"));
+        assertEquals("result HTML", "name Alice, age 35", cr.getHtml().getBody().toString());
         assertEquals("Javascript for HTML",
                 "Fiz.addBulletinMessage(\"error: sample &lt;error&gt;\");\n",
                 cr.getHtml().jsCode.toString());
@@ -121,12 +120,11 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
                 new ElementFixture("age", "age @age"));
         ClientRequest cr = new ClientRequestFixture();
         cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
-        StringBuilder out = new StringBuilder();
         element.render(cr, new Dataset("name", "Alice", "age", "35",
-                "state", "California"), out);
+                "state", "California"));
         assertEquals("result HTML",
                 "(for Alice from California) name Alice, age 35",
-                out.toString());
+                cr.getHtml().getBody().toString());
     }
     public void test_render_noTemplate() {
         CompoundFormElement element = new CompoundFormElement(
@@ -135,11 +133,10 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
                 new ElementFixture("age", "age @age"),
                 new ElementFixture("misc", ",third element output"));
         ClientRequest cr = new ClientRequestFixture();
-        StringBuilder out = new StringBuilder();
         element.render(cr, new Dataset("name", "Alice", "age", "35",
-                "state", "California"), out);
+                "state", "California"));
         assertEquals("result HTML", "name Aliceage 35,third element output",
-                out.toString());
+                cr.getHtml().getBody().toString());
     }
     public void test_render_specialCharsWithTemplate() {
         CompoundFormElement element = new CompoundFormElement(
@@ -147,12 +144,11 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
                 new ElementFixture("name", "<div class=\"xyzzy\">@name</div>"),
                 new ElementFixture("age", "<div>@age</div>"));
         ClientRequest cr = new ClientRequestFixture();
-        StringBuilder out = new StringBuilder();
         element.render(cr, new Dataset("name", "<Alice>", "age", "35",
-                "state", "California"), out);
+                "state", "California"));
         assertEquals("result HTML", "(&lt;Alice&gt;) <div class=\"xyzzy\">" +
                 "&lt;Alice&gt;</div> <div>35</div>)",
-                out.toString());
+                cr.getHtml().getBody().toString());
     }
 
     public void test_render_responsibleFor() {

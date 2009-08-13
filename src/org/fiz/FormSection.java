@@ -552,9 +552,9 @@ public class FormSection extends Section {
                 continue;
             }
             if (vertical) {
-                verticalElement(cr, element, data, out);
+                verticalElement(cr, element, data);
             } else {
-                sideBySideElement(cr, element, data, out);
+                sideBySideElement(cr, element, data);
             }
         }
 
@@ -575,7 +575,7 @@ public class FormSection extends Section {
             for (FormElement element : elements) {
                 if (element instanceof HiddenFormElement) {
                     out.append("  ");
-                    element.render(cr, data, out);
+                    element.render(cr, data);
                     out.append("\n");
                 }
             }
@@ -594,14 +594,15 @@ public class FormSection extends Section {
      * @param out                  Generated HTML is appended here.
      */
     protected void sideBySideElement(ClientRequest cr, FormElement element,
-            Dataset data, StringBuilder out) {
+            Dataset data) {
+        StringBuilder out = cr.getHtml().getBody();
         String elementId = element.getId();
         Template.appendHtml(out, "    <tr id=\"@(1)_@2\" {{title=\"@3\"}}>\n",
                 id, elementId, getHelpText(element));
         int startingLength = out.length();
         Template.appendHtml(out,
                 "      <td class=\"label\"><label for=\"@1\">", elementId);
-        if (!element.renderLabel(cr, data, out)) {
+        if (!element.renderLabel(cr, data)) {
             // This element requests that we not display any label and
             // instead let the control span both columns.  Erase the
             // information for this row and regenerate the row with
@@ -612,7 +613,7 @@ public class FormSection extends Section {
         } else {
             out.append("</label></td>\n      <td class=\"control\">");
         }
-        element.render(cr, data, out);
+        element.render(cr, data);
         element.renderValidators(cr);
 
         // Create an extra <div> underneath the control for displaying
@@ -635,7 +636,8 @@ public class FormSection extends Section {
      * @param out                  Generated HTML is appended here.
      */
     protected void verticalElement(ClientRequest cr, FormElement element,
-            Dataset data, StringBuilder out) {
+            Dataset data) {
+        StringBuilder out = cr.getHtml().getBody();
         String elementId = element.getId();
         Template.appendHtml(out, "    <tr id=\"@(1)_@2\" {{title=\"@3\"}}><td>\n",
                 id, elementId, getHelpText(element));
@@ -643,7 +645,7 @@ public class FormSection extends Section {
         Template.appendHtml(out, "      <label for=\"@1\">",
                 elementId);
         int labelStart = out.length();
-        if (!element.renderLabel(cr, data, out)
+        if (!element.renderLabel(cr, data)
                 || (labelStart == out.length())) {
             // No label for this element; discard the entire row.
             out.setLength(rowStart);
@@ -651,7 +653,7 @@ public class FormSection extends Section {
             out.append("</label>\n");
         }
         out.append("      <div class=\"control\">");
-        element.render(cr, data, out);
+        element.render(cr, data);
         element.renderValidators(cr);
 
         // Create an extra <div> underneath the control for displaying

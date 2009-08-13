@@ -30,22 +30,20 @@ public class HiddenFormElementTest extends junit.framework.TestCase {
     public void test_render() {
         ClientRequest cr = new ClientRequestFixture();
         HiddenFormElement element = new HiddenFormElement("age");
-        StringBuilder out = new StringBuilder();
-        element.render(cr, new Dataset("age", "<confidential>"), out);
+        element.render(cr, new Dataset("age", "<confidential>"));
         assertEquals("CSS includes", "",
                 cr.getHtml().getCssFiles());
         assertEquals("generated HTML",
                 "<input type=\"hidden\" id=\"age\" name=\"age\" " +
                 "value=\"&lt;confidential&gt;\" />",
-                out.toString());
+                cr.getHtml().getBody().toString());
     }
     public void test_render_noValue() {
         ClientRequest cr = new ClientRequestFixture();
         HiddenFormElement element = new HiddenFormElement("age");
-        StringBuilder out = new StringBuilder();
-        element.render(cr, new Dataset(), out);
+        element.render(cr, new Dataset());
         assertEquals("generated HTML",
                 "<input type=\"hidden\" id=\"age\" name=\"age\" />",
-                out.toString());
+                cr.getHtml().getBody().toString());
     }
 }

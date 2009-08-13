@@ -163,10 +163,10 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
      * @param data              Data for the form (a CompoundDataset
      *                          including both form data, if any, and
      *                          the main dataset).
-     * @param out               Generated HTML is appended here.
      */
     @Override
-    public void render(ClientRequest cr, Dataset data, StringBuilder out) {
+    public void render(ClientRequest cr, Dataset data) {
+        StringBuilder out = cr.getHtml().getBody();
         cr.setPageProperty(pageProperty.id, pageProperty);
         cr.setAuthToken();
 

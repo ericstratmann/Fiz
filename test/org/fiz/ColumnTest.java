@@ -15,6 +15,8 @@
 
 package org.fiz;
 
+import org.fiz.test.*;
+
 /**
  * Junit tests for the Column class.
  */
@@ -38,22 +40,25 @@ public class ColumnTest extends junit.framework.TestCase {
         Link link = new Link(new Dataset("text", "click here",
                 "url", "/a/b/@name"));
         Column c = new Column ("<label>", link);
-        StringBuilder out = new StringBuilder();
-        c.render(null, new Dataset("name", "Alice"), out);
+        ClientRequest cr = new ClientRequestFixture();
+        c.render(cr, new Dataset("name", "Alice"));
         assertEquals("generated HTML",
-                "<a href=\"/a/b/Alice\">click here</a>", out.toString());
+                     "<a href=\"/a/b/Alice\">click here</a>",
+                     cr.getHtml().getBody().toString());
     }
     public void test_render_template() {
         Column c = new Column ("<label>", "@id44");
-        StringBuilder out = new StringBuilder();
-        c.render(null, new Dataset("name", "Alice", "id44", "a&b"), out);
-        assertEquals("generated HTML", "a&amp;b", out.toString());
+        ClientRequest cr = new ClientRequestFixture();
+        c.render(cr, new Dataset("name", "Alice", "id44", "a&b"));
+        assertEquals("generated HTML", "a&amp;b",
+                     cr.getHtml().getBody().toString());
     }
 
     public void test_renderHeader() {
         Column c = new Column ("<label>", "id44");
-        StringBuilder out = new StringBuilder();
-        c.renderHeader(null, out);
-        assertEquals("generated HTML", "&lt;label&gt;", out.toString());
+        ClientRequest cr = new ClientRequestFixture();
+        c.renderHeader(cr);
+        assertEquals("generated HTML", "&lt;label&gt;",
+                     cr.getHtml().getBody().toString());
     }
 }

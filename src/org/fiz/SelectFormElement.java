@@ -114,11 +114,10 @@ public class SelectFormElement extends FormElement {
      * @param data                 Data for the form (a CompoundDataset
      *                             including both form data, if any, and the
      *                             global dataset).
-     * @param out                  Generated HTML is appended here.
      */
     @Override
-    public void render(ClientRequest cr, Dataset data,
-            StringBuilder out) {
+    public void render(ClientRequest cr, Dataset data) {
+        StringBuilder out = cr.getHtml().getBody();
         // Create a HashSet that keeps track of the initially selected values.
         HashSet<String> initialSelections = new HashSet<String>();
         if (multiple == null) {
