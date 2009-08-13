@@ -52,7 +52,7 @@ public class ChartSectionTest extends junit.framework.TestCase {
     public void test_render_includedJS() {
         cs.render(cr);
         assertEquals("static/fiz/Chart.js, static/fiz/ChartAxis.js, " +
-                     "static/fiz/ChartBar.js, static/fiz/ChartBorder.js, " +
+                     "static/fiz/ChartBar.js, " +
                      "static/fiz/ChartFormat.js, static/fiz/ChartLegend.js, static/fiz/ChartLine.js, " +
                      "static/fiz/ChartPlot.js, static/fiz/ChartScatter.js, " +
                      "static/fiz/ChartSeries.js, static/fiz/ChartTicks.js, " +
