@@ -4,11 +4,11 @@
  * class.  Many of the styles are inherited from those defined in css.yaml.
  */
  
- .AutocompleteFormElement {
+.AutocompleteFormElement {
 	position: relative;
 }
 
- .AutocompleteFormElement input {
+.AutocompleteFormElement input {
  	width: @formElementWidth;
  	font-family: @fontFamily;
  	font-size: 100%;
