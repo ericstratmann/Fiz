@@ -290,9 +290,9 @@ public class Dispatcher extends HttpServlet {
                 }
             }
             if ((endOfClass < 2) || (endOfMethod < (endOfClass+2))) {
-                if (pathInfo.length() == 0) {
-                    // This is the application's home URL; redirect to an
-                    // interactor if one has been specified.
+                if (pathInfo.length() <= 1) {
+                    // This is the application's home URL ("/"); redirect to
+                    // an interactor if one has been specified.
                     String homeUrl = Config.getDataset("main").check(
                             "homeRedirectUrl");
                     if (homeUrl != null) {
