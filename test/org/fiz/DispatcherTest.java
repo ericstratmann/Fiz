@@ -151,7 +151,7 @@ public class DispatcherTest extends junit.framework.TestCase {
     public void test_service_redirectHomePage() {
         Config.setDataset("main", new Dataset("homeRedirectUrl", "x/y"));
         ServletResponseFixture response = new ServletResponseFixture();
-        dispatcher.service(new ServletRequestFixture(""), response);
+        dispatcher.service(new ServletRequestFixture("/"), response);
         assertEquals("log information",
                 "setCharacterEncoding(\"UTF-8\"); sendRedirect(\"x/y\")",
                 response.log.toString());
@@ -173,6 +173,12 @@ public class DispatcherTest extends junit.framework.TestCase {
         dispatcher.service(new ServletRequestFixture("//a/b/c"),
                 new ServletResponseFixture());
         TestUtil.assertSubstring("empty class name",
+                "URL doesn't contain class name and/or method name",
+                dispatcher.basicMessage);
+        dispatcher.basicMessage = null;
+        dispatcher.service(new ServletRequestFixture("/a"),
+                new ServletResponseFixture());
+        TestUtil.assertSubstring("class but no method",
                 "URL doesn't contain class name and/or method name",
                 dispatcher.basicMessage);
         dispatcher.basicMessage = null;
