@@ -61,7 +61,7 @@ public class FormSectionTest extends junit.framework.TestCase {
     }
 
     public void test_FormDataException_constructor() {
-        FormSection.FormDataException exception = 
+        FormSection.FormDataException exception =
             new FormSection.FormDataException("elem", "<test error>");
         assertEquals("Message array", 1, exception.errorMessages.size());
         assertEquals("Error message",
@@ -71,9 +71,9 @@ public class FormSectionTest extends junit.framework.TestCase {
     }
 
     public void test_FormDataException_addMessage() {
-        FormSection.FormDataException exception = 
+        FormSection.FormDataException exception =
             new FormSection.FormDataException("elem", "<test error>");
-        
+
         exception.addMessage("elem2", "<another test>");
         assertEquals("Message array", 2, exception.errorMessages.size());
         assertEquals("Error message 1",
@@ -87,9 +87,9 @@ public class FormSectionTest extends junit.framework.TestCase {
     }
 
     public void test_FormDataException_getMessage() {
-        FormSection.FormDataException exception = 
+        FormSection.FormDataException exception =
             new FormSection.FormDataException("elem", "<test error>");
-        
+
         exception.addMessage("elem2", "<another test>");
         assertEquals("Message array", 2, exception.errorMessages.size());
         assertEquals("Error message 1",
@@ -101,7 +101,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "message: <another test>\n",
                 exception.getMessages()[1].toString());
     }
-    
+
     public void test_constructor_defaultId() {
         FormSection form = new FormSection(
                 new Dataset());
@@ -132,7 +132,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "form1", "buttonStyle", "explicit"));
         assertEquals("buttonStyle", "explicit", form.buttonStyle);
     }
-    
+
     public void test_addDataRequests() {
         Config.setDataset("dataRequests", YamlDataset.newStringInstance(
                 "getPerson:\n" +
@@ -165,7 +165,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 "name: Alice\n",
                 result.toString());
     }
-        
+
     public void test_collectFormData_validationErrors() {
         // The following class generates an exception in its collect method.
         class ErrorFormElement extends FormElement{
@@ -190,7 +190,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         try {
             form.collectFormData(cr);
         }
-        catch (FormSection.PostError e) {
+        catch (FormSection.CollectError e) {
             gotException = true;
         assertEquals("Error datasets", "culprit: age\nmessage: age error\n",
                 StringUtil.join(e.getErrorData(), "\n"));

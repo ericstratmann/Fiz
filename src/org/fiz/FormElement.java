@@ -46,14 +46,14 @@ import org.fiz.FormSection.FormDataException;
  *                   properties depend on the validator being used. If a single
  *                   word is specified for the type, Fiz will look inside
  *                   {@link FormValidator} for a validation method of the form
- *                   validateType. Otherwise, Fiz will use the type as the
- *                   fully qualified class name and method for the validator.
+ *                   validateType. Otherwise, {@code type} must have the form
+ *                   class.method, identifying a validation method.
  *                   Multiple nested data sets may be used to attach multiple
- *                   validators to a form element. See {@link FormValidator} for
- *                   additional usage and implementation information, including
- *                   the method prototype for implementing custom validators.
+ *                   validators to a form element. See {@link FormValidator}
+ *                   for additional usage and implementation information,
+ *                   including the calling sequence for validation methods.
  */
-public abstract class FormElement extends Formatter implements DirectAjax {    
+public abstract class FormElement extends Formatter implements DirectAjax {
     // An object of the following class is stored as a page property if this
     // form element contains validation: it holds data that we will need later
     // on to process Ajax requests to validate the value of the form element
@@ -63,11 +63,11 @@ public abstract class FormElement extends Formatter implements DirectAjax {
         protected String parentId;
         protected String elementErrorStyle;
 
-        // The following give information about the form element and its 
+        // The following give information about the form element and its
         // collection of validators
         protected String id;
         protected List<Dataset> validators;
-        
+
         // Constructs a new object for holding various pieces of information
         // needed for a form to validate itself. It also provides information to
         // render error messages if any errors occur.
@@ -79,7 +79,7 @@ public abstract class FormElement extends Formatter implements DirectAjax {
 
     // Value of the {@code id} constructor property.
     protected String id;
-        
+
     // The following variable holds the dataset describing the FormElement,
     // which was passed to the constructors as its {@code properties}
     // argument.  This dataset must contain at least an {@code id} value.
@@ -90,7 +90,7 @@ public abstract class FormElement extends Formatter implements DirectAjax {
 
     // Contains a reference to the FormSection that contains this form element
     protected FormSection parentForm = null;
-    
+
     /**
      * Construct a FormElement from a set of properties that define its
      * configuration.
@@ -105,7 +105,7 @@ public abstract class FormElement extends Formatter implements DirectAjax {
     public FormElement(Dataset properties) {
         this.properties = properties;
         id = properties.get("id");
-        
+
         // Sets up the "required" validator
         if ("true".equals(properties.check("required"))) {
             addValidator(new Dataset("type", "required"));
@@ -115,7 +115,7 @@ public abstract class FormElement extends Formatter implements DirectAjax {
             addValidator(validator);
         }
     }
-    
+
     /**
      * This method is invoked during the first phase of rendering a page,
      * in case the FormElement needs to create custom requests of its own
@@ -154,7 +154,7 @@ public abstract class FormElement extends Formatter implements DirectAjax {
      *                              request being serviced; there must be an
      *                              {@code elementsToValidate} value, which is
      *                              a comma-separated list of form elements
-     *                              needing to be validated, in the main dataset 
+     *                              needing to be validated, in the main dataset
      *                              along with a {@code formData} object which
      *                              contains key-value pairs for all relevant
      *                              form elements.
@@ -162,19 +162,19 @@ public abstract class FormElement extends Formatter implements DirectAjax {
     public static void ajaxValidate(ClientRequest cr) {
         Dataset main = cr.getMainDataset();
 
-        String[] elementsToValidate = 
+        String[] elementsToValidate =
             StringUtil.split(main.get("elementsToValidate"), ',');
         Dataset formData = main.getChild("formData");
 
         // We validate each of the form elements listed in
         // {@code elementsToValidate}
         for (String elementId : elementsToValidate) {
-            ValidatorData validatorData = 
+            ValidatorData validatorData =
                 (ValidatorData) cr.getPageProperty(elementId + "_validation");
-              
+
             try {
                 validate(validatorData, formData);
-                
+
                 // No errors, clear the error messages on the form element
                 // (if any)
                 cr.evalJavascript(
@@ -200,18 +200,18 @@ public abstract class FormElement extends Formatter implements DirectAjax {
     }
 
     /**
-     * Invoked by FormSection when a form has been posted: prepares data
-     * for inclusion in the update request for the form.  Normally this
-     * consists of checking for a value in {@code in} whose name is the same
-     * as this element's id and copying it to {@code out} if it exists.
-     * This method provides that behavior as a default.  However, in some
-     * situations the posted data has to be translated for use in the update
-     * request (e.g., perhaps a time value was split across several different
-     * controls for editing but has to be returned to the data manager in a
-     * single string); in this case the FormElement can override this method
-     * to perform whatever translations are needed.  FormElements can also
-     * use this method to perform data validation (though that usually happens
-     * in the data managers).
+     * Invoked by FormSection when a form has been posted to handle the data
+     * related to this form element.  Normally this consists of checking for
+     * a value in {@code in} whose name is the same as this element's id and
+     * copying it to {@code out} if it exists. This method provides that
+     * behavior as a default.  However, in some situations the posted data
+     * has to be translated for use in the update request (e.g., perhaps
+     * a value was split across several different controls for editing but
+     * must be presented to the application as a single string); in this
+     * case the FormElement can override this method to perform whatever
+     * translations are needed.  FormElements can also use this method to
+     * perform additional data validation (though that usually happens
+     * in separate validators).
      * @param cr                   Overall information about the client
      *                             request being serviced.
      * @param in                   The main dataset for the request;
@@ -241,7 +241,7 @@ public abstract class FormElement extends Formatter implements DirectAjax {
     public String getId() {
         return id;
     }
-    
+
 
     /**
      * This method is invoked by FormSection to generate HTML to display
@@ -280,12 +280,12 @@ public abstract class FormElement extends Formatter implements DirectAjax {
         if (validatorData == null) {
             return;
         }
-        
+
         // Enable the auth token for handling Ajax requests
         cr.setAuthToken();
-        
+
         // Validation of this form element may require data from other form
-        // elements so we need to create a list of other form elements to 
+        // elements so we need to create a list of other form elements to
         // include when sending back data to be validated.
         Set<String> otherIds = new TreeSet<String>();
         otherIds.add(id);
@@ -297,7 +297,7 @@ public abstract class FormElement extends Formatter implements DirectAjax {
             String[] ids = StringUtil.split(otherFields, ',');
             for (String includeId : ids) {
                 otherIds.add(includeId);
-    
+
                 // Attach a validate callback to the included form element so
                 // that any changes in the included form element will also fire
                 // off a validation event on this form element
@@ -306,7 +306,7 @@ public abstract class FormElement extends Formatter implements DirectAjax {
                         includeId, id, otherFields);
             }
         }
-    
+
         // Finally, attach the validate callback to the current form element
         cr.evalJavascript("Fiz.FormElement." +
                 "attachValidator(\"@1\", \"@1\", \"@2\");\n",
@@ -391,19 +391,19 @@ public abstract class FormElement extends Formatter implements DirectAjax {
         FormSection.FormDataException e = null;
         for (Dataset validator : validatorData.validators) {
             String method = validator.get("type");
-            
+
             // If there is no period in the validator type, we assume the
-            // developer is specifying a built-in validator type 
+            // developer is specifying a built-in validator type
             if (method.indexOf('.') == -1) {
-                method = "FormValidator.validate" 
+                method = "FormValidator.validate"
                     + StringUtil.ucFirst(method);
             }
-                        
+
             // Gets either the error message if the validation fails or null
             // representing the validation succeeded
             String result = (String) Util.invokeStaticMethod(
                     method, validatorData.id, validator, in);
-    
+
             if (result != null) {
                 if (e == null) {
                     e = new FormSection.FormDataException(
@@ -413,7 +413,7 @@ public abstract class FormElement extends Formatter implements DirectAjax {
                 }
             }
         }
-        
+
         if (e != null) {
             throw e;
         }

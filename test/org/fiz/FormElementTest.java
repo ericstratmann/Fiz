@@ -33,7 +33,7 @@ public class FormElementTest extends junit.framework.TestCase {
             // Do nothing.
         }
     }
-    
+
     // This is a sample validation function used to test custom validators
     public static String validateTest(String id, Dataset properties,
             Dataset formData) {
@@ -44,7 +44,7 @@ public class FormElementTest extends junit.framework.TestCase {
                     properties, formData);
         }
     }
-         
+
     // No tests for addDataRequests: it doesn't do anything.
 
     public void test_constructor_basic() {
@@ -63,16 +63,16 @@ public class FormElementTest extends junit.framework.TestCase {
     }
 
     // No tests for addDataRequests: it doesn't do anything.
-    
+
     public void test_addValidator() {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "elem", "label", "elem_label",
                 "validator", new Dataset("type", "required")));
-        
+
         element.addValidator(new Dataset("type", "match"));
-        
+
         assertEquals("validators", 2, element.validatorData.validators.size());
-        
+
         assertEquals("validator required",
                 "type: required\n",
                 element.validatorData.validators.get(0).toString());
@@ -131,7 +131,7 @@ public class FormElementTest extends junit.framework.TestCase {
         assertEquals("nonexistent property", null,
                 element.checkProperty("bogus"));
     }
-        
+
     public void test_collect() throws FormSection.FormDataException {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "name", "name", "Alice"));
@@ -150,13 +150,13 @@ public class FormElementTest extends junit.framework.TestCase {
         assertEquals("output dataset", "age:  30\n" +
                 "name: Bob\n", out.toString());
     }
-    
+
     public void test_getId() {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "name", "age", "8"));
         assertEquals("return value", "name", element.getId());
     }
-    
+
     public void test_renderLabel_withTemplate() {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "age", "label", "Age of @name:"));
@@ -180,17 +180,19 @@ public class FormElementTest extends junit.framework.TestCase {
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "name", "label", "noParent"));
         element.renderValidators(cr);
-        
+
         assertEquals("Generated javascript", "", cr.getHtml().jsCode.toString());
         assertEquals("Javascript file names", "", cr.getHtml().getJsFiles());
     }
 
     public void test_renderValidators_multipleValidators() {
         ClientRequest cr = new ClientRequestFixture();
+        cr.authTokenSet = true;
+        cr.pageId = "1234";
         FormElementFixture element = new FormElementFixture(new Dataset(
                 "id", "elem", "label", "elem_label",
                 "validator", new Dataset("type", "range", "min", "98", "max", "100"),
-                "validator", new Dataset("type", "match", "fields", "test1,test2", 
+                "validator", new Dataset("type", "match", "fields", "test1,test2",
                         "otherFields", "test1,test2")));
         Config.init("test/testData/WEB-INF/app/config", "web/WEB-INF/fiz/config");
         new FormSection(
@@ -198,22 +200,20 @@ public class FormElementTest extends junit.framework.TestCase {
                         "request", "getFormData",
                         "postUrl", "postForm"),
                 element);
-        
+
         element.renderValidators(cr);
-        
+
         assertEquals("Generated javascript",
-                "Fiz.auth = \"JHB9AM69@$6=TAF*J \";\n" +
                 "Fiz.FormElement.attachValidator(" +
                 "\"test1\", \"elem\", \"test1,test2\");\n" +
                 "Fiz.FormElement.attachValidator(" +
                 "\"test2\", \"elem\", \"test1,test2\");\n" +
                 "Fiz.FormElement.attachValidator(" +
-                "\"elem\", \"elem\", \"elem,test1,test2\");\n" +
-                "Fiz.pageId = \"3\";\n",
+                "\"elem\", \"elem\", \"elem,test1,test2\");\n",
                 cr.getHtml().jsCode.toString());
         assertEquals("Page property", element.validatorData,
                 cr.getPageProperty("elem_validation"));
-        assertEquals("Javascript file names", 
+        assertEquals("Javascript file names",
                 "static/fiz/Ajax.js, static/fiz/Fiz.js, static/fiz/FormElement.js",
                 cr.getHtml().getJsFiles());
     }
@@ -236,7 +236,7 @@ public class FormElementTest extends junit.framework.TestCase {
                         "request", "getFormData",
                         "postUrl", "postForm"),
                 element);
-        
+
         assertEquals("form parent", section, element.parentForm);
     }
 
@@ -259,7 +259,7 @@ public class FormElementTest extends junit.framework.TestCase {
         try {
             element.validate(cr.getMainDataset().getChild("formData"));
         } catch (FormSection.FormDataException e) {
-            
+
         }
         assertEquals("exception did not happen", false, gotException);
     }
@@ -277,12 +277,12 @@ public class FormElementTest extends junit.framework.TestCase {
         cr.mainDataset = new Dataset(
                 "elementsToValidate", "elem",
                 "formData", new Dataset("elem", "98"));
-    
+
         boolean gotException = false;
         try {
             FormElement.validate(v, cr.getMainDataset().getChild("formData"));
         } catch (FormSection.FormDataException e) {
-            
+
         }
         assertEquals("exception did not happen", false, gotException);
     }
@@ -301,7 +301,7 @@ public class FormElementTest extends junit.framework.TestCase {
         cr.mainDataset = new Dataset(
                 "elementsToValidate", "elem",
                 "formData", new Dataset("elem", "98"));
-    
+
         boolean gotException = false;
         try {
             FormElement.validate(v, cr.getMainDataset().getChild("formData"));
@@ -324,7 +324,7 @@ public class FormElementTest extends junit.framework.TestCase {
         cr.mainDataset = new Dataset(
                 "elementsToValidate", "elem",
                 "formData", new Dataset("elem", "98"));
-    
+
         boolean gotException = false;
         try {
             FormElement.validate(v, cr.getMainDataset().getChild("formData"));
@@ -348,7 +348,7 @@ public class FormElementTest extends junit.framework.TestCase {
         cr.mainDataset = new Dataset(
                 "elementsToValidate", "elem",
                 "formData", new Dataset("elem", "97"));
-        
+
         boolean gotException = false;
         try {
             FormElement.validate(v, cr.getMainDataset()
@@ -379,12 +379,12 @@ public class FormElementTest extends junit.framework.TestCase {
         cr.mainDataset = new Dataset(
                 "elementsToValidate", "elem",
                 "formData", new Dataset("elem", "fake_value"));
-    
+
         boolean gotException = false;
         try {
             FormElement.validate(v, cr.getMainDataset()
                     .getChild("formData"));
-        } 
+        }
         catch (FormSection.FormDataException e) {
             assertEquals("exception message",
                     "culprit: elem\n" +

@@ -85,7 +85,7 @@ public class SelectFormElement extends FormElement {
 
     /**
      * Invoked by FormSection when a form has been posted: prepares data
-     * for inclusion in the update request for the form.  .
+     * for inclusion in the update request for the form.
      * @param cr                   Overall information about the client
      *                             request being serviced.
      * @param in                   The main dataset for the request;
@@ -158,7 +158,7 @@ public class SelectFormElement extends FormElement {
                 "class=\"@class?{SelectFormElement}\" " +
                 "{{size=\"@height\"}} {{multiple=\"@multiple\"}}>\n",
                 properties);
-        
+
         String allChoices = "";
         for (int i = 0; i < choices.size(); i++) {
             Dataset choice = choices.get(i);
@@ -170,7 +170,7 @@ public class SelectFormElement extends FormElement {
             Template.appendHtml(out, "  <option {{selected=\"@1\"}} " +
                     "value=\"@value\">@name?{@value}</option>\n",
                     choice, selected);
-            
+
             if (i > 0) {
                 allChoices += ",";
             }

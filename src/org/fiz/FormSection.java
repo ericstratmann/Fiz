@@ -30,12 +30,11 @@ import java.util.*;
  *   class:          (optional) Used as the {@code class} attribute for
  *                   the HTML table that displays the FormSection.
  *                   Defaults to {@code FormSection}.
- *   elementErrorStyle:   (optional) When the {@code post} method encounters
- *                   an error in its data request and displays an error
- *                   message next to the culprit form element, this value
- *                   specifies a template in the {@code styles} dataset,
- *                   which is expanded with the error data and the main
- *                   dataset to produce the HTML to display.  Defaults to
+ *   elementErrorStyle:   (optional) When displaying error information next
+ *                   to a form element (e.g., after a validation error),
+ *                   this value specifies a template in the {@code styles}
+ *                   dataset, which is expanded with the error data and the
+ *                   main dataset to produce the HTML to display.  Defaults to
  *                   "FormSection.elementError".
  *   errorStyle:     (optional) If an error occurs in {@code request} then
  *                   this property contains the name of a template in the
@@ -62,8 +61,8 @@ import java.util.*;
  *                   column and controls in the right column.
  *   postUrl:        (optional) When the form is submitted an Ajax request
  *                   is sent to this URL.  The caller must ensure that
- *                   this URL is implemented by an Interactor.  Defaults
- *                   to {@code post}.
+ *                   this URL is implemented by an Interactor.  The name
+ *                   must start with "post".  Defaults to {@code post}.
  *   request:        (optional) Name of a DataRequest that will supply
  *                   initial values to display in the FormSection.  The
  *                   request is created by the caller and registered in
@@ -115,18 +114,17 @@ import java.util.*;
  */
 public class FormSection extends Section {
     /**
-     * PostError is thrown when the {@code post} method detects an error
-     * in its DataRequest.
+     * CollectError is thrown when an error occurs while collecting form data.
      */
-    public static class PostError extends DatasetError
+    public static class CollectError extends DatasetError
             implements HandledError {
         /**
-         * Construct a PostError with the error data returned by the failed
+         * Construct a CollecttError with the error data returned by the failed
          * DataRequest.
          * @param errorDatasets    One or more data sets, each describing
          *                         an error.
          */
-        public PostError(Dataset... errorDatasets) {
+        public CollectError(Dataset... errorDatasets) {
             super(errorDatasets);
         }
     }
@@ -139,7 +137,7 @@ public class FormSection extends Section {
         // Contains a list of all error messages from a form element that
         // generated this FormDataException
         List<Dataset> errorMessages = new ArrayList<Dataset>();
-        
+
         /**
          * Construct a FormDataException with an initial error message.
          * @param message          Message describing the problem.
@@ -193,9 +191,8 @@ public class FormSection extends Section {
             "<div id=\"@(1)_@(2)_diagnostic\" class=\"diagnostic\" " +
             "style=\"display:none\"></div>";
 
-    // The following variable is used to identify the first error in
-    // form data for a given post.  False means that {@code elementError}
-    // has not been invoked since the last call to {@collectFormData}.
+    // False means that {@code elementError} has not been invoked since the
+    // last call to {@collectFormData}.
     protected boolean anyElementErrors;
 
     /**
@@ -220,11 +217,11 @@ public class FormSection extends Section {
         if (buttonStyle == null) {
             buttonStyle = "FormSection.button";
         }
-        
+
         helpConfig = Config.getDataset("help");
         nestedHelp = helpConfig.checkChild(id);
     }
-    
+
     /**
      * This method is invoked during the first phase of rendering a page to
      * create any special requests needed for the form;  we don't need any
@@ -252,7 +249,7 @@ public class FormSection extends Section {
      * @return                     A Dataset containing the submitted data
      *                             from the form, potentially translated
      *                             by the {@code collect} methods.
-     * @throws PostError           Thrown if any of the {@code collect}
+     * @throws org.fiz.FormSection.CollectError           Thrown if any of the {@code collect}
      *                             methods generated an error.  In this case
      *                             AJAX actions will have been generated to
      *                             display information about the error.
@@ -281,7 +278,7 @@ public class FormSection extends Section {
         // If there were any errors generated by the form elements,
         // throw an error containing information about the last of them.
         if (errorData != null) {
-            throw new PostError(errorData);
+            throw new CollectError(errorData);
         }
         return collectedData;
     }
@@ -329,7 +326,7 @@ public class FormSection extends Section {
      * @param elementErrorStyle    Error template for the form section
      * @param errorData            One or more Datasets describing errors
      */
-    public static void elementError(ClientRequest cr, 
+    public static void elementError(ClientRequest cr,
             String formId, String elementId,
             String elementErrorStyle, Dataset ... errorData) {
         // Generate HTML for the error message.
@@ -337,9 +334,9 @@ public class FormSection extends Section {
         String templateName = elementErrorStyle;
         // We have multipe error messages. Display each of them.
         for (Dataset error : errorData) {
-            Template.appendHtml(html, 
+            Template.appendHtml(html,
                     Config.getPath("styles", templateName),
-                    new CompoundDataset(error, cr.getMainDataset()));                
+                    new CompoundDataset(error, cr.getMainDataset()));
         }
 
         // Invoke a Javascript method, passing it information about
@@ -384,7 +381,7 @@ public class FormSection extends Section {
             Dataset ... errorData) {
         // Display a bulletin message indicating that there are problems,
         // but only generate one message regardless of how many errors have
-        // occurred during this post.
+        // occurred during this ClientRequest.
         if (!anyElementErrors) {
             cr.addErrorsToBulletin(new Dataset("message",
                     "One or more of the input fields are invalid; " +
@@ -392,7 +389,7 @@ public class FormSection extends Section {
             anyElementErrors = true;
         }
 
-        FormSection.elementError(cr, checkId(), elementId, 
+        FormSection.elementError(cr, checkId(), elementId,
                 checkElementErrorStyle(), errorData);
     }
 
