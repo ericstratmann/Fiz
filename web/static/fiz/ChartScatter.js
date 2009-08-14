@@ -14,16 +14,16 @@
  */
 
 /*
- * A scatter object is a plot using for drawing a scatter plot. Both of its axes
- * are continuous.
+ * A scatter object is a plot using for drawing a scatter plot. Each point is
+ * represented by a shape. Both of its axes are continuous.
  */
 Fiz.Chart.Scatter = function () {
+    this.type = "scatter";
     this.series = [];
     this.barWidth = 0;
     this.discrete = false;
-    
 
-    // todo: better isarray check
+
     for (var i = 0; i < arguments.length; i += 1) {
         if (arguments[i].length !== undefined) {
             this.series[i] = new Fiz.Chart.Series(arguments[i]);
@@ -39,7 +39,9 @@ Fiz.Chart.Scatter = function () {
         radius: 4,
         allowRemove: true,
         display: true,
-        scale: "linear"
+        scale: "linear",
+        xLocation: "bottom",
+        yLocation: "left"
     };
 
     for (var name in this.config) {
@@ -49,13 +51,18 @@ Fiz.Chart.Scatter = function () {
 
 Fiz.Chart.Scatter.prototype = new Fiz.Chart.Plot();
 
+/*
+ * Draws the plot
+ *
+ * @param ctx       Context to draw on
+ */
 Fiz.Chart.Scatter.prototype.draw = function (ctx) {
     ctx.save();
-    this.stack();
+    this.stackSeries();
     for (var i = 0; i < this.series[0].data.length; i++) {
-        var yVal = this.yAxis.positionOf(this.series[0].data[i][1]);
+        var yVal = this.yAxis.logicalToChartCoords(this.series[0].data[i][1]);
         var x = parseInt(this.series[0].data[i][0], 10);
-        var xVal = this.xAxis.positionOf(x);
+        var xVal = this.xAxis.logicalToChartCoords(x);
         Fiz.Chart.drawShape(ctx, xVal, this.yAxis.size - yVal, this.series[0].config.shape || "circle",
                             this.series[0].config.color, this.series[0].config.radius);
     }

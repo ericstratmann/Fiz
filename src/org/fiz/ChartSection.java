@@ -41,8 +41,8 @@ import java.util.*;
  * yAxis datasets. Otherwise, the other four axis datasets should be used.
  *
  * The following properties are supported by datasets representing a plot:
- * type:       (Optional) Type of plot to draw. Currently supports {@code bar}
- *             {@code line}, and {@code scatter}. Defaults to {@code bar}
+ * type:       (Optional) Type of plot to draw. Currently supports @code{bar}
+ *             @code{line}, and @code{scatter}. Defaults to @code{bar}
  * series:     (Optional) One oe more child datasets, each describing one series
  * id:         (Optional) Used to name the Javascript object associated with
  *             this plot. If not given, it is automatically generated.
@@ -63,7 +63,8 @@ import java.util.*;
  *
  * In cases where there is only one series for a plot or one plot for the chart,
  * it is possible to "collapse" the datasets. This is done by not including the
- * {@code plot} or {@code series} parameter, and instead placing the parameters
+
+ * @code{plot} or @code{series} parameter, and instead placing the parameters
  * that would have been in that dataset in the chart or plot dataset.
  *
  * Before describing the different configuration options, here are a few
@@ -80,6 +81,7 @@ import java.util.*;
  * What follows is a complete descripiction of every configuration property.
  *
  * Chart wide properties:
+ *
  * title:            Title displayed at the top of the chart
  * titleFont:        Font used to render the title
  * titleColor:       Color used to draw the title
@@ -95,7 +97,8 @@ import java.util.*;
  *
  * Axis-specific properties.
  *
- * These properties should be specified in the dataset for the particular axis:
+ * These properties should be specified in the dataset for the particular axis.
+ *
  * title:            Title to display next to the axis
  * titleFont:        Font used to render the axis' title
  * titleColor:       Color used to draw the axis' title
@@ -105,7 +108,7 @@ import java.util.*;
  * minorGridWidth:   Width  of the minor grid lines, which are drawn at every
  *                   minor tick mark. If 0, they are not drawn.
  * minorGridColor:   Color of the minor grid lines
- * ticks:            Number of tick marks on the axis. Defaults to 5
+ * displayTicks:     "true" or "false". Whether to display tick marks.
  * tickLength:       Length of a major tick in pixels
  * tickSide:         Which side the tick marks should be drawn on. "inside", "outside",
  *                   or "middle"
@@ -120,7 +123,8 @@ import java.util.*;
  *
  * Legend-specific properties.
  *
- * These properties should be specified in the dataset for the legend:
+ * These properties should be specified in the dataset for the legend.
+ *
  * display:     "true" or "false". Whether to display the legend
  * textFont:    Font used to render text in the legend
  * textColor:   Color used to draw the text in the legend
@@ -130,6 +134,7 @@ import java.util.*;
  * it is set on a series, it applies to just the one. For example, you might
  * want to set the opacity for all the series, but set the name of each one
  * individually.
+ *
  * name:          Name of the plot or series used to label it in the legend
  * nameFont:      Font used to render the name in the legend
  * opacity:       Float between 0 and 1 describing how opaque to draw the plot
@@ -149,15 +154,18 @@ import java.util.*;
  * plots supported natively in Fiz, here are the properties for specific plots.
  *
  * Bar chart:
+ *
  * borderWidth:  Width of each bar's border in pixels
  * borderColor:  Color of the border
  *
  * Line Chart:
+ *
  * area:    "true" or "false". Whether to draw the area under a plot or not.
  * shape:   Which type of shape to draw at every point
  * width:   Width of the line in pixels
  *
  * Scatter Chart:
+ *
  * shape:   Which type of shape to draw for the points
  */
 
@@ -189,12 +197,12 @@ public class ChartSection extends Section {
     protected String[] chartVars = {"title", "borderWidth", "plotBorderWidth", "width",
                                     "borderColor", "plotBorderColor",
                                     "height", "barSpacer", "background", "plotBackground",
-                                    "xAxisLocation", "yAxisLocation",
                                     "titleFont", "titleColor", "majorGrid", "display",
                                     "ticks", "minorTicks", "tickLength",
                                     "minorTickLength", "minorGrid", "tickSide",
                                     "minorTickSide", "scale", "location",
                                     "showLabels", "labelFont", "labelColor"};
+
 
     /**
      * Constructor for a ChartSection
@@ -227,7 +235,8 @@ public class ChartSection extends Section {
         String id = getId(properties, "chart");
         out.append("<div>\n");
         // Dimensions can be changed dynamically through properties
-        Template.appendRaw(out, "<canvas width=\"500\" height=\"400\" id=\"@1\"></canvas>\n",
+        Template.appendRaw(out, "<canvas width=\"500\" height=\"400\" id=\"@1\">" +
+                           "Your browser does not support the canvas element</canvas>\n",
                         id);
         out.append("</div>\n");
 
@@ -257,7 +266,7 @@ public class ChartSection extends Section {
     /**
      * Adds a plot to chart, including creating the data for it and setting the
      * given properties on it, and finally adding it to the chart. Modifies the
-     * {@code js} variable.
+     * @code{js} variable.
      *
      * @param plot       Dataset describing the plot to add.
      */
@@ -313,7 +322,7 @@ public class ChartSection extends Section {
      * Adds javascript code to create an array with data for a plot. It takes
      * the request defined in the properties dataset to get the data to add
      * to the plot, using the xId and yId properties to get the proper data
-     * from the dataset. Modifies the {@code js} variable.
+     * from the dataset. Modifies the @code{js} variable.
      *
      * @param properties      Dataset describing the plot or series. Used for
      *                        the id, request, xId, and yId properties.
@@ -348,7 +357,7 @@ public class ChartSection extends Section {
      * all properties which are unique to the chart. If a property is in that
      * list, then we assume we set it on the chart. Otherwise on the plot or
      * series. We also make sure to avoid java reserved variables, such as
-     * xId, yId, request, etc. Modifies the {@code js} variable.
+     * xId, yId, request, etc. Modifies the @code{js} variable.
      *
      * @param plot       Dataset describing the plot
      * @param name       Name of the object to set the properties on
@@ -414,7 +423,7 @@ public class ChartSection extends Section {
     }
 
     /**
-     * Returns the {@code id} property of a dataset. If it does not have one, it
+     * Returns the @code{id} property of a dataset. If it does not have one, it
      * generates a unique one and modifies the dataset to add it.
      *
      * @param properties      Dataset describing the plot's properties

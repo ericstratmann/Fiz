@@ -23,16 +23,13 @@ Fiz.Chart.Axis = function (labels) {
     this.size = 20;
 };
 
-Fiz.Chart.Axis.prototype.positionOf = function (n) {
-    if (typeof n === "number") {
-        return n * 2;
-    } else {
-        var arr = [];
-        for (var i = 0; i < n.length; i++) {
-            arr[i] = n[i] * 2;
-        }
-        return arr;
-    }
+Fiz.Chart.Axis.prototype.isXAxis = function () {
+    return this.xAxis;
+};
+
+
+Fiz.Chart.Axis.prototype.logicalToChartCoords = function (n) {
+    return n * 2;
 }
 
 Fiz.Chart.Axis.prototype.zero = function () {

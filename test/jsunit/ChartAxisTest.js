@@ -27,23 +27,24 @@ include("CanvasFixture.js");
 
 ChartAxisTest = {};
 
-ChartAxisTest.isAxis = function () {
-    this.axis.type = "x";
-    assertEqual(true, this.axis.isXAxis(), "is x");
-    
-    this.axis.type = "y";
-    assertEqual(false, this.axis.isXAxis(), "is not x");
-};
 
 ChartAxisTest.setUp = function () {
     this.axis = new Fiz.Chart.Axis({});
+};
+
+ChartAxisTest.test_isXAxis = function () {
+    this.axis.type = "x";
+    assertEqual(true, this.axis.isXAxis(), "is x");
+
+    this.axis.type = "y";
+    assertEqual(false, this.axis.isXAxis(), "is not x");
 };
 
 ChartAxisTest.test_addPlot = function () {
     var plot1 = new Fiz.Chart.Plot([]);
     this.axis.addPlot(plot1);
     assertEqual(plot1, this.axis.plots[0], "plot1");
-    
+
     var plot2 = new Fiz.Chart.Plot([]);
     this.axis.addPlot(plot2);
     assertEqual(plot2, this.axis.plots[1], "plot2");
@@ -57,7 +58,7 @@ ChartAxisTest.test_setDiscreteness_xAxis = function () {
 
     this.axis.setDiscreteness(plot);
     assertEqual(true, this.axis.discrete, "true");
-    
+
 
     this.axis.discrete = undefined;
     plot.discrete = false;
@@ -98,11 +99,11 @@ ChartAxisTest.test_setLabels_discrete = function () {
 
     this.axis.type = "x";
     this.axis.discrete = true;
-    
+
     plot = {a: "foo"};
     this.axis.setLabels(plot);
     assertEqual("discrete(a: foo)\n", jsunit.log);
-    
+
 };
 
 ChartAxisTest.test_setLabels_continuous = function () {
@@ -114,7 +115,7 @@ ChartAxisTest.test_setLabels_continuous = function () {
     this.axis.discrete = false;
     this.axis.setLabels(plot);
     assertEqual("continuous(b: bar)\n", jsunit.log);
-    
+
     jsunit.log = "";
     this.axis.type = "y";
     this.axis.discrete = true;
@@ -130,84 +131,99 @@ ChartAxisTest.test_getDiscreteAxisValues = function () {
     assertEqual("2", labels[1], "1");
 };
 
-// UPTOHERE
 
-ChartAxisTest.test_getContinuousAxisValues_number = function () {
-    this.axis.min = 0;
-    this.axis.max = 10;
-    this.axis.config.ticks = 5;
+ChartAxisTest.test_getContinuousAxisValues_noTicks = function () {
+    this.axis.config.ticks = false;
 
-    var ticks = this.axis.getContinuousAxisValues();
-    assertEqual(3, ticks.length, "length");
-    assertEqual(0, ticks[0], "0");
-    assertEqual(5, ticks[1], "1");
-    assertEqual(10, ticks[2], "2");
+    assertEqual(0, this.axis.getContinuousAxisValues().length);
 };
 
-ChartAxisTest.test_getContinuousAxisValues_array = function () {
-    this.axis.config.ticks = [1,2,5];
-    assertEqual(this.axis.config.ticks, this.axis.getContinuousAxisValues());
-};
-
-/* rmin rmax
-ChartAxisTest.test_getContinuousAxisValues_log = function () {
+ChartAxisTest.test_getContinuousAxisValues_logTicks = function () {
+    this.axis.config.ticks = true;
     this.axis.config.scale = "log";
-    this.axis.config.ticks = null;
-    this.axis.min = 1;
-    this.axis.max = 100;
-    this.axis.config.logValue = 10;
+    this.axis.generateLogTickMarks = chartLogFunction("logTicks");
+    this.axis.getContinuousAxisValues();
+    assertEqual("logTicks()\n", jsunit.log);
+};
 
-    var ticks = this.axis.getContinuousAxisValues();
+ChartAxisTest.test_getContinuousAxisValues_linearTicks = function () {
+    this.axis.config.ticks = "true";
+    this.axis.config.scale = "linear";
+    this.axis.generateTickMarks = chartLogFunction("linearTicks");
+    this.axis.getContinuousAxisValues();
+    assertEqual("linearTicks()\n", jsunit.log);
+};
+
+ChartAxisTest.test_getContinuousAxisValues_badScale = function () {
+    this.axis.config.ticks = "true";
+    this.axis.config.scale = "badzxc";
+    try {
+        this.axis.getContinuousAxisValues();
+        assertEqual(true, false, "Exception not thrown");
+    } catch (e) {
+        assertEqual("Axis.getContinuousAxisValues: bad config.scale value", e);
+    }
+};
+
+ChartAxisTest.test_getNSigFigs = function () {
+    assertEqual(15, this.axis.getNSigFigs(150, 2), "more digits than sigfigs");
+    assertEqual(83, this.axis.getNSigFigs(8.3, 2), "less digits than sigfigs");
+    assertEqual(515, this.axis.getNSigFigs(515, 3), "equal digits as sigfigs");
+};
+
+ChartAxisTest.test_generateLogTickMarks = function () {
+
+};
+
+ChartAxisTest.test_generateLogTickMarks = function () {
+    this.axis.config.scale = "log";
+    this.axis.min = 1;
+    this.axis.max = 105;
+    this.axis.config.logBase = 10;
+
+    var ticks = this.axis.generateLogTickMarks();
     assertEqual(3, ticks.length, "length");
     assertEqual(1, ticks[0], "0");
     assertEqual(10, ticks[1], "1");
     assertEqual(100, ticks[2], "2");
 };
-*/
-//todo linear 
 
 ChartAxisTest.test_generateTickMarks_test1 = function () {
-    var ticks = this.axis.generateTickMarks(0, 4);
-    assertEqual(5, ticks.length, "length");
-    assertEqual(0, ticks[0], "0");
-    assertEqual(2, ticks[2], "2");
-    assertEqual(4, ticks[4], "4");
-    var ticks = this.axis.generateTickMarks(0, 4);
+    this.axis.min = 0;
+    this.axis.max = 4;
+    var ticks = this.axis.generateTickMarks();
+    assertEqual("0,1,2,3,4", ticks.toString());
 };
+
 ChartAxisTest.test_generateTickMarks_test2 = function () {
-    var ticks = this.axis.generateTickMarks(0, 7);
+    this.axis.min = 0;
+    this.axis.max = 7;
+    var ticks = this.axis.generateTickMarks();
+    assertEqual("0,2,4,6", ticks.toString());
     assertEqual(4, ticks.length, "length");
-    assertEqual(0, ticks[0], "0");
-    assertEqual(4, ticks[2], "2");
-    assertEqual(6, ticks[3], "3");
 };
 
-/*
 ChartAxisTest.test_generateTickMarks_test3 = function () {
-    var ticks = this.axis.generateTickMarks(0, 16);
-    assertEqual(4, ticks.length, "length");
-    assertEqual(0, ticks[0], "0");
-    assertEqual(10, ticks[2], "2");
-    assertEqual(15, ticks[3], "3");
-};
-*/
-ChartAxisTest.test_generateTickMarks_test4 = function () {
-    var ticks = this.axis.generateTickMarks(50, 120);
-    assertEqual(4, ticks.length, "length");
-    assertEqual(50, ticks[0], "0");
-    assertEqual(70, ticks[1], "1");
-    assertEqual(110, ticks[3], "3");
+    this.axis.min = 0;
+    this.axis.max = 16;
+    var ticks = this.axis.generateTickMarks();
+    assertEqual("0,5,10,15", ticks.toString());
 };
 
-/*
-ChartAxisTest.test_generateTickMarks_test5 = function () {
-    var ticks = this.axis.generateTickMarks(0.3, 0.6);
-    assertEqual(7, ticks.length, "length");
-    assertEqual(0.3, ticks[0], "0");
-    assertEqual(0.35, ticks[1], "1");
-    assertEqual(0.55, ticks[5], "5");
+ChartAxisTest.test_generateTickMarks_test4 = function () {
+    this.axis.min = 50;
+    this.axis.max = 120;
+    var ticks = this.axis.generateTickMarks();
+    assertEqual("50,70,90,110", ticks.toString());
 };
-*/
+
+ChartAxisTest.test_generateTickMarks_test5 = function () {
+    this.axis.min = 0.3;
+    this.axis.max = 0.6;
+    var ticks = this.axis.generateTickMarks();
+    assertEqual("0.3,0.4,0.5,0.6", ticks.toString());
+};
+
 ChartAxisTest.test_setMinAndMax_linear = function () {
     var plot1 = new Fiz.Chart.Plot();
     var plot2 = new Fiz.Chart.Plot();
@@ -223,47 +239,25 @@ ChartAxisTest.test_setMinAndMax_linear = function () {
 ChartAxisTest.test_setMinAndMax_bothAxes = function () {
     var plot1 = new Fiz.Chart.Plot();
     plot1.setMinAndMax(-3, -1, 2, 5);
-    var axis1 = new Fiz.Chart.Axis({scale: "linear"}, undefined, "x");
+    var axis1 = new Fiz.Chart.Axis({scale: "linear"}, null, undefined, "x");
     axis1.setMinAndMax(plot1);
     assertEqual(0, axis1.min, "x axis min");
     assertEqual(5, axis1.max, "x axis max");
 
-    var axis2 = new Fiz.Chart.Axis({scale: "linear"}, undefined, "y");
+    var axis2 = new Fiz.Chart.Axis({scale: "linear"}, null, undefined, "y");
     axis2.setMinAndMax(plot1);
     assertEqual(-3, axis2.min, "y axis min");
-    assertEqual(0, axis2.max, "y axis min");
-    
+    assertEqual(0, axis2.max, "y axis max");
+
 };
 
-/*
 ChartAxisTest.test_setMinAndMax_log = function () {
     var plot1 = new Fiz.Chart.Plot();
     plot1.setMinAndMax(33, 55);
-    var axis = new Fiz.Chart.Axis({scale: "log", logValue: 5});
-    axis.fixValues = logFunction("fixValues");
+    var axis = new Fiz.Chart.Axis({scale: "log", logBase: 5});
     axis.setMinAndMax(plot1);
     assertEqual(25, axis.min, "min");
     assertEqual(55, axis.max, "max");
-    assertEqual("fixValues()\n", jsunit.log);
-};
-*/
-
-ChartAxisTest.test_fixValues = function () {
-    this.axis.min = 10;
-    this.axis.max = 100;
-    this.axis.config.logValue = 10;
-    
-    this.axis.config.scale = "linear";
-    this.axis.fixValues();
-    assertEqual(10, this.axis.min, "linear min");
-    assertEqual(100, this.axis.max, "linear max");
-
-    /*
-    this.axis.config.scale = "log";
-    this.axis.fixValues();
-    assertEqual(1, this.axis.min, "log min");
-    assertEqual(2, this.axis.max, "log max");
-*/
 };
 
 var lTCC = function (val) {
@@ -271,41 +265,21 @@ var lTCC = function (val) {
     return  val * 2;
 };
 
-/*
-ChartAxisTest.test_positionOf_oneVal = function () {
-    this.axis.logicalToChartCoords = lTCC;
-    this.axis.config.scale = "linear";
-    assertEqual(10, this.axis.positionOf(5), "result");
-    assertEqual("logicalToChartCoords(5)\n", jsunit.log, "jsunit.log");
-};
-
-ChartAxisTest.test_positionOf_array = function () {
-    this.axis.logicalToChartCoords = lTCC;
-    this.axis.config.scale = "linear";
-    
-    var result = this.axis.positionOf([5, 3]);
-    assertEqual(2, result.length, "length");
-    assertEqual(10, result[0], "0");
-    assertEqual(16, result[1], "1");
-    assertEqual("logicalToChartCoords(5)\nlogicalToChartCoords(8)\n",
-                jsunit.log, "jsunit.log");
-};
-
-ChartAxisTest.test_positionOf_log = function () {
-    this.axis.logicalToChartCoords = lTCC;
-    this.axis.config.scale = "log";
-    this.axis.config.logValue = 10;
-    assertEqual(4, this.axis.positionOf(100), "result");
-    assertEqual("logicalToChartCoords(2)\n", jsunit.log, "jsunit.log");
-};
-
 ChartAxisTest.test_logcalToChartCoords = function () {
     this.axis.min = -5;
     this.axis.max = 10;
     this.axis.size = 15;
-    ssertEqual(10, this.axis.logicalToChartCoords(5));
+    this.axis.config.scale = "linear";
+
+    this.axis.getScaledNumber = function(n) {
+        jsunit.log += "getScaled(" + n + ")\n";
+        return n * 3;
+    };
+
+    assertEqual(10, this.axis.logicalToChartCoords(5), "value");
+    assertEqual("getScaled(-5)\ngetScaled(10)\ngetScaled(5)\n", jsunit.log,
+                "jsunit.log");
 };
-*/
 
 ChartAxisTest.test_zero = function () {
     this.axis.min = -5;
@@ -314,7 +288,7 @@ ChartAxisTest.test_zero = function () {
     this.axis.config.scale = "linear";
 
     assertEqual(5, this.axis.zero(), "linear");
-    
+
     this.axis.min = 1;
     this.axis.max = 10;
     this.axis.size = 20;

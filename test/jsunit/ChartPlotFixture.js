@@ -24,7 +24,7 @@ Fiz.Chart.Plot = function (data, data2) {
     if (data2 !== undefined) {
         this.series[1] = new Fiz.Chart.Series(data2);
     }
-        
+
     this.config = {};
     this.config.display = true;
 }
@@ -79,6 +79,10 @@ Fiz.Chart.Plot.prototype.setMinAndMax = function (minY, maxY, minX, maxX) {
     this.maxX = maxX;
     this.minY = minY;
     this.maxY = maxY;
+};
+
+Fiz.Chart.Plot.prototype.stackSeries = function () {
+    return [[1, 4], [2, 7]];
 };
 
 Fiz.Chart.Plot.prototype.getBoundingBox = function () {

@@ -14,13 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// Fiz:include static/fiz/Fiz.js 
-// Fiz:include static/fiz/FizCommon.js 
-// Fiz:include static/fiz/canvas.text.js 
-// Fiz:include static/fiz/Chart.js 
-// Fiz:include static/fiz/ChartFormat.js 
-// Fiz:include static/fiz/ChartPlot.js 
-// Fiz:include static/fiz/ChartTitle.js 
+// Fiz:include static/fiz/Fiz.js
+// Fiz:include static/fiz/FizCommon.js
+// Fiz:include static/fiz/canvas.text.js
+// Fiz:include static/fiz/Chart.js
+// Fiz:include static/fiz/ChartFormat.js
+// Fiz:include static/fiz/ChartPlot.js
+// Fiz:include static/fiz/ChartTitle.js
 // Fiz:include static/fiz/ChartTicks.js
 // Fiz:include static/fiz/ChartLegend.js
 // Fiz:include static/fiz/ChartAxis.js
@@ -34,25 +34,27 @@
  * into a stacked bar chart.
  */
 Fiz.Chart.Bar = function () {
+    this.type = "bar";
     this.series = [];
     this.barWidth = 1;
     this.discrete = true;
-    
+
     for (var i = 0; i < arguments.length; i += 1) {
-        if (Fiz.isArray(arguments[i])) {
-            this.series[i] = new Fiz.Chart.Series(arguments[i]);
-        }
+        this.series[i] = new Fiz.Chart.Series(arguments[i]);
     }
 
     this.config = {
         name: null,
         axis: ["bottom", "left"],
         opacity: 0.5,
-        border: [1, "black", "inside", [true, true, false, true]],
+        borderWidth: 1,
+        borderColor: "black",
         showInLegend: true,
         allowRemove: true,
         nameFormat: ["1em 'helvetiker'", "black"],
         display: true,
+        xLocation: "bottom",
+        yLocation: "left"
     };
 
     for (var name in this.config) {
@@ -64,7 +66,7 @@ Fiz.Chart.Bar.prototype = new Fiz.Chart.Plot();
 
 /*
  * Draws the plot on the canvas. This method expects the origin to be at the
- * bottom left of the plot area and the canvas to be rotated so that the 
+ * bottom left of the plot area and the canvas to be rotated so that the
  * x axis can be assumed to be at the bottom.
  *
  * @param ctx         Canvas context to draw on
@@ -74,51 +76,61 @@ Fiz.Chart.Bar.prototype.draw = function (ctx, properties) {
     ctx.save();
     ctx.translate(properties.barSpacer, 0);
     ctx.globalAlpha = this.config.opacity;
-    
+
     // If we are not 0 based (i.e., we have negative values), we need to draw
     // the bottom border of the plots.
     if (this.yAxis.min < 0) {
-        this.config.border[3] = [true, true, true, true];
+        var which = [true, true, true, true];
+    } else {
+        var which = [false, true, true, true];
     }
-    
-    var stacked = this.stack();
-    
+
+    var stacked = this.stackSeries();
+    this.convertCoordinates(stacked, this.yAxis);
+
     for (var i = 0; i < stacked.length; i++) {
         var yVals = stacked[i];
         var totalY = 0;
         for (j = 0; j < yVals.length; j += 1) {
-            
+
             var x = i * properties.allWidth + properties.i * properties.barWidth;
-            
+
             var height = yVals[j] - totalY;
             var y = totalY - this.yAxis.zero();
-            
+
             ctx.save();
-            ctx.fillStyle = this.series[j].config.color || this.config.color;
-            
+
             ctx.translate(x, y);
             Fiz.Chart.drawRect(ctx, properties.barWidth, height,
-                               this.config.border, ctx.fillStyle, [false, true, true, true]);
+                               [this.config.borderWidth, this.config.borderColor],
+                               this.series[j].config.color, which);
             ctx.restore();
-            
+
             totalY += height;
         }
     }
     ctx.restore();
 };
 
+/*
+ * Calls the draw() method for each of the plots passed in.
+ *
+ * @param plots     (Array<Chart.Plot>) List of plots that need to be drawn
+ * @param ctx       Context to draw on
+ * @param config    Config object for the chart
+ */
 Fiz.Chart.Bar.prototype.drawPlots = function (plots, ctx, config) {
-    
+
     var width = plots[0].xAxis.size;
-    
-    var wEach = (plots[0].xAxis.size - config.barSpacer) / 
+
+    var wEach = (plots[0].xAxis.size - config.barSpacer) /
             plots[0].xAxis.labels.length - config.barSpacer;
-    
+
     var properties = {};
     properties.barWidth = wEach / plots.length;
     properties.allWidth = wEach + config.barSpacer;
     properties.barSpacer = config.barSpacer;
-    
+
     for (var i = 0; i < plots.length; i++) {
         properties.i = i;
         ctx.save();

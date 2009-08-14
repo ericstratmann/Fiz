@@ -27,7 +27,7 @@ ChartFormatTest = {};
 ChartFormatTest.setUp = function () {
     this.canvas = new Canvas();
     this.ctx = this.canvas.getContext("2d");
-    this.format = new Fiz.Chart.Format(this.ctx, ["1em arial", "green"]);
+    this.format = new Fiz.Chart.Format(this.ctx, "1em arial", "green");
 };
 
 ChartFormatTest.test_width = function () {
@@ -41,7 +41,7 @@ ChartFormatTest.test_width = function () {
 ChartFormatTest.test_height = function () {
     this.format.save = chartLogFunction("save");
     this.format.restore = chartLogFunction("restore");
-    
+
     assertEqual(2, this.format.height("foo"), "return");
     assertEqual("save()\nmeasureText(M)\nrestore()\n", jsunit.log);
 };
@@ -49,7 +49,7 @@ ChartFormatTest.test_height = function () {
 ChartFormatTest.test_draw = function() {
     this.format.save = chartLogFunction("save");
     this.format.restore = chartLogFunction("restore");
-    
+
     this.format.draw("foo");
     assertEqual("save()\nfillStyle = green\nfillText(foo, 0, 0)\nrestore()\n",
                 jsunit.log);

@@ -16,7 +16,7 @@
 /**
  * This class can be extended by other objects which represent a plot, such as
  * a bar or line plot. This class provides a few methods which are useful to
- * many types of plots, though they can be overridden if necessary. Since 
+ * many types of plots, though they can be overridden if necessary. Since
  * javascipt doesn't have any real notion of interfaces or inheritance, it
  * is not necessary for plots to use this class.
  */
@@ -35,7 +35,7 @@ Fiz.Chart.Plot.prototype.hasDiscreteXAxis = function () {
 /*
  * Returns the minimum and maximum values of the data. If the plot has a
  * discrete X axis, then minX and maxX are not set since they do not make sense
- * in that context. If the plot is stacked, it will take the sum of all the 
+ * in that context. If the plot is stacked, it will take the sum of all the
  * stacks.
  *
  * @return          An object with minY, maxY, minX, maxX set
@@ -80,16 +80,16 @@ Fiz.Chart.Plot.prototype.getBoundingBox = function () {
             maxY = Math.max(total, maxY);
         }
     }
-    
+
     boundary.minY = minY;
     boundary.maxY = maxY;
-    
+
     return boundary;
 };
 
 /*
  * Looks for the value associated with the given key in the series' data
- * variable;
+ * variable
  *
  * @param series    (Chart.Series) Series object to get the data from
  * @param key       (String or Int) Key to search for
@@ -126,7 +126,7 @@ Fiz.Chart.Plot.prototype.set = function(name, value) {
 
 /**
  * Returns the value of the given key in config object
- * 
+ *
  * @param name      (String) Name of key
  * @return          Value of key in config object
  */
@@ -136,21 +136,34 @@ Fiz.Chart.Plot.prototype.get = function(name) {
 
 /**
  * Returns the series with the given index
- * 
-
+ *
  * @return          (Chart.Series) Appropriate series
  */
 Fiz.Chart.Plot.prototype.getSeries = function(i) {
     return this.series[i];
 };
 
+/**
+ * Calls the draw method on every plot passed in.
+ *
+ * @param plots     Array<Chart.Plot> Array of plots to call draw() on
+ * @param ctx       Canvas context
+ */
 Fiz.Chart.Plot.prototype.drawPlots = function (plots, ctx) {
     for (var i = 0; i < plots.length; i++) {
         plots[i].draw(ctx);
     }
 };
 
-Fiz.Chart.Plot.prototype.stack = function () {
+/*
+ * Stacks all the series in the plot. For each data point, creates an array
+ * of a running total of
+ *
+ * @return          An two dimentional array. The first dimension corresponds
+ *                  each data point in the x axis, and the second dimension
+ *                  is the running total of the series for that data point.
+ */
+Fiz.Chart.Plot.prototype.stackSeries = function () {
     var allVals = [];
     for (var i = 0; i < this.xAxis.labels.length; i++) {
         var vals = [];
@@ -159,13 +172,33 @@ Fiz.Chart.Plot.prototype.stack = function () {
             var previous = j === 0 ? 0 : vals[j - 1];
             vals.push(val + previous);
         }
-        vals = this.yAxis.positionOf(vals);
         allVals.push(vals);
     }
 
     return allVals;
 };
 
+/**
+ * Converts all values from logical coordinates to chart coordinates.
+ */
+Fiz.Chart.Plot.prototype.convertCoordinates = function (vals, axis) {
+    for (var i = 0; i < vals.length; i++) {
+        if (typeof vals[i] === "number") {
+            vals[i] = axis.logicalToChartCoords(vals[i]);
+        } else {
+            for (var j = 0; j < vals[i].length; j++) {
+                vals[i][j] = axis.logicalToChartCoords(vals[i][j]);
+            }
+        }
+    }
+};
+
+/*
+ * Adds a new series to the plot. In addition to adding it to its internal list,
+ * it also sets all undefined properties that the plot has set.
+ *
+ * @param series    (Chart.Series) Series to add to the plot
+ */
 Fiz.Chart.Plot.prototype.addSeries = function (series) {
     this.series.push(series);
     for (var name in this.config) {

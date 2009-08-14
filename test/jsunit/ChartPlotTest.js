@@ -23,7 +23,7 @@ ChartPlotTest = {};
 ChartPlotTest.setUp = function () {
     this.plot = new Fiz.Chart.Plot();
     this.data = [[1, 5], [0, 4], [2, 2]];
-    
+
     this.series = new Fiz.Chart.Series(this.data);
     this.plot.series = [];
     this.plot.series[0] = this.series;
@@ -34,22 +34,23 @@ ChartPlotTest.setUp = function () {
 ChartPlotTest.test_hasDiscreteXAxis = function () {
     this.plot.discrete = true;
     assertEqual(true, this.plot.hasDiscreteXAxis(), "true");
-    
+
     this.plot.discrete = false;
     assertEqual(false, this.plot.hasDiscreteXAxis(), "false");
 };
 
-/*
 ChartPlotTest.test_getBoundingBox = function () {
     this.plot.discrete = false;
+    var series = {data: [[3, 4], [2, 6], [-1, 5]]};
+    this.plot.series[1] = series;
 
     var boundary = this.plot.getBoundingBox();
-    assertEqual(2, boundary.minY, "min y");
-    assertEqual(5, boundary.maxY, "max y");
+    assertEqual(7, boundary.minY, "min y");
+    assertEqual(10, boundary.maxY, "max y");
     assertEqual(0, boundary.minX, "min x");
     assertEqual(2, boundary.maxX, "max x");
 };
-*/
+
 ChartPlotTest.test_findVal = function () {
     assertEqual(4, this.plot.findVal(this.series, 0), "found");
     assertEqual(undefined, this.plot.findVal(this.series, 10), "not found");
@@ -61,7 +62,7 @@ ChartPlotTest.test_set = function () {
     assertEqual("bar", this.plot.config.foo, "plot");
     assertEqual("bar", this.plot.series[0].config.foo, "series");
 };
-    
+
 ChartPlotTest.test_get = function () {
     this.plot.config = {};
     this.plot.config.foo = "bar";
@@ -70,4 +71,34 @@ ChartPlotTest.test_get = function () {
 
 ChartPlotTest.test_getSeries = function () {
     assertEqual(this.series, this.plot.getSeries(0));
+};
+
+ChartPlotTest.test_drawPlots = function () {
+    var plot1 = {};
+    plot1.draw = chartLogFunction("plot1draw");
+
+    var plot2 = {};
+    plot2.draw = chartLogFunction("plot2draw");
+
+    var canvas = new Canvas();
+    var ctx = canvas.getContext('getElementById');
+
+    this.plot.drawPlots([plot1, plot2], ctx);
+
+    assertEqual("plot1draw(ctx)\nplot2draw(ctx)\n", jsunit.log);
+};
+
+ChartPlotTest.test_addSeries = function () {
+    var series = new Fiz.Chart.Series();
+    series.set("foo", "bar");
+
+    this.plot.config = {};
+    this.plot.config.foo = "baz";
+    this.plot.config.x = "y";
+
+    this.plot.addSeries(series);
+
+    assertEqual(series, this.plot.series[1], "series object");
+    assertEqual("bar", series.config.foo, "predefined property");
+    assertEqual("y", series.config.x, "new property");
 };

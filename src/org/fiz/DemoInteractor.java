@@ -310,26 +310,28 @@ public class DemoInteractor extends Interactor {
         "widgetSales"));
         cr.addDataRequest("gadgetSales", fileDataManager.newReadRequest("demo.yaml",
         "gadgetSales"));
-        
+
         Dataset chart1 =
             new Dataset("request", "fizUsers", "xId", "month", "yId", "users",
+                        "xLocation", "right", "yLocation", "bottom",
                         "legend", new Dataset("display", "false"),
-                        "xAxis", new Dataset("title", "Month", "majorGridWidth", "1"),
-                        "yAxis", new Dataset("title", "Number of Fiz Users",
+                        "rightAxis", new Dataset("title", "Month", "majorGridWidth", "1"),
+                        "bottomAxis", new Dataset("title", "Number of Fiz Users",
                                              "scale", "log", "logBase", "10"),
                         "title", "Fiz Growth" );
         Dataset chart2 =
             new Dataset("titleColor", "blue", "borderWidth", "0",
-                        "type", "Line", "title", "Products sold at ACME", 
+                        "type", "Line", "title", "Products sold at ACME",
                         "width", "700",
                         "xAxis", new Dataset("title", "Year",
                                              "majorGridWidth", "0"),
-                        "yAxis", new Dataset("majorGridWidth", "1"),
+                        "yAxis", new Dataset("majorGridWidth", "1",
+                                             "minorTicks", "5"),
                         "series", new Dataset("request", "widgetSales", "xId", "year", "color", "green",
                                               "yId", "sales", "name", "Widgets"),
                         "series", new Dataset("request", "gadgetSales", "xId", "year", "color", "purple",
                                               "yId", "sales", "name", "Gadgets"));
-        
+
         Dataset chart3 =
             new Dataset("background", "gray",
                         "xAxis", new Dataset("title", "Doodads",

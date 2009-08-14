@@ -22,37 +22,48 @@
  *                  axis. See the java documentation for a list of supported
  *                  options.
  * @param side      (Integer) Which side of the chart we are on (0 is bottom
- *                  it goes clockwise
+ *                  and it goes clockwise)
  * @param type      (String) "x" or "y" depending on what type of axis this is
  */
-Fiz.Chart.Axis = function (config, side, type) {
+Fiz.Chart.Axis = function (config, side, oSide, type) {
     this.config = config;
+
     if (this.config.scale === "log") {
         this.config.logBase = parseInt(this.config.logBase, 10);
     }
     this.side = side;
+    this.oSide = oSide;
     this.type = type;
-    
+
     this.plots = []; // List of plots on this axis
-    
+
     // Whether this axis is discrete or not (continuous). We find this out by
     // checking the plots on the axis.
     this.discrete = undefined; // Whether this axis is discrete or not
                                // (continuous)
+
+    //
     this.min = undefined; // Minimum value on this axis.
     this.max = undefined // Maximum value on this axis
+
+    this.rmin = undefined;
+    this.rmax = undefined;
 };
 
 /*
  * Returns whether this axis represents an X axis or not. An axis is either
  * an X axis or a Y axis.
+ *
+ * @return          (Bool) Whether this axis is an X axis
  */
 Fiz.Chart.Axis.prototype.isXAxis = function () {
     return this.type === "x";
 };
 
 /**
- * Adds a plot to out list of plots.
+ * Adds a plot to our list of plots.
+ *
+ * @param plot      (Chart.Plot) Plot to add to this axis
  */
 Fiz.Chart.Axis.prototype.addPlot = function (plot) {
     this.plots.push(plot);
@@ -60,7 +71,7 @@ Fiz.Chart.Axis.prototype.addPlot = function (plot) {
     this.setDiscreteness(plot);
     this.setMinAndMax(plot);
     this.setLabels(plot);
-    
+
 };
 
 /**
@@ -80,10 +91,9 @@ Fiz.Chart.Axis.prototype.setDiscreteness = function (plot) {
 };
 
 /*
- * Sets the @code{labels} isntance variable for the axis.
- * 
- * @param plot      Plot to get the labels from
+ * Sets the @code{labels} instance variable for the axis.
  *
+ * @param plot      Plot to get the labels from
  */
 Fiz.Chart.Axis.prototype.setLabels = function (plot) {
     if (this.discrete && this.isXAxis()) {
@@ -94,22 +104,22 @@ Fiz.Chart.Axis.prototype.setLabels = function (plot) {
 };
 
 /*
- * Find and return the labels we will use for @code{plot}. Currently only 
+ * Find and return the labels we will use for @code{plot}. Currently only
  * X axes can be discrete, but this could potentially also support Y axes
  * in the future. The labels are based on the X part of the (X, Y) pairs in
  * the plot's data.
  *
  * @param plot      The plot object to get the labels from
- * @param return    An array of string labels
+ * @return          An array of string labels
  */
 Fiz.Chart.Axis.prototype.getDiscreteAxisValues = function (plot) {
     var labels = [];
-    
+
     var data = plot.series[0].data;
     for (var i = 0; i < data.length; i++) {
         labels.push(data[i][0].toString());
     }
-    
+
     return labels;
 };
 
@@ -120,35 +130,32 @@ Fiz.Chart.Axis.prototype.getDiscreteAxisValues = function (plot) {
  * config variable, put a tick mark every @code{X} numbers. If the user provides
  * an array, just use that. Otherwise, calculate them in a way that makes sense
  * (see generateTickMarks()).
- * 
+ *
  * @param axis      Axis object
- * @param plot      A plot object. Needed to find the min and max values
  * @return          An array of string labels
  */
-Fiz.Chart.Axis.prototype.getContinuousAxisValues = function (plot) {
-    var tickConfig = this.config.ticks;
-    if (typeof tickConfig === "number") {
-        var ticks = [];
-        for (var i = this.min; i <= this.max; i += tickConfig) {
-            ticks.push(i);
-        }
-        return ticks;
-    } else if (Fiz.isArray(tickConfig)) {
-        return tickConfig;
-    } else {
-        if (this.config.scale == "log") {
-            var ticks = [];
-            for (i = this.rmin; i <= this.rmax; i *= this.config.logBase) {
-                ticks.push(i);
-            }
-            return ticks;
+Fiz.Chart.Axis.prototype.getContinuousAxisValues = function () {
+    if (this.config.ticks === true || this.config.ticks === "true") {
+        if (this.config.scale === "log") {
+            return this.generateLogTickMarks();
+        } else if (this.config.scale === "linear") {
+            return this.generateTickMarks();
         } else {
-            return this.generateTickMarks(this.min, this.max); 4
+            throw "Axis.getContinuousAxisValues: bad config.scale value";
         }
+    } else {
+        return [];
     }
 };
 
 
+/**
+ * Returns the @code{n}'th most significant figures of @code{number}.
+ *
+ * @param number    (Number) Number to get the signicant figures of
+ * @param n         (Integer) Number of significant figures
+ * @return          The @code{n}'th significant figures of @code{number}
+ */
 Fiz.Chart.Axis.prototype.getNSigFigs = function (number, n) {
     var tmp = Math.log(number) * Math.LOG10E;
     if (tmp < 0) {
@@ -157,16 +164,29 @@ Fiz.Chart.Axis.prototype.getNSigFigs = function (number, n) {
     return parseInt(number / Math.pow(10, parseInt(tmp, 10) - (n - 1)), 10);
 };
 
+/*
+ * Returns tick mark locations for an axis using a logarithmic scale. Values
+ * are placed at every log power.
+ *
+ * @return          Array<Number> Array of locations to place tick marks
+ */
+Fiz.Chart.Axis.prototype.generateLogTickMarks = function () {
+    var ticks = [];
+    for (i = this.min; i <= this.max; i *= this.config.logBase) {
+        ticks.push(i);
+    }
+    return ticks;
+};
+
 /**
  * This function attempts to smartly guess what would be some nice places to
  * put tick marks. For example [0,1,2,3], [5000,10000,15000], etc.
  *
- * @param min       (Int) Minimum value on the axis
-
- * @param max       (Int) Maximum value on the axis
  * @return          (Array<Int>) An array of tick mark locations
  */
-Fiz.Chart.Axis.prototype.generateTickMarks = function (min, max) {
+Fiz.Chart.Axis.prototype.generateTickMarks = function () {
+    var min = this.min;
+    var max = this.max;
     var good = [10, 20, 50];
     var minTicks = 3;
 
@@ -174,21 +194,21 @@ Fiz.Chart.Axis.prototype.generateTickMarks = function (min, max) {
 
     for (var numTicks = minTicks; numTicks < 100; numTicks++) {
         var num = (max - min) / numTicks;
-        var minTick = range / (numTicks + 1);
-        var excTick = range / (numTicks);
+        var minTick = this.getNSigFigs(range / (numTicks + 1), 2);
+        var excTick = this.getNSigFigs(range / (numTicks), 2);
 
         for (var i = 0; i < good.length; i++) {
-            if ((minTick < good[i] && good[i] <= excTick) || 
+            if ((minTick < good[i] && good[i] <= excTick) ||
                 (excTick <= good[i] && good[i] < minTick)) {
                 // we found a good number
-                
+
                 // Now we need to undo what we did before in converting to
                 // two sig figs
                 var log = Math.log((max - min) / numTicks)/Math.log(10);
                 if (log < 0) {
-                    log -= 1;
+                    log -= 0;
                 }
-                
+
                 var val = good[i] * Math.pow(10, parseInt(log)-1);
                 var ticks = [];
                 for (var j = min; j <= max + .00000001; j += val) { // float roundoff
@@ -198,14 +218,18 @@ Fiz.Chart.Axis.prototype.generateTickMarks = function (min, max) {
             }
         }
     }
+
+    throw "Axis.generateTickMarks: unknown error";
 }
+
 /*
- * Sets the minimum and maximum values for the axis. This is done by looping
- * through all plots on the axis and find their min and max values. The axis is
- * 0-based if linear and has no negative values. If logarithmic, it is a
- * fraction of the min value.
+ * If @code{plot} has any values outside of the current min and max values,
+ * update them to the new min or max. If the axis is linear and does not have
+ * negative values, the minimum is also zero. If the axis is logarithmic, the
+ * maximum value is the largest multiple of the base smaller or equal the
+ * minimum of all plot values.
  *
- * @param axis      Axis object
+ * @param plot      Plot to get min and max values from
  */
 Fiz.Chart.Axis.prototype.setMinAndMax = function (plot) {
     if (this.discrete) {
@@ -249,57 +273,25 @@ Fiz.Chart.Axis.prototype.setMinAndMax = function (plot) {
         this.max = max;
         this.min = min;
     }
-
-    this.fixValues(); // needed for log
 }
 
-
-/*
- * Scales min and max values for log axes to make them look linear. Should
- * be called after setting the min and max values elsewhere.
- */
-Fiz.Chart.Axis.prototype.fixValues = function () {
-    if (this.config.scale == "log") {
-        this.rmin = this.min;
-        this.rmax = this.max;
-        this.min = Math.log(this.min)/Math.log(this.config.logBase);
-        this.max = Math.log(this.max)/Math.log(this.config.logBase);
-    }
-}
-
-/*
- * Given a y value (or array of them), returns the position of this value in
- * terms of chart coordinates. This involves two steps. In the first, we must
- * modify the value depending on the type of scale, so that the plot does not
- * need to do this itself. Second, we convert from logical values to coordinates
- * of the actual chart.
+/**
+ * Scales the number depending on what scale the axis is using. This is
+ * necessary when converting from logical to chart coordinates. For example,
+ * a value of 10 on an axis with a log scale using base 10 from 1-100 is in
+ * the middle, not near the bottom.
  *
- * @param keys      A y value or an array of them
- * @return          A converted y value or an array of them
+ * @param number    (Number) Number to scale
+ * @return          @code{number} after being scaled
  */
-Fiz.Chart.Axis.prototype.positionOf = function (vals) {
-
-    var isNum = false;
-    if (typeof vals == "number") {
-        isNum = true;
-        vals = [vals];
-    }
-
-
-    var val;
-    for (var j = 0; j < vals.length; j++) {
-        if (this.config.scale === "log") {
-            val = Math.log(vals[j])/Math.log(this.config.logBase);
-        } else {
-            val = vals[j];
-        }
-        vals[j] = this.size * ((val - this.min) / (this.max - this.min));
-    }
-    
-    if (isNum) {
-        return vals[0];
+Fiz.Chart.Axis.prototype.getScaledNumber = function (number) {
+    if (this.config.scale === "linear") {
+        return number;
+    } else if (this.config.scale === "log") {
+        return Math.log(number)/Math.log(this.config.logBase);
     } else {
-        return vals;
+        throw "Axis.getScaledNumber: bad config.scale value: " +
+            this.config.scale;
     }
 };
 
@@ -312,13 +304,19 @@ Fiz.Chart.Axis.prototype.positionOf = function (vals) {
  * @return          (Number) Chart coordinate
  */
 Fiz.Chart.Axis.prototype.logicalToChartCoords = function (val) {
-    return  this.size * ((val - this.min) / (this.max - this.min));
+    var min = this.getScaledNumber(this.min);
+    var max = this.getScaledNumber(this.max);
+    var val = this.getScaledNumber(val);
+
+    return  this.size * ((val - min) / (max - min));
 }
 
 /*
  * Returns the chart coordinates for the 0 of the chart. This may not be at the
  * bottom of the chart if there are negative values. In the axis is a log scale,
  * then it always refers to the bottom of the chart.
+ *
+ * @return          The chart coordinates for the "zero" of the axis.
  */
 Fiz.Chart.Axis.prototype.zero = function () {
     if (this.config.scale == "linear") {

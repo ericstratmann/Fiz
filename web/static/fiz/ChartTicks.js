@@ -26,8 +26,7 @@ Fiz.Chart.Ticks = function (ctx, axis) {
  * Draws the tick marks, labels, and grid lines.
  */
 Fiz.Chart.Ticks.prototype.render = function (box) {
-//  this.ctx.strokeRect(0, 0, box.height, -box.width);
-    if (this.axis.discrete && this.axis.type === "x") {
+    if (this.axis.discrete && this.axis.isXAxis()) {
         this.drawDiscreteAxis(box);
     } else {
         this.drawContinuousAxis(box);
@@ -39,12 +38,12 @@ Fiz.Chart.Ticks.prototype.render = function (box) {
  * where to draw the grid lines. They should be in between two labels. The
  * labels ought to be underneath a bar (or whatever we are drawing).
  *
- * @box       Object describing the containing box
+ * @box       Object describing the containing box, including width and height
  */
 Fiz.Chart.Ticks.prototype.drawDiscreteAxis = function (box) {
     this.ctx.save();
     this.moveAndOrient(box);
-//  this.ctx.strokeRect(0, 0, box.height, -box.width);
+//    this.ctx.strokeRect(0, 0, box.height, -box.width);
     this.ctx.translate(box.height, 0);
     this.drawDiscreteLabels();
     this.drawDiscreteGridLines();
@@ -58,7 +57,9 @@ Fiz.Chart.Ticks.prototype.drawDiscreteLabels = function () {
     for (var i = 0; i < this.axis.labels.length; i++) {
         this.ctx.save();
         // 0.5 is to place in the label in the middle
-        var y = (i + 0.5) * this.axis.size/this.axis.labels.length;
+        var y = (i + 0.5) * (this.axis.size-this.axis.config.barSpacer)/
+            this.axis.labels.length +
+            this.axis.config.barSpacer/2;
 
         this.ctx.translate(0, -y);
         this.drawLabel(this.axis.labels[i]);
@@ -73,7 +74,7 @@ Fiz.Chart.Ticks.prototype.drawDiscreteLabels = function () {
 Fiz.Chart.Ticks.prototype.drawDiscreteGridLines = function () {
     for (var i = 1; i < this.axis.labels.length; i++) {
         this.ctx.save();
-        var wEach = (this.axis.size - this.axis.config.barSpacer) / 
+        var wEach = (this.axis.size - this.axis.config.barSpacer) /
             this.axis.labels.length;
         var y = i * wEach + this.axis.config.barSpacer/2;
 
@@ -82,7 +83,7 @@ Fiz.Chart.Ticks.prototype.drawDiscreteGridLines = function () {
         this.ctx.restore();
     }
 };
-    
+
 /*
  * Draws a continuous axis. A continuous axis uses the tick mark positions to
  * decide where to draw the ticks, labels and grid lines. The label should be
@@ -91,22 +92,22 @@ Fiz.Chart.Ticks.prototype.drawDiscreteGridLines = function () {
 Fiz.Chart.Ticks.prototype.drawContinuousAxis = function (box) {
     this.ctx.save();
     this.moveAndOrient(box);
-//  this.ctx.strokeRect(0, 0, box.height, -box.width);
+//    this.ctx.strokeRect(0, 0, box.height, -box.width);
     this.ctx.translate(box.height, 0);
-    
+
     for (var i = 0; i < this.axis.labels.length; i++) {
         var tick = this.axis.labels[i];
-        var pos = this.axis.positionOf(tick);
+        var pos = this.axis.logicalToChartCoords(tick);
         this.ctx.save();
         this.ctx.translate(0, -pos);
-        
-        
+
+
         // Don't draw if it's near the bottom or top, since they're part of
         // the border
         if (i > 0 && Math.abs(this.axis.size - pos) > 1) {
             this.drawMajorGridLine();
         }
-        
+
         this.drawMinorTicks(pos);
         this.drawTickMark(tick);
         var format = new Fiz.Chart.Format(this.ctx, [this.axis.config.labelFont,
@@ -115,7 +116,7 @@ Fiz.Chart.Ticks.prototype.drawContinuousAxis = function (box) {
         this.drawLabel(tick);
         this.ctx.restore();
     }
-    
+
     this.ctx.restore();
 };
 
@@ -135,19 +136,19 @@ Fiz.Chart.Ticks.prototype.sizeRequired = function () {
         } else if (this.axis.config.tickSide === "middle") {
             this.size += this.axis.config.tickLength * 0.5;
         }
-    } 
+    }
 
     if (this.axis.config.displayLabels === false ||
         this.axis.config.displayLabels === "false") {
         return this.size * 1.5;
     }
-    
+
     var labels = this.axis.labels;
     var size;
-    var format = new Fiz.Chart.Format(this.ctx, [this.axis.config.labelFont,
-                                                 this.axis.config.labelColor]);
-    
-    var max = this.maxSize();
+    var format = new Fiz.Chart.Format(this.ctx, this.axis.config.labelFont,
+                                                 this.axis.config.labelColor);
+
+    var max = this.maxSizeLabel();
     if (this.axis.side % 2 === 0) {
         this.size += max * 2;
     } else {
@@ -156,18 +157,24 @@ Fiz.Chart.Ticks.prototype.sizeRequired = function () {
     return this.size;
 };
 
-Fiz.Chart.Ticks.prototype.maxSize = function () {
+/*
+ * Returns the largest size in pixels required to draw all of the labels.
+ *
+ * @return          Largest size in pixels required to draw the labels
+ */
+Fiz.Chart.Ticks.prototype.maxSizeLabel = function () {
     var max = 0;
     var labels = this.axis.labels;
-    var format = new Fiz.Chart.Format(this.ctx, [this.axis.config.labelFont,
-                                                 this.axis.config.labelColor]);
+    var format = new Fiz.Chart.Format(this.ctx, this.axis.config.labelFont,
+                                                 this.axis.config.labelColor);
+
+    if (this.axis.side % 2 === 0) {
+        return format.height("x");
+    }
+
     for (var i = 0; i < labels.length; i++) {
-        if (this.axis.side % 2 === 0) {
-            size = format.height(labels[i]);
-        } else {
-            size = format.width(labels[i]);
-        }
-        
+        size = format.width(labels[i]);
+
         max = Math.max(max, size);
     }
 
@@ -182,8 +189,8 @@ Fiz.Chart.Ticks.prototype.maxSize = function () {
  * @param tick      Tick label
  */
 Fiz.Chart.Ticks.prototype.drawTickMark = function (tick) {
-    var pos = this.axis.positionOf(tick);
-    
+    var pos = this.axis.logicalToChartCoords(tick);
+
     if (pos !== 0 || this.axis.config.tickSide === "outside") {
         this.ctx.save();
         this.ctx.beginPath();
@@ -200,7 +207,6 @@ Fiz.Chart.Ticks.prototype.drawTickMark = function (tick) {
     }
 };
 
-
 /*
  * Draws a grid line across the chart. This function expects the origin to be
  * at the start of the grid line on the left side.
@@ -212,6 +218,7 @@ Fiz.Chart.Ticks.prototype.drawMajorGridLine = function (axis) {
         return;
     }
 
+
     this.ctx.save();
     this.ctx.beginPath();
     this.ctx.moveTo(0, 0);
@@ -219,13 +226,12 @@ Fiz.Chart.Ticks.prototype.drawMajorGridLine = function (axis) {
     Fiz.Chart.drawLineTo(this.ctx, [this.axis.config.majorGridWidth,
                                     this.axis.config.majorGridColor],
                          this.axis.pSize, 0);
-//  this.ctx.lineTo(this.axis.pSize, 0); //todo
     this.ctx.closePath();
     this.ctx.stroke();
     this.ctx.restore();
 };
 
-/* 
+/*
  * Draws the tick marks between two major tick marks. This function expects
  * the origin to be at the start of major tick mark below the ones we are
  *
@@ -288,7 +294,7 @@ Fiz.Chart.Ticks.prototype.moveAndOrient = function (box) {
     }
 };
 
-    
+
 
 /*
  * Draws a label on the chart. Since the chart may be currently rotated, we
@@ -301,52 +307,88 @@ Fiz.Chart.Ticks.prototype.drawLabel = function (label) {
         return;
     }
     var x, y;
-    var side = this.axis.side;
 
-    if (this.axis.config.tickSide === "outside") {
-        this.ctx.translate(-this.axis.config.tickLength, 0);
-    } else if (this.axis.config.tickSide === "middle") {
-        this.ctx.translate(-this.axis.config.tickLength/2, 0);
-    }
-    
-    var format = new Fiz.Chart.Format(this.ctx, [this.axis.config.labelFont,
-                                                 this.axis.config.labelColor]);
+
+    var format = new Fiz.Chart.Format(this.ctx, this.axis.config.labelFont,
+                                                 this.axis.config.labelColor);
+    this.translateForTicks();
+    this.translateForSide(format, label);
     this.ctx.save();
 
-    if (this.axis.side % 2 === 0) {
-        this.ctx.translate(-format.height("x") * 1.5, format.width(label)/1.7);
-    } else {
-    //  this.ctx.translate(-format.height("x")*2, format.width(label)/2 + format.width("x")*2);
-        this.ctx.translate(-this.maxSize() - format.height("x"), format.height("x")/2);
-    }
-        
-    if (this.axis.oSide === 3 || this.axis.oSide === 2) {
-            this.ctx.transform(1, 0, 0, -1, 0, 0); // mirroring matrix
-    }
-
-
-    if (side === 1) {
-        x = -format.width(label + "xx");
-        y = format.height(this.ctx, label + "");
-    } else if (side === 0) {
-        this.ctx.transform(1, 0, 0, -1, 0, 0); // mirroring matrix
-        this.ctx.rotate(Math.PI/2);
-        x = -format.width(label + "xx")/3;
-        y =  format.height(this.ctx, label + "");
-    } else if (side === 2) {
-        this.ctx.rotate(-Math.PI/2);
-        x = -format.width(label)/2;
-        y = -format.height(this.ctx, label+"");
-
-    } else if (side === 3) {
-        x = format.width("xx");
-        y = format.height(this.ctx, label + "");
-//      this.ctx.transform(1, 0, 0, -1, 0, 0); // mirroring matrix
-        this.ctx.transform(-1, 0, 0, 1, 0, 0); // mirroring matrix
-    }
+    this.undoRotation(format, label);
 
 //  this.ctx.translate(x, 0);
     format.draw(label);
 //  this.ctx.fillText(label + "", x, y);
     this.ctx.restore();
+};
+
+/**
+ * Depending on the location of major ticks, we'll need to translate our
+ * location in order to not overwrite the ticks. For "outside" ticks,
+ * we translate by the length of the tick mark. For "middle" ticks, we translate
+ * by half of its length. If the ticks are "inside", no action is necessary.
+ */
+Fiz.Chart.Ticks.prototype.translateForTicks = function () {
+    if (this.axis.config.tickSide === "outside") {
+        this.ctx.translate(-this.axis.config.tickLength, 0);
+    } else if (this.axis.config.tickSide === "middle") {
+        this.ctx.translate(-this.axis.config.tickLength/2, 0);
+    }
+};
+
+/*
+ * Depending on what side we are drawing a label, translate our position so that
+ * we draw the label in the right position.
+ *
+ * @param format    (Chart.Format) Format we are using to draw the label
+ * @param label     (Chart.Label) Label we are rendering
+ */
+Fiz.Chart.Ticks.prototype.translateForSide = function (format, label) {
+    var mul = 1;
+    if (this.axis.oSide === 2 || this.axis.oSide === 3) {
+        mul = -1;
+    }
+
+    if (this.axis.side === 0) {
+        this.ctx.translate(-format.height("x"), mul * format.width(label)/2);
+    } else if (this.axis.side === 1) {
+        this.ctx.translate(-this.maxSizeLabel() - format.width("x"),
+                           mul * format.height("x")/2);
+    } else if (this.axis.side === 2) {
+        this.ctx.translate(-0.5 * format.height("x"), mul * format.width(label)/2);
+    } else if (this.axis.side === 3) {
+        this.ctx.translate(-format.width("x"), mul * format.height("x")/2);
+    }
+
+    if (this.axis.oSide === 3) {
+            this.ctx.transform(1, 0, 0, -1, 0, 0); // mirroring matrix
+    }
+};
+
+/**
+ * Undo any rotations or translations made in the past so that we can draw a
+ * label. This is necessary so that labels we draw do not appear mirrored or
+ * flipped.
+ *
+ * @param format    (Chart.Format) Format we are using to draw our label
+ */
+Fiz.Chart.Ticks.prototype.undoRotation = function (format, label) {
+    var side = this.axis.side;
+
+    if (side === 0) {
+        this.ctx.transform(1, 0, 0, -1, 0, 0); // mirroring matrix
+        this.ctx.rotate(Math.PI/2);
+    } else if (side === 1) {
+    } else if (side === 2) {
+        this.ctx.rotate(-Math.PI/2);
+
+    } else if (side === 3) {
+       // this.ctx.transform(1, 0, 0, -1, 0, 0); // mirroring matrix
+       this.ctx.transform(-1, 0, 0, 1, 0, 0); // mirroring matrix
+    }
+
+    if (this.axis.oSide === 2) {
+       this.ctx.transform(1, 0, 0, -1, 0, 0); // mirroring matrix
+    }
 };

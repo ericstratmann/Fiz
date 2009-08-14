@@ -20,27 +20,34 @@
  *
  * @param ctx       (Context) Canvas context
  * @param title     (String) Text of the title
- * @param format    (Chart.Format) Object used to format the title
+ * @param font      (String) Font used to render the chart
+ * @param color     (String) Color used to draw the chart
  */
-Fiz.Chart.Title = function (ctx, title, format) {
+Fiz.Chart.Title = function (ctx, title, font, color) {
     this.ctx = ctx;
     this.title = title;
-    this.format = format;
+    this.font = font;
+    this.color = color;
 };
 
-
 /*
- * Draws the title on the chart, moving and rotating the canvas if necessary.
+ * Draws the title on the chart, moving and rotating the canvas if necessary
+ * The title is drawn in the middle of its containing box, which is twice its
+ * height.
+ *
+ * @param box       Object describing the containing box's width, height, and
+ *                  what side it is being drawn on (top, right, bottom, or
+ *                  left).
  */
 Fiz.Chart.Title.prototype.render = function(box) {
     if (this.title === null || this.title === undefined) {
         return;
     }
-    
-    var format = new Fiz.Chart.Format(this.ctx, this.format);
+
+    var format = new Fiz.Chart.Format(this.ctx, this.font, this.color);
     this.ctx.save();
     this.moveAndOrient(box);
-//  this.ctx.strokeRect(0, 0, box.width, box.height);
+//  this.ctx.strokeRect(0, 0, box.width, box.height); // debug
     var x = box.width/2 - format.width(this.title)/2;
     var y = format.height(this.title);
     this.ctx.translate(x, y * 1.5);
@@ -49,19 +56,18 @@ Fiz.Chart.Title.prototype.render = function(box) {
 };
 
 /*
- * Returns the width in pixels required to draw the title. Since titles
- * are always written parallel to the closest edge, this is based on the 
- * height of the text, not the width.
+ * Returns the height in pixels required to draw the title. Since titles
+ * are always written parallel to the closest edge, this is based on the
+ * height of the text. A title requires twice the size of its height.
  *
- * @return          (Integer) Width in pixels required
+ * @return          (Integer) Height in pixels required
  */
 Fiz.Chart.Title.prototype.sizeRequired = function () {
     if (this.title === undefined || this.title === null) {
         return 0;
     }
-    var format = new Fiz.Chart.Format(this.ctx, this.format);
-    
-    // 2 is for aesthetic reasons to allow some padding
+    var format = new Fiz.Chart.Format(this.ctx, this.font, this.color);
+
     return format.height(this.title) * 2;
 };
 
@@ -70,6 +76,9 @@ Fiz.Chart.Title.prototype.sizeRequired = function () {
  * drawing the title on top of the chart. The left and right sides are drawn
  * sideways, so they must be rotated. The bottom needs to be translated up or
  * else we will draw the title too low.
+ *
+ * @param box       Object describing what side the title is beign drawn on (top,
+ *                  right, bottom, or left).
  */
 Fiz.Chart.Title.prototype.moveAndOrient = function (box) {
     var side = box.side;

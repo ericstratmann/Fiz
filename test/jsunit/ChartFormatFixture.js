@@ -18,8 +18,10 @@
 // This file provides a dummy implementation of a Chart.Format object
 // for use in testing.
 
-Fiz.Chart.Format = function (ctx, font) {
-    jsunit.log += "Format(" + font[0] + ", " + font[1] + ")\n";
+Fiz.Chart.Format = function (ctx, font, color, log) {
+    if (log !== false) {
+        jsunit.log += "Format(" + font + ", " + color + ")\n";
+    }
     this.ctx = ctx;
     this.font = font[0]
     this.color = font[1];

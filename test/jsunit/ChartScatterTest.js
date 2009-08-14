@@ -41,8 +41,8 @@ ChartScatterTest.test_draw = function () {
     scatter.set("color", "blue");
     /*
     scatter.draw(this.ctx);
-    assertEqual("save()\ndrawShape(ctx, 2, 16, circle, blue, 4)\n" + 
-                "drawShape(ctx, 4, 14, circle, blue, 4)\n" + 
+    assertEqual("save()\ndrawShape(ctx, 2, 16, circle, blue, 4)\n" +
+                "drawShape(ctx, 4, 14, circle, blue, 4)\n" +
                 "restore()\n", jsunit.log);
 */
 };

@@ -29,7 +29,8 @@ ChartTitleTest = {};
 ChartTitleTest.setUp = function () {
     this.canvas = new Canvas();
     this.ctx = this.canvas.getContext('2d');
-    this.format = ["foo", "blue"];
+    this.font = "foo";
+    this.color = "blue";
     this.box = {
         width: 100,
         height: 50,
@@ -38,13 +39,17 @@ ChartTitleTest.setUp = function () {
 };
 
 ChartTitleTest.test_render_noTitle = function() {
-    var ts = new Fiz.Chart.Title(this.ctx, null, this.format);
+    var ts = new Fiz.Chart.Title(this.ctx, null, this.font, this.color);
+    ts.render(this.box);
+    assertEqual("", jsunit.log);
+
+    ts = new Fiz.Chart.Title(this.ctx, undefined, this.font, this.color);
     ts.render(this.box);
     assertEqual("", jsunit.log);
 };
 
 ChartTitleTest.test_render = function () {
-    var ts = new Fiz.Chart.Title(this.ctx, "foo", this.format);
+    var ts = new Fiz.Chart.Title(this.ctx, "foo", this.font, this.color);
     ts.moveAndOrient = logFunction("moveAndOrient");
     ts.render(this.box);
 
@@ -53,38 +58,41 @@ ChartTitleTest.test_render = function () {
 };
 
 ChartTitleTest.test_sizeRequired_noTitle = function () {
-    var ts = new Fiz.Chart.Title(this.ctx, null, this.format);
+    var ts = new Fiz.Chart.Title(this.ctx, null, this.font, this.color);
+    assertEqual(0, ts.sizeRequired());
+
+    ts = new Fiz.Chart.Title(this.ctx, undefined, this.font, this.color);
     assertEqual(0, ts.sizeRequired());
 };
 
 ChartTitleTest.test_sizeRequired = function () {
-    var ts = new Fiz.Chart.Title(this.ctx, "foo", this.format);
+    var ts = new Fiz.Chart.Title(this.ctx, "foo", this.font, this.color);
     assertEqual(40, ts.sizeRequired());
 };
 
 ChartTitleTest.test_moveAndOrient_left= function () {
-    var ts = new Fiz.Chart.Title(this.ctx, "foo", this.format);
+    var ts = new Fiz.Chart.Title(this.ctx, "foo", this.font, this.color);
     this.box.side = "left";
     ts.moveAndOrient(this.box);
     assertEqual("rotate(-" + Math.PI/2 + ")\n", jsunit.log);
 };
 
 ChartTitleTest.test_moveAndOrient_bottom = function () {
-    var ts = new Fiz.Chart.Title(this.ctx, "foo", this.format);
+    var ts = new Fiz.Chart.Title(this.ctx, "foo", this.font, this.color);
     this.box.side = "bottom";
     ts.moveAndOrient(this.box);
     assertEqual("translate(0, -50)\n", jsunit.log);
 };
-    
+
 ChartTitleTest.test_moveAndOrient_right = function () {
-    var ts = new Fiz.Chart.Title(this.ctx, "foo", this.format);
+    var ts = new Fiz.Chart.Title(this.ctx, "foo", this.font, this.color);
     this.box.side = "right";
     ts.moveAndOrient(this.box);
     assertEqual("rotate(-" + Math.PI/2 + ")\n", jsunit.log);
 };
-    
+
 ChartTitleTest.test_moveAndOrient_top = function () {
-    var ts = new Fiz.Chart.Title(this.ctx, "foo", this.format);
+    var ts = new Fiz.Chart.Title(this.ctx, "foo", this.font, this.color);
     this.box.side = "top";
     ts.moveAndOrient(this.box);
     assertEqual("", jsunit.log);

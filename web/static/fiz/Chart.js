@@ -25,13 +25,12 @@
 
 // Public methods
 
-
 /**
  * Creates a new Chart object. The only argument is the HTML id of the canvas
  * element. The object initializes a few private variables but does not display
  * anything yet.
  *
- * @param id   (String) Id for the {code <canvas>} element that contains 
+ * @param id   (String) Id for the {code <canvas>} element that contains
  *             this element
  */
 Fiz.Chart = function (id) {
@@ -45,7 +44,7 @@ Fiz.Chart = function (id) {
     // the chart, such as the legend, one of the axes, or the chart itself.
     this.prefixes = ["legend", "xAxis", "yAxis", "bottomAxis", "topAxis",
                     "leftAxis", "rightAxis", ""];
-    
+
     // List of sides axes can be on
     this.sides = ["bottom","left","top","right"];
 
@@ -57,9 +56,11 @@ Fiz.Chart = function (id) {
     }
 
     this.ctx = this.canvas.getContext('2d'); // Context we draw on
-        
-    
-    
+
+    // Whether we're just using the x and y axes or whether we're using
+    // bottom, top, left and right
+    this.usingFourSides = false;
+
     // Default configuration for legend variables
     this.legendConfigClean = {
         display: true,
@@ -81,8 +82,6 @@ Fiz.Chart = function (id) {
         height: null,
         barSpacer: 15,
         background: "white",
-        xAxisLocation: "bottom",
-        yAxisLocation: "left"
     };
 
 
@@ -90,7 +89,7 @@ Fiz.Chart = function (id) {
     this.axisConfigClean = {
         majorGrid: null,
         minorGrid: null,
-        ticks: null,
+        ticks: true,
         tickLength: 10,
         tickSide: "outside",
         minorTicks: null,
@@ -109,14 +108,14 @@ Fiz.Chart = function (id) {
     this.config = Fiz.deepCopy(this.configClean);
     this.xAxisConfig = Fiz.deepCopy(this.axisConfigClean);
     this.yAxisConfig = Fiz.deepCopy(this.axisConfigClean);
-    
+
     this.bottomAxisConfig = Fiz.deepCopy(this.axisConfigClean);
     this.leftAxisConfig = Fiz.deepCopy(this.axisConfigClean);
     this.rightAxisConfig = Fiz.deepCopy(this.axisConfigClean);
     this.topAxisConfig = Fiz.deepCopy(this.axisConfigClean);
-    
+
     this.plots = []; // List of plot objects
-    
+
     // Object that keeps track of the size (in pixels) of the area where the
     // plots are drawn. Filled in when we're drawing the chart.
     this.plotArea = {
@@ -143,7 +142,7 @@ Fiz.Chart = function (id) {
 /**
  * Removes a plot from the chart. The chart is not redrawn until the draw()
  * method is called.
- * 
+ *
  * @param plot      (Chart.Plot) Plot object to remove
  */
 Fiz.Chart.prototype.removePlot = function (plot) {
@@ -176,6 +175,10 @@ Fiz.Chart.prototype.addPlot = function (plot) {
 Fiz.Chart.prototype.set = function (name, value) { // variable length arguments
     var result = this.findConfigObject(name);
     result[0][result[1]] = value;
+
+    if (Fiz.arrayIndexOf(this.sides, result[0]) !== -1)  {
+        this.usingFourSides = true;
+    }
 };
 
 /*
@@ -193,7 +196,7 @@ Fiz.Chart.prototype.get = function (name) {
  * Draws a shape at the given coordinates and with the given radius.
  * Supported shapes are:
  * square, diamond, circle, triangle
- * 
+ *
  * @ctx        (Context) Context for the canvas element
  * @x          (Int) X position for the center of the shape
  * @y          (Int) Y position for the center of the shape
@@ -209,12 +212,12 @@ Fiz.Chart.drawShape = function(ctx, x, y, shape, color, r) {
     ctx.translate(x, y);
     ctx.beginPath();
     ctx.fillStyle = color;
-    
+
     if (shape === "diamond") {
         ctx.rotate(Math.PI/4);
         shape = "square"; // Same thing, just rotated
     }
-    
+
     if (shape === "square") {
         ctx.moveTo(-r/2, -r/2);
         ctx.lineTo(r/2, -r/2);
@@ -228,7 +231,7 @@ Fiz.Chart.drawShape = function(ctx, x, y, shape, color, r) {
         ctx.lineTo(r/2, h);
         ctx.lineTo(0, -h);
         ctx.lineTo(-r/2, h);
-        
+
     } else {
         throw "Chart.drawShape: Invalid shape: " + shape;
     }
@@ -260,11 +263,11 @@ Fiz.Chart.drawLineTo = function(ctx, border, x, y) {
  *                    to draw, in the order of top, right, bottom, left
  */
 Fiz.Chart.drawRect  = function(ctx, width, height, border, background, which) {
-    
+
     if (border === undefined) {
         border = [0];
     }
-    
+
     // draw the rectangle
     if (background !== undefined) {
         ctx.save();
@@ -272,11 +275,10 @@ Fiz.Chart.drawRect  = function(ctx, width, height, border, background, which) {
         ctx.fillRect(0, 0, width, height);
         ctx.restore();
     }
-    
+
     var x = 0;
     var y = 0;
-    
-    //todo
+
     if (border[2] == "inside") {
         x += border[0]/2;
         y += border[0]/2;
@@ -297,7 +299,7 @@ Fiz.Chart.drawRect  = function(ctx, width, height, border, background, which) {
     ctx.globalAlpha = 1;
     ctx.beginPath();
     ctx.moveTo(x - border[0]/2, y);
-    
+
     // We might not need to draw all four borders if, e.g., the edge of a plot
     // overlaps with the outside border. We draw the border in the order of
     // top, right, bottom, left.
@@ -360,14 +362,14 @@ Fiz.Chart.prototype.setColors = function () {
     var series = this.getVisibleSeries();
     var colors = []; // list of colors already assigned
     var i, j;
-    
+
     // gets list of colors in use
     for (i = 0; i < series.length; i++) {
         if (series[i].config.color !== undefined) {
             colors.push(series[i].config.color);
         }
     }
-    
+
     // For each series without a color, we loop through our color list and find
     // the first color not used by another series. After assigning a color to
     // series, we move that color to the end of our color list. The reasoning
@@ -398,7 +400,7 @@ Fiz.Chart.prototype.drawBorder = function () {
     Fiz.Chart.drawRect(this.ctx, this.canvasWidth, this.canvasHeight,
                        [this.config.borderWidth, this.config.borderColor, "inside"],
                        this.config.background);
-    
+
     this.config.borderWidth = parseInt(this.config.borderWidth, 10);
     this.config.borderHeight = parseInt(this.config.borderWidth, 10);
     this.canvasWidth -= this.config.borderWidth * 2;
@@ -413,7 +415,7 @@ Fiz.Chart.prototype.drawBorder = function () {
 Fiz.Chart.prototype.drawPlotBorder = function () {
     this.ctx.save();
     this.ctx.translate(this.sections.left.size, this.sections.top.size);
-    Fiz.Chart.drawRect(this.ctx, this.plotArea.width, this.plotArea.height, 
+    Fiz.Chart.drawRect(this.ctx, this.plotArea.width, this.plotArea.height,
                        [parseInt(this.config.plotBorderWidth, 10),
                         this.config.plotBorderColor, "outside"],
                        this.config.plotBackground);
@@ -429,7 +431,7 @@ Fiz.Chart.prototype.drawPlotBorder = function () {
  * calculateChartSize() to check how much space the different sections require.
  */
 Fiz.Chart.prototype.registerLayout = function () {
-    // Each variable contains a list of sections for that size as well as 
+    // Each variable contains a list of sections for that size as well as
     // a @code{size} variable which is the total size required to draw that
     // side.
     var sections = this.sections = {
@@ -438,47 +440,47 @@ Fiz.Chart.prototype.registerLayout = function () {
         bottom: [],
         left: []
     };
-    
+
     // Top of the chart
     sections.top.push(new Fiz.Chart.Title(
-        this.ctx, this.config.title, [this.config.titleFont, this.config.titleColor]));
+        this.ctx, this.config.title, this.config.titleFont, this.config.titleColor));
     if (this.axes[2]) {
         sections.top.push(new Fiz.Chart.Title(
-            this.ctx, this.axes[2].title, [this.axes[2].titleFont,
-                                           this.axes[2].titleColor]));
+            this.ctx, this.axes[2].title, this.axes[2].config.titleFont,
+                                           this.axes[2].config.titleColor));
         sections.top.push(new Fiz.Chart.Ticks(
-            this.ctx, this.config, this.axes[2]));
+            this.ctx, this.axes[2]));
     }
 
     // Left of chart
     if (this.axes[1]) {
         sections.left.push(new Fiz.Chart.Title(
-            this.ctx, this.axes[1].config.title, [this.axes[1].config.titleFont,
-                                                  this.axes[1].config.titleColor]));
+            this.ctx, this.axes[1].config.title, this.axes[1].config.titleFont,
+                                                  this.axes[1].config.titleColor));
         sections.left.push(new Fiz.Chart.Ticks(
             this.ctx, this.axes[1]));
     }
-    
+
     // Bottom of chart
     if (this.axes[0]) {
         sections.bottom.push(new Fiz.Chart.Title(
-            this.ctx, this.axes[0].config.title, [this.axes[0].config.titleFont,
-                                                 this.axes[0].config.titleColor]));
+            this.ctx, this.axes[0].config.title, this.axes[0].config.titleFont,
+                                                 this.axes[0].config.titleColor));
         sections.bottom.push(new Fiz.Chart.Ticks(
             this.ctx, this.axes[0]));
     }
-    
+
     // Right of chart
     sections.right.push(new Fiz.Chart.Legend(
         this.ctx, this.legendConfig, this.getVisibleSeries()));
     if (this.axes[3]) {
         sections.right.push(new Fiz.Chart.Title(
-            this.ctx, this.axes[3].title, [this.axes[3].titleFont,
-                                          this.axes[3].titleColor]));
+            this.ctx, this.axes[3].config.title, this.axes[3].config.titleFont,
+                                          this.axes[3].config.titleColor));
         sections.right.push(new Fiz.Chart.Ticks(
-            this.ctx, this.config, this.axes[3]));
+            this.ctx, this.axes[3]));
     }
-    
+
     this.calculateChartSize();
 };
 
@@ -562,11 +564,11 @@ Fiz.Chart.prototype.renderSections = function () {
                                    this.sections.top.size);
                 box.width = this.plotArea.height;
             } else if (i === "bottom") {
-                this.ctx.translate(this.sections.left.size, 
+                this.ctx.translate(this.sections.left.size,
                                    this.canvasHeight - sizeUsedSoFar);
                 box.width = this.plotArea.width;
             } else if (i === "right") {
-                this.ctx.translate(this.canvasWidth - sizeUsedSoFar - 
+                this.ctx.translate(this.canvasWidth - sizeUsedSoFar -
                                    side[j].sizeRequired(),
                                    this.canvasHeight - this.sections.bottom.size);
                 box.width = this.plotArea.height;
@@ -581,19 +583,27 @@ Fiz.Chart.prototype.renderSections = function () {
 };
 
 
-/* 
- * Creates the @code{axes} instance variables and populates them based on 
+/*
+ * Creates the @code{axes} instance variables and populates them based on
  * configuration and plot data. These objects are implemented in Axis.js.
  */
 Fiz.Chart.prototype.resolveAxes = function () {
     this.axes = [];
     var visPlots = this.getVisiblePlots();
+
     for (var i = 0; i < visPlots.length; i++) {
         var plot = visPlots[i];
-        var xAxisLocation = plot.config.xAxisLocation || this.config.xAxisLocation;
-        var yAxisLocation = plot.config.yAxisLocation || this.config.yAxisLocation;
-        this.createAxis(xAxisLocation, "x", plot);
-        this.createAxis(yAxisLocation,  "y", plot);
+        if (plot.config.xLocation !== "bottom" ||
+           plot.config.yLocation !== "left") {
+            this.usingFourSides = true;
+            break;
+        }
+    }
+
+    for (var i = 0; i < visPlots.length; i++) {
+        var plot = visPlots[i];
+        this.createAxis(plot.config.xLocation, null, "x", plot);
+        this.createAxis(plot.config.yLocation, plot.config.xLocation, "y", plot);
     }
 };
 
@@ -601,16 +611,22 @@ Fiz.Chart.prototype.resolveAxes = function () {
  * Creates an axis object for each axis used the plot, and sets the approriate
  * variables in the @code{this.axes} variable.
  */
-Fiz.Chart.prototype.createAxis = function (side, type, plot) {
-    var side = Fiz.arrayIndexOf(["bottom", "left", "top", "right"], side);
-    
-    if (this.axes[side] === undefined) { 
-        var config = type == "x" ? this.xAxisConfig : this.yAxisConfig;
-        this.axes[side] = new Fiz.Chart.Axis(config, side, type);
+Fiz.Chart.prototype.createAxis = function (sideName, oSideName, type, plot) {
+    var side = Fiz.arrayIndexOf(["bottom", "left", "top", "right"], sideName);
+    var oSide = Fiz.arrayIndexOf(["bottom", "left", "top", "right"], oSideName);
+
+    if (this.axes[side] === undefined) {
+        var config;
+        if (this.usingFourSides) {
+            config = this[sideName + "AxisConfig"];
+        } else {
+            config = type == "x" ? this.xAxisConfig : this.yAxisConfig;
+        }
+        this.axes[side] = new Fiz.Chart.Axis(config, side, oSide, type);
     }
-    
+
     this.axes[side].addPlot(plot);
-    
+
     if (type == "x") {
         plot.xAxis = this.axes[side];
     }
@@ -631,7 +647,7 @@ Fiz.Chart.prototype.getVisibleSeries = function () {
     for (var i = 0; i < visPlots.length; i++) {
         series = series.concat(visPlots[i].series);
     }
-    
+
     return series;
 };
 
@@ -652,22 +668,13 @@ Fiz.Chart.prototype.getVisiblePlots = function () {
     return plots;
 };
 
-Fiz.Chart.prototype.assignAxes = function () {
-
-    for (var i = 0; i < this.plots.length; i++) {
-        var plot = this.plots[i];
-
-        if (plot.config.yAxisLocation === undefined) {
-            plotAxis = this.config.yAxisLocation;
-        } else {
-            plotAxis = plot.config.yAxisLocation;
-        }
-        
-        var yAxis = Fiz.arrayIndexOf(["bottom", "left", "top", "right"], plotAxis);
-
-    }
-};
-
+/**
+ * Determines the size of the canvas we are drawning on. Normally, the size
+ * is determined by the attributes of the canvas element. The user can,
+ * however, override the size by setting the @code{width} and @code{height}
+ * variables in the configuration object. Sets the variables
+ * @code{canvasWidth} and @code{canvasHeight}.
+ */
 Fiz.Chart.prototype.resolveSizes = function() {
 
     if (this.config.width === null) {
@@ -683,23 +690,17 @@ Fiz.Chart.prototype.resolveSizes = function() {
         this.canvas.setAttribute("height", this.config.height);
         this.canvasHeight = this.config.height;
     }
-    
-
 }
 
 /*
- * Top level function to draw a chart. Called when a user does a @code{chart.draw()}.
+ * Top level function to draw a chart
  */
 Fiz.Chart.prototype.draw = function () {
-    
+
     this.resolveSizes();
     this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
     this.drawBorder();
-    
-    // Clear canvas
-
     this.ctx.font = "1em 'helvetiker'";
-
     this.resolveAxes();
     this.registerLayout();
     this.drawPlotBorder();
@@ -740,15 +741,44 @@ Fiz.Chart.prototype.drawPlots = function () {
 
 
     for (var i = 0; i < this.axes.length; i++) {
-        if (this.axes[i].isXAxis() === false) {
+        if (!this.axes[i] || this.axes[i].isXAxis() === false) {
             continue;
         }
         this.rotateCanvasForPlots(i);
+        var list = this.sortPlotsByType(this.axes[i].plots);
+        for (var j = 0; j < list.length; j++)  {
+            list[j][0].drawPlots(list[j], this.ctx, this.config);
+        }
 
-
-        this.axes[i].plots[0].drawPlots(this.axes[i].plots, this.ctx, this.config);
     }
+
+    this.ctx.restore();
 };
+
+/*
+ * Given a list of plots, returns a two dimensional array so that plots of
+ * different types are grouped together.
+ *
+ * @param plots     Array<Chart.Plot> List of plots to group by type
+ * @return          Array<Array<Chart.Plot>> A two dimensional array of plots
+ *                  that are seperated by type
+ */
+Fiz.Chart.prototype.sortPlotsByType = function (plots) {
+    var list = [];
+    for (var i = 0; i < plots.length; i++) {
+        var type = plots[i].type;
+        for (var j = 0; j < list.length; j++) {
+            if (list[j][0].type === plots[i].type) {
+                list[j].push(plots[i]);
+            }
+        }
+        if (j === list.length) {
+            list.push([]);
+            list[j][0] = plots[i];
+        }
+    }
+    return list;
+}
 
 /*
  * Rotates and scales the canvas based on which side we drawing on. To simplify
@@ -764,26 +794,14 @@ Fiz.Chart.prototype.rotateCanvasForPlots = function (side) {
     if (side === 1) {
         this.ctx.translate(this.plotArea.width, 0);
         this.ctx.rotate(Math.PI/2);
-        this.ctx.transform(-1, 0, 0, 1, this.plotArea.height, 0); // mirroring matrix
+        this.ctx.transform(1, 0, 0, -1, 0, this.plotArea.width); // mirroring matrix
     } else if (side === 2) {
         this.ctx.rotate(Math.PI);
         this.ctx.transform(-1, 0, 0, 1, 0, -this.plotArea.height); // mirroring matrix
     } else if (side === 3) {
         this.ctx.translate(0, this.plotArea.height);
         this.ctx.rotate(-Math.PI/2);
+        this.ctx.transform(1, 0, 0, -1, 0, 0); // mirroring matrix
+        this.ctx.transform(-1, 0, 0, 1, this.plotArea.height, -this.plotArea.width); // mirroring matrix
     }
-};
-
-
-Fiz.Chart.Box = {
-    side: null,
-    height: null,
-    width: null
-};
-
-Fiz.Chart.Properties = {
-    barWidth: null,
-    i: null,
-    allWidth: null,
-    barSpacer: null
 };

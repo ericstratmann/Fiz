@@ -22,10 +22,10 @@
  * @param font      (String) Font of the text
  * @param color     (String) Color of the text
  */
-Fiz.Chart.Format = function (ctx, font) {
+Fiz.Chart.Format = function (ctx, font, color) {
     this.ctx = ctx;
-    this.font = font[0];
-    this.color = font[1];
+    this.font = font;
+    this.color = color;
 };
 
 /**

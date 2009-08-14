@@ -13,16 +13,33 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/*
+ * A Series represents one source of data. This may be the entire plot, or
+ * just one of serveral "stacks" in a plot. A series has properties that can
+ * be set, just like a plot.
+ */
 Fiz.Chart.Series = function (data) {
     this.data = data;
-    
+
     this.config = { };
 };
 
-Fiz.Chart.Series.prototype.set = function(name) {
-    this.config[name] = arguments[1];
+/*
+ * Sets a configuration property for the series.
+ *
+ * @param name      (String) Name of property to set
+ * @param value     Value to set on the property
+ */
+Fiz.Chart.Series.prototype.set = function(name, value) {
+    this.config[name] = value;
 };
 
+/*
+ * Returns the value of the property with the given name.
+ *
+ * @param name      (String) Name of property whose value to return
+ * @param value     Value of the property
+ */
 Fiz.Chart.Series.prototype.get = function(name) {
     return this.config[name];
 };

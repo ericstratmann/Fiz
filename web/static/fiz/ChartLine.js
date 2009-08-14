@@ -18,22 +18,21 @@ Fiz.Chart.Line = function (data) {
     this.series = [];
     this.barWidth = 0;
     this.discrete = true;
-    
+
     for (var i = 0; i < arguments.length; i += 1) {
         if (arguments[i].length !== undefined) {
             this.series[i] = new Fiz.Chart.Series(arguments[i]);
         }
     }
-    
+
     this.config = {
         name: null,
         axis: ["bottom", "left"],
         opacity: 0.8,
         nameFormat: ["1em 'helvetiker'", "black"],
         display: true,
-
-//
-
+        xLocation: "bottom",
+        yLocation: "left",
         area: false
     }
 
@@ -44,10 +43,15 @@ Fiz.Chart.Line = function (data) {
 
 Fiz.Chart.Line.prototype = new Fiz.Chart.Plot();
 
+/*
+ * Draws the plot.
+ *
+ * @param ctx       Context to draw on
+ */
 Fiz.Chart.Line.prototype.draw = function (ctx) {
     ctx.save();
     ctx.globalAlpha = this.config.opacity;
-    
+
     ctx.lineWidth = 3;
     ctx.lineCap = "round";
 
@@ -57,7 +61,8 @@ Fiz.Chart.Line.prototype.draw = function (ctx) {
     var yVals = [];
     var vals;
 
-    var stacked = this.stack();
+    var stacked = this.stackSeries();
+    this.convertCoordinates(stacked, this.yAxis);
 
     ctx.save();
 
@@ -78,7 +83,7 @@ Fiz.Chart.Line.prototype.draw = function (ctx) {
             ctx.lineTo(x, y);
             lastX = x;
             lasyY = y;
-            
+
         }
 
         ctx.lineTo(lastX, this.yAxis.zero());

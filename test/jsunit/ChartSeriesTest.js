@@ -27,7 +27,7 @@ ChartSeriesTest.test_set = function () {
     var series = new Fiz.Chart.Series();
     series.set("foo", "bar");
     assertEqual("bar", series.config.foo, "foo-bar");
-    
+
     series.set("baz", "foo");
     assertEqual("foo", series.config.baz, "baz-foo");
 };
@@ -36,7 +36,7 @@ ChartSeriesTest.test_get = function () {
     var series = new Fiz.Chart.Series();
     series.config.bar = "foo";
     assertEqual("foo", series.get("bar"), "bar-fop");
-    
+
     series.config.foo = "baz";
     assertEqual("baz", series.get("foo"), "foo-baz");
 };

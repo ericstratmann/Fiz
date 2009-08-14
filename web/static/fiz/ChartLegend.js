@@ -18,7 +18,7 @@
  * of each series and its color. For each series, the legend displays a box
  * (or shape for appropriate types of series) with the series' color and the
  * series name to the right of it. It implements the Section interface.
- * 
+ *
  * @param ctx       (Context) Canvas context
  * @param config    Legend configuration object
  * @param series    (Array<Chart.Series>) An array of all visible series.
@@ -30,9 +30,11 @@ Fiz.Chart.Legend = function (ctx, config, series) {
 };
 
 /*
- * Draws the legend on the chart.
- * 
- * @param box       Bounding box for the section.
+ * Draws the legend on the chart. For each series, a box in the series color
+ * is drawn next to the series's name, if it has one. The size of the box is the
+ * height of the text.
+ *
+ * @param box       Object describing the containing box's width and height.
  */
 Fiz.Chart.Legend.prototype.render = function (box) {
     if (this.config.display === "false" || this.config.display === false) {
@@ -42,7 +44,7 @@ Fiz.Chart.Legend.prototype.render = function (box) {
     if (this.series.length === 0) {
         return;
     }
-    
+
     this.ctx.save();
     if (this.config.location === "right") {
         this.ctx.translate(0, -box.width); // move to the left edge
@@ -54,12 +56,10 @@ Fiz.Chart.Legend.prototype.render = function (box) {
 
     var format;
     for (var i = 0; i < this.series.length; i++) {
-        if (this.series[i].config.nameFormat) {
-            format = new Fiz.Chart.Format(this.ctx, this.series[i].config.nameFormat);
-        } else if (this.config.nameFormat) {
-            format = new Fiz.Chart.Format(this.ctx, this.config.nameFormat);
+        if (this.config.nameFont) {
+            format = new Fiz.Chart.Format(this.ctx, this.config.nameFont);
         } else {
-            format = new Fiz.Chart.Format(this.ctx, ["1em helteviker", "black"]);
+            format = new Fiz.Chart.Format(this.ctx, "1em helvetiker");
         }
         var lineHeight = format.height("x") * 1.5; // random string
         var serie = this.series[i];
@@ -93,12 +93,12 @@ Fiz.Chart.Legend.prototype.sizeRequired = function () {
 
     var max = 0;
     for (i = 0; i < this.series.length; i++) {
-        var format = new Fiz.Chart.Format(this.ctx,
-                     this.series[i].config.nameFormat);
+        var format = new Fiz.Chart.Format(this.ctx, this.config.nameFont ||
+                                         "1em helvetiker");
         var len = format.width(this.series[i].config.name) * 1.2;
         max = Math.max(max, len);
     }
-    
+
     var boxSpace = format.height("x") * 2.7;
     return max + boxSpace
 };
