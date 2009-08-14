@@ -5,16 +5,16 @@
  */
 
 .DateFormElement {
- 	position: relative;
+     position: relative;
 }
 
 .DateFormElement input {
- 	width: @formElementWidth;
- 	font-family: @fontFamily;
- 	font-size: 100%;
- 	border: @standardBorder;
- 	padding: 1px 3px 1px 3px;
- 	margin: 0px;
+    width: @formElementWidth;
+    font-family: @fontFamily;
+    font-size: 100%;
+    border: @standardBorder;
+    padding: 1px 3px 1px 3px;
+    margin: 0px;
 }
 
 .DateFormElement input:focus {
@@ -23,71 +23,72 @@
 }
 
 .DateFormElement img {
-	margin-left: 3px;
-	vertical-align: middle;
-	cursor: pointer;
+    margin-left: 3px;
+    vertical-align: middle;
+    cursor: pointer;
 }
 
 .DateFormElement a {
-	cursor: pointer;
+    cursor: pointer;
 }
 
 .DateFormElement .close-button {
-	position:  absolute;
-	top: 4px;
-	right: 8px;
+    position:  absolute;
+    top: 4px;
+    right: 8px;
 }
 
 .DateFormElement .picker {
-	background: #ffffff;
-	position: absolute;
-	display: none;
-	border: @standardBorder;
-	padding: 2px;
-	z-index: 999;
-	font-size: .8em;
+    width: 170px;
+    background: #ffffff;
+    position: absolute;
+    display: none;
+    border: @standardBorder;
+    padding: 2px;
+    z-index: 999;
+    font-size: .8em;
 }
 
 .DateFormElement .picker .nav, .DateFormElement .picker .header {
-	padding: 3px 5px;
-	background: #eeeeee;
-	font-weight: bold;
+    padding: 3px 5px;
+    background: #eeeeee;
+    font-weight: bold;
 }
 
 .DateFormElement .picker .nav {
-	text-align: center;
+    text-align: center;
 }
 
 .DateFormElement .picker .nav a {
-	vertical-align: middle;
-	margin: 0 5px;
+    vertical-align: middle;
+    margin: 0 5px;
 }
 
 .DateFormElement table {
-	margin: 0 auto;
+    margin: 0 auto;
 }
 
 .DateFormElement .picker td, .DateFormElement .picker th {
-	width: 20px;
-	border: 1px solid #fff;
- 	text-align: center;
+    width: 20px;
+    border: 1px solid #fff;
+    text-align: center;
 }
 
 .DateFormElement .picker .cur-month {
-	color: #000000;
-	cursor: pointer;
+    color: #000000;
+    cursor: pointer;
 }
 
 .DateFormElement .picker .excluded {
- 	color: #cccccc;
-	cursor: default;
+    color: #cccccc;
+    cursor: default;
 }
 
 .DateFormElement .picker .cur-day {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 .DateFormElement .picker td.cur-month.hover {
-	background: @activeBackground;
-	border: @accentBorder;
+    background: @activeBackground;
+    border: @accentBorder;
 }
