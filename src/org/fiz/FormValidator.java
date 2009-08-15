@@ -18,6 +18,7 @@ package org.fiz;
 import java.util.regex.Pattern;
 
 /**
+ * <h1>Usage</h1>
  * The FormValidator class is a collection of validation functions provided
  * by Fiz. Each validation function takes in a set of configuration properties
  * (if applicable) and a dataset containing form data to validate. Validators
@@ -30,13 +31,33 @@ import java.util.regex.Pattern;
  *   errorMessage:              (optional) Template for the error message to be
  *                              returned if validation fails.
  *
- * Developers may specify custom validators. These validators should take
- * in three arguments: id identifying the form element being validated,
- * properties containing configuration values for the validator, and formData 
- * containing all relevant submitted form data needed for the validator.
- * 
  * Instructions on attaching form validators to form elements can be seen
  * in {@link FormElement}.
+ *
+ * <h1>Implementation</h1>
+ * Developers may create custom validators by writing their own methods.
+ * These methods should take in three arguments: id identifying the form element
+ * being validated, properties containing configuration values for the
+ * validator, and formData containing all relevant submitted form data needed
+ * for the validator. A template for a validation method is:
+ *
+ * <pre>
+ * {@code
+ * public static String validateTrue(String id, Dataset properties,
+ *         Dataset formData) {
+ *     if (formData.get(id).equals("true")) {
+ *        return null;
+ *     } else {
+ *        return FormValidator.errorMessage("Value must be true", properties,
+ *                formData);
+ *     }
+ * }
+ * }
+ * </pre>
+ * 
+ * Validator methods may be placed anywhere. They can be referenced in the 
+ * {@code type} property of the validator dataset by their fully qualified name,
+ * such as "MyValidator.validateTrue".
  */
 public class FormValidator {
 
@@ -52,8 +73,8 @@ public class FormValidator {
      *                                  {@code properties} and {@code formData}.
      *                                  If {@code properties} contains an
      *                                  {@code errorMessage} value, then it is
-     *                                  used as a template; otherwise,
-     *                                  {@code defaultMessage} is used as a
+     *                                  used as the template; otherwise,
+     *                                  {@code defaultMessage} is used as the
      *                                  template.
      */
     public static String errorMessage(String defaultMessage,
