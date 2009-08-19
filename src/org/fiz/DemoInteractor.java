@@ -177,18 +177,18 @@ public class DemoInteractor extends Interactor {
                     "layout", "vertical", "postUrl", "postVertical"),
                     new EntryFormElement(new Dataset("id", "name",
                             "label", "Name:", "help", "Enter employee name here")),
-                            new EntryFormElement(new Dataset("id", "age",
-                                    "label", "Age:")),
-                                    new EntryFormElement(new Dataset("id", "state",
-                                            "label", "Home state:")),
-                                            new CheckboxFormElement(new Dataset("id", "citizen",
-                                                    "extra", "U.S. citizen")),
-                                                    new SelectFormElement(new Dataset("id", "fruit",
-                                                            "label", "Favorite fruit:",
-                                                            "choiceRequest", "getFruits",
-                                                            "choiceName", "fruit")),
-                                                            new TextAreaFormElement(new Dataset("id", "saying",
-                                                                    "label", "Favorite saying:", "rows", "3"))
+                    new EntryFormElement(new Dataset("id", "age",
+                            "label", "Age:")),
+                    new EntryFormElement(new Dataset("id", "state",
+                            "label", "Home state:")),
+                    new CheckboxFormElement(new Dataset("id", "citizen",
+                            "extra", "U.S. citizen")),
+                    new SelectFormElement(new Dataset("id", "fruit",
+                            "label", "Favorite fruit:",
+                            "choiceRequest", "getFruits",
+                            "choiceName", "fruit")),
+                    new TextAreaFormElement(new Dataset("id", "saying",
+                            "label", "Favorite saying:", "rows", "3"))
     );
 
     /**
@@ -265,19 +265,19 @@ public class DemoInteractor extends Interactor {
                 new TabSection(new Dataset(),
                         new Dataset("id", "t1", "text", "Inventory",
                                 "url", "tabSection?currentTabId=t1"),
-                                new Dataset("id", "t2", "text", "Orders",
-                                        "url", "tabSection?currentTabId=t2"),
-                                        new Dataset("id", "t3", "text", "Accounts",
-                                                "ajaxUrl", "ajaxTab?tab=t3"),
-                                                new Dataset("id", "t4", "text", "Shippers",
-                                                        "javascript",
-                                                        "document.getElementById(\"text\").innerHTML " +
-                                                        "= 'You clicked on tab \"t4\", which caused " +
-                                                "this text to be updated by Javascript.'"),
-                                                new Dataset("id", "t5", "text", "Suppliers",
-                                                        "url", "tabSection?currentTabId=t5")),
-                                                        new TemplateSection("<p id=\"text\">The currently selected " +
-                                                        "tab has id \"@currentTabId?{??}\"</p>\n"));
+                        new Dataset("id", "t2", "text", "Orders",
+                                "url", "tabSection?currentTabId=t2"),
+                        new Dataset("id", "t3", "text", "Accounts",
+                                "ajaxUrl", "ajaxTab?tab=t3"),
+                        new Dataset("id", "t4", "text", "Shippers",
+                                "javascript",
+                                "document.getElementById(\"text\").innerHTML " +
+                                "= 'You clicked on tab \"t4\", which caused " +
+                                "this text to be updated by Javascript.'"),
+                        new Dataset("id", "t5", "text", "Suppliers",
+                                "url", "tabSection?currentTabId=t5")),
+                new TemplateSection("<p id=\"text\">The currently selected " +
+                    "tab has id \"@currentTabId?{??}\"</p>\n"));
     }
 
     /**
@@ -288,7 +288,7 @@ public class DemoInteractor extends Interactor {
     public void ajaxTab(ClientRequest cr) {
         cr.updateElement("text", "You clicked on tab \"" +
                 cr.getMainDataset().get("tab") +
-        "\", which caused this text to be updated via AJAX.");
+                "\", which caused this text to be updated via AJAX.");
     }
 
     /**
@@ -301,15 +301,15 @@ public class DemoInteractor extends Interactor {
         Html html = cr.getHtml();
         html.setTitle("ChartSection Demos");
         cr.addDataRequest("someData", fileDataManager.newReadRequest("demo.yaml",
-        "someData"));
+                "someData"));
         cr.addDataRequest("someData2", fileDataManager.newReadRequest("demo.yaml",
-        "someData2"));
+                "someData2"));
         cr.addDataRequest("fizUsers", fileDataManager.newReadRequest("demo.yaml",
-        "fizUsers"));
+                "fizUsers"));
         cr.addDataRequest("widgetSales", fileDataManager.newReadRequest("demo.yaml",
-        "widgetSales"));
+                "widgetSales"));
         cr.addDataRequest("gadgetSales", fileDataManager.newReadRequest("demo.yaml",
-        "gadgetSales"));
+                "gadgetSales"));
 
         Dataset chart1 =
             new Dataset("request", "fizUsers", "xId", "month", "yId", "users",
@@ -361,13 +361,13 @@ public class DemoInteractor extends Interactor {
         html.setTitle("TableSection Demos");
         html.includeCssFile("demo/shoppingCart.css");
         cr.addDataRequest("people", fileDataManager.newReadRequest("demo.yaml",
-        "people"));
+                "people"));
         cr.addDataRequest("noData", fileDataManager.newReadRequest("demo.yaml",
-        "empty"));
+                "empty"));
         cr.addDataRequest("error", fileDataManager.newReadRequest("demo.yaml",
-        "bogus.nonexistent"));
+                "bogus.nonexistent"));
         cr.addDataRequest("cart", fileDataManager.newReadRequest("demo.yaml",
-        "shoppingCart"));
+                "shoppingCart"));
         cr.showSections(
                 new TemplateSection("<h1>TableSection Demos</h1>\n"),
 
@@ -380,30 +380,30 @@ public class DemoInteractor extends Interactor {
                         new Column("Weight", "{{@weight}}"),
                         new Column("Social Security Number", "{{@ssn}}")),
 
-                        new TemplateSection("<h2>Table with no data:</h2>\n"),
-                        new TableSection(
-                                new Dataset("request", "noData"),
-                                new Column("Name", "@name"),
-                                new Column("Age", "{{@age}}"),
-                                new Column("Height", "{{@height}}"),
-                                new Column("Weight", "{{@weight}}"),
-                                new Column("Social Security Number", "{{@ssn}}")),
+                new TemplateSection("<h2>Table with no data:</h2>\n"),
+                new TableSection(
+                        new Dataset("request", "noData"),
+                        new Column("Name", "@name"),
+                        new Column("Age", "{{@age}}"),
+                        new Column("Height", "{{@height}}"),
+                        new Column("Weight", "{{@weight}}"),
+                        new Column("Social Security Number", "{{@ssn}}")),
 
-                                new TemplateSection("<h2>Error in data request:</h2>\n"),
-                                new TableSection(
-                                        new Dataset("request", "error"),
-                                        new Column("Name", "@name"),
-                                        new Column("Age", "{{@age}}"),
-                                        new Column("Height", "{{@height}}"),
-                                        new Column("Weight", "{{@weight}}"),
-                                        new Column("Social Security Number", "{{@ssn}}")),
+                new TemplateSection("<h2>Error in data request:</h2>\n"),
+                new TableSection(
+                        new Dataset("request", "error"),
+                        new Column("Name", "@name"),
+                        new Column("Age", "{{@age}}"),
+                        new Column("Height", "{{@height}}"),
+                        new Column("Weight", "{{@weight}}"),
+                        new Column("Social Security Number", "{{@ssn}}")),
 
-                                        new TemplateSection("<h2>Simple shopping cart:</h2>\n"),
-                                        new TableSection(
-                                                new Dataset("request", "cart", "noHeader", "true",
-                                                        "class", "shoppingCart"),
-                                                        new Column("Item", "@item"),
-                                                        new Column("Price", "@price"))
+                new TemplateSection("<h2>Simple shopping cart:</h2>\n"),
+                new TableSection(
+                        new Dataset("request", "cart", "noHeader", "true",
+                                "class", "shoppingCart"),
+                                new Column("Item", "@item"),
+                                new Column("Price", "@price"))
         );
     }
 

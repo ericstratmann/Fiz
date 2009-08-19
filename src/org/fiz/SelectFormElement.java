@@ -177,6 +177,6 @@ public class SelectFormElement extends FormElement {
             allChoices += choice.get("value");
         }
         out.append("</select>\n<!-- End SelectFormElement @id -->\n");
-        addValidator(new Dataset("type", "value", "valid", "allChoices"));
+        // addValidator(new Dataset("type", "in", "valid", allChoices));
     }
 }
