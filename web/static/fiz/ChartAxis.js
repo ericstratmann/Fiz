@@ -48,6 +48,8 @@ Fiz.Chart.Axis = function (config, side, oSide, type) {
 
     this.rmin = undefined;
     this.rmax = undefined;
+
+    this.labels; // array of labels
 };
 
 /*
@@ -115,12 +117,29 @@ Fiz.Chart.Axis.prototype.setLabels = function (plot) {
 Fiz.Chart.Axis.prototype.getDiscreteAxisValues = function (plot) {
     var labels = [];
 
-    var data = plot.series[0].data;
-    for (var i = 0; i < data.length; i++) {
-        labels.push(data[i][0].toString());
+    for (var i = 0; i < plot.series.length; i++) {
+        var data = plot.series[i].data;
+        for (var j = 0; j < data.length; j++) {
+            labels.push(data[j][0].toString());
+        }
+
+        this.checkLabelsEqual(this.labels, labels);
+        this.labels = labels;
+        labels = [];
     }
 
-    return labels;
+    return this.labels;
+};
+
+Fiz.Chart.Axis.prototype.checkLabelsEqual = function (label1, label2) {
+    if (this.label1 !== undefined && this.label2 !== undefined) {
+        var len = Math.Max(labels1.length, labels2.length);
+        for (var i = 0; i < len; i++) {
+            if (labels1[i] !== labels2[i]) {
+                throw "Axis.checkLabelsEqual: labels not equal";
+            }
+        }
+    }
 };
 
 /*

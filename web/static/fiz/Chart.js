@@ -57,6 +57,7 @@ Fiz.Chart = function (id) {
 
     this.ctx = this.canvas.getContext('2d'); // Context we draw on
 
+
     // Whether we're just using the x and y axes or whether we're using
     // bottom, top, left and right
     this.usingFourSides = false;
@@ -95,6 +96,7 @@ Fiz.Chart = function (id) {
         minorTicks: null,
         minorTickLength: 5,
         scale: "linear",
+        logScale: 10,
         location: null,
         showLabels: true,
         barSpacer: 15,

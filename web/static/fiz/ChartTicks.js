@@ -223,6 +223,7 @@ Fiz.Chart.Ticks.prototype.drawMajorGridLine = function (axis) {
     this.ctx.beginPath();
     this.ctx.moveTo(0, 0);
     this.ctx.lineCap = "round";
+    this.ctx.translate(2, 0);
     Fiz.Chart.drawLineTo(this.ctx, [this.axis.config.majorGridWidth,
                                     this.axis.config.majorGridColor],
                          this.axis.pSize, 0);

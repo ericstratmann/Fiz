@@ -319,6 +319,7 @@ public class DemoInteractor extends Interactor {
                         "bottomAxis", new Dataset("title", "Number of Fiz Users",
                                              "scale", "log", "logBase", "10"),
                         "title", "Fiz Growth" );
+
         Dataset chart2 =
             new Dataset("titleColor", "blue", "borderWidth", "0",
                         "type", "Line", "title", "Products sold at ACME",
@@ -333,8 +334,7 @@ public class DemoInteractor extends Interactor {
                                               "yId", "sales", "name", "Gadgets"));
 
         Dataset chart3 =
-            new Dataset("background", "gray",
-                        "xAxis", new Dataset("title", "Doodads",
+            new Dataset("xAxis", new Dataset("title", "Doodads",
                                              "majorGridWidth", "1"),
                         "yAxis", new Dataset("title", "Gizmos",
                                              "majorGridWidth", "1"),

@@ -41,8 +41,8 @@ import java.util.*;
  * yAxis datasets. Otherwise, the other four axis datasets should be used.
  *
  * The following properties are supported by datasets representing a plot:
- * type:       (Optional) Type of plot to draw. Currently supports @code{bar}
- *             @code{line}, and @code{scatter}. Defaults to @code{bar}
+ * type:       (Optional) Type of plot to draw. Currently supports {@code bar}
+ *             {@code line}, and @code{scatter}. Defaults to {@code bar}
  * series:     (Optional) One oe more child datasets, each describing one series
  * id:         (Optional) Used to name the Javascript object associated with
  *             this plot. If not given, it is automatically generated.
@@ -64,7 +64,7 @@ import java.util.*;
  * In cases where there is only one series for a plot or one plot for the chart,
  * it is possible to "collapse" the datasets. This is done by not including the
 
- * @code{plot} or @code{series} parameter, and instead placing the parameters
+ * {@code plot} or {@code series} parameter, and instead placing the parameters
  * that would have been in that dataset in the chart or plot dataset.
  *
  * Before describing the different configuration options, here are a few
@@ -117,6 +117,7 @@ import java.util.*;
  * minorTickSide:    Which side the tick marks should be drawn on. "inside", "outside",
  *                   or "middle"
  * scale:            What kind of scale to use for the axis, one of "linear" or "log"
+ * logBase:          If using a log scale, which base to use
  * showLabels:       "true" or "false". Whether to draw the labels at each major tick mark
  * labelFont:        Font used to render the labels on the axis
  * labelColor:       Color used to draw the labels
@@ -129,11 +130,11 @@ import java.util.*;
  * textFont:    Font used to render text in the legend
  * textColor:   Color used to draw the text in the legend
  *
- * The following properties pertain to both plots and series. If a property is
- * set on a plot, it applies to all series it contains (unless overridden). If
- * it is set on a series, it applies to just the one. For example, you might
- * want to set the opacity for all the series, but set the name of each one
- * individually.
+ * The following properties pertain to both plots and series (unless stated
+ * otherwise). If a property is set on a plot, it applies to all series it
+ * contains (unless overridden). If it is set on a series, it applies to just
+ * the one. For example, you might want to set the opacity for all the series,
+ * but set the name of each one individually.
  *
  * name:          Name of the plot or series used to label it in the legend
  * nameFont:      Font used to render the name in the legend
@@ -144,10 +145,12 @@ import java.util.*;
  * display:       "true" or "false". Whether to draw the plot or series
  * xLocation:     If not all plots are using the regular bottom X axis and left
  *                Y Axis, can be set to one of "top", "right", "bottom", or
- *                "left" to indicate where this plot's X axis is.
+ *                "left" to indicate where this plot's X axis is. This property
+ *                does not apply to series
  * yLocation:     If not all plots are using the regular bottom X axis and left
  *                Y Axis, can be set to one of "top", "right", "bottom", or
- *                "left" to indicate where this plot's Y axis is.
+ *                "left" to indicate where this plot's Y axis is. This property
+ *                does not apply to series
  *
  * Some of the types of plots have properties which are unique to that type
  * of plot (e.g., shape used to represent points in a scatter plot). For the
@@ -266,7 +269,7 @@ public class ChartSection extends Section {
     /**
      * Adds a plot to chart, including creating the data for it and setting the
      * given properties on it, and finally adding it to the chart. Modifies the
-     * @code{js} variable.
+     * {@code js} variable.
      *
      * @param plot       Dataset describing the plot to add.
      */
@@ -322,7 +325,7 @@ public class ChartSection extends Section {
      * Adds javascript code to create an array with data for a plot. It takes
      * the request defined in the properties dataset to get the data to add
      * to the plot, using the xId and yId properties to get the proper data
-     * from the dataset. Modifies the @code{js} variable.
+     * from the dataset. Modifies the {@code js} variable.
      *
      * @param properties      Dataset describing the plot or series. Used for
      *                        the id, request, xId, and yId properties.
@@ -357,7 +360,7 @@ public class ChartSection extends Section {
      * all properties which are unique to the chart. If a property is in that
      * list, then we assume we set it on the chart. Otherwise on the plot or
      * series. We also make sure to avoid java reserved variables, such as
-     * xId, yId, request, etc. Modifies the @code{js} variable.
+     * xId, yId, request, etc. Modifies the {@code js} variable.
      *
      * @param plot       Dataset describing the plot
      * @param name       Name of the object to set the properties on
@@ -423,7 +426,7 @@ public class ChartSection extends Section {
     }
 
     /**
-     * Returns the @code{id} property of a dataset. If it does not have one, it
+     * Returns the {@code id} property of a dataset. If it does not have one, it
      * generates a unique one and modifies the dataset to add it.
      *
      * @param properties      Dataset describing the plot's properties

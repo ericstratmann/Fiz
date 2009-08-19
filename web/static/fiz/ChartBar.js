@@ -17,6 +17,7 @@
 // Fiz:include static/fiz/Fiz.js
 // Fiz:include static/fiz/FizCommon.js
 // Fiz:include static/fiz/canvas.text.js
+// Fiz:include static/fiz/excanvas.js
 // Fiz:include static/fiz/Chart.js
 // Fiz:include static/fiz/ChartFormat.js
 // Fiz:include static/fiz/ChartPlot.js
