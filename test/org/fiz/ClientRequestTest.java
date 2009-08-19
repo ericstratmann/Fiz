@@ -466,7 +466,23 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("property value", "12345", cr.getPageProperty("prop1"));
     }
 
-    public void test_setPageProperty() {
+    public void test_setPageProperty_notSerializable() {
+        class NotSerializable {
+            int a, b;
+        }
+        boolean gotException = false;
+        try {
+            cr.setPageProperty("bogus", new NotSerializable());
+        }
+        catch (InternalError e) {
+            assertEquals("exception message",
+                    "ClientRequest.setPageProperty received " +
+                    "non-serializable NotSerializable object", e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_setPageProperty_normalOperation() {
         // First request creates the page state.
         cr.setPageProperty("prop1", "12345");
         assertEquals("# defined properties", 1, cr.pageState.properties.size());

@@ -672,6 +672,11 @@ public class ClientRequest {
      * @param value                Value to remember for this property.
      */
     public void setPageProperty(String name, Object value) {
+        if (!(value instanceof Serializable)) {
+            throw new InternalError( "ClientRequest.setPageProperty " +
+                    "received non-serializable " +
+                    value.getClass().getSimpleName() + " object");
+        }
         if (pageState == null) {
             pageState = PageState.getPageState(this, getPageId(), true);
         }
