@@ -57,8 +57,8 @@ public class ChartSectionTest extends junit.framework.TestCase {
                      "static/fiz/ChartPlot.js, static/fiz/ChartScatter.js, " +
                      "static/fiz/ChartSeries.js, static/fiz/ChartTicks.js, " +
                      "static/fiz/ChartTitle.js, static/fiz/Fiz.js, " +
-                     "static/fiz/FizCommon.js, static/fiz/canvas.text.js",
-                     cr.getHtml().getJsFiles());
+                     "static/fiz/FizCommon.js, static/fiz/canvas.text.js, " +
+                     "static/fiz/excanvas.js", cr.getHtml().getJsFiles());
     }
 
     public void test_render_HTML_noId() {
