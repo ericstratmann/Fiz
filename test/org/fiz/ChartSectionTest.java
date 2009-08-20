@@ -82,39 +82,51 @@ public class ChartSectionTest extends junit.framework.TestCase {
     public void test_render_topLevelPlot() {
         cs = new ChartSection(new Dataset("request", "noCats"));
         cs.render(cr);
-        assertEquals("Fiz.ids.chart0 = {};\n" +
+        assertEquals("try {\n" +
+                     "Fiz.ids.chart0 = {};\n" +
                      "Fiz.ids.chart0.chart = new Fiz.Chart(\"chart0\");\n" +
                      "Fiz.ids.chart0.chart0_data = [];\n" +
                      "Fiz.ids.chart0.chart0 = new Fiz.Chart.Bar(Fiz.ids.chart0.chart0_data);\n" +
                      "Fiz.ids.chart0.chart.addPlot(Fiz.ids.chart0.chart0);\n" +
-                     "Fiz.ids.chart0.chart.draw();\n", cs.js.toString());
+                     "Fiz.ids.chart0.chart.draw();\n" +
+                     "} catch (e) {\nFiz.addBulletinMessage(" +
+                     "\"<div class=\\\"bulletinError\\\">\" + e + \"</div>\");\n}\n",
+                     cs.js.toString());
 
     }
 
     public void test_render_topLevelSeries() {
         cs = new ChartSection(new Dataset("series", new Dataset("request", "noCats")));
         cs.render(cr);
-        assertEquals("Fiz.ids.chart0 = {};\n" +
+        assertEquals("try {\n" +
+                     "Fiz.ids.chart0 = {};\n" +
                      "Fiz.ids.chart0.chart = new Fiz.Chart(\"chart0\");\n" +
                      "Fiz.ids.chart0.chart0 = new Fiz.Chart.Bar();\n" +
                      "Fiz.ids.chart0.series0_data = [];\n" +
                      "Fiz.ids.chart0.series0 = new Fiz.Chart.Series(Fiz.ids.chart0.series0_data);\n" +
                      "Fiz.ids.chart0.chart0.addSeries(Fiz.ids.chart0.series0);\n" +
                      "Fiz.ids.chart0.chart.addPlot(Fiz.ids.chart0.chart0);\n" +
-                     "Fiz.ids.chart0.chart.draw();\n", cs.js.toString());
+                     "Fiz.ids.chart0.chart.draw();\n" +
+                     "} catch (e) {\nFiz.addBulletinMessage(" +
+                     "\"<div class=\\\"bulletinError\\\">\" + e + \"</div>\");\n}\n",
+                     cs.js.toString());
 
     }
 
     public void test_render_withProperties() {
         cs = new ChartSection(new Dataset("request", "noCats", "foo", "bar"));
         cs.render(cr);
-        assertEquals("Fiz.ids.chart0 = {};\n" +
+        assertEquals("try {\n" +
+                     "Fiz.ids.chart0 = {};\n" +
                      "Fiz.ids.chart0.chart = new Fiz.Chart(\"chart0\");\n" +
                      "Fiz.ids.chart0.chart0_data = [];\n" +
                      "Fiz.ids.chart0.chart0 = new Fiz.Chart.Bar(Fiz.ids.chart0.chart0_data);\n" +
                      "Fiz.ids.chart0.chart0.set(\"foo\", \"bar\");\n" +
                      "Fiz.ids.chart0.chart.addPlot(Fiz.ids.chart0.chart0);\n" +
-                     "Fiz.ids.chart0.chart.draw();\n", cs.js.toString());
+                     "Fiz.ids.chart0.chart.draw();\n" +
+                     "} catch (e) {\nFiz.addBulletinMessage(" +
+                     "\"<div class=\\\"bulletinError\\\">\" + e + \"</div>\");\n}\n",
+                     cs.js.toString());
     }
 
 
@@ -123,7 +135,8 @@ public class ChartSectionTest extends junit.framework.TestCase {
                                           "plot", new Dataset("request", "getMoreCats")));
         cr.addDataRequest("getMoreCats", RawDataManager.newRequest(noCats));
         cs.render(cr);
-        assertEquals("Fiz.ids.chart0 = {};\n" +
+        assertEquals("try {\n" +
+                     "Fiz.ids.chart0 = {};\n" +
                      "Fiz.ids.chart0.chart = new Fiz.Chart(\"chart0\");\n" +
                      "Fiz.ids.chart0.plot0_data = [];\n" +
                      "Fiz.ids.chart0.plot0 = new Fiz.Chart.Bar(Fiz.ids.chart0.plot0_data);\n" +
@@ -131,7 +144,10 @@ public class ChartSectionTest extends junit.framework.TestCase {
                      "Fiz.ids.chart0.plot1_data = [];\n" +
                      "Fiz.ids.chart0.plot1 = new Fiz.Chart.Bar(Fiz.ids.chart0.plot1_data);\n" +
                      "Fiz.ids.chart0.chart.addPlot(Fiz.ids.chart0.plot1);\n" +
-                     "Fiz.ids.chart0.chart.draw();\n", cs.js.toString());
+                     "Fiz.ids.chart0.chart.draw();\n" +
+                     "} catch (e) {\nFiz.addBulletinMessage(" +
+                     "\"<div class=\\\"bulletinError\\\">\" + e + \"</div>\");\n}\n",
+                     cs.js.toString());
 
     }
 

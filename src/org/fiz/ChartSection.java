@@ -245,6 +245,7 @@ public class ChartSection extends Section {
 
 
         chart = Template.expandRaw("Fiz.ids.@1", id);
+        Template.appendRaw(js, "try {\n");
         Template.appendRaw(js, "@1 = {};\n", chart);
         Template.appendRaw(js, "@1.chart = new Fiz.Chart(\"@2\");\n",
                         chart, id);
@@ -262,6 +263,8 @@ public class ChartSection extends Section {
         setProperties(properties, "chart");
 
         Template.appendRaw(js, "@1.chart.draw();\n", chart);
+        Template.appendJs(js, "} catch (e) {\nFiz.addBulletinMessage(" +
+                           "\"<div class=\\\"bulletinError\\\">\" + e + \"</div>\");\n}\n");
 
         cr.evalJavascript(js);
     }
