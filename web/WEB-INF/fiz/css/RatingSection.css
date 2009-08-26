@@ -1,0 +1,25 @@
+/* RatingSection.css -
+ *
+ * This file defines styles for RatingSections that use the default class.
+ */
+
+.RatingSection .offRating {
+    position: absolute;
+    z-index: 1;
+    white-space: nowrap;
+}
+
+.RatingSection .onRating {
+    position: absolute;
+    z-index: 2;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.RatingSection .unratedMsg {
+    position: absolute;
+    z-index: 3;
+    white-space: nowrap;
+    text-align: center;
+    width: 100%;
+}

@@ -14,7 +14,6 @@
  */
 
 package org.fiz.test;
-import org.apache.log4j.*;
 
 import org.fiz.*;
 
@@ -28,11 +27,12 @@ public class ClientRequestFixture extends ClientRequest {
                 new ServletContextFixture())),
                 new ServletRequestFixture(),
                 new ServletResponseFixture());
-        Config.init("test/testData/WEB-INF/app/config", "web/WEB-INF/fiz/config");
+        Config.init("test/testData/WEB-INF/app/config", 
+                "web/WEB-INF/fiz/config");
         Css.init("web/WEB-INF/fiz/css");
 
         // Create the Html object specially so it will find Javascript files.
-        html = new Html(null);
+        html = new HtmlFixture(null);
 
         // Provide some initial query values in the main dataset.
         Dataset main = getMainDataset();
@@ -49,5 +49,16 @@ public class ClientRequestFixture extends ClientRequest {
     public void clearData() {
         mainDataset = null;
         requestDataProcessed = false;
+    }
+    
+    public boolean isAuthTokenSet() {
+        return authTokenSet;
+    }
+    
+    public String getJsCode(boolean fromHtml) {
+        if (fromHtml) {
+            return ((HtmlFixture)html).getJsCode();
+        }
+        return (jsCode == null) ? "" : jsCode.toString();
     }
 }

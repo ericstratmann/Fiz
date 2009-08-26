@@ -57,3 +57,87 @@ FizCommonTest.test_deepCopy = function() {
     var ctx = {a: 2};
     assertEqual(ctx, Fiz.deepCopy({ctx: ctx}).ctx, "ctx special case");
 };
+
+FizCommonTest.test_getRelativeEventCoords_pageCoords_notIE = function() {
+    var elem = {};
+    FizCommonTest.setup_dom_object(elem);
+    
+    var event = {pageX: 30, pageY: 40};
+    var coords = Fiz.getRelativeEventCoords(event, elem);
+    assertEqual(21, coords.x, "X coordinate");
+    assertEqual(23, coords.y, "Y coordinate");
+};
+
+FizCommonTest.test_getRelativeEventCoords_pageCoords_IEnonStrict = function() {
+    var elem = {};
+    FizCommonTest.setup_dom_object(elem);
+    document.body.scrollLeft = 100;
+    document.body.scrollTop = 0;
+    
+    var event = {clientX: 55, clientY: 37};
+    var coords = Fiz.getRelativeEventCoords(event, elem);
+    assertEqual(146, coords.x, "X coordinate");
+    assertEqual(20, coords.y, "Y coordinate");
+};
+
+FizCommonTest.test_getRelativeEventCoords_pageCoords_IEstrict = function() {
+    var elem = {};
+    FizCommonTest.setup_dom_object(elem);
+    document.documentElement = {scrollLeft: 10, scrollTop: 244};
+    document.body.scrollLeft = 0;
+    document.body.scrollTop = 0;
+    
+    var event = {clientX: 104, clientY: 20};
+    var coords = Fiz.getRelativeEventCoords(event, elem);
+    assertEqual(105, coords.x, "X coordinate");
+    assertEqual(247, coords.y, "Y coordinate");
+};
+
+FizCommonTest.test_getRelativeEventCoords_clientLeftTop = function() {
+    var elem = {};
+    FizCommonTest.setup_dom_object(elem);
+    elem.clientLeft = 0;
+    elem.clientTop = 1;
+    elem.offsetParent.clientLeft = 2;
+    elem.offsetParent.clientTop = 3;
+    elem.offsetParent.offsetParent.clientLeft = 4;
+    elem.offsetParent.offsetParent.clientTop = 5;
+    
+    var event = {pageX: 30, pageY: 40};
+    var coords = Fiz.getRelativeEventCoords(event, elem);
+    assertEqual(15, coords.x, "X coordinate");
+    assertEqual(14, coords.y, "Y coordinate");
+};
+
+FizCommonTest.test_getRelativeEventCoords_negativeBodyOffset = function() {
+    var elem = {};
+    FizCommonTest.setup_dom_object(elem);
+    document.body.offsetLeft = -3;
+    document.body.offsetTop = -2;
+    
+    var event = {pageX: 30, pageY: 40};
+    var coords = Fiz.getRelativeEventCoords(event, elem);
+    assertEqual(18, coords.x, "X coordinate");
+    assertEqual(21, coords.y, "Y coordinate");
+};
+
+// Creates an artificial DOM object with some parentNode and offsetParent 
+// hierarchy.  Also assigns scroll and offset values to several elements.
+FizCommonTest.setup_dom_object = function(elem) {
+    elem.scrollLeft = 5;
+    elem.scrollTop = 2;
+    var parentNode1 = {scrollLeft: 0, scrollTop: 0};
+    var parentNode2 = {scrollLeft: 1, scrollTop: 1};
+    elem.parentNode = parentNode1;
+    parentNode1.parentNode = parentNode2;
+    parentNode2.parentNode = document.body;
+    
+    elem.offsetLeft = 0;
+    elem.offsetTop = 0;
+    var offsetParent1 = {offsetLeft: 15, offsetTop: 20};
+    document.body.offsetLeft = 0;
+    document.body.offsetTop = 0;
+    elem.offsetParent = offsetParent1;
+    offsetParent1.offsetParent = document.body;
+    document.body.offsetParent = null;
+};

@@ -13,7 +13,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package org.fiz;
+package org.fiz.test;
 
 import org.apache.log4j.*;
 import org.apache.log4j.spi.*;

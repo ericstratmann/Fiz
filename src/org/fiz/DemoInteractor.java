@@ -587,4 +587,37 @@ public class DemoInteractor extends Interactor {
                 "message", "You have chosen an exceptionally bad " +
         "tasting fruit; please pick another."));
     }
+    
+    RatingSection ratingSection;
+    public void ratingSection(ClientRequest cr) {
+//        cr.addDataRequest("getFormData", RawDataManager.newRequest(new Dataset(
+//                "averageRating", "3.2",
+//                "feeling", "happy!"
+//        )));
+        cr.getMainDataset().set("user", "izaak");
+        ratingSection = new RatingSection(
+                new Dataset("numImages", "5",
+                            "granularity", "0.25",
+//                            "imageFamily", "/static/fiz/images/goldstar64.png",
+//                            "request", "getFormData",
+//                            "initRatingKey", "averageRating",
+//                            "unratedMessage", "I'm feeling @feeling",
+//                            "class", "somethingElse",
+//                            "readOnly", "true",
+//                            "autoSizeText", "false",
+                            "ajaxUrl", "/demo/ajaxReceiveData?user=@user")
+        );
+        cr.getHtml().setTitle("Rating Section");
+        cr.showSections( // TODO: Crystal icons, tango icons
+                new TemplateSection("<h1 id=\"header\">Unrated RatingSection.</h1>"), 
+//                new TemplateSection("<div id=\"wrapper\" style=\"width: 250px; overflow: scroll; position: absolute;\">\n"),
+                ratingSection
+//                new TemplateSection("</div>")
+        );
+    }
+    public void ajaxReceiveData(ClientRequest cr) {
+        cr.updateElement("header", Template.expandHtml("Rating set.  Rating = " +
+        		"@rating, and the dataset has user: @user", cr.getMainDataset()));
+//        ratingSection.ajaxSetReadOnly(cr, true);
+    }
 }

@@ -91,4 +91,67 @@ Fiz.deepCopy = function (oldObj) {
         newObj = oldObj;
     }
     return newObj;
-}
+};
+
+/*
+ * Given a mouse event, determines the x and y position of the mouse relative to
+ * the specified element.  Compatible with Firefox, Safari, Chrome, Opera, IE7,
+ * and IE8.  Some code taken from Danny Goodman's "Javascript and DHTML 
+ * Cookbook, 2nd Edition" and www.howtocreate.co.uk.
+ * 
+ * @param event         The mouse event from which to get coordinates.
+ * @param elem          The element in whose coordinate system the mouse 
+ *                      location is desired.
+ * @return              A javascript object with fields 'x' and 'y', 
+ *                      corresponding to location of the mouse relative to the 
+ *                      specified element.
+ */
+Fiz.getRelativeEventCoords = function(event, elem) {
+    var coords = {};
+    var docBody = document.body;
+    var docElem = document.documentElement;
+
+    // Set coords to contain the location of the mouse within the entire page.
+    if (event.pageX != undefined) { // Firefox, Safari, Chrome, Opera
+        coords.x = event.pageX;
+        coords.y = event.pageY;
+    } else { // IE
+        coords.x = event.clientX;
+        coords.y = event.clientY;
+        // If the document body has any scrolling offset, it will be the 
+        // scrolling offset for the whole page.  If the document body does not 
+        // have any scrolling offset, the document element may still have 
+        // scrolling offset for the whole page.
+        if (docBody && (docBody.scrollLeft || docBody.scrollTop)) {
+            // Non-Strict Mode
+            coords.x += docBody.scrollLeft;
+            coords.y += docBody.scrollTop;
+        } else if (docElem && (docElem.scrollLeft || docElem.scrollTop)) {
+            // Strict Mode
+            coords.x += docElem.scrollLeft;
+            coords.y += docElem.scrollTop;
+        }
+    }
+
+    // Subtract the page-wide element coordinates from the page-wide mouse
+    // coordinates.
+    var hasClientLeftTop = (elem.clientLeft != undefined); // Needed for IE.
+    var currElem = elem;
+    do {
+        var isBody = (currElem == docBody);
+        coords.x -= (isBody ? Math.abs(currElem.offsetLeft) : 
+            currElem.offsetLeft) + (hasClientLeftTop ? currElem.clientLeft : 0);
+        coords.y -= (isBody ? Math.abs(currElem.offsetTop) : 
+            currElem.offsetTop) + (hasClientLeftTop ? currElem.clientTop : 0);
+    } while (currElem = currElem.offsetParent);
+
+    // Add any scrolling offsets between the element and the document body.
+    currElem = elem;
+    while (currElem != docBody) {
+        coords.x += currElem.scrollLeft;
+        coords.y += currElem.scrollTop;
+        currElem = currElem.parentNode;
+    }
+
+    return coords;
+};
