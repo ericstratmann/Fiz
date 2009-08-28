@@ -82,22 +82,18 @@ public class DateFormElementTest extends junit.framework.TestCase {
                 "    <div id=\"cal1_navigation\" class=\"nav\">\n" +
                 "      <a onclick=\"Fiz.ids.cal1.prevYear()\" " +
                 "id=\"cal1_prevYear\" class=\"arrow-prev-year\">" +
-                "<img src=\"/static/fiz/images/arrow-left-double.gif\" " +
-                "alt=\"Previous Year\" /></a>\n" +
+                "&laquo;</a>\n" +
                 "      <a onclick=\"Fiz.ids.cal1.prevMonth()\" " +
                 "id=\"cal1_prevMonth\" class=\"arrow-prev-month\">" +
-                "<img src=\"/static/fiz/images/arrow-left.gif\" " +
-                "alt=\"Previous Month\" /></a>\n" +
+                "&lsaquo;</a>\n" +
                 "      <a onclick=\"Fiz.ids.cal1.today()\" " +
                 "class=\"arrow-today\">Today</a>\n" +
                 "      <a onclick=\"Fiz.ids.cal1.nextMonth()\" " +
                 "id=\"cal1_nextMonth\" class=\"arrow-next-month\">" +
-                "<img src=\"/static/fiz/images/arrow-right.gif\" " +
-                "alt=\"Next Month\" /></a>\n" +
+                "&rsaquo;</a>\n" +
                 "      <a onclick=\"Fiz.ids.cal1.nextYear()\" " +
                 "id=\"cal1_nextYear\" class=\"arrow-next-year\">" +
-                "<img src=\"/static/fiz/images/arrow-right-double.gif\" " +
-                "alt=\"Next Year\" /></a>\n" +
+                "&raquo;</a>\n" +
                 "    </div>\n" +
                 "  </div>\n" +
                 "</div>\n" +
@@ -204,22 +200,18 @@ public class DateFormElementTest extends junit.framework.TestCase {
                 "    <div id=\"cal1_navigation\" class=\"nav\">\n" +
                 "      <a onclick=\"Fiz.ids.cal1.prevYear()\" " +
                 "id=\"cal1_prevYear\" class=\"arrow-prev-year\">" +
-                "<img src=\"/static/fiz/images/arrow-left-double.gif\" " +
-                "alt=\"Previous Year\" /></a>\n" +
+                "&laquo;</a>\n" +
                 "      <a onclick=\"Fiz.ids.cal1.prevMonth()\" " +
                 "id=\"cal1_prevMonth\" class=\"arrow-prev-month\">" +
-                "<img src=\"/static/fiz/images/arrow-left.gif\" " +
-                "alt=\"Previous Month\" /></a>\n" +
+                "&lsaquo;</a>\n" +
                 "      <a onclick=\"Fiz.ids.cal1.today()\" " +
                 "class=\"arrow-today\">Today</a>\n" +
                 "      <a onclick=\"Fiz.ids.cal1.nextMonth()\" " +
                 "id=\"cal1_nextMonth\" class=\"arrow-next-month\">" +
-                "<img src=\"/static/fiz/images/arrow-right.gif\" " +
-                "alt=\"Next Month\" /></a>\n" +
+                "&rsaquo;</a>\n" +
                 "      <a onclick=\"Fiz.ids.cal1.nextYear()\" " +
                 "id=\"cal1_nextYear\" class=\"arrow-next-year\">" +
-                "<img src=\"/static/fiz/images/arrow-right-double.gif\" " +
-                "alt=\"Next Year\" /></a>\n" +
+                "&raquo;</a>\n" +
                 "    </div>\n" +
                 "  </div>\n" +
                 "</div>\n" +

@@ -177,22 +177,18 @@ public class DateFormElement extends FormElement {
                 "    <div id=\"@(id)_navigation\" class=\"nav\">\n" +
                 "      <a onclick=\"Fiz.ids.@id.prevYear()\" " +
                 "id=\"@(id)_prevYear\" class=\"arrow-prev-year\">" +
-                "<img src=\"/static/fiz/images/arrow-left-double.gif\" " +
-                "alt=\"Previous Year\" /></a>\n      " +
+                "&laquo;</a>\n      " +
                 "<a onclick=\"Fiz.ids.@id.prevMonth()\" " +
                 "id=\"@(id)_prevMonth\" class=\"arrow-prev-month\">" +
-                "<img src=\"/static/fiz/images/arrow-left.gif\" " +
-                "alt=\"Previous Month\" /></a>\n      " +
+                "&lsaquo;</a>\n      " +
                 "<a onclick=\"Fiz.ids.@id.today()\" " +
                 "class=\"arrow-today\">Today</a>\n      " +
                 "<a onclick=\"Fiz.ids.@id.nextMonth()\" " +
                 "id=\"@(id)_nextMonth\" class=\"arrow-next-month\">" +
-                "<img src=\"/static/fiz/images/arrow-right.gif\" " +
-                "alt=\"Next Month\" /></a>\n      " +
+                "&rsaquo;</a>\n      " +
                 "<a onclick=\"Fiz.ids.@id.nextYear()\" " +
                 "id=\"@(id)_nextYear\" class=\"arrow-next-year\">" +
-                "<img src=\"/static/fiz/images/arrow-right-double.gif\" " +
-                "alt=\"Next Year\" /></a>\n    " + "</div>\n",
+                "&raquo;</a>\n    " + "</div>\n",
                 properties);
         out.append("  </div>\n</div>\n");
         Template.appendHtml(out, "<!-- End DateFormElement @id -->\n",

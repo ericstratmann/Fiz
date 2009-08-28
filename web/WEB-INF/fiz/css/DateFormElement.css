@@ -62,6 +62,11 @@
 .DateFormElement .picker .nav a {
     vertical-align: middle;
     margin: 0 5px;
+    font-size: 1.3em;
+}
+
+.DateFormElement .picker .nav .arrow-today {
+    font-size: 1em;
 }
 
 .DateFormElement table {
