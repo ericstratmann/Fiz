@@ -118,11 +118,10 @@ public class RatingSectionTest extends junit.framework.TestCase {
         // Ensure that the generated HTML is valid XHTML.
         TestUtil.assertXHTML(generatedHtml);
         
-        // Ensure that the evaluated Javascript is correct.
-        assertEquals("Evaluated Javascript", 
-                "Fiz.auth = \"JHB9AM69@$6=TAF*J \";\n" +
-                "Fiz.ids.rating0 = new Fiz.RatingSection(\"rating0\", 2, " +
-                    "1, -1, false, true, \"\");\n", cr.getJsCode(true));
+        // Ensure that the evaluated Javascript follows the correct format.
+        TestUtil.assertMatch("Evaluated Javascript", "Fiz\\.auth = \".*\";\n" +
+                "Fiz\\.ids\\.rating0 = new Fiz\\.RatingSection\\(\"rating0\"," +
+                    " 2, 1, -1, false, true, \"\"\\);\n", cr.getJsCode(true));
     }
     
     public void test_render_userId() {
