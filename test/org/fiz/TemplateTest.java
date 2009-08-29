@@ -491,6 +491,13 @@ public class TemplateTest extends junit.framework.TestCase {
         assertEquals("output string", "12350!", out.toString());
         assertEquals("info.end", 12, TemplateFixture.end);
     }
+    public void test_expandChoice_noVerticalBar_emptyValue() {
+        Dataset data = new Dataset("name", "", "age", "50");
+        StringBuilder out = new StringBuilder("123");
+        TemplateFixture.expandChoice("@foo?{@age!}zz", data, out,
+                    "name", 5);
+        assertEquals("output string", "12350!", out.toString());
+    }
     public void test_expandChoice_barButNoCloseBrace() {
         boolean gotException = false;
         try {
@@ -525,6 +532,13 @@ public class TemplateTest extends junit.framework.TestCase {
         assertEquals("output string", "123[125]", out.toString());
         assertEquals("remainder of template", "zz",
                 template.substring(TemplateFixture.end));
+    }
+    public void test_expandChoice_verticalBar_emptyValue() {
+        Dataset data = new Dataset("name", "", "age", "24", "weight", "125");
+        StringBuilder out = new StringBuilder("123");
+        String template = "@foo?{(@age)|[@weight]}zz";
+        TemplateFixture.expandChoice(template, data, out, "name", 5);
+        assertEquals("output string", "123[125]", out.toString());
     }
 
     public void test_expandParenName_saveAndRestoreEncoding() {

@@ -791,9 +791,10 @@ public class Template {
             throw new SyntaxError("incomplete @...?{...} substitution " +
                     "in template \"" + template + "\"");
         }
+        String value = findValue(info, name, false);
         if (template.charAt(second) == '}') {
             // This substitution has the form "@name?{template}".
-            if (findValue(info, name, false) != null) {
+            if ((value != null) && (value.length() >0)) {
                 appendValue(info, name);
             } else {
                 expandRange(info, first, second);
@@ -806,7 +807,7 @@ public class Template {
                 throw new SyntaxError("incomplete @...?{...} substitution " +
                         "in template \"" + template + "\"");
             }
-            if (findValue(info, name, false) != null) {
+            if ((value != null) && (value.length() >0)) {
                 expandRange(info, first, second);
             } else {
                 expandRange(info, second+1, third);
