@@ -15,6 +15,8 @@
 
 package org.fiz;
 
+import javax.servlet.http.HttpSession;
+
 import org.fiz.ClientRequest.Type;
 import org.fiz.test.*;
 
@@ -75,6 +77,11 @@ public class RatingSectionTest extends junit.framework.TestCase {
     }
     
     public void test_render_overview_allDefaults() {
+        // Set the session token.
+        HttpSession session = cr.getServletRequest().getSession(true);
+        session.setAttribute("fiz.ClientRequest.sessionToken", "xyzzy");
+        
+        // Create and render a RatingSection with only the required arguments.
         RatingSection rs = new RatingSection(new Dataset(
                 "numImages", "2"
         ));
@@ -118,10 +125,12 @@ public class RatingSectionTest extends junit.framework.TestCase {
         // Ensure that the generated HTML is valid XHTML.
         TestUtil.assertXHTML(generatedHtml);
         
-        // Ensure that the evaluated Javascript follows the correct format.
-        TestUtil.assertMatch("Evaluated Javascript", "Fiz\\.auth = \".*\";\n" +
-                "Fiz\\.ids\\.rating0 = new Fiz\\.RatingSection\\(\"rating0\"," +
-                    " 2, 1, -1, false, true, \"\"\\);\n", cr.getJsCode(true));
+        // Ensure that the evaluated Javascript is correct.
+        assertEquals("Evaluated Javascript", 
+                "Fiz.auth = \"xyzzy\";\n" +
+                "Fiz.ids.rating0 = new Fiz.RatingSection(\"rating0\"," +
+                    " 2, 1, -1, false, true, \"\");\n", 
+                cr.getJsCode(true));
     }
     
     public void test_render_userId() {
@@ -221,6 +230,10 @@ public class RatingSectionTest extends junit.framework.TestCase {
     }
     
     public void test_render_evaluatedJs_noDefaults() {
+        // Set the session token.
+        HttpSession session = cr.getServletRequest().getSession(true);
+        session.setAttribute("fiz.ClientRequest.sessionToken", "xyzzy");
+        
         cr.addDataRequest("dataRequest", RawDataManager.newRequest(
                 new Dataset("requestRating", "1.1")
         ));
@@ -239,7 +252,7 @@ public class RatingSectionTest extends junit.framework.TestCase {
         
         // Ensure the specified parameters occur in the evaluated Javascript.
         assertEquals("Evaluated Javascript", 
-                "Fiz.auth = \"JHB9AM69@$6=TAF*J \";\n" +
+                "Fiz.auth = \"xyzzy\";\n" +
                 "Fiz.ids.rating0 = new Fiz.RatingSection(\"rating0\", 2, " +
                     "0.4, 0.9, true, false, \"/x/ajaxY?user=tester\");\n", 
                 cr.getJsCode(true));
