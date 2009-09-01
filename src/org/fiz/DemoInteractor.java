@@ -587,4 +587,102 @@ public class DemoInteractor extends Interactor {
                 "message", "You have chosen an exceptionally bad " +
         "tasting fruit; please pick another."));
     }
+    
+    RatingSection ratingStars1 = new RatingSection(
+            new Dataset("numImages", "5",
+                    "granularity", "0.25",
+                    "imageFamily", "/static/fiz/images/goldstar48.png",
+                    "unratedMessage", "Select a Rating",
+                    "ajaxUrl", "/demo/ajaxReceiveData?section=ratingStars1")
+    );
+    RatingSection ratingStars2 = new RatingSection(
+            new Dataset("numImages", "7",
+                    "imageFamily", "/static/fiz/images/goldstar32.png",
+                    "ajaxUrl", "/demo/ajaxReceiveData?section=ratingStars2")
+    );
+    RatingSection ratingStars3 = new RatingSection(
+            new Dataset("numImages", "4",
+                    "ajaxUrl", "/demo/ajaxReceiveData?section=ratingStars3",
+                    "readOnly", "true",
+                    "request", "initRatingRequest",
+                    "initRatingKey", "initRating")
+    );
+    RatingSection ratingStars4 = new RatingSection(
+            new Dataset("numImages", "5",
+                    "granularity", "0.5",
+                    "imageFamily", "/static/fiz/images/goldstar24.png",
+                    "ajaxUrl", "/demo/ajaxReceiveData?section=ratingStars4")
+    );
+
+    /**
+     * Displays a page demonstrating the RatingSection class.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    public void ratingSection(ClientRequest cr) {
+        cr.addDataRequest("initRatingRequest", RawDataManager.newRequest(
+                new Dataset("initRating", "3.4")));
+        cr.getHtml().setTitle("Rating Sections");
+        cr.showSections(
+                new TemplateSection("<h1>Rating Sections</h1>\n<ul>"), 
+                new TemplateSection("<li><h3>Basic Stars</h3>"),
+                ratingStars1,
+                new TemplateSection("<p><b>Current Rating:</b> " +
+                        "<span id=\"ratingStars1_rating\">none</span><br/>\n" +
+                        "Uses stars to reflect a user rating.  This section " +
+                        "use a rating fineness of 1/4 star, has a " +
+                        "customized \"unrated\" message (\"Select a Rating\")," +
+                        " and uses larger star images than the default ." +
+                        "</p>\n</li>\n"),
+                new TemplateSection("<li><h3>Single-rating Stars</h3>"),
+                ratingStars2,
+                new TemplateSection("<p><b>Current Rating:</b> " +
+                        "<span id=\"ratingStars2_rating\">none</span><br/>\n" +
+                        "Only allows users to select a rating once.  After " +
+                        "the first rating is submitted via Ajax, the section " +
+                        "is set as read-only.</p>\n</li>\n"),
+                new TemplateSection("<li><h3>Fixed-rating Stars</h3>"),
+                ratingStars3,
+                new TemplateSection("initRatingRequest", "<p><b>Current " +
+                        "Rating:</b> <span id=\"ratingStars3_rating\">" +
+                        "@initRating</span><br/>\nAssigned an initial rating," +
+                        " and set as read-only.</p>\n</li>\n"),
+                new TemplateSection("<li><h3>Resettable Stars</h3>"),
+                ratingStars4,
+                new TemplateSection("<p><b>Current Rating:</b> " +
+                        "<span id=\"ratingStars4_rating\">none</span><br/>\n" +
+                        "The rating on these stars can be reset by the " +
+                        "button below.</p>\n</li>\n"),
+                new Button(new Dataset("text", "Reset",
+                        "ajaxUrl", "/demo/ajaxResetSection")),
+                new TemplateSection("</ul>")
+        );
+    }
+    
+    /**
+     * Updates the RatingSection demo page via Ajax.
+     * 
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    public void ajaxReceiveData(ClientRequest cr) {
+        String section = cr.getMainDataset().get("section");
+        cr.updateElement(section + "_rating", Template.expandHtml(
+                "@rating (updated via Ajax)", cr.getMainDataset()));
+        
+        if (section.equals("ratingStars2")) {
+            ratingStars2.setReadOnly(cr, true);
+        }
+    }
+    
+    /**
+     * Resets one of the RatingSections on the RatingSection demo page.
+     * 
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    public void ajaxResetSection(ClientRequest cr) {
+        cr.updateElement("ratingStars4_rating", "none (reset by button)");
+        ratingStars4.setRating(cr, -1);
+    }
 }
