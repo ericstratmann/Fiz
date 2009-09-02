@@ -200,13 +200,13 @@ public class FormValidatorTest extends junit.framework.TestCase {
     
     public void test_validateRegex() {
         assertEquals("value: abcd, format: ^[a-z]{4}$", null,
-                FormValidator.validateRegexp("id", new Dataset("pattern", "^[a-z]{4}$"),
+                FormValidator.validateRegex("id", new Dataset("pattern", "^[a-z]{4}$"),
                 new Dataset("id", "abcd")));
         assertEquals("value: abcde, format: ^[a-z]{4}$", "Field format incorrect",
-                FormValidator.validateRegexp("id", new Dataset("pattern", "^[a-z]{4}$"),
+                FormValidator.validateRegex("id", new Dataset("pattern", "^[a-z]{4}$"),
                 new Dataset("id", "abcde")));
         assertEquals("value: abcd efgh, format: ^[a-z]{4}$", "Field format incorrect",
-                FormValidator.validateRegexp("id", new Dataset("pattern", "^[a-z]{4}$"),
+                FormValidator.validateRegex("id", new Dataset("pattern", "^[a-z]{4}$"),
                 new Dataset("id", "abcd efgh")));
     }
 

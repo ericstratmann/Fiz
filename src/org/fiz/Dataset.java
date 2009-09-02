@@ -35,7 +35,7 @@ import java.util.*;
  *     YamlDataset for details).
  */
 
-public class Dataset implements Cloneable {
+public class Dataset implements Cloneable, Serializable {
     /**
      * Instances of this enum are passed to Dataset.lookup to indicate
      * what sort of value is desired as a result.

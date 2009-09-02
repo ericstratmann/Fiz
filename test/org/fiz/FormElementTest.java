@@ -242,14 +242,12 @@ public class FormElementTest extends junit.framework.TestCase {
 
     public void test_validate_basic() throws FormSection.FormDataException {
         ClientRequest cr = new ClientRequestFixture();
-        ArrayList<Dataset> validators = new ArrayList<Dataset>();
-        validators.add(new Dataset("type", "range", "min", "98", "max", "100"));
         FormElement element = new FormElementFixture(
-                new Dataset("id", "id11",
-                        "label", "id11_label",
-                        "validate", new Dataset(
+                new Dataset("id", "elem",
+                        "label", "elem_label",
+                        "validator", new Dataset(
                                 "type", "range", "min", "98", "max", "100")));
-        cr.setPageProperty("elem_validation",  element.validatorData);
+        cr.setPageProperty("elem_validation", element.validatorData);
         cr.jsCode = null;
         cr.mainDataset = new Dataset(
                 "elementsToValidate", "elem",

@@ -40,7 +40,18 @@ public class FormInteractor extends Interactor {
             "height", "73", "weight", "195",
             "saying", "Line 1\nLine 2\n<Line 3>\n", "fruit", "grape",
             "notify", "all", "state", "California", "mascot", "Spartans");
-    
+
+    Dataset fruitInfo = new Dataset(
+            "fruit", new Dataset("name", "Apple", "value", "Apple"),
+            "fruit", new Dataset("name", "Banana", "value", "banana"),
+            "fruit", new Dataset("name", "Grape", "value", "grape"),
+            "fruit", new Dataset("name", "Kiwi", "value", "kiwi"),
+            "fruit", new Dataset("name", "Peach", "value", "peach"),
+            "fruit", new Dataset("name", "Pear", "value", "pear"),
+            "fruit", new Dataset("name", "Raspberry", "value", "raspberry"),
+            "fruit", new Dataset("name", "Strawberry", "value", "strawberry"),
+            "fruit", new Dataset("name", "Watermelon", "value", "watermelon"));
+
     private static Dataset autocompleteData = new Dataset(
             "name", new Dataset("choice", "George Washington"),
             "name", new Dataset("choice", "John Adams"),
@@ -111,6 +122,12 @@ public class FormInteractor extends Interactor {
                     "required", "true",
                     "validator", new Dataset("type", "Range",
                             "min", "5", "max", "8", "includeMax", "false"))),
+            new SelectFormElement(new Dataset("id", "fruit",
+                    "label", "Favorite fruits:",
+                    "choiceRequest", "getFruits",
+                    "multiple", "multiple",
+                    "height", "5",
+                    "choiceName", "fruit")),
             new CheckboxFormElement(new Dataset("id", "citizen",
                     "label", "Checkbox:")),
             new RadioFormElement(new Dataset("id", "notify",
@@ -123,16 +140,16 @@ public class FormInteractor extends Interactor {
                     "value", "none", "extra",
                     "Three")),
             new AutocompleteFormElement(new Dataset("id", "name",
-            "label", "Name:",
-            "help", "Enter customer name here",
-            "requestFactory", "FormInteractor.autocompleteRequest")),
+                    "label", "Name:",
+                    "help", "Enter customer name here",
+                    "requestFactory", "FormInteractor.autocompleteRequest")),
             new DateFormElement(new Dataset("id", "expiration",
                     "label", "Expiration date:",
                     "attachPosition", "bottom",
                     "dateFormat", "m-d-Y",
                     "exclude", "Saturday, 1/12/2005, 7/23," +
-                    "8/13/2010:9/11/2010, " +
-                    ":6/24/2009, 9/3/2011:"))
+                            "8/13/2010:9/11/2010, " +
+                            ":6/24/2009, 9/3/2011:"))
             );
 
     public static DataRequest autocompleteRequest(String query) {
@@ -152,7 +169,8 @@ public class FormInteractor extends Interactor {
 
     public void formSection(ClientRequest cr) {
         cr.addDataRequest("getFormData", RawDataManager.newRequest(formData));
-
+        cr.addDataRequest("getFruits", RawDataManager.newRequest(fruitInfo));
+        
         Html html = cr.getHtml();
         html.setTitle("FormSection Demo");
         html.includeCssFile("demo/form.css");

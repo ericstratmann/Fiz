@@ -336,7 +336,7 @@ public class FormValidator {
      * @return                          Error message if validation fails,
      *                                  null otherwise
      */
-    public static String validateRegexp(String id, Dataset properties,
+    public static String validateRegex(String id, Dataset properties,
             Dataset formData) {
         if (Pattern.matches(properties.get("pattern"), formData.get(id))) {
             return null;
