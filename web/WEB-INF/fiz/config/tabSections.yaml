@@ -29,7 +29,7 @@
 # sidePadding:            By default the vertical strips on the sides of
 #                         unselected tabs will be 1 pixel wide; this specifies
 #                         additional space to add to that (so that the full
-#                         without the background image will be visible).
+#                         background image will be visible).
 # selectedSidePadding:    Additional space for the side strips of the selected
 #                         tab.
 # imageFamily:            The base name for a family of background images
