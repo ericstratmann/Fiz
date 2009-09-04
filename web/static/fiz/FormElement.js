@@ -85,15 +85,24 @@ Fiz.FormElement.getValue = function(element) {
 }
 
 /**
- * This function is invoked when a FormElement loses focus and luanches an
- * Ajax request to validate the FormElement.
- * @param e                   (Event) Event object
+ * This function is invoked when a FormElement loses focus and launches an
+ * Ajax request to validate the FormElement. This function can also be manually
+ * invoked to validate a form element by calling it with the id of that form
+ * element.
+ * @param trigger                   (Event or String) Event object from the DOM
+ *                                  element that triggered this callback or
+ *                                  the id of the element that is triggering
+ *                                  a validation request
  */
-Fiz.FormElement.validate = function(e)
+Fiz.FormElement.validate = function(trigger)
 {
+    if (typeof trigger != 'string') {
+        trigger = trigger.target.id;
+    }
+    
     // Gather data from each of the form elements that contribute to the
     // validation of the form element that launched this request
-    var bindings = Fiz.FormElement.validators[e.target.id];
+    var bindings = Fiz.FormElement.validators[trigger];
     if (undefined == bindings) {
         return;
     }

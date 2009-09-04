@@ -23,6 +23,7 @@
 
 // The following lines are used by Fiz to manage Javascript dependencies.
 // Fiz:include static/fiz/Fiz.js
+// Fiz:include static/fiz/FormElement.js
 // Fiz:include static/fiz/date.js
 
 /**
@@ -39,9 +40,8 @@ Fiz.DateFormElement = function(id, dateFormat, attachPosition)
 {
     // Set default values for this form element
     this.id = id;
-    this.dateFormat = (undefined == dateFormat) ? 'm/d/Y' : dateFormat;
-    this.attachPosition =
-            (undefined == attachPosition) ? 'bottom' : attachPosition;
+    this.dateFormat = dateFormat;
+    this.attachPosition = attachPosition;
 
     // The date filter rules for determining whether a date can be selected
     // or not
@@ -56,20 +56,38 @@ Fiz.DateFormElement = function(id, dateFormat, attachPosition)
     // Determines if the picker is open or not
     this.isOpen = false;
         
-    // Selected date: Highlighted in picker, displayed in input field
-    this.sDate = new Date();
-
-    // Displayed date: First day of the month currently displayed in picker
-    this.dDate = new Date();
-    this.dDate.setDate(1);
-    
-    // Retrieve and the various DOM elements used for this DateFormElement
+    // Retrieve the various DOM elements used for this DateFormElement
     this.input = document.getElementById(this.id);
     this.picker = document.getElementById(this.id + '_picker');
     this.icon = document.getElementById(this.id + '_icon');
 
+    // Selected date: Highlighted in picker, displayed in input field
+    this.sDate = new Date(this.input.value);
+
+    // Displayed date: First day of the month currently displayed in picker
+    this.dDate = new Date(this.input.value);
+    this.dDate.setDate(1);
+    
     // Format the default date into the format specified by dateFormat
-    this.validateAndUpdate();
+    this.input.value = Fiz.DateFormElement.formatDate(
+            this.sDate, this.dateFormat);
+    
+    // Format used for Datejs's parseExact function
+    this.internalFormat = this.dateFormat.replace('D', 'dd')
+                                         .replace('M', 'MM')
+                                         .replace('m', 'M')
+                                         .replace('y', 'yy')
+                                         .replace('Y', 'yyyy');                                         
+}
+
+//Used to set the "current date" to a known value for debugging purposes
+Fiz.DateFormElement.debugEnabled = false;
+Fiz.DateFormElement.getToday = function() {
+ if (this.debugEnabled) {
+     return new Date("January 1, 2001");
+ } else {
+     return new Date();
+ }
 }
 
 /**
@@ -78,7 +96,7 @@ Fiz.DateFormElement = function(id, dateFormat, attachPosition)
  */
 Fiz.DateFormElement.prototype.validateAndUpdate = function()
 {
-    var tempDate = Date.parse(this.input.value);
+    var tempDate = Date.parseExact(this.input.value, this.internalFormat);
     if (tempDate != null) {
         this.input.value =
                 Fiz.DateFormElement.formatDate(tempDate, this.dateFormat);
@@ -91,12 +109,12 @@ Fiz.DateFormElement.prototype.validateAndUpdate = function()
  */
 Fiz.DateFormElement.prototype.validateAndDisplay = function()
 {
-    var tempDate = Date.parse(this.input.value);
+    var tempDate = Date.parseExact(this.input.value, this.internalFormat);
     if (tempDate != null) {
         this.setDisplayedDate(tempDate);
         this.setSelectedDate(tempDate);
-        this.redraw();
     }
+    this.redraw();
 }
 
 /**
@@ -153,6 +171,10 @@ Fiz.DateFormElement.prototype.closePicker = function()
     
     this.input.value =
             Fiz.DateFormElement.formatDate(this.sDate, this.dateFormat);
+    this.input.focus();
+    
+    // Validate the newly chosen date
+    Fiz.FormElement.validate(this.id);
 }
 
 /**
@@ -218,7 +240,8 @@ Fiz.DateFormElement.prototype.redraw = function()
     // We fill in the calendar with the dates for the current month
     for (var i = 1; i <= curNumDays; i++) {
         var date = new Date(curYear, curMonth, i);
-        var item = this.dateCell(week[curDayOfWeek], date, !this.isExcluded(date));
+        var item = this.dateCell(week[curDayOfWeek], date,
+                !this.isExcluded(date));
             
         // Style the item
         Fiz.addClass(item, 'cur-month');
@@ -403,7 +426,7 @@ Fiz.DateFormElement.prototype.prevMonth = function()
  */
 Fiz.DateFormElement.prototype.today = function()
 {
-    var today = new Date();
+    var today = Fiz.DateFormElement.getToday();
     this.dDate.setMonth(today.getMonth());
     this.dDate.setFullYear(today.getFullYear());
     this.redraw();
@@ -528,8 +551,6 @@ Fiz.DateFormElement.prototype.isExcluded = function(date)
  */
 Fiz.DateFormElement.formatDate = function(date, format)
 {
-    if (!format) format = "m/d/Y";
-    
     var month = (date.getMonth() + 1).toString();
     var year = date.getFullYear().toString();
     var day = date.getDate().toString();
@@ -544,12 +565,12 @@ Fiz.DateFormElement.formatDate = function(date, format)
         paddedDay = '0' + paddedDay;
     }
 
-    format = format.replace("m", month);
-    format = format.replace("M", paddedMonth);
-    format = format.replace("y", year.substring(2, 4));
-    format = format.replace("Y", year);
-    format = format.replace("d", day);
-    format = format.replace("D", paddedDay);
+    format = format.replace("m", month)
+                   .replace("M", paddedMonth)
+                   .replace("y", year.substring(2, 4))
+                   .replace("Y", year)
+                   .replace("d", day)
+                   .replace("D", paddedDay);
     
     return format;
 }

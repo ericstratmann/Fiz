@@ -15,6 +15,7 @@
 
 package org.fiz;
 
+import org.fiz.FormSection.FormDataException;
 import org.fiz.test.*;
 
 /**
@@ -62,5 +63,33 @@ public class PasswordFormElementTest extends junit.framework.TestCase {
                 "<input type=\"password\" id=\"secret\" name=\"secret\" " +
                 "class=\"xyzzy\" />",
                 cr.getHtml().getBody().toString());
+    }
+    public void test_validate_validInput() {
+        PasswordFormElement element = new PasswordFormElement(
+                new Dataset("id", "secret", "class", "xyzzy",
+                        "duplicate", "other"));
+        
+        boolean exceptionOccurred = false;
+        try {
+            element.validate(new Dataset("secret", "food",
+                    "other", "food"));
+        } catch (FormDataException e) {
+            exceptionOccurred = true;
+        }
+        assertTrue("Input is valid", !exceptionOccurred);
+    }
+    public void test_validate_invalidInput() {
+        PasswordFormElement element = new PasswordFormElement(
+                new Dataset("id", "secret", "class", "xyzzy",
+                        "duplicate", "other"));
+        
+        boolean exceptionOccurred = false;
+        try {
+            element.validate(new Dataset("secret", "food",
+                    "other", "fool"));
+        } catch (FormDataException e) {
+            exceptionOccurred = true;
+        }
+        assertTrue("Input is invalid", exceptionOccurred);
     }
 }

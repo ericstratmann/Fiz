@@ -15,6 +15,7 @@
 
 package org.fiz;
 
+import org.fiz.FormSection.FormDataException;
 import org.fiz.test.*;
 
 /**
@@ -258,5 +259,81 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         out.insert(0, "<form action=\"a/b/c\"><p>\n");
         out.append("</p></form>\n");
         TestUtil.assertXHTML(cr.getHtml().toString());
+    }
+    public void test_validate_validInput_single() {
+        ClientRequest cr = new ClientRequestFixture();
+        cr.addDataRequest("getFruits", RawDataManager.newRequest(fruits));
+        SelectFormElement element = new SelectFormElement(
+                new Dataset("id", "select", "class", "xyzzy",
+                        "choiceRequest", "getFruits",
+                        "choiceName", "fruit"));
+        
+        element.render(cr);
+        boolean exceptionOccurred = false;
+        try {
+            element.validate(new Dataset("select", "pear"));
+        } catch (FormDataException e) {
+            exceptionOccurred = true;
+        }
+        assertTrue("Input is valid", !exceptionOccurred);
+    }
+    
+    public void test_validate_invalidInput_single() {
+        ClientRequest cr = new ClientRequestFixture();
+        cr.addDataRequest("getFruits", RawDataManager.newRequest(fruits));
+        SelectFormElement element = new SelectFormElement(
+                new Dataset("id", "select", "class", "xyzzy",
+                        "choiceRequest", "getFruits",
+                        "choiceName", "fruit"));
+        
+        element.render(cr);
+        boolean exceptionOccurred = false;
+        try {
+            element.validate(new Dataset("select", "turkey"));
+        } catch (FormDataException e) {
+            exceptionOccurred = true;
+        }
+        assertTrue("Input is invalid", exceptionOccurred);
+    }
+    public void test_validate_validInput_multiple() {
+        ClientRequest cr = new ClientRequestFixture();
+        cr.addDataRequest("getFruits", RawDataManager.newRequest(fruits));
+        SelectFormElement element = new SelectFormElement(
+                new Dataset("id", "select", "class", "xyzzy",
+                        "multiple", "multiple",
+                        "choiceRequest", "getFruits",
+                        "choiceName", "fruit"));
+        
+        element.render(cr);
+        boolean exceptionOccurred = false;
+        try {
+            element.validate(new Dataset(
+                    "select", new Dataset("value", "pear"),
+                    "select", new Dataset("value", "peach")));
+        } catch (FormDataException e) {
+            exceptionOccurred = true;
+        }
+        assertTrue("Input is valid", !exceptionOccurred);
+    }
+    
+    public void test_validate_invalidInput_multiple() {
+        ClientRequest cr = new ClientRequestFixture();
+        cr.addDataRequest("getFruits", RawDataManager.newRequest(fruits));
+        SelectFormElement element = new SelectFormElement(
+                new Dataset("id", "select", "class", "xyzzy",
+                        "multiple", "multiple",
+                        "choiceRequest", "getFruits",
+                        "choiceName", "fruit"));
+        
+        element.render(cr);
+        boolean exceptionOccurred = false;
+        try {
+            element.validate(new Dataset(
+                    "select", new Dataset("value", "pear"),
+                    "select", new Dataset("value", "turkey")));
+        } catch (FormDataException e) {
+            exceptionOccurred = true;
+        }
+        assertTrue("Input is invalid", exceptionOccurred);
     }
 }

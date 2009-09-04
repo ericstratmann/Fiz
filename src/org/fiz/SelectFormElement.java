@@ -81,8 +81,9 @@ public class SelectFormElement extends FormElement {
                     "SelectFormElement has illegal value \"" + multiple +
                     "\"");
         }
+        validatorData = new ValidatorData(id);
     }
-
+    
     /**
      * Invoked by FormSection when a form has been posted: prepares data
      * for inclusion in the update request for the form.
@@ -106,7 +107,7 @@ public class SelectFormElement extends FormElement {
             }
         }
     }
-
+    
     /**
      * This method is invoked to generate HTML for this form element.
      * @param cr                   Overall information about the client
@@ -152,6 +153,7 @@ public class SelectFormElement extends FormElement {
         } else {
             choices = properties.getChildren(choiceName);
         }
+
         cr.getHtml().includeCssFile("SelectFormElement.css");
         Template.appendHtml(out, "\n<!-- Start SelectFormElement @id -->\n" +
                 "<select id=\"@id\" name=\"@id\" " +
@@ -177,6 +179,49 @@ public class SelectFormElement extends FormElement {
             allChoices += choice.get("value");
         }
         out.append("</select>\n<!-- End SelectFormElement @id -->\n");
-        // addValidator(new Dataset("type", "in", "valid", allChoices));
+
+        addValidator(new Dataset("type", "SelectFormElement.validateIn",
+                "valid", allChoices,
+                "multiple", multiple != null && multiple.equals("multiple") ?
+                        "multiple" : "false"));
     }
+    
+    /**
+     * Validates that the value of {@code id} is contained in the list of valid
+     * inputs. The following properties are supported:
+     * 
+     *   valid                      Comma separated list of valid inputs
+     *   multiple                   If "multiple" is set, the validator will
+     *                              run once for each nested dataset in the
+     *                              formData for {@code id}.
+     *   
+     * @param id                        id of the input element to validate
+     * @param properties                Configuration properties for the
+     *                                  validator: see above for supported
+     *                                  values
+     * @param formData                  Data from all relevant form elements
+     *                                  needed to perform this validation
+     * @return                          Error message if validation fails,
+     *                                  null otherwise
+     */
+    public static String validateIn(String id, Dataset properties,
+            Dataset formData) {
+        String allValues = properties.get("valid");
+
+        if (properties.get("multiple").equals("multiple")) {
+            for (Dataset data : formData.getChildren(id)) {
+                String error = FormValidator.validateIn(id, 
+                        new Dataset("valid", allValues),
+                        new Dataset(id, data.get("value")));
+                if (error != null) {
+                    return error;
+                }
+            }
+        } else {
+            return FormValidator.validateIn(id, new Dataset(
+                    "valid", allValues), formData);
+        }
+        return null;
+    }
+
 }

@@ -138,7 +138,7 @@ public class FormValidator {
      *                                  null otherwise
      */
     public static String validateIn(String id, Dataset properties,
-            Dataset formData) {        
+            Dataset formData) {
         String[] validValues = StringUtil.split(properties.get("valid"), ',');
         for (String value : validValues) {
             if (formData.get(id).equals(value)) {

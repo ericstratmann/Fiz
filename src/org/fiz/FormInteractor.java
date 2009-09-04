@@ -55,7 +55,7 @@ public class FormInteractor extends Interactor {
     private static Dataset autocompleteData = new Dataset(
             "name", new Dataset("choice", "George Washington"),
             "name", new Dataset("choice", "John Adams"),
-            "name", new Dataset("choice", "Thoms Jefferson"),
+            "name", new Dataset("choice", "Thomas Jefferson"),
             "name", new Dataset("choice", "James Madison"),
             "name", new Dataset("choice", "James Monroe"),
             "name", new Dataset("choice", "John Quincy Adams"),
