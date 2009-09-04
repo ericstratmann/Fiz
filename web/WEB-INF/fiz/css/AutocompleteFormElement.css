@@ -5,16 +5,16 @@
  */
  
 .AutocompleteFormElement {
-	position: relative;
+    position: relative;
 }
 
 .AutocompleteFormElement input {
- 	width: @formElementWidth;
- 	font-family: @fontFamily;
- 	font-size: 100%;
- 	border: @standardBorder;
- 	padding: 1px 3px 1px 3px;
- 	margin: 0px;
+    width: @formElementWidth;
+    font-family: @fontFamily;
+    font-size: 100%;
+    border: @standardBorder;
+    padding: 1px 3px 1px 3px;
+    margin: 0px;
 }
 
 .AutocompleteFormElement input:focus {
@@ -23,32 +23,32 @@
 }
 
 .AutocompleteFormElement a {
-	cursor: pointer;
+    cursor: pointer;
 }
 
 .AutocompleteFormElement .dropdown {
- 	width: @formElementWidth;
-	position: absolute;	
-	display: none;
-	font-size: .8em;
-	z-index: 999;
+    width: @formElementWidth;
+    position: absolute;
+    display: none;
+    font-size: .8em;
+    z-index: 999;
 }
 
 .AutocompleteFormElement .dropdown ul {
-	background: #ffffff;
-	width: 100%;
-	list-style: none;
-	border: @standardBorder;
-	padding: 3px;
-	margin: 0;
+    background: #ffffff;
+    width: 100%;
+    list-style: none;
+    border: @standardBorder;
+    padding: 3px;
+    margin: 0;
 }
 
 .AutocompleteFormElement .dropdown li {
-	border: 1px solid #ffffff;
-	padding: 2px;	
+    border: 1px solid #ffffff;
+    padding: 2px;
 }
 
 .AutocompleteFormElement .dropdown li.highlight {
-	background: @activeBackground;
-	border: @accentBorder;
+    background: @activeBackground;
+    border: @accentBorder;
 }

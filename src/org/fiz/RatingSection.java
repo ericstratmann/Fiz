@@ -264,8 +264,8 @@ public class RatingSection extends Section implements DirectAjax {
         
         // Create the initial Javascript to execute when the page is loaded.
         cr.evalJavascript(Template.expandJs("Fiz.ids.@1 = " +
-        		"new Fiz.RatingSection(\"@1\", @numImages, @granularity?{1}, " +
-        		"@2, @readOnly?{false}, @autoSizeText?{true}, \"@3\");\n", 
-        		properties, id, initRating, ajaxUrl));
+                "new Fiz.RatingSection(\"@1\", @numImages, @granularity?{1}, " +
+                "@2, @readOnly?{false}, @autoSizeText?{true}, \"@3\");\n", 
+                properties, id, initRating, ajaxUrl));
     }
 }
