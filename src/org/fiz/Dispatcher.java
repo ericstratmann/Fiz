@@ -28,7 +28,7 @@ import org.apache.log4j.*;
  * invoke that method.  This class also serves as a last-ditch handler
  * for errors that occur during the request.  This class should be
  * invisible to Fiz applications.
- * added some text This line is a temporary change made to test git integration.
+ * added some text (from John) This line is a temporary change made to test git integration.
  */
 public class Dispatcher extends HttpServlet {
     /**
