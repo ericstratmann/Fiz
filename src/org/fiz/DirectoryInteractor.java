@@ -47,7 +47,7 @@ public class DirectoryInteractor extends Interactor {
                     childData.set("text",
                             child + " (" + file.length() + " bytes)");
                 }
-                data.addChild("record", childData);
+                data.add("record", childData);
             }
         }
         

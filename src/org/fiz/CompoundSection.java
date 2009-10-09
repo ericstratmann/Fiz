@@ -123,8 +123,8 @@ public class CompoundSection extends Section implements TableLayoutContainer {
         StringBuilder out = cr.getHtml().getBody();
         Template.appendHtml(out, "\n<!-- Start CompoundSection {{@id}} -->\n",
                 properties);
-        String borderFamily = properties.check("borderFamily");
-        String layout = properties.check("layout");
+        String borderFamily = properties.checkString("borderFamily");
+        String layout = properties.checkString("layout");
         if (borderFamily != null) {
             Template.appendHtml(out, "<table {{id=\"@id\"}} {{class=\"@class\"}} " +
                     "cellspacing=\"0\">\n" +
@@ -165,8 +165,8 @@ public class CompoundSection extends Section implements TableLayoutContainer {
             // First copy over the configuration properties relevant to the
             // TableLayout.html() method.
             Dataset layoutProperties = new Dataset("layout", layout,
-                    "id", properties.check("id"),
-                    "class", properties.check("class"));
+                    "id", properties.checkString("id"),
+                    "class", properties.checkString("class"));
             TableLayout.render(layoutProperties, this, cr);
         } else {
             Template.appendHtml(out, "<div {{id=\"@id\"}} {{class=\"@class\"}} " +

@@ -179,20 +179,20 @@ public class RatingSection extends Section implements DirectAjax {
         Html html = cr.getHtml();
         StringBuilder out = html.getBody();
         
-        int numImages = Integer.parseInt(properties.get("numImages"));
+        int numImages = Integer.parseInt(properties.getString("numImages"));
         
         id = properties.containsKey("id") ? 
-                properties.get("id") : cr.uniqueId("rating");
+                properties.getString("id") : cr.uniqueId("rating");
 
         // Collect the data that will be available for user-specified templates, 
         // including the response to the section's request, if there was one.
         Dataset templateData;
-        String requestName = properties.check("request");
+        String requestName = properties.checkString("request");
         if (requestName != null) {
             DataRequest dataRequest = cr.getDataRequest(requestName);
             Dataset response = dataRequest.getResponseOrAbort();
             if (response.containsKey("record")) {
-                response = response.getChild("record");
+                response = response.getDataset("record");
             }
             templateData = new CompoundDataset(response, cr.getMainDataset());
         } else {
@@ -213,11 +213,11 @@ public class RatingSection extends Section implements DirectAjax {
         // appended HTML.
         String imageFamily = DEFAULT_IMAGE_FAMILY;
         if (properties.containsKey("imageFamily")) {
-            imageFamily = properties.get("imageFamily");
+            imageFamily = properties.getString("imageFamily");
         }
         String unratedMsg = DEFAULT_UNRATED_MESSAGE;
         if (properties.containsKey("unratedMessage")) {
-            unratedMsg = Template.expandHtml(properties.get("unratedMessage"), 
+            unratedMsg = Template.expandHtml(properties.getString("unratedMessage"), 
                     templateData);
         }
         
@@ -252,14 +252,14 @@ public class RatingSection extends Section implements DirectAjax {
         // Javascript.
         String ajaxUrl = DEFAULT_AJAX_URL;
         if (properties.containsKey("ajaxUrl")) {
-            ajaxUrl = Template.expandUrl(properties.get("ajaxUrl"), 
+            ajaxUrl = Template.expandUrl(properties.getString("ajaxUrl"), 
                     templateData);
         }
         String initRating = DEFAULT_INIT_RATING;
         if (properties.containsKey("initRating")) {
-            initRating = properties.get("initRating");
+            initRating = properties.getString("initRating");
         } else if (properties.containsKey("initRatingKey")) {
-            initRating = templateData.get(properties.get("initRatingKey"));
+            initRating = templateData.getString(properties.getString("initRatingKey"));
         }
         
         // Create the initial Javascript to execute when the page is loaded.

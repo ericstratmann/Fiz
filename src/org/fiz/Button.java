@@ -75,19 +75,19 @@ public class Button extends Formatter {
             Dataset data) {
         StringBuilder out = cr.getHtml().getBody();
         StringBuilder javascript;
-        String ajaxUrl = properties.check("ajaxUrl");
+        String ajaxUrl = properties.checkString("ajaxUrl");
         if (ajaxUrl != null) {
             javascript = new StringBuilder();
             Ajax.invoke(cr, ajaxUrl, data, javascript);
         } else {
-            String jsTemplate = properties.get("javascript");
+            String jsTemplate = properties.getString("javascript");
             javascript = new StringBuilder(jsTemplate.length());
             Template.appendJs(javascript, jsTemplate, data);
         }
         Template.appendHtml(out, "<button {{class=\"@class\"}} " +
                 "onclick=\"@1 return false;\">",
                 properties, javascript);
-        Template.appendHtml(out, properties.get("text"), data);
+        Template.appendHtml(out, properties.getString("text"), data);
         out.append("</button>");
     }
 }

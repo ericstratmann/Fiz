@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
  * {@code
  * public static String validateTrue(String id, Dataset properties,
  *         Dataset formData) {
- *     if (formData.get(id).equals("true")) {
+ *     if (formData.getString(id).equals("true")) {
  *        return null;
  *     } else {
  *        return FormValidator.errorMessage("Value must be true", properties,
@@ -79,7 +79,7 @@ public class FormValidator {
      */
     public static String errorMessage(String defaultMessage,
             Dataset properties, Dataset formData) {
-        String errorTemplate = properties.check("errorMessage");
+        String errorTemplate = properties.checkString("errorMessage");
         if (errorTemplate != null) {
             defaultMessage = errorTemplate;
         }
@@ -108,13 +108,13 @@ public class FormValidator {
      */
     public static String validateDuplicate(String id, Dataset properties,
             Dataset formData) {
-        String[] fields = StringUtil.split(properties.get("otherFields"), ',');
-        String inputValue = formData.check(id);
+        String[] fields = StringUtil.split(properties.getString("otherFields"), ',');
+        String inputValue = formData.checkString(id);
         if (inputValue == null) {
             inputValue = "";
         }
         for (String fieldId : fields) {
-            if (!inputValue.equals(formData.check(fieldId))) {
+            if (!inputValue.equals(formData.checkString(fieldId))) {
                 return errorMessage("@id does not match @" + fieldId,
                         properties, formData);
             }
@@ -139,9 +139,9 @@ public class FormValidator {
      */
     public static String validateIn(String id, Dataset properties,
             Dataset formData) {
-        String[] validValues = StringUtil.split(properties.get("valid"), ',');
+        String[] validValues = StringUtil.split(properties.getString("valid"), ',');
         for (String value : validValues) {
-            if (formData.get(id).equals(value)) {
+            if (formData.getString(id).equals(value)) {
                 return null;
             }
         }
@@ -173,7 +173,7 @@ public class FormValidator {
     public static String validateInteger(String id, Dataset properties,
             Dataset formData) {
         try {
-            Integer.parseInt(formData.get(id));
+            Integer.parseInt(formData.getString(id));
             return null;
         } catch (NumberFormatException e) {
             return errorMessage("Must be an integer", properties, formData);
@@ -200,12 +200,12 @@ public class FormValidator {
      */
     public static String validateLength(String id, Dataset properties,
             Dataset formData) {
-        int length = formData.get(id).length();
+        int length = formData.getString(id).length();
         
-        String minString = properties.check("min");
+        String minString = properties.checkString("min");
         int min = (minString == null ? 0 : Integer.parseInt(minString));
 
-        String maxString = properties.check("max");
+        String maxString = properties.checkString("max");
         int max = (maxString == null ?
                 Integer.MAX_VALUE : Integer.parseInt(maxString));
 
@@ -243,7 +243,7 @@ public class FormValidator {
     public static String validateNumeric(String id, Dataset properties,
             Dataset formData) {
         try {
-            Double.parseDouble(formData.get(id));
+            Double.parseDouble(formData.getString(id));
             return null;
         } catch (NumberFormatException e) {
             return errorMessage("Must be a number", properties, formData);
@@ -274,7 +274,7 @@ public class FormValidator {
             Dataset formData) {
         double value;
         try {
-            value = Double.parseDouble(formData.get(id));
+            value = Double.parseDouble(formData.getString(id));
         } catch (NumberFormatException e) {
             return errorMessage("Must be a number", properties, formData);
         }
@@ -282,8 +282,8 @@ public class FormValidator {
         boolean validationFailed = false;
         
         // Setup the parameters for the lower bound on the range check
-        boolean includeMin = !("false".equals(properties.check("includeMin")));
-        String minString = properties.check("min");
+        boolean includeMin = !("false".equals(properties.checkString("includeMin")));
+        String minString = properties.checkString("min");
         if (minString != null) {
             double min = Double.parseDouble(minString);
             if (value < min || (!includeMin && (value == min))) {
@@ -292,8 +292,8 @@ public class FormValidator {
         }
 
         // Setup the parameters for the upper bound on the range check
-        boolean includeMax = !("false".equals(properties.check("includeMax")));
-        String maxString = properties.check("max");
+        boolean includeMax = !("false".equals(properties.checkString("includeMax")));
+        String maxString = properties.checkString("max");
         if (maxString != null) {
             double max = Double.parseDouble(maxString);
             if (value > max || (!includeMax && (value == max))) {
@@ -338,7 +338,7 @@ public class FormValidator {
      */
     public static String validateRegex(String id, Dataset properties,
             Dataset formData) {
-        if (Pattern.matches(properties.get("pattern"), formData.get(id))) {
+        if (Pattern.matches(properties.getString("pattern"), formData.getString(id))) {
             return null;
         } else {
             return errorMessage("Field format incorrect",
@@ -359,7 +359,7 @@ public class FormValidator {
      */
     public static String validateRequired(String id, Dataset properties,
             Dataset formData) {
-        String inputValue = formData.get(id);
+        String inputValue = formData.getString(id);
         if (inputValue == null || inputValue.length() == 0) {
             return errorMessage("Required value", properties, formData);
         }

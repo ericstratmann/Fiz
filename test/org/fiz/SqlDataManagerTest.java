@@ -133,7 +133,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
                     "    state:  California\n" +
                     "    age:    32\n" +
                     "    weight: 130\n");
-            for (Dataset row : in.getChildren("record")) {
+            for (Dataset row : in.getDatasetList("record")) {
                 manager.insert("people", row);
             }
         } else {

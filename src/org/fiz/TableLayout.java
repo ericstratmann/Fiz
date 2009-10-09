@@ -169,7 +169,7 @@ public class TableLayout {
                             TableLayoutContainer container,
                             ClientRequest cr)
             throws ParseError {
-        String layout = properties.get("layout");
+        String layout = properties.getString("layout");
 
         // Check if the layout has already been parsed.
         // Note: The layoutCache is shared application-wide, so access to it

@@ -27,37 +27,27 @@ import java.util.*;
  *   - Keys are arbitrary strings (but it's usually convenient to limit
  *     them to standard identifier characters)
  *   - Values can have two forms:
- *     - A string
- *     - A list of one or more nested datasets, each of which contains
- *       additional key-value pairs).
+ *     - An object, such as a string, integer, or another dataset
+ *     - A list of one or more objects
  *   - Datasets can be created from a variety of sources, such as
  *     XML and YAML files (see classes such as XmlDataset and
  *     YamlDataset for details).
+ *   - Datasets know how to convert between types. For example, if a string
+ *     is requested but there is an integer with the same key, the integer is
+ *     converted into a string before being returned. See the {@code Convert}
+ *     class for a full list of supported conversions.
+ *   - Values in a dataset can be refered to by a key or a path. A key refers
+ *     to a value in the top level of a dataset. A path refers to a value
+ *     in a nested dataset and consists of keys separated by dots.  For
+ *     example, the path "a.b.c" refers to the value c inside a dataset
+ *     with key b inside a dataset with key a.  Many methods take either
+ *     a key or a path, with the key interpretation taking preference:
+ *     (e.g., if keyOrPath is "a.b.c" and there is an element
+ *     in the top-level dataset whose name is "a.b.c" then that element
+ *     will be used in preference to a value in a nested dataset).
  */
 
 public class Dataset implements Cloneable, Serializable {
-    /**
-     * Instances of this enum are passed to Dataset.lookup to indicate
-     * what sort of value is desired as a result.
-     */
-    public enum DesiredType {
-        /**
-         * The caller is only interested in string values.
-         */
-        STRING,
-
-        /**
-         * The caller is only interested in nested datasets.
-         */
-        DATASET,
-
-        /**
-         * The caller is interested in both string values and nested
-         * datasets.
-         */
-        ANY
-    }
-
     /**
      * For methods such as lookup and newFileInstanceFromPath where
      * there may be more than one matching result, this enum indicates
@@ -73,6 +63,45 @@ public class Dataset implements Cloneable, Serializable {
          * Return all matching results.
          */
         ALL
+    }
+
+    /**
+     * Used internally to represent lists of values. This is just used as an
+     * ArrayList with a different name, so we can differentiate between lists
+     * of values and values that are ArrayLists.
+     */
+    protected static class DSArrayList<E> extends ArrayList<E> {
+        protected DSArrayList() {
+            super();
+        }
+
+        protected DSArrayList(int size) {
+            super(size);
+        }
+
+        protected DSArrayList(Collection c) {
+            super(c);
+        }
+    }
+
+    /**
+     * InvalidConversionError is thrown when methods such as {@code get}
+     * cannot convert an object to the requested type (e.g., integer to
+     * dataset).
+     */
+    public static class InvalidConversionError extends Error {
+        /**
+         * Construct a InvalidConversionError with a message describing the
+         * conversion that failed.
+         * @param value       Object we attempted to convert
+         * @param className   Name of the class we tried to convert to
+         */
+        public InvalidConversionError(Object value, String className) {
+            super("couldn't convert object of class \"" +
+                  value.getClass().getName() + "\" and value \"" +
+                  value.toString() + "\" to class \"" + className + "\"");
+        }
+
     }
 
     /**
@@ -163,23 +192,22 @@ public class Dataset implements Cloneable, Serializable {
     // The following class is used to return information from the
     // lookupParent method.
     protected class ParentInfo {
-        public HashMap parentMap;  // HashMap corresponding to the portion
+        public Dataset parent;     // Dataset corresponding to the portion
                                    // of the path up to its final element,
                                    // or null if there is no such HashMap.
         public String lastName;    // The final element in the path.
 
-        public ParentInfo(HashMap parentMap, String lastName) {
-            this.parentMap = parentMap;
+        public ParentInfo(Dataset parent, String lastName) {
+            this.parent = parent;
             this.lastName = lastName;
         }
     }
 
     // The following field holds the contents of the dataset.  Keys
     // are strings, and values can have any of the following types:
-    // String:                     simple value
-    // HashMap:                    nested dataset
-    // ArrayList:                  list of nested datasets; each element of
-    //                             the list is a HashMap.
+    // DSArrayList:                List of values
+    // Dataset:                    A nested dataset
+    // Object:                     Any other object
     // It would be better if this field could be declared as
     // HashMap<String,Object>; unfortunately that won't work, because
     // we use JYaml to read YAML datasets directly into the map and JYaml
@@ -198,6 +226,15 @@ public class Dataset implements Cloneable, Serializable {
     protected static boolean sortOutput = false;
 
     /**
+     * Set to true if the last check (or any of its variants) call was
+     * successfull, false otherwise.
+     */
+    public boolean found;
+
+    // Passed to Convert methods
+    protected Convert.Success convertSuccess = new Convert.Success();
+
+    /**
      * Construct an empty dataset.
      */
     public Dataset() {
@@ -205,29 +242,13 @@ public class Dataset implements Cloneable, Serializable {
     }
 
     /**
-     * Construct a dataset from keys and values passed as arguments.
-     * @param keysAndValues        Alternating keys and values for
-     *                             initializing the Dataset; there must be
-     *                             an even number of arguments.
-     */
-    @SuppressWarnings("unchecked")
-    public Dataset(String... keysAndValues) {
-        map = new HashMap();
-        int last = keysAndValues.length - 2;
-        for (int i = 0; i <= last; i += 2) {
-            map.put(keysAndValues[i], keysAndValues[i+1]);
-        }
-    }
-
-    /**
      * Construct a dataset from keys and values passed as arguments,
-     * where each value can be either a string or a nested dataset.d
+     * where each value can be any valid dataset value.
      * @param keysAndValues        An even number of argument objects;
      *                             the first argument of each pair must be
      *                             a string key and the second argument of
-     *                             each pair must be a value for that key
-     *                             (either a String or a Dataset).  To
-     *                             create multiple nested datasets with the
+     *                             each pair must be a value for that key.
+     *                             To create multiple nested values with the
      *                             same name, use multiple key/value pairs
      *                             with the same key.
      */
@@ -238,11 +259,7 @@ public class Dataset implements Cloneable, Serializable {
         for (int i = 0; i <= last; i += 2) {
             String key = (String) keysAndValues[i];
             Object value = keysAndValues[i+1];
-            if (value instanceof String) {
-                map.put(key, (String) value);
-            } else {
-                addChild(key, (Dataset) value);
-            }
+            add(key, value);
         }
     }
 
@@ -362,44 +379,807 @@ public class Dataset implements Cloneable, Serializable {
     }
 
     /**
-     * Given an existing dataset, adds it to {@code this} as a top-level
-     * child.  However, if there already exist one or more top-level children
-     * by the same name then the new child is added to them to form a list,
-     * with the new child at the end of the list.
-     * @param key                  Name of a value in the top level of the
-     *                             dataset (not a path).  If this key is
-     *                             already defined as a string value, the
-     *                             existing value will be discarded.
-     * @param child                Existing dataset, which will become a
-     *                             child of {@code this}.
+     * Adds a value in the top level of the dataset with the given {@code key}.
+     * If there already exist one or more top-level values by the same name then
+     * the new value is added to them to form a list, with the new value at the
+     * end of the list.
+     *
+     * @param key        Name of a value in the top-level of the dataset.
+     * @param value      New value to associate with the key.
      */
-    @SuppressWarnings("unchecked")
-    public void addChild(String key, Dataset child) {
-        Object existingValue = map.get(key);
-        if (existingValue instanceof HashMap) {
-            // There exists a single child by the given name; turn this
-            // into a list of children.
-            ArrayList list = new ArrayList(2);
-            list.add(existingValue);
-            list.add(child.map);
-            map.put(key, list);
-        } else if (existingValue instanceof ArrayList) {
-            // There's already a list of children; just add the new one.
-            ArrayList list = (ArrayList) existingValue;
-            list.add(child.map);
-        } else {
-            // Either the value doesn't exist or it is a string value;
-            // in either case, ignore it and use the new child as the value.
-            map.put(key, child.map);
-        }
+    public void add(String key, Object value) {
+        Object old = map.get(key);
+        Object appended = appendValue(old, value);
+        map.put(key, appended);
+    }
+
+    /**
+     * Adds a value in the dataset with the given {@code path}. If there already
+     * exist one or more values at the same path, then the new value is added to
+     * them to form a list, with the new value at the end of the list.
+     *
+     * @param path       A sequence of keys separated by dots.
+     *                   For example, "a.b.c" refers to a value
+     *                   "c" contained in a nested dataset "b"
+     *                   contained in a dataset "a" contained
+     *                   in the current dataset
+     * @param value      New value to associate with the key.
+     */
+    public void addPath(String path, Object value) {
+        ParentInfo info = lookupParent(path, true);
+        Object old = info.parent.check(info.lastName);
+        Object appended = appendValue(old, value);
+        info.parent.set(info.lastName, appended);
     }
 
     /**
      * Read a serialized dataset and add its contents to the current dataset.
      * If there are conflicts between values in the serialized dataset
-     * and this dataset (e.g., a name in one dataset has a string value, and
-     * in the other dataset its value is a nested dataset) the values
-     * from the serialized data set replaces the existing values.
+     * and this dataset, the values from the serialized data set replace
+     * the existing values.
+     * @param source               Contains a serialized dataset, in the
+     *                             syntax generated by {@code serialize}.
+     */
+    public void addSerializedData(CharSequence source) {
+        addSerializedData(source, 0);
+    }
+
+    /**
+     * Returns the value associated with {@code keyOrPath} if there is one.
+     * Otherwise, the {@code found} instance variable is set to false.
+     * @param keyOrPath                Name of the desired element (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         Value associated with {@code keyOrPath}.
+     *                                 If there are multiple values, only the
+     *                                 first one is returned. If there is no
+     *                                 such value, returns null.
+     */
+    public Object check(String keyOrPath) {
+        Object o = lookup(keyOrPath, Quantity.FIRST_ONLY);
+        found = o != null;
+        return o;
+    }
+
+    /**
+     * Returns the int value associated with {@code keyOrPath} if there is one.
+     * Otherwise, the {@code found} instance variable is set to false.
+     * @param keyOrPath                Name of the desired element (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         Value associated with {@code keyOrPath}.
+     *                                 If there are multiple values, only the
+     *                                 first one is returned. If there is no
+     *                                 such value, returns false.
+     * @throws InvalidConversionError  Thrown if there is a value associated
+     *                                 {@code keyOrPath}, but it cannot be
+     *                                 converted to a Dataset.
+     */
+    public boolean checkBool(String keyOrPath) {
+        Object value = lookup(keyOrPath, Quantity.FIRST_ONLY);
+
+        if (value == null) {
+            found = false;
+            return false;
+        } else {
+            boolean b = Convert.toBool(value, convertSuccess);
+            found = convertSuccess.succeeded();
+            return b;
+        }
+    }
+
+    /**
+     * Returns the Dataset value associated with {@code keyOrPath} if there is one.
+     * Otherwise, the {@code found} instance variable is set to false.
+     * @param keyOrPath                Name of the desired element (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         Value associated with {@code keyOrPath}.
+     *                                 If there are multiple values, only the
+     *                                 first one is returned. If there is no
+     *                                 such value, returns null.
+     * @throws InvalidConversionError  Thrown if there is a value associated
+     *                                 {@code keyOrPath}, but it cannot be
+     *                                 converted to a Dataset.
+     */
+    public Dataset checkDataset(String keyOrPath) {
+        Object value = lookup(keyOrPath, Quantity.FIRST_ONLY);
+
+        if (value == null) {
+            found = false;
+            return null;
+        } else {
+            Dataset d = Convert.toDataset(value, convertSuccess);
+            found = convertSuccess.succeeded();
+            return d;
+        }
+    }
+
+    /**
+     * Returns the double associated with {@code keyOrPath} if there is one.
+     * The {@code found} instance variable is set to true if keyOrPath exists,
+     * and to false otherwise.
+     * @param keyOrPath                Name of the desired element (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         Value associated with {@code keyOrPath}.
+     *                                 If there are multiple values, only the
+     *                                 first one is returned. If there is no
+     *                                 such value, returns Double.MIN_VALUE.
+     * @throws InvalidConversionError  Thrown if there is a value associated
+     *                                 {@code keyOrPath}, but it cannot be
+     *                                 converted to a Dataset.
+     */
+    public double checkDouble(String keyOrPath) {
+        Object value = lookup(keyOrPath, Quantity.FIRST_ONLY);
+
+        if (value == null) {
+            found = false;
+            return Double.MIN_VALUE;
+        } else {
+            double d = Convert.toDouble(value, convertSuccess);
+            found = convertSuccess.succeeded();
+            return d;
+        }
+    }
+
+    /**
+     * Returns the int associated with {@code keyOrPath} if there is one.
+     * The {@code found} instance variable is set to true if keyOrPath exists,
+     * and to false otherwise.
+     * @param keyOrPath                Name of the desired element (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         Value associated with {@code keyOrPath}.
+     *                                 If there are multiple values, only the
+     *                                 first one is returned. If there is no
+     *                                 such value, returns Integer.MIN_VALUE.
+     * @throws InvalidConversionError  Thrown if there is a value associated
+     *                                 {@code keyOrPath}, but it cannot be
+     *                                 converted to a Dataset.
+     */
+    public int checkInt(String keyOrPath) {
+        Object value = lookup(keyOrPath, Quantity.FIRST_ONLY);
+
+        if (value == null) {
+            found = false;
+            return Integer.MIN_VALUE;
+        } else {
+            int i = Convert.toInt(value, convertSuccess);
+            found = convertSuccess.succeeded();
+            return i;
+        }
+    }
+
+    /**
+     * Returns the String value associated with {@code keyOrPath} if there is one.
+     * Otherwise, the {@code found} instance variable is set to false.
+     * @param keyOrPath                Name of the desired element (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         Value associated with {@code keyOrPath}.
+     *                                 If there are multiple values, only the
+     *                                 first one is returned. If there is no
+     *                                 such value, returns null.
+     * @throws InvalidConversionError  Thrown if there is a value associated
+     *                                 {@code keyOrPath}, but it cannot be
+     *                                 converted to a Dataset.
+     */
+    public String checkString(String keyOrPath) {
+        Object value = lookup(keyOrPath, Quantity.FIRST_ONLY);
+
+        if (value == null) {
+            found = false;
+            return null;
+        } else {
+            // toString always succeeds
+            found = true;
+            return Convert.toString(value, convertSuccess);
+        }
+    }
+
+    /**
+     * Delete all of the contents of a dataset, leaving the dataset
+     * empty.
+     */
+    public void clear() {
+        map.clear();
+    }
+
+    /**
+     * Generates and returns a "deep copy" of the dataset, such that
+     * no modification to either dataset will be visible in the other.
+     * Only the datasets themselves are cloned; the values in the datasets
+     * are not.
+     * @return                     A copy of the current dataset.
+     */
+    public Dataset clone() {
+       return clone(null);
+    }
+
+    /**
+     * Clones the values in this dataset and copies them into {@code dest}, such
+     * that no modification to either dataset will be visible to the other.
+     * If the two datasets share any keys, the ones in {@code dest} are
+     * overwritten. Only the datasets themselves are cloned; the values in the
+     * datasets are not.
+     * @param dest       Values from the current dataset are copied into
+     *                   {@code dest}. If null, an empty dataset is created.
+     * @return           A dataset with the values in the current dataset
+     *                   copied into it.
+     */
+    public Dataset clone(Dataset dest) {
+        if (dest == null) {
+            dest = new Dataset();
+        }
+
+        dest.fileName = fileName;
+
+        // Each iteration through the following loop copies one key-value
+        // pair from source to dest; it will invoke this method recursively
+        // to copy the contents of nested datasets.
+        for (Map.Entry<String,Object> pair :
+                 ((HashMap<String,Object>) map).entrySet()) {
+            Object value = pair.getValue();
+            if (value instanceof DSArrayList) {
+                DSArrayList sourceList = (DSArrayList) value;
+                DSArrayList destList = new DSArrayList(sourceList.size());
+                for (Object value2 : sourceList) {
+                    if (value2 instanceof Dataset) {
+                        destList.add(((Dataset) value2).clone());
+                    } else {
+                        destList.add(value2);
+                    }
+                }
+                dest.set(pair.getKey(), destList);
+            } else if (value instanceof Dataset) {
+                dest.set(pair.getKey(), ((Dataset) value).clone());
+            } else {
+                dest.set(pair.getKey(), value);
+            }
+        }
+        return dest;
+    }
+
+    /**
+     * Indicates whether a key or path exists in the dataset.
+     * @param key                  Name or path of the desired value.
+     * @return                     True if the key or path dataset, false
+     *                             otherwise.
+     */
+    public boolean containsKey(String key) {
+        return (check(key) != null);
+    }
+
+    /**
+     * Copies all of the top-level values from another dataset into
+     * this one, replacing any existing values with the same names.
+     * Nested datasets and lists are cloned before copying so that the
+     * datasets remain independent.
+     * @param source              Dataset whose values are to be copied
+     *                            into this one.
+     */
+    public void copyFrom(Dataset source) {
+        String tmp = fileName;
+        source.clone(this);
+        fileName = tmp;
+    }
+
+    /**
+     * Removes a value from the dataset. If there is no value with the
+     * given key, the key will be treated as a path. If neither of the two
+     * exist, this method does nothing.
+     * @param keyOrPath                Name of the desired element (key in
+     *                                 top-level dataset or multi-level path).
+     */
+    public void delete(String keyOrPath) {
+        Object old = map.remove(keyOrPath);
+
+        if (old == null) {
+            ParentInfo info = lookupParent(keyOrPath, false);
+            if (info != null && info.parent != this) {
+                info.parent.delete(info.lastName);
+            }
+        }
+    }
+
+    /**
+     * If this dataset was originally read from a file, this method
+     * will provide the name of that file.
+     * @return                     The name of the file from which the dataset
+     *                             was originally read, or null if the dataset
+     *                             was not created from a file.
+     */
+    public String getFileName() {
+        return fileName;
+    }
+
+    /**
+     * Returns the value associated with {@code keyOrPath}.
+     *
+     * @param keyOrPath            Name of the desired element (key in top-level
+     *                             dataset or multi-level path).
+     * @return                     Value associated with {@code keyOrPath}.
+     *                             If there are multiple values, only the first
+     *                             one is returned.
+     * @throws MissingValueError   Thrown if {@code keyOrPath} can't be found
+     */
+    public Object get(String keyOrPath) {
+        Object value = lookup(keyOrPath, Quantity.FIRST_ONLY);
+
+        if (value == null) {
+            throw new MissingValueError(keyOrPath);
+        }
+
+        return value;
+    }
+
+    /**
+     * Returns the bool associated with {@code keyOrPath}.
+     * @param keyOrPath                Name of the desired element (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         Bool associated with {@code keyOrPath}.
+     *                                 If there are multiple values, only the
+     *                                 first one is returned.
+     * @throws MissingValueError       Thrown if {@code keyOrPath} does
+     * @throws InvalidConversionError  Thrown if there is a value associated
+     *                                 {@code keyOrPath}, but it cannot be
+     *                                 converted to a bool.
+     */
+    public boolean getBool(String keyOrPath) {
+        Object value = lookup(keyOrPath, Quantity.FIRST_ONLY);
+
+        if (value == null) {
+            throw new MissingValueError(keyOrPath);
+        }
+
+        boolean b = Convert.toBool(value, convertSuccess);
+        if (convertSuccess.succeeded() == false) {
+            throw new InvalidConversionError(value, "boolean");
+        }
+        return b;
+    }
+
+    /**
+     * Returns the Dataset associated with {@code keyOrPath}.
+     * @param keyOrPath                Name of the desired element (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         Dataset associated with {@code keyOrPath}.
+     *                                 If there are multiple values, only the
+     *                                 first one is returned.
+     * @throws MissingValueError       Thrown if {@code keyOrPath} does
+     * @throws InvalidConversionError  Thrown if there is a value associated
+     *                                 {@code keyOrPath}, but it cannot be
+     *                                 converted to a Dataset.
+     */
+    public Dataset getDataset(String keyOrPath) {
+        Object value = lookup(keyOrPath, Quantity.FIRST_ONLY);
+
+        if (value == null) {
+            throw new MissingValueError(keyOrPath);
+        }
+
+        Dataset d = Convert.toDataset(value, convertSuccess);
+        if (convertSuccess.succeeded() == false) {
+            throw new InvalidConversionError(value, "Dataset");
+        }
+        return d;
+    }
+
+    /**
+     * Returns the double associated with {@code keyOrPath}.
+     * @param keyOrPath                Name of the desired element (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         Double associated with {@code keyOrPath}.
+     *                                 If there are multiple values, only the
+     *                                 first one is returned.
+     * @throws MissingValueError       Thrown if {@code keyOrPath} does
+     * @throws InvalidConversionError  Thrown if there is a value associated
+     *                                 {@code keyOrPath}, but it cannot be
+     *                                 converted to a double.
+     */
+    public double getDouble(String keyOrPath) {
+        Object value = lookup(keyOrPath, Quantity.FIRST_ONLY);
+
+        if (value == null) {
+            throw new MissingValueError(keyOrPath);
+        }
+
+        Double d = Convert.toDouble(value, convertSuccess);
+        if (convertSuccess.succeeded() == false) {
+            throw new InvalidConversionError(value, "double");
+        }
+        return d;
+    }
+
+    /**
+     * Returns the int associated with {@code keyOrPath}.
+     * @param keyOrPath                Name of the desired element (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         Int associated with {@code keyOrPath}.
+     *                                 If there are multiple values, only the
+     *                                 first one is returned.
+     * @throws MissingValueError       Thrown if {@code keyOrPath} can't be found
+     * @throws InvalidConversionError  Thrown if there is a value associated
+     *                                 {@code keyOrPath}, but it cannot be
+     *                                 converted to an int.
+     */
+    public int getInt(String keyOrPath) {
+        Object value = lookup(keyOrPath, Quantity.FIRST_ONLY);
+
+        if (value == null) {
+            throw new MissingValueError(keyOrPath);
+        }
+
+        int i = Convert.toInt(value, convertSuccess);
+        if (convertSuccess.succeeded() == false) {
+            throw new InvalidConversionError(value, "int");
+        }
+        return i;
+    }
+
+    /**
+     * Returns the String associated with {@code keyOrPath}.
+     * @param keyOrPath                Name of the desired element (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         String associated with {@code keyOrPath}.
+     *                                 If there are multiple values, only the
+     *                                 first one is returned.
+     * @throws MissingValueError       Thrown if {@code keyOrPath} does
+     * @throws InvalidConversionError  Thrown if there is a value associated
+     *                                 {@code keyOrPath}, but it cannot be
+     *                                 converted to a String.
+     */
+    public String getString(String keyOrPath) {
+        Object value = lookup(keyOrPath, Quantity.FIRST_ONLY);
+
+        if (value == null) {
+            throw new MissingValueError(keyOrPath);
+        }
+
+        String s = Convert.toString(value, convertSuccess);
+        if (convertSuccess.succeeded() == false) {
+            throw new InvalidConversionError(value, "String");
+        }
+        return s;
+    }
+
+    /**
+     * Returns all the values associated with {@code keyOrPath}.
+     * @param keyOrPath                Name of the desired element (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         Array or values associated with
+     *                                 {@code keyOrPath}.
+     */
+    public ArrayList<Object> getList(String keyOrPath) {
+        ArrayList<Object> list = (ArrayList) lookup(keyOrPath, Quantity.ALL);
+        return (ArrayList<Object>) list.clone();
+    }
+
+    /**
+     * Returns all the bools associated with {@code keyOrPath}.
+     * @param keyOrPath                Name of the desired elements (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         Array of bools associated with
+     *                                 {@code keyOrPath}. If there are none,
+     *                                 the array is empty.
+     * @throws InvalidConversionError  Thrown if any of the values cannot be
+     *                                 converted to a bool.
+     */
+    public ArrayList<Boolean> getBoolList(String keyOrPath) {
+        ArrayList<Object> list = (ArrayList) lookup(keyOrPath, Quantity.ALL);
+        ArrayList<Boolean> boolList = new ArrayList<Boolean>();
+
+        for (Object item : list) {
+            boolean b = Convert.toBool(item, convertSuccess);
+            if (convertSuccess.succeeded() == false) {
+                throw new InvalidConversionError(item, "boolean");
+            }
+            boolList.add(b);
+        }
+
+        return boolList;
+    }
+
+    /**
+     * Returns all the Datasets associated with {@code keyOrPath}.
+     * @param keyOrPath                Name of the desired elements (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         Array of Datasets associated with
+     *                                 {@code keyOrPath}. If there are none,
+     *                                 the array is empty.
+     * @throws InvalidConversionError  Thrown if any of the values cannot be
+     *                                 converted to a Dataset.
+     */
+    public ArrayList<Dataset> getDatasetList(String keyOrPath) {
+        ArrayList<Object> list = (ArrayList) lookup(keyOrPath, Quantity.ALL);
+        ArrayList<Dataset> datasetList = new ArrayList<Dataset>();
+
+        for (Object item : list) {
+            Dataset d = Convert.toDataset(item, convertSuccess);
+            if (convertSuccess.succeeded() == false) {
+                throw new InvalidConversionError(item, "Dataset");
+            }
+            datasetList.add(d);
+        }
+
+        return datasetList;
+    }
+
+    /**
+     * Returns all the ints associated with {@code keyOrPath}.
+     * @param keyOrPath                Name of the desired elements (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         Array of ints associated with
+     *                                 {@code keyOrPath}. If there are none,
+     *                                 the array is empty.
+     * @throws InvalidConversionError  Thrown if any of the values cannot be
+     *                                 converted to an int.
+     */
+    public ArrayList<Integer> getIntList(String keyOrPath) {
+        ArrayList<Object> list = (ArrayList) lookup(keyOrPath, Quantity.ALL);
+        ArrayList<Integer> intList = new ArrayList<Integer>(3);
+
+        for (Object item : list) {
+            int i = Convert.toInt(item, convertSuccess);
+            if (convertSuccess.succeeded() == false) {
+                throw new InvalidConversionError(item, "int");
+            }
+            intList.add(i);
+        }
+
+        return intList;
+    }
+
+    /**
+     * Returns all the doubles associated with {@code keyOrPath}.
+     * @param keyOrPath                Name of the desired elements (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         Array of doubles associated with
+     *                                 {@code keyOrPath}. If there are none,
+     *                                 the array is empty.
+     * @throws InvalidConversionError  Thrown if any of the values cannot be
+     *                                 converted to a double.
+     */
+    public ArrayList<Double> getDoubleList(String keyOrPath) {
+        ArrayList<Object> list = (ArrayList) lookup(keyOrPath, Quantity.ALL);
+        ArrayList<Double> doubleList = new ArrayList<Double>(3);
+
+        for (Object item : list) {
+            double d = Convert.toDouble(item, convertSuccess);
+            if (convertSuccess.succeeded() == false) {
+                throw new InvalidConversionError(item, "double");
+            }
+            doubleList.add(d);
+        }
+
+        return doubleList;
+    }
+
+    /**
+     * Returns all the Strings associated with {@code keyOrPath}.
+     * @param keyOrPath                Name of the desired elements (key in
+     *                                 top-level dataset or multi-level path).
+     * @return                         Array of Strings associated with
+     *                                 {@code keyOrPath}. If there are none,
+     *                                 the array is empty.
+     * @throws InvalidConversionError  Thrown if any of the values cannot be
+     *                                 converted to a String.
+     */
+    public ArrayList<String> getStringList(String keyOrPath) {
+        ArrayList<Object> list = (ArrayList) lookup(keyOrPath, Quantity.ALL);
+        ArrayList<String> stringList = new ArrayList<String>(3);
+
+        for (Object item : list) {
+            stringList.add(Convert.toString(item, convertSuccess));
+        }
+
+        return stringList;
+    }
+
+    /**
+     * Returns a Set containing all of the top-level keys in the dataset.
+     * @return                     All of the keys at the top level of
+     *                             the dataset.
+     */
+    @SuppressWarnings("unchecked")
+    public Set<String> keySet() {
+        return map.keySet();
+    }
+
+    /**
+     * Generate a compact string representation for the dataset.
+     * This form is intended for efficient transmission and storage;
+     * it is not intended to be human readable.  The only code that
+     * should attempt to understand the structure of this information is
+     * the addSerializedData method of this class.
+     * @param out                  A description of the dataset is
+     *                             appended here.
+     */
+    public void serialize(StringBuilder out) {
+        // Here is the grammar for the serialized representation of
+        // a dataset.  The basic idea is to use run-length encoding,
+        // where a string is represented as {@code length.contents},
+        // where the contents of the string are preceded by its length
+        // in characters and a "." to delimit the length.
+        // <dataset> = "("<element>("\n"<element)*")"
+        // <element> = <name><value>
+        // <name> = <encodedString>
+        // encodedString> = <length>"."<contents>
+        // <value> = <encodedString> | (<dataset>)+
+        //
+        // Here's an example of a dataset containing a string value
+        // {@code age} and a list of nested datasets named {@code children},
+        // each with a {@code name} element.
+        // (3.age2.24
+        // 8.children(4.name5.Alice)(4.name3.Bob)(4.name5.Carol))
+        out.append('(');
+        String prefix = "";
+        Collection keySet = map.keySet();
+        if (sortOutput) {
+            keySet = new TreeSet<String>(keySet);
+        }
+        for (Object nameObject: keySet) {
+            String name = (String) nameObject;
+            out.append(prefix);
+            out.append(name.length());
+            out.append('.');
+            out.append(name);
+            Object value = map.get(name);
+            if (value instanceof Dataset) {
+                ((Dataset) value).serialize(out);
+            } else if (value instanceof DSArrayList) {
+                DSArrayList<Dataset> list = (DSArrayList <Dataset>) value;
+                for (int i = 0; i < list.size(); i++) {
+                    ((Dataset) list.get(i)).serialize(out);
+                }
+            } else {
+                String s = value.toString();
+                out.append(s.length());
+                out.append('.');
+                out.append(s);
+            }
+            prefix = "\n";
+        }
+        out.append(')');
+    }
+
+    /**
+     * Generate a compact string representation for the dataset.
+     * This form is intended for efficient transmission and storage;
+     * it is not intended to be human readable.  The only code that
+     * should attempt to understand the structure of this information is
+     * the addSerializedData method of this class.
+     * @return                     The serialized representation of the
+     *                             dataset.
+     */
+    public String serialize() {
+        StringBuilder out = new StringBuilder();
+        serialize(out);
+        return out.toString();
+    }
+
+    /**
+     * Sets a value in the top level of the dataset with the given {@code key},
+     * replacing any existing value(s).
+     *
+     * @param key        Name of a value in the top-level of the
+     *                   dataset (not a path).
+     * @param value      New value to associate with the key.
+     */
+    public void set(String key, Object value) {
+        map.put(key, value);
+    }
+
+    /**
+     * Sets a value in the dataset with the given {@code path}, replacing any
+     * existing value(s).
+     *
+     * @param path       A sequence of keys separated by dots.
+     *                   For example, "a.b.c" refers to a value
+     *                   "c" contained in a nested dataset "b"
+     *                   contained in a dataset "a" contained
+     *                   in the current dataset
+     * @param value      New value to associate with the key.
+     */
+    public void setPath(String path, Object value) {
+        ParentInfo info = lookupParent(path, true);
+        info.parent.set(info.lastName, value);
+    }
+
+    /**
+     * Generate a Javascript description of the database contents, in the form
+     * of a Javascript Object literal enclosed in braces.
+     * @param out                  The Javascript is appended to this
+     *                             StringBuilder.
+     */
+    public void toJavascript(StringBuilder out) {
+        out.append('{');
+        String prefix = "";
+        Collection keySet = keySet();
+        if (sortOutput) {
+            keySet = new TreeSet<String>(keySet);
+        }
+        for (Object nameObject: keySet) {
+            String name = (String) nameObject;
+            out.append(prefix);
+            out.append(name);
+            out.append(": ");
+            Object value = map.get(name);
+            if (value instanceof Dataset) {
+                ((Dataset) value).toJavascript(out);
+            } else if (value instanceof DSArrayList) {
+                out.append('[');
+                DSArrayList<Object> list = (DSArrayList <Object>) value;
+                String listPrefix = "";
+                for (int i = 0; i < list.size(); i++) {
+                    out.append(listPrefix);
+                    Object value2 = list.get(i);
+                    if (value2 instanceof Dataset) {
+                        ((Dataset) value2).toJavascript(out);
+                    } else {
+                        out.append(value2.toString());
+                    }
+                    listPrefix = ", ";
+                }
+                out.append(']');
+            } else if (value instanceof Number || value instanceof Boolean){
+                out.append(value.toString());
+            } else {
+                out.append('"');
+                Html.escapeStringChars(value.toString(), out);
+                out.append('"');
+            }
+            prefix = ", ";
+        }
+        out.append('}');
+    }
+
+    /**
+     * Generates a nicely formatted string displaying the contents
+     * of the dataset (intended primarily for testing).  By default
+     * the dataset is formatted using YAML syntax.
+     * @return                     Pretty-printed string.
+     */
+    public String toString() {
+        return YamlDataset.writeString(this);
+    }
+
+    /**
+     * Writes the contents of the dataset to a file on disk.  This particular
+     * class doesn't have a defined disk format, so it throws an Error
+     * @param name                 Name of file to write.
+     * @param comment              Optional text describing the meaning of
+     *                             the file for humans who might stumble
+     *                             across it.  Null means no comment.
+     */
+    public void writeFile(String name, String comment) {
+        throw new UnknownFileFormatError("class " +
+                getClass().getSimpleName() +
+                " doesn't know how to write datasets to files");
+    }
+
+    /**
+     * Appends a value to a list of values, for use as a dataset element. If
+     * two values share the same key, they become a list of values.
+     *
+     * @param old        Either null, an object, or a DSArrayList of objects
+     * @param value      Appended to old
+     */
+    protected static Object appendValue(Object old, Object value) {
+        if (old != null)  {
+            DSArrayList array;
+            if (old instanceof DSArrayList) {
+                array = (DSArrayList) old;
+            } else {
+                array = new DSArrayList(3);
+                array.add(old);
+            }
+            array.add(value);
+            return array;
+        }
+        return value;
+    }
+
+    /**
+     * Read a serialized dataset and add its contents to the current dataset.
+     * If there are conflicts between values in the serialized dataset
+     * and this dataset, the values from the serialized data set replaces the
+     * existing values.
      * @param source               Contains a serialized dataset, in the
      *                             syntax generated by {@code serialize}.
      * @param start                Index in {@code source} of the "("
@@ -448,7 +1228,7 @@ public class Dataset implements Cloneable, Serializable {
                 while (true) {
                     Dataset child = new Dataset();
                     i = child.addSerializedData(source, i);
-                    addChild(name, child);
+                    add(name, child);
                     if ((i >= length) || (source.charAt(i) != '(')) {
                         break;
                     }
@@ -462,760 +1242,10 @@ public class Dataset implements Cloneable, Serializable {
                 "serialized dataset not terminated by \")\"");
     }
 
-    /**
-     * Read a serialized dataset and add its contents to the current dataset.
-     * If there are conflicts between values in the serialized dataset
-     * and this dataset (e.g., a name in one dataset has a string value, and
-     * in the other dataset its value is a nested dataset) the values
-     * from the serialized data set replaces the existing values.
-     * @param source               Contains a serialized dataset, in the
-     *                             syntax generated by {@code serialize}.
-     */
-    protected void addSerializedData(CharSequence source) {
-        addSerializedData(source, 0);
-    }
 
     /**
-     * Given a key, returns the value associated with that key, or null
-     * if the key is not defined.  This method is identical to
-     * {@code get} except that it does not generate an exception
-     * if the key is undefined or has the wrong type.
-     * @param key                  Name of the desired value.
-     * @return                     Value associated with {@code key}, or
-     *                             null if {@code key} doesn't exist or if
-     *                             it corresponds to a nested dataset.
-     */
-    public String check(String key) {
-        return (String) lookup(key, DesiredType.STRING, Quantity.FIRST_ONLY,
-                null);
-    }
-
-    /**
-     * Given a key, returns the first nested dataset with that name,
-     * or null if there is no such child.  This method is identical to
-     * {@code getChild} except that it does not generate an exception
-     * if there is no child by the given name.
-     * @param key                  Name of the desired child dataset.
-     * @return                     First child dataset with {@code key}
-     *                             as name, or null if there is no such
-     *                             child.
-     */
-    public Dataset checkChild(String key) {
-        return (Dataset) lookup(key, DesiredType.DATASET, Quantity.FIRST_ONLY,
-                null);
-    }
-
-    /**
-     * Delete all of the contents of a dataset, leaving the dataset
-     * empty.
-     */
-    public void clear() {
-        map.clear();
-    }
-
-    /**
-     * Generates and returns a "deep copy" of the dataset, such that
-     * no modification to either dataset will be visible in the other.
-     * @return                     A copy of the current dataset.
-     */
-    public Dataset clone() {
-        Dataset result = new Dataset(cloneHelper(map, null), fileName);
-        return result;
-    }
-
-    /**
-     * Indicates whether a key exists in the dataset.
-     * @param key                  Name of the desired value.
-     * @return                     True if the key exists in the top
-     *                             level of the dataset, false otherwise.
-     */
-    public boolean containsKey(String key) {
-        if (map.get(key) != null) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Copies all of the top-level values from another dataset into
-     * this one, replacing any existing values with the same names.
-     * Nested datasets and lists are cloned before copying so that the
-     * datasets remain independent.
-     * @param source              Dataset whose values are to be copied
-     *                            into this one.
-     */
-    public void copyFrom(Dataset source) {
-        cloneHelper(source.map, map);
-    }
-
-    /**
-     * Returns a nested dataset if it exists, creates a new dataset
-     * if the child doesn't exist.  If {@code key} corresponds to a
-     * list of nested datasets than the first child in the list is returned.
-     * If {@code key} corresponds to a string value then the string value
-     * is replaced with a new empty dataset.
-     * @param key                  Name of the desired child (in the
-     *                             top-level dataset; not a path).
-     * @return                     Dataset corresponding to {@code key}.
-     */
-    public Dataset createChild(String key) {
-        return createChildInternal(map, key);
-    }
-
-    /**
-     * Creates a nested dataset with a given name, overwriting any previous
-     * value by that name.  The nested dataset will refer to {@code dataset},
-     * which means that future changes to {@code dataset} will be visible
-     * in this Dataset object.  If you don't want this behavior, clone
-     * {@code dataset} before calling this method.
-     * @param key                  Name of a nested dataset within the
-     *                             top-level dataset (not a path).
-     * @param dataset              Dataset to associate with {@code key}.
-     * @return                     Same as the {@code dataset} argument.
-     */
-    @SuppressWarnings("unchecked")
-    public Dataset createChild(String key, Dataset dataset) {
-        map.put(key, dataset.map);
-        return new Dataset(dataset.map, fileName);
-    }
-
-    /**
-     * If a path refers to a nested dataset, returns that nested dataset;
-     * if the path already has a defined value that is a list or string
-     * value, replaces the old value with a new empty dataset.  If the path
-     * doesn't currently exist, creates a new empty dataset at the specified
-     * location, filling in any missing parent datasets along the path.
-     * @param path                 One or more keys, separated by dots.
-     * @return                     Dataset corresponding to {@code path}.
-     */
-    public Dataset createChildPath(String path) {
-        ParentInfo info = lookupParent(path, true);
-        return createChildInternal(info.parentMap, info.lastName);
-    }
-
-    /**
-     * Creates a nested dataset whose location is given by path,
-     * overwriting any previous value by that name.  The nested dataset
-     * will refer to {@code dataset}, which means that future changes to
-     * {@code dataset} will be visible in this Dataset object.  If you
-     * don't want that behavior, clone {@code dataset} before calling
-     * this method.
-     * @param path                 One or more keys, separated by dots.
-     * @param dataset              Contents for the nested dataset.
-     * @return                     Dataset corresponding to {@code path}.
-     */
-    @SuppressWarnings("unchecked")
-    public Dataset createChildPath(String path, Dataset dataset) {
-        ParentInfo info = lookupParent(path, true);
-        info.parentMap.put(info.lastName, dataset.map);
-        return new Dataset(dataset.map, fileName);
-    }
-
-    /**
-     * Removes an entry (or nested dataset) from the top level of a dataset.
-     * If there is no value with the given {@code key} then the method
-     * does nothing.
-     * @param key                  Name of a value in the top level of the
-     *                             dataset (not a path).
-     */
-    public void delete(String key) {
-        map.remove(key);
-    }
-
-    /**
-     * Given a path in a dataset, removes the corresponding value (or
-     * nested dataset) if it exists.  If the path is not defined then
-     * this method does nothing.
-     * @param path                 A sequence of keys separated by dots.
-     */
-    public void deletePath(String path) {
-        ParentInfo info = lookupParent(path, false);
-        if (info != null) {
-            info.parentMap.remove(info.lastName);
-        }
-    }
-
-    /**
-     * Treat the current dataset as a template and create a new dataset
-     * by expanding the current dataset in the context of an auxiliary
-     * dataset containing values.  The template data set is expanded as
-     * follows.  For each <i>name</i>,<i>value</i> pair in the current
-     * dataset (and its nested children), an identical
-     * <i>name</i>,<i>value</i> pair is created in the result dataset
-     * except for the following special cases:
-     *   - If <i>value</i> starts with {@code @} then the remainder of
-     *     the value is used as the path name of an entry in the auxiliary
-     *     dataset; the value from the auxiliary dataset is used for the
-     *     result dataset in place of <i>value</i>.
-     *   - If <i>value</i> starts with {@code @@} then it is not treated as
-     *     the name of an auxiliary value; <i>value</i> is passed through
-     *     to the request dataset, except that the two {@code @} characters
-     *     are collapsed into a single {@code @}.
-     * @param aux                  Values from this dataset are used to
-     *                             handle "@" references in the current
-     *                             dataset.
-     * @return                     A new dataset created from the current
-     *                             dataset with substitutions from
-     *                             {@code aux}.
-     */
-    public Dataset expand(Dataset aux) {
-        Dataset result = new Dataset();
-        for (String key : keySet()) {
-            String value = check(key);
-            if (value != null) {
-                // This entry is a string value.  Perform substitution on it.
-                if ((value.length() < 1) || (value.charAt(0) != '@')) {
-                    // Choice #1: template value doesn't start with '@'; copy
-                    // the template name and value through to the result.
-                    result.set(key, value);
-                } else if ((value.length() >= 2) && (value.charAt(1) == '@')) {
-                    // Choice #2: template value starts with '@@'; convert
-                    // the '@@' to '@' and copy through to the result.
-                    result.set(key, value.substring(1));
-                } else {
-                    // Choice #3: template value starts with '@': use the
-                    // value (excluding the '@') as the name of a value in
-                    // {@code aux} and copy that through to the request
-                    // dataset.
-                    result.set(key, aux.getPath(value.substring(1)));
-                }
-            } else {
-                // This entry consists of one or more nested datasets;
-                // expand each of the nested dataset.
-                for (Dataset child : getChildren(key)) {
-                    result.addChild(key, child.expand(aux));
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Given a key, returns the value associated with that key.  This is
-     * a single-level lookup: the key must be defined in the top level of
-     * the dataset.
-     * @param key                  Name of the desired value.
-     * @return                     Value associated with {@code key}.
-     * @throws MissingValueError   Thrown if {@code key} can't be found
-     *                             or doesn't refer to a string value.
-     */
-    public String get(String key) throws MissingValueError {
-        Object value = lookup(key, DesiredType.STRING, Quantity.FIRST_ONLY,
-                null);
-        if (value == null) {
-            throw new MissingValueError(key);
-        }
-        return (String) value;
-    }
-
-    /**
-     * Return the first nested dataset within the current dataset that
-     * has a given name.
-     * @param key                  Name of the desired child; must be a
-     *                             top-level child within the current dataset.
-     * @return                     A Dataset providing access to the child.
-     * @throws MissingValueError   Thrown if {@code key} is not defined
-     *                             at the top level of the current dataset
-     *                             or that refers to a string value.
-     */
-    public Dataset getChild(String key) throws MissingValueError {
-        Object child = lookup(key, DesiredType.DATASET, Quantity.FIRST_ONLY,
-                null);
-        if (child == null) {
-            throw new MissingValueError(key);
-        }
-        return (Dataset) child;
-    }
-
-    /**
-     * Traverse a hierarchical sequence of keys to find a nested dataset.
-     * @param path                 A sequence of keys separated by dots.
-     * @return                     The (first) nested dataset matching
-     *                             {@code path}
-     * @throws MissingValueError   Thrown if {@code path} is not defined
-     *                             as a nested dataset within the current
-     *                             dataset.
-     */
-    public Dataset getChildPath(String path) throws MissingValueError {
-        Object child = lookupPath(path, DesiredType.DATASET,
-                Quantity.FIRST_ONLY, null);
-        if (child == null) {
-            throw new MissingValueError(path);
-        }
-        return (Dataset) child;
-    }
-
-    /**
-     * Find all of the nested datasets with a given name.
-     * @param key                  Name of the desired child; must be a
-     *                             top-level child within the current dataset
-     * @return                     An ArrayList of Datasets, one for each
-     *                             child dataset corresponding to
-     *                             {@code key}; the ArrayList will be empty
-     *                             if there are no children corresponding
-     *                             to {@code key}.
-     */
-    @SuppressWarnings("unchecked")
-    public ArrayList<Dataset> getChildren(String key) {
-        Object children = lookup(key, DesiredType.DATASET,
-                Quantity.ALL, null);
-        if (children == null) {
-            return new ArrayList<Dataset>();
-        }
-        return (ArrayList<Dataset>) children;
-    }
-
-    /**
-     * Find all of the nested datasets that correspond to a hierarchical path.
-     * @param path                 Path to the desired descendent (s); must
-     *                             be a sequence of keys separated by dots.
-     * @return                     An array of Datasets, one for each
-     *                             descendant dataset corresponding to
-     *                             {@code path}; the array will be empty
-     *                             if there are no children corresponding to
-     *                             {@code path}.
-     */
-    @SuppressWarnings("unchecked")
-    public ArrayList<Dataset> getChildrenPath(String path) {
-        Object children = lookupPath(path, DesiredType.DATASET,
-                Quantity.ALL, null);
-        if (children == null) {
-            return new ArrayList<Dataset>();
-        }
-        return (ArrayList<Dataset>) children;
-    }
-
-    /**
-     * If this dataset was originally read from a file, this method
-     * will provide the name of that file.
-     * @return                     The name of the file from which the dataset
-     *                             was originally read, or null if the dataset
-     *                             was not created from a file.
-     */
-    public String getFileName() {
-        return fileName;
-    }
-
-    /**
-     * Traverse a hierarchical sequence of keys to find a string value.
-     * @param path                 A sequence of keys separated by dots.
-     *                             For example, "a.b.c" refers to a value
-     *                             "c" contained in a nested dataset "b"
-     *                             contained in a dataset "a" contained
-     *                             in the current dataset
-     * @return                     Value associated with {@code path}
-     * @throws MissingValueError   Thrown if there is no value at
-     *                             {@code path}.
-     */
-
-    public String getPath(String path) throws MissingValueError {
-        Object child = lookupPath(path, DesiredType.STRING,
-                Quantity.FIRST_ONLY, null);
-        if (child == null) {
-            throw new MissingValueError(path);
-        }
-        return (String) child;
-    }
-
-    /**
-     * Returns a Set containing all of the top-level keys in the dataset.
-     * @return                     All of the keys at the top level of
-     *                             the dataset.
-     */
-    @SuppressWarnings("unchecked")
-    public Set<String> keySet() {
-        return map.keySet();
-    }
-
-    /**
-     * This is a general-purpose method to find the value(s) associated
-     * with a given key, intended primarily for use by other methods such
-     * as {@code get} and {@code getChildren}.  The value(s) must be
-     * present in the top level of the dataset (i.e., {@code key} is not
-     * a path; use lookupPath if it is).
-     * @param key                  Name of the desired value.
-     * @param wanted               Indicates what kind of value is desired
-     *                             (string, nested dataset, or either).
-     * @param quantity             Indicates whether all matching values
-     *                             should be returned, or only the first
-     *                             one found.
-     * @return                     The return value is null if no matching
-     *                             value is found.  If {@code quantity} is
-     *                             {@code FIRST_ONLY} then the return
-     *                             value is a String or Dataset; otherwise
-     *                             the return value is an ArrayList, each of
-     *                             whose members is a String or Dataset.
-     */
-    public Object lookup(String key, DesiredType wanted, Quantity quantity) {
-        Object value = map.get(key);
-        if (value == null) {
-            return null;
-        }
-        return collectResults(value, wanted, quantity, null);
-    }
-
-
-    /**
-     * This is a general-purpose method to find the value associated
-     * with a given key. The value must be present in the top level of the
-     * dataset (i.e., {@code key} is not a path; use lookupPath if it is).
-     * DesiredType is set to ANY and Quantity to FIRST_ONLY.
-     * @param key                  Name of the desired value.
-     * @return                     The return value is null if no matching
-     *                             value is found. Otherwise it is an Object
-     *                             which may be either a String or a Dataset.
-     */
-    public Object lookup(String key) {
-        return lookup(key, DesiredType.ANY, Quantity.FIRST_ONLY);
-    }
-
-    /**
-     * This is a general-purpose method to find the value(s) associated
-     * with a given key, intended primarily for use by other methods such
-     * as {@code get} and {@code getChildren}.  The value(s) must be
-     * present in the top level of the dataset (i.e., {@code key} is not
-     * a path; use lookupPath if it is).
-     * @param key                  Name of the desired value.
-     * @param wanted               Indicates what kind of value is desired
-     *                             (string, nested dataset, or either).
-     * @param quantity             Indicates whether all matching values
-     *                             should be returned, or only the first
-     *                             one found.
-     * @param out                  If {@code quantity} is {@code ALL} and
-     *                             this argument is non-null then the
-     *                             matching values are appended to this
-     *                             rather than creating a new ArrayList,
-     *                             and the return value will be {@code out}.
-     * @return                     The return value is null if no matching
-     *                             value is found.  If {@code quantity} is
-     *                             {@code FIRST_ONLY} then the return
-     *                             value is a String or Dataset; otherwise
-     *                             the return value is an ArrayList, each of
-     *                             whose members is a String or Dataset.
-     */
-    public Object lookup(String key, DesiredType wanted, Quantity quantity,
-            ArrayList<Object> out) {
-        Object value = map.get(key);
-        if (value == null) {
-            return null;
-        }
-        return collectResults(value, wanted, quantity, out);
-    }
-
-    /**
-     * This is a general-purpose method to find one or more values associated
-     * with a hierarchical path, intended primarily for use by other methods
-     * such as {@code getPath} and {@code getPathChildren}.  There can be
-     * multiple values assisted with a single path if some of the elements
-     * of the path refer to nested datasets.  For example, if the element
-     * {@code b} in the path {@code a.b.c} refers to 3 nested datasets
-     * then there could be 3 values corresponding to {@code a.b.c}.  These
-     * values need not necessarily be the same type: some could be string
-     * values and others could be nested datasets.
-     * @param path                 A sequence of keys separated by dots.
-     *                             For example, {@code a.b.c} refers to a value
-     *                             {@code c} contained in a nested dataset
-     *                             {@code b} contained in a dataset {@code a}
-     *                             contained in the current dataset.
-     * @param wanted               Indicates what kind of value is desired
-     *                             (string, nested dataset, or either).
-     * @param quantity             Indicates whether all matching values
-     *                             should be returned, or only the first
-     *                             one found.
-     * @return                     The return value is null if no matching
-     *                             values are found.  Otherwise, if
-     *                             {@code quantity} is {@code FIRST_ONLY}
-     *                             then the return value is a String or
-     *                             Dataset; otherwise the return value is
-     *                             an ArrayList, each of whose members is
-     *                             a String or Dataset.
-     */
-    public Object lookupPath(String path, DesiredType wanted,
-            Quantity quantity) {
-        return lookupPathHelper(path, 0, map, wanted, quantity, null);
-    }
-
-    /**
-     * This is a general-purpose method to find a value associated with
-     * a hierarchical path. DesiredType is set to ANY and Quantity to
-     * FIRST_ONLY.
-     * @param path                 A sequence of keys separated by dots.
-     *                             For example, {@code a.b.c} refers to a value
-     *                             {@code c} contained in a nested dataset
-     *                             {@code b} contained in a dataset {@code a}
-     *                             contained in the current dataset.
-     * @return                     The return value is null if no matching
-     *                             value is found. Otherwise it is an Object
-     *                             which may be either a String or a Dataset.
-     */
-    public Object lookupPath(String path) {
-        return lookupPathHelper(path, 0, map, DesiredType.ANY,
-                Quantity.FIRST_ONLY, null);
-    }
-
-    /**
-     * This is a general-purpose method to find one or more values associated
-     * with a hierarchical path, intended primarily for use by other methods
-     * such as {@code getPath} and {@code getPathChildren}.  There can be
-     * multiple values assisted with a single path if some of the elements
-     * of the path refer to nested datasets.  For example, if the element
-     * {@code b} in the path {@code a.b.c} refers to 3 nested datasets
-     * then there could be 3 values corresponding to {@code a.b.c}.  These
-     * values need not necessarily be the same type: some could be string
-     * values and others could be nested datasets.
-     * @param path                 A sequence of keys separated by dots.
-     *                             For example, {@code a.b.c} refers to a value
-     *                             {@code c} contained in a nested dataset
-     *                             {@code b} contained in a dataset {@code a}
-     *                             contained in the current dataset.
-     * @param wanted               Indicates what kind of value is desired
-     *                             (string, nested dataset, or either).
-     * @param quantity             Indicates whether all matching values
-     *                             should be returned, or only the first
-     *                             one found.
-     * @param out                  If {@code quantity} is {@code ALL} and
-     *                             this argument is non-null then the
-     *                             matching values are appended to this
-     *                             rather than creating a new ArrayList,
-     *                             and the return value will be {@code out}.
-     * @return                     The return value is null if no matching
-     *                             values are found.  Otherwise, if
-     *                             {@code quantity} is {@code FIRST_ONLY}
-     *                             then the return value is a String or
-     *                             Dataset; otherwise the return value is
-     *                             an ArrayList, each of whose members is
-     *                             a String or Dataset.
-     */
-    public Object lookupPath(String path, DesiredType wanted,
-            Quantity quantity, ArrayList<Object> out) {
-        return lookupPathHelper(path, 0, map, wanted, quantity, out);
-    }
-
-    /**
-     * Generate a compact string representation for the dataset.
-     * This form is intended for efficient transmission and storage;
-     * it is not intended to be human readable.  The only code that
-     * should attempt to understand the structure of this information is
-     * the addSerializedData method of this class.
-     * @param out                  A description of the dataset is
-     *                             appended here.
-     */
-    public void serialize(StringBuilder out) {
-        // Here is the grammar for the serialized representation of
-        // a dataset.  The basic idea is to use run-length encoding,
-        // where a string is represented as {@code length.contents},
-        // where the contents of the string are preceded by its length
-        // in characters and a "." to delimit the length.
-        // <dataset> = "("<element>("\n"<element)*")"
-        // <element> = <name><value>
-        // <name> = <encodedString>
-        // encodedString> = <length>"."<contents>
-        // <value> = <encodedString> | (<dataset>)+
-        //
-        // Here's an example of a dataset containing a string value
-        // {@code age} and a list of nested datasets named {@code children},
-        // each with a {@code name} element.
-        // (3.age2.24
-        // 8.children(4.name5.Alice)(4.name3.Bob)(4.name5.Carol))
-        serializeSubtree(map, out);
-    }
-
-    /**
-     * Generate a compact string representation for the dataset.
-     * This form is intended for efficient transmission and storage;
-     * it is not intended to be human readable.  The only code that
-     * should attempt to understand the structure of this information is
-     * the addSerializedData method of this class.
-     * @return                     The serialized representation of the
-     *                             dataset.
-     */
-    public String serialize() {
-        StringBuilder out = new StringBuilder();
-        serializeSubtree(map, out);
-        return out.toString();
-    }
-
-    /**
-     * Sets a value in the top level of a dataset.  If the value already
-     * exists then it is replaced (even if the value represents a nested
-     * dataset).
-     * @param key                  Name of a value in the top-level of the
-     *                             dataset (not a path).
-     * @param value                New value to associate with the key.
-     */
-    @SuppressWarnings("unchecked")
-    public void set(String key, String value) {
-        map.put(key, value);
-    }
-
-    /**
-     * Generate a Javascript description of the database contents, in the form
-     * of a Javascript Object literal enclosed in braces.
-     * @param out                  The Javascript is appended to this
-     *                             StringBuilder.
-     */
-    public void toJavascript(Appendable out) {
-        try {
-            javascriptForSubtree(map, out);
-        }
-        catch (IOException e) {
-            throw new IOError(e.getMessage());
-        }
-    }
-
-    /**
-     * Generates a nicely formatted string displaying the contents
-     * of the dataset (intended primarily for testing).  By default
-     * the dataset is formatted using YAML syntax.
-     * @return                     Pretty-printed string.
-     */
-    public String toString() {
-        return YamlDataset.writeString(this);
-    }
-
-    /**
-     * Writes the contents of the dataset to a file on disk.  This particular
-     * class doesn't have a defined disk format, so it throws an Error
-     * @param name                 Name of file to write.
-     * @param comment              Optional text describing the meaning of
-     *                             the file for humans who might stumble
-     *                             across it.  Null means no comment.
-     */
-    public void writeFile(String name, String comment) {
-        throw new UnknownFileFormatError("class " +
-                getClass().getSimpleName() +
-                " doesn't know how to write datasets to files");
-    }
-
-    /**
-     * This internal method does most of the work of the {@code clone}
-     * method.  It returns a deep copy of {@code source}, calling itself
-     * recursively to copy nested datasets.
-     * @param source               Object to copy; contents must conform
-     *                             to those expected for a dataset.
-     * @param dest                 Copy everything from {@code source} to
-     *                             this HashMap; if null, a new HashMap
-     *                             is created and used as the destination
-     * @return                     A clone of {@code source}.
-     */
-    @SuppressWarnings("unchecked")
-    protected HashMap cloneHelper(HashMap source, HashMap dest) {
-        if (dest == null) {
-            dest = new HashMap();
-        }
-
-        // Each iteration through the following loop copies one key-value
-        // pair from source to dest; it will invoke this method recursively
-        // to copy the contents of nested datasets.
-        for (Map.Entry<String,Object> pair :
-                ((HashMap<String,Object>) source).entrySet()) {
-            Object value = pair.getValue();
-            if (value instanceof String) {
-                dest.put(pair.getKey(), value);
-            } else if (value instanceof HashMap) {
-                dest.put(pair.getKey(), cloneHelper((HashMap) value, null));
-            } else if (value instanceof ArrayList) {
-                ArrayList sourceList = (ArrayList) value;
-                ArrayList destList = new ArrayList(sourceList.size());
-                for (Object value2 : sourceList) {
-                    destList.add(cloneHelper((HashMap) value2, null));
-                }
-                dest.put(pair.getKey(), destList);
-            }
-        }
-        return dest;
-    }
-
-    /**
-     * This method is used by both lookup and lookupPath to process values
-     * that match the key or path.  This method determines whether they match
-     * the caller's desired type(s), handles the creation of new Datasets from
-     * HashMaps, and collects multiple return values into an ArrayList, if
-     * desired.
-     * @param value                Value from a HashMap that has the right
-     *                             name.  Can be either a String, HashMap,
-     *                             or ArrayedList.
-     * @param wanted               The kinds of objects that are of interest.
-     * @param quantity             How many objects are of interest.
-     * @param out                  If {@code quantity} is {@code ALL} and
-     *                             this argument is non-null, then matching
-     *                             results are appended here; otherwise a
-     *                             new ArrayList is created to hold matching
-     *                             results.
-     * @return                     If {@code value} doesn't match
-     *                             {@code wanted} then null is returned.
-     *                             Otherwise, if {@code quantity} is
-     *                             {@code ALL} than a single String or
-     *                             Dataset is returned.  Otherwise an
-     *                             ArrayList is returned with all of the
-     *                             matching values.
-     */
-    protected Object collectResults(Object value, DesiredType wanted,
-            Quantity quantity, ArrayList<Object> out) {
-        if (value instanceof String) {
-            if (wanted == DesiredType.DATASET) {
-                return null;
-            }
-            if (quantity == Quantity.FIRST_ONLY) {
-                return value;
-            }
-            if (out == null) {
-                out = new ArrayList<Object>(5);
-            }
-            out.add(value);
-            return out;
-        }
-
-        // The value is either a HashMap or an ArrayList.
-        if (wanted == DesiredType.STRING) {
-            return null;
-        }
-        if (quantity == Quantity.FIRST_ONLY) {
-            if (value instanceof ArrayList) {
-                value = ((ArrayList) value).get(0);
-            }
-            return new Dataset((HashMap) value, fileName);
-        }
-        if (out == null) {
-            out = new ArrayList<Object>(5);
-        }
-        if (value instanceof ArrayList) {
-            for (Object element : (ArrayList) value) {
-                out.add(new Dataset((HashMap) element, fileName));
-            }
-        } else {
-            out.add(new Dataset((HashMap) value, fileName));
-        }
-        return out;
-    }
-
-    /**
-     * This shared utility method does most of the real work for
-     * createChild and createChildPath.
-     * @param map                  HashMap containing the desired child
-     *                             dataset.
-     * @param key                  Name of the desired nested dataset.
-     * @return                     Dataset corresponding to the child;
-     *                             refers to an existing nested dataset, if
-     *                             there was one, or to a newly created
-     *                             nested dataset otherwise.
-     */
-    @SuppressWarnings("unchecked")
-    protected Dataset createChildInternal(HashMap map, String key) {
-        Object child = map.get(key);
-        if (child instanceof HashMap) {
-            return new Dataset((HashMap) child, fileName);
-        }
-        if (child instanceof ArrayList) {
-            return new Dataset((HashMap) ((ArrayList) child).get(0), fileName);
-        }
-        child = new HashMap();
-        map.put(key, child);
-        return new Dataset((HashMap) child, fileName);
-    }
-
-    /**
-     * Extract a run-length encoded string from the input, and return it
+     * Extract a run-length encoded string from the input, and return it, used
+     * to deserialize datasets.
      * @param source               Source string.  The characters starting
      *                             at {@code start} must consist of a
      *                             decimal integer followed by a "."
@@ -1264,73 +1294,72 @@ public class Dataset implements Cloneable, Serializable {
     }
 
     /**
-     * This recursive method does all the real work for the
-     * {@code toJavascript} method, generating a Javascript description
-     * of the contents of a dataset.
-     * @param map                  HashMap that holds the dataset subtree
-     *                             to be written.
-     * @param out                  The Javascript for the dataset gets
-     *                             appended here in the form of an Object
-     *                             literal (enclosed in braces).
+     * This is a general-purpose method to find the value(s) associated
+     * with a given key, intended primarily for use by other methods such
+     * as {@code get} and {@code check}.  The value(s) may either be in
+     * the top level of the dataset or refer to a path
+     * @param keyOrPath            Name of the desired element (key in
+     *                             top-level dataset or multi-level path).
+     * @param quantity             Indicates whether all matching values
+     *                             should be returned, or only the first
+     *                             one found.
+     * @return                     The return value is null if no matching
+     *                             values are found.  If {@code quantity} is
+     *                             {@code FIRST_ONLY} then the return
+     *                             value is the first match found; otherwise
+     *                             the return value is a DSArrayList, containing
+     *                             all matches.
      */
-    @SuppressWarnings("unchecked")
-    protected void javascriptForSubtree(HashMap map, Appendable out)
-            throws IOException {
-        out.append('{');
-        String prefix = "";
-        Collection keySet = map.keySet();
-        if (sortOutput) {
-            keySet = new TreeSet<String>(keySet);
+    protected Object lookup(String keyOrPath, Quantity quantity) {
+        Object value = map.get(keyOrPath);
+
+        if (value == null) {
+            value = lookupPath(keyOrPath, 0, quantity, null);
         }
-        for (Object nameObject: keySet) {
-            String name = (String) nameObject;
-            out.append(prefix);
-            out.append(name);
-            out.append(": ");
-            Object value = map.get(name);
-            if (value instanceof HashMap) {
-                javascriptForSubtree((HashMap) value, out);
-            } else if (value instanceof ArrayList) {
-                out.append('[');
-                ArrayList<HashMap> list = (ArrayList <HashMap>) value;
-                String listPrefix = "";
-                for (int i = 0; i < list.size(); i++) {
-                    out.append(listPrefix);
-                    javascriptForSubtree(list.get(i), out);
-                    listPrefix = ", ";
-                }
-                out.append(']');
+
+        if (quantity == Quantity.ALL) {
+            if (value == null) {
+                return new DSArrayList();
+            } else if (value instanceof DSArrayList) {
+                return value;
             } else {
-                out.append('"');
-                Html.escapeStringChars(value.toString(), out);
-                out.append('"');
+                DSArrayList array = new DSArrayList();
+                array.add(value);
+                return array;
             }
-            prefix = ", ";
+        } else {
+            if (value == null) {
+                return null;
+            } else if (value instanceof DSArrayList) {
+                return ((DSArrayList) value).get(0);
+            } else {
+                return value;
+            }
         }
-        out.append('}');
     }
 
+
     /**
-     * Given a path, find the hash table that contains the element named in
+     * Given a path, find the Dataset that contains the element named in
      * the path (if there is one) and return it along with the final
      * name in the past.  This method is used internally by several other
-     * methods, such as createPath and deletePath.
+     * methods, such as setPath and delete.
      * @param path                 A sequence of keys separated by dots.
-     * @param create               True means this the method is being invoked
+     * @param create               True means this method is being invoked
      *                             as part of a "create" operation: if any
      *                             of the ancestors of {@code path} don't
      *                             exist then they are created, overwriting
-     *                             any string values they used to have).
+     *                             any non-dataset values they used to have).
      *                             False means just return a null if either
      *                             of these problems occurs.
-     * @return                     ParentMap structure with information
+     * @return                     ParentInfo structure with information
      *                             corresponding to {@code path}, or null
      *                             if the parent doesn't exist.
      */
     @SuppressWarnings("unchecked")
     protected ParentInfo lookupParent(String path, boolean create) {
         int startIndex = 0;
-        HashMap parent = map;
+        Dataset parent = this;
         Object child;
         String key;
         int dot;
@@ -1343,23 +1372,23 @@ public class Dataset implements Cloneable, Serializable {
                 break;
             }
             key = path.substring(startIndex, dot);
-            child = parent.get(key);
+            child = parent.check(key);
 
             // Make sure that the current object is a nested dataset.
-            if (child instanceof ArrayList) {
+            if (child instanceof DSArrayList) {
                 // The child consists of a list of nested datasets; take
                 // the first one.
-                child = ((ArrayList) child).get(0);
+                child = ((DSArrayList) child).get(0);
             }
-            if (!(child instanceof HashMap)) {
-                // Child doesn't exist or has a string value.
+            if (!(child instanceof Dataset)) {
+                // Child doesn't exist or isn't a Dataset
                 if (!create) {
                     return null;
                 }
-                child = new HashMap();
-                parent.put(key, child);
+                child = new Dataset();
+                parent.set(key, child);
             }
-            parent = (HashMap) child;
+            parent = (Dataset) child;
             startIndex = dot+1;
         }
 
@@ -1368,21 +1397,20 @@ public class Dataset implements Cloneable, Serializable {
     }
 
     /**
-     * This recursive method does all of the work of the {@code lookupPath}
-     * method.  See the documentation for {@code lookupPath} for info
-     * on the results produced.  This method is called recursively for
-     * each element in {@code path}.
+     * This is a general-purpose method to find one or more values associated
+     * with a hierarchical path, intended primarily for use by other methods
+     * such as {@code lookup}. There can be
+     * multiple values associated with a single path if some of the elements
+     * of the path refer to nested datasets.  For example, if the element
+     * {@code b} in the path {@code a.b.c} refers to 3 nested datasets
+     * then there could be 3 values corresponding to {@code a.b.c}.  These
+     * values need not necessarily be the same type.
      * @param path                 Dot-separated collection of element names,
      *                             indicating the desired values.
      * @param start                The caller has already processed the
      *                             portion of {@code path} up to this
      *                             index.  The next element name starts at
      *                             this index.
-     * @param dataset              Nested dataset in which to start searching:
-     *                             the element in {@code path} starting at
-     *                             index {@code start} will be looked up in
-     *                             this dataset.
-     * @param wanted               The kind of values that are desired.
      * @param quantity             Indicates whether all matching values
      *                             should be returned, or only the first
      *                             one found.
@@ -1393,54 +1421,69 @@ public class Dataset implements Cloneable, Serializable {
      *                             and the return value will be
      *                             {@code results}.
      * @return                     The return value is null if no matching
-     *                             values are found.  Otherwise, if
-     *                             {@code quantity} is {@code FIRST_ONLY} then
-     *                             the return value is a String or Dataset.
-     *                             Otherwise the return value is an ArrayList,
-     *                             each of whose members is a String or Dataset.
+     *                             value is found.  If {@code quantity} is
+     *                             {@code FIRST_ONLY} then the return
+     *                             value is the first match found; otherwise
+     *                             the return value is a DSArrayList, containing
+     *                             all matches.
      */
     @SuppressWarnings("unchecked")
-    protected Object lookupPathHelper(String path, int start, HashMap dataset,
-            DesiredType wanted, Quantity quantity, ArrayList<Object> results) {
+     protected Object lookupPath(String path, int start, Quantity quantity,
+                                 DSArrayList<Object> results) {
+        if (results == null && quantity == Quantity.ALL) {
+            results = new DSArrayList<Object>();
+        }
+
         int length = path.length();
         int dot = path.indexOf('.', start);
         if (dot == -1) {
             dot = length;
         }
         String key = path.substring(start, dot);
-        Object nextObject = dataset.get(key);
+        Object nextObject = map.get(key);
         if (nextObject == null) {
             return null;
         }
         if (dot >= length) {
             // We've reached the end of the path; add the value(s) to
-            // the result (if they match {@code wanted}) and return.
-            return collectResults(nextObject, wanted, quantity, results);
+            // the result and return.
+            if (quantity == Quantity.FIRST_ONLY) {
+                return nextObject;
+            } else {
+                if (nextObject instanceof DSArrayList) {
+                    results.addAll((DSArrayList) nextObject);
+                } else {
+                    results.add(nextObject);
+                }
+                return results;
+            }
         }
 
         // If we get here it means there are more path elements to look up.
         // Make a recursive call for each nested dataset in the current value.
         dot++;
-        if (nextObject instanceof HashMap) {
-            return lookupPathHelper(path, dot, (HashMap) nextObject, wanted,
-                    quantity, results);
-        } else if (nextObject instanceof ArrayList) {
+        if (nextObject instanceof Dataset) {
+            return ((Dataset) nextObject).lookupPath(path, dot,
+                       quantity, results);
+        } else if (nextObject instanceof DSArrayList) {
             Object returnValue = null;
-            ArrayList list = (ArrayList) nextObject;
-            for (int i = 0, end = list.size(); i < end; i++) {
-                Object nestedResult = lookupPathHelper(path, dot,
-                        (HashMap) list.get(i), wanted, quantity, results);
-                if (nestedResult != null) {
-                    if (quantity == Quantity.FIRST_ONLY) {
-                        // We only need one result, and we have it.  No
-                        // need to search additional nested datasets.
-                        return nestedResult;
-                    } else {
-                        // The result is an ArrayList; save it to use for
-                        // future results (it's possible that the next call
-                        // allocated it).
-                        results = (ArrayList<Object>) nestedResult;
-                        returnValue = nestedResult;
+            DSArrayList list = (DSArrayList) nextObject;
+            for (Object obj : list) {
+                if (obj instanceof Dataset) {
+                    Object nestedResult = ((Dataset) obj).lookupPath(path, dot,
+                                          quantity, results);
+                    if (nestedResult != null) {
+                        if (quantity == Quantity.FIRST_ONLY) {
+                            // We only need one result, and we have it.  No
+                            // need to search additional nested datasets.
+                            return nestedResult;
+                        } else {
+                            // The result is a DSArrayList; save it to use for
+                            // future results (it's possible that the next call
+                            // allocated it).
+                            results = (DSArrayList<Object>) nestedResult;
+                            returnValue = nestedResult;
+                        }
                     }
                 }
             }
@@ -1448,48 +1491,5 @@ public class Dataset implements Cloneable, Serializable {
         } else {
             return null;
         }
-    }
-
-    /**
-     * This method does most of the work of{@code serialize}.  It
-     * appends the serialized representation of the (nested?) dataset
-     * given by {@code map} to {@code out}.
-     * @param map                  Dataset to be serialized.
-     * @param out                  Where to place the serialized
-     *                             representation.
-     */
-    @SuppressWarnings("unchecked")
-    protected void serializeSubtree(HashMap map, StringBuilder out) {
-        // See the serialize method for documentation on the syntax of
-        // the serialized representation.
-        out.append('(');
-        String prefix = "";
-        Collection keySet = map.keySet();
-        if (sortOutput) {
-            keySet = new TreeSet<String>(keySet);
-        }
-        for (Object nameObject: keySet) {
-            String name = (String) nameObject;
-            out.append(prefix);
-            out.append(name.length());
-            out.append('.');
-            out.append(name);
-            Object value = map.get(name);
-            if (value instanceof HashMap) {
-                serializeSubtree((HashMap) value, out);
-            } else if (value instanceof ArrayList) {
-                ArrayList<HashMap> list = (ArrayList <HashMap>) value;
-                for (int i = 0; i < list.size(); i++) {
-                    serializeSubtree(list.get(i), out);
-                }
-            } else {
-                String s = value.toString();
-                out.append(s.length());
-                out.append('.');
-                out.append(s);
-            }
-            prefix = "\n";
-        }
-        out.append(')');
     }
 }

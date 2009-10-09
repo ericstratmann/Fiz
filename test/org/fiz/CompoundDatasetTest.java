@@ -21,16 +21,17 @@ import java.util.*;
  */
 public class CompoundDatasetTest extends junit.framework.TestCase {
     protected CompoundDataset compound = null;
+    Dataset d1, d2, d3, d4;
 
     public void setUp() {
-        Dataset d1 = YamlDataset.newStringInstance(
+        d1 = YamlDataset.newStringInstance(
                 "a: 111\n" +
                 "nested:\n" +
                 "  x: x_value\n" +
                 "  y: y_value\n");
-        Dataset d2 = new Dataset("b", "222", "nested", "nnn");
-        Dataset d3 = new Dataset("x", "77", "a", "99");
-        Dataset d4 = YamlDataset.newStringInstance(
+        d2 = new Dataset("b", "222", "nested", "nnn");
+        d3 = new Dataset("x", "77", "a", "99");
+        d4 = YamlDataset.newStringInstance(
                 "a: 333\n" +
                 "c: 444\n" +
                 "nested:\n" +
@@ -58,7 +59,7 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
                 StringUtil.join(c.components, ", "));
     }
 
-    public void test_addSerializedData() {
+    public void test_addSerializedData_twoArgs() {
         boolean gotException = false;
         try {
             compound.addSerializedData("x", 0);
@@ -72,29 +73,46 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
     }
 
-    public void test_addChild() {
+    public void test_addSerializedData_oneArg() {
         boolean gotException = false;
         try {
-            compound.addChild("x", new Dataset());
+            compound.addSerializedData("x");
         }
         catch (InternalError e) {
             assertEquals("exception message",
-                    "addChild invoked on a CompoundDataset",
+                    "addSerializedData invoked on a CompoundDataset",
                     e.getMessage());
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
     }
 
-    public void test_check() {
-        assertEquals("duplicate value: choose first", "111",
-                compound.check("a"));
-        assertEquals("value in last dataset", "444",
-                compound.check("c"));
-        assertEquals("value doesn't exist", null,
-                compound.check("xyz"));
-        assertEquals("first value found is a nested dataset", "nnn",
-                compound.check("nested"));
+    public void test_add() {
+        boolean gotException = false;
+        try {
+            compound.add("x", new Dataset());
+        }
+        catch (InternalError e) {
+            assertEquals("exception message",
+                    "add invoked on a CompoundDataset",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+
+    public void test_addPath() {
+        boolean gotException = false;
+        try {
+            compound.addPath("x", new Dataset());
+        }
+        catch (InternalError e) {
+            assertEquals("exception message",
+                    "addPath invoked on a CompoundDataset",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
     }
 
     public void test_clear() {
@@ -124,13 +142,27 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
         assertEquals("b from clone", "222", compound3.get("b"));
     }
 
+    public void test_clone_with_arg() {
+        boolean gotException = false;
+        try {
+            compound.clone(new Dataset());
+        }
+        catch (InternalError e) {
+            assertEquals("exception message",
+                    "clone with argument invoked on a CompoundDataset",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+
+
     public void test_containsKey() {
         assertEquals("value in last dataset", true,
                 compound.containsKey("c"));
         assertEquals("value doesn't exist", false,
                 compound.containsKey("xyz"));
     }
-
     public void test_copyFrom() {
         boolean gotException = false;
         try {
@@ -145,62 +177,6 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
     }
 
-    public void test_createChild() {
-        boolean gotException = false;
-        try {
-            compound.createChild("a");
-        }
-        catch (InternalError e) {
-            assertEquals("exception message",
-                    "createChild invoked on a CompoundDataset",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-
-    public void test_createChild_keyAndDataset() {
-        boolean gotException = false;
-        try {
-            compound.createChild("a", new Dataset());
-        }
-        catch (InternalError e) {
-            assertEquals("exception message",
-                    "createChild invoked on a CompoundDataset",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-
-    public void test_createChildPath() {
-        boolean gotException = false;
-        try {
-            compound.createChildPath("a");
-        }
-        catch (InternalError e) {
-            assertEquals("exception message",
-                    "createChildPath invoked on a CompoundDataset",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-
-    public void test_createChildPath_keyAndDataset() {
-        boolean gotException = false;
-        try {
-            compound.createChildPath("a", new Dataset());
-        }
-        catch (InternalError e) {
-            assertEquals("exception message",
-                    "createChildPath invoked on a CompoundDataset",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-
     public void test_delete() {
         boolean gotException = false;
         try {
@@ -209,20 +185,6 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
         catch (InternalError e) {
             assertEquals("exception message",
                     "delete invoked on a CompoundDataset",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-
-    public void test_deletePath() {
-        boolean gotException = false;
-        try {
-            compound.deletePath("a.b");
-        }
-        catch (InternalError e) {
-            assertEquals("exception message",
-                    "deletePath invoked on a CompoundDataset",
                     e.getMessage());
             gotException = true;
         }
@@ -252,80 +214,32 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
     }
 
     public void test_lookup_3args() {
-        Object out = compound.lookup("a", Dataset.DesiredType.ANY,
+        Object out = compound.lookup("a",
                 Dataset.Quantity.ALL);
-        assertEquals("result class", "ArrayList",
+        assertEquals("result class", "DSArrayList",
                 out.getClass().getSimpleName());
         assertEquals("result value", "111, 99, 333",
                 StringUtil.join((ArrayList) out, ", "));
     }
 
     public void test_lookup_returnFirst() {
-        assertEquals("value of a", "111", compound.lookup("a",
-                Dataset.DesiredType.STRING, Dataset.Quantity.FIRST_ONLY,
-                null));
+        assertEquals("value of a", 111, compound.lookup("a",
+                Dataset.Quantity.FIRST_ONLY));
         assertEquals("value of b", "222", compound.lookup("b",
-                Dataset.DesiredType.STRING, Dataset.Quantity.FIRST_ONLY,
-                null));
+                Dataset.Quantity.FIRST_ONLY));
     }
     public void test_lookup_returnAll() {
-        Object out = compound.lookup("b", Dataset.DesiredType.ANY,
-                Dataset.Quantity.ALL, null);
-        assertEquals("result class", "ArrayList",
+        Object out = compound.lookup("b",
+                Dataset.Quantity.ALL);
+        assertEquals("result class", "DSArrayList",
                 out.getClass().getSimpleName());
         assertEquals("result value", "222, value: 88\n",
                 StringUtil.join((ArrayList) out, ", "));
     }
-    public void test_lookup_useExistingArrayList() {
-        ArrayList<Object> out = new ArrayList<Object>();
-        out.add("Connecticut");
-        assertEquals("return existing list", out, compound.lookup("a",
-                Dataset.DesiredType.ANY, Dataset.Quantity.ALL, out));
-        assertEquals("result value", "Connecticut, 111, 99, 333",
-                StringUtil.join(out, ", "));
-    }
+
     public void test_lookup_cantFindAny() {
         assertEquals("return value null", null, compound.lookup("bogus",
-                Dataset.DesiredType.STRING, Dataset.Quantity.FIRST_ONLY,
-                null));
-    }
-
-    public void test_lookupPath_3args() {
-        Object out = compound.lookupPath("nested.x",
-                Dataset.DesiredType.STRING, Dataset.Quantity.ALL);
-        assertEquals("result value", "x_value, xxxx, zzzz",
-                StringUtil.join((ArrayList) out, ", "));
-    }
-
-    public void test_lookupPath_returnFirst() {
-        assertEquals("value of nested.x", "x_value",
-                compound.lookupPath("nested.x", Dataset.DesiredType.STRING,
-                Dataset.Quantity.FIRST_ONLY, null));
-        assertEquals("value of nested.z", "yyyy",
-                compound.lookupPath("nested.z", Dataset.DesiredType.STRING,
-                Dataset.Quantity.FIRST_ONLY, null));
-    }
-    public void test_lookupPath_returnAll() {
-        Object out = compound.lookupPath("nested.x", Dataset.DesiredType.ANY,
-                Dataset.Quantity.ALL, null);
-        assertEquals("result class", "ArrayList",
-                out.getClass().getSimpleName());
-        assertEquals("result value", "x_value, xxxx, zzzz",
-                StringUtil.join((ArrayList) out, ", "));
-    }
-    public void test_lookupPath_useExistingArrayList() {
-        ArrayList<Object> out = new ArrayList<Object>();
-        out.add("Connecticut");
-        assertEquals("return existing list", out, compound.lookupPath(
-                "nested.x", Dataset.DesiredType.ANY, Dataset.Quantity.ALL,
-                out));
-        assertEquals("result value", "Connecticut, x_value, xxxx, zzzz",
-                StringUtil.join(out, ", "));
-    }
-    public void test_lookupPath_cantFindAny() {
-        assertEquals("return value null", null, compound.lookupPath(
-                "nested.bogus", Dataset.DesiredType.STRING,
-                Dataset.Quantity.FIRST_ONLY, new ArrayList<Object>()));
+                Dataset.Quantity.FIRST_ONLY));
     }
 
     public void test_serialize_withStringBuilder() {
@@ -365,6 +279,20 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
         catch (InternalError e) {
             assertEquals("exception message",
                     "set invoked on a CompoundDataset",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+
+    public void test_setPath() {
+        boolean gotException = false;
+        try {
+            compound.setPath("a", "34");
+        }
+        catch (InternalError e) {
+            assertEquals("exception message",
+                    "setPath invoked on a CompoundDataset",
                     e.getMessage());
             gotException = true;
         }
@@ -470,7 +398,7 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
         CompoundDataset compound = new CompoundDataset(c1, c2);
         assertEquals("nested strings",
                 "Alice, Bob, Carol, David, Elise, Fred",
-                StringUtil.join((ArrayList) compound.lookupPath("child.name",
-                Dataset.DesiredType.ANY, Dataset.Quantity.ALL), ", "));
+                StringUtil.join((ArrayList) compound.lookup("child.name",
+                Dataset.Quantity.ALL), ", "));
     }
 }

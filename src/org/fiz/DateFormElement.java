@@ -42,8 +42,8 @@ import java.util.regex.MatchResult;
  *                      family name is {@code x.gif}, then image
  *                      {@code x-icon.gif} must exist (this is the only image
  *                      in the family at this time).  Default value is
- *                      {@code dateForm.gif}                                 
- *                                         
+ *                      {@code dateForm.gif}
+ *
  * The {@code dateFormat} property allows a developer to specify the format
  * of the date displayed to the user in the {@code <input>} field. The following
  * specifiers may be used:
@@ -53,7 +53,7 @@ import java.util.regex.MatchResult;
  *   M:                 month with leading 0s (01, 02, ... , 11, 12)
  *   y:                 year in two-digit form (88, 89, ... , 01, 02)
  *   Y:                 year in four-digit form (1988, ... , 2002)
- *                          
+ *
  * The {@code exclude} property is a comma-separated list of filter rules used
  * to determine whether a date is selectable or not. The following specifiers
  * may be used:
@@ -65,7 +65,7 @@ import java.util.regex.MatchResult;
  *   {number} {unit} {ago?}:    Specifies a relative date. The optional
  *                              {@code ago} flag specifies a relative date in
  *                              the past e.g. 12 months ago, 3 days.
- * 
+ *
  * The following syntax may be used:
  *   {start_date?}:{end_date?}:     {@code start_date} and {@code end_date} can
  *                                  be replaced with any of the specifiers
@@ -103,21 +103,21 @@ public class DateFormElement extends FormElement {
     // The format of the date that will be displayed to the user in the input
     // field and also returned by the form on submission
     String dateFormat = null;
-    
+
     // Parsed set of filters used to check if a date can be selected or not
     Dataset filters = null;
-    
+
     /**
      * Construct a DateFormElement from a set of properties that define its
      * configuration.
-     * 
+     *
      * @param properties        Dataset whose values are used to configure the
      *                          element. See the class documentation above for
      *                          a list of supported values.
      */
     public DateFormElement(Dataset properties) {
         super(properties);
-        dateFormat = properties.check("dateFormat");
+        dateFormat = properties.checkString("dateFormat");
 
         if (dateFormat == null) {
             dateFormat = "m/d/Y";
@@ -132,16 +132,16 @@ public class DateFormElement extends FormElement {
                                  .replace("y", "[0-9]{2}")
                                  .replace("Y", "[0-9]{4}");
         addValidator(new Dataset("type", "regex", "pattern", regex));
-        
+
         // Create a validator to check that the date is selectable
-        String exclude = properties.check("exclude");
+        String exclude = properties.checkString("exclude");
         if (exclude != null) {
             filters = parseFilter(exclude.toLowerCase());
             Dataset validator = new Dataset(
                     "type", "DateFormElement.validateDate",
                     "exclude", filters,
                     "dateFormat", dateFormat);
-            String errorMessage = properties.check("errorMessage");
+            String errorMessage = properties.checkString("errorMessage");
             if (errorMessage != null) {
                 validator.set("errorMessage", errorMessage);
             }
@@ -151,7 +151,7 @@ public class DateFormElement extends FormElement {
 
     /**
      * Construct a DateFormElement from an identifier and label.
-     * 
+     *
      * @param id                Value for the element's {@code id} property.
      * @param label             Value for the element's {@code label} property.
      */
@@ -161,7 +161,7 @@ public class DateFormElement extends FormElement {
 
     /**
      * This method is invoked to generate HTML for this form element.
-     * 
+     *
      * @param cr                Overall information about the client
      *                          request being serviced.
      * @param data              Data for the form (a CompoundDataset including
@@ -178,9 +178,9 @@ public class DateFormElement extends FormElement {
                 "onblur=\"Fiz.ids.@id.validateAndUpdate()\" " +
                 "onkeyup=\"Fiz.ids.@id.validateAndDisplay()\" " +
                 "{{value=\"@1?{" + dateToString(getToday()) + "}\"}} />\n",
-                properties, data.check(id));
+                properties, data.checkString(id));
 
-        String family = properties.check("family");
+        String family = properties.checkString("family");
         if (family == null) {
             family = "dateForm.gif";
         }
@@ -223,7 +223,7 @@ public class DateFormElement extends FormElement {
         out.append("      </tbody>\n" + "    </table>\n");
 
         // Add navigation to our calendar
-        Template.appendHtml(out, 
+        Template.appendHtml(out,
                 "    <div id=\"@(id)_navigation\" class=\"nav\">\n" +
                 "      <a onclick=\"Fiz.ids.@id.prevYear()\" " +
                 "id=\"@(id)_prevYear\" class=\"arrow-prev-year\">" +
@@ -254,7 +254,7 @@ public class DateFormElement extends FormElement {
             js.append(");\n");
             cr.evalJavascript(js.toString(), properties);
         }
-        
+
         cr.getHtml().includeCssFile("DateFormElement.css");
         cr.getHtml().includeJsFile("static/fiz/DateFormElement.js");
     }
@@ -262,7 +262,7 @@ public class DateFormElement extends FormElement {
     /**
      * Parses the filter string to create a Dataset containing a list of rules
      * for determining whether a date is selectable or not.
-     * 
+     *
      * @param filterString         String consisting of a comma-separated list
      *                             of filters
      * @return Dataset containing a list of the filters in a processed format
@@ -276,22 +276,22 @@ public class DateFormElement extends FormElement {
             if (filter.contains(":")) {
                 // filters out a range of dates
                 String[] range = filter.split(":", -1);
-                filters.addChild("filter", new Dataset("type", "range",
+                filters.add("filter", new Dataset("type", "range",
                         "startDate", formatForJs(range[0]), "endDate",
                         formatForJs(range[1])));
-            } else if ((dayOfWeek = getDayOfWeek(filter)) >= 0) { 
+            } else if ((dayOfWeek = getDayOfWeek(filter)) >= 0) {
                 // filters out a day of the week
-                filters.addChild("filter", new Dataset("type", "dayOfWeek",
+                filters.add("filter", new Dataset("type", "dayOfWeek",
                         "dayOfWeek", Integer.toString(dayOfWeek)));
             } else {
                 String[] dateValues = filter.split("/");
                 if (dateValues.length == 3) {
                     // filters out a specific date
-                    filters.addChild("filter", new Dataset("type", "date",
+                    filters.add("filter", new Dataset("type", "date",
                             "date", formatForJs(filter)));
                 } else {
                     // filters the same day/month on an annual basis
-                    filters.addChild("filter", new Dataset("type",
+                    filters.add("filter", new Dataset("type",
                             "annualDate", "month", dateValues[0], "day",
                             dateValues[1]));
                 }
@@ -303,7 +303,7 @@ public class DateFormElement extends FormElement {
 
     /**
      * Formats a user-defined date string into a Javascript parseable string.
-     * 
+     *
      * @param dateString        A string that fits one of the specified forms
      *                          allowed for defining a date
      * @return A Javascript parsable date string
@@ -314,7 +314,7 @@ public class DateFormElement extends FormElement {
 
     /**
      * Converts various strings into Java Date objects
-     * 
+     *
      * @param dateString        A string that fits one of the specified forms
      *                          allowed for defining a date
      * @return A date object representing the input string
@@ -368,7 +368,7 @@ public class DateFormElement extends FormElement {
 
     /**
      * Converts a Java Date object into a Javascript parsable date string
-     * 
+     *
      * @param dateObject        The date object to be converted into a string
      * @return                  A Javascript parsable date string
      */
@@ -382,10 +382,10 @@ public class DateFormElement extends FormElement {
 
     /**
      * Gets the corresponding index for the day of the week
-     * 
+     *
      * @param dayOfWeek         String representation of the day of the week
      *                          (Sunday, sun, Monday, tues, ...)
-     * @return                  Index for the day of the week (0 = Sunday, 
+     * @return                  Index for the day of the week (0 = Sunday,
      *                          1 = Monday, ... , 6 = Saturday)
      */
     protected static int getDayOfWeek(String dayOfWeek) {
@@ -401,13 +401,13 @@ public class DateFormElement extends FormElement {
     /**
      * Gets a date object representing the current date (or a debug date if one
      * is specified by setting the static {@code today} variable).
-     * 
+     *
      * @return                  Date object for the current date (or debug date)
      */
     protected static Date getToday() {
         return (today == null ? new Date() : today);
     }
-    
+
     /**
      * Validates that the value of {@code id} is a selectable date according
      * to the filter rules passed in as the {@code exclude} property of the
@@ -417,7 +417,7 @@ public class DateFormElement extends FormElement {
      *                           per filter. The filter dataset will include a
      *                           {@code type} property describing the type of
      *                           filter along with a set of parameters for each
-     *                           type of filter. The nested dataset for this 
+     *                           type of filter. The nested dataset for this
      *                           property should not be constructed manually
      *                           and should instead utilize the
      *                           {@code parseFilter} method paired with an
@@ -426,7 +426,7 @@ public class DateFormElement extends FormElement {
      *   dateFormat:             The format of the date string being validated.
      *                           The date string is the one that appears in the
      *                           input element.
-     *   
+     *
      * @param id                        id of the input element to validate
      * @param properties                Configuration properties for the
      *                                  validator: see above for supported
@@ -438,62 +438,62 @@ public class DateFormElement extends FormElement {
      */
     public static String validateDate(String id, Dataset properties,
             Dataset formData) {
-        Dataset filters = properties.getChild("exclude");
+        Dataset filters = properties.getDataset("exclude");
 
         // Parses the value in the input field into a Date object
         Calendar date = Calendar.getInstance();
-        String dateFormat = properties.get("dateFormat");
+        String dateFormat = properties.getString("dateFormat");
         dateFormat = dateFormat.replace('m', 'M');
         dateFormat = dateFormat.replace('D', 'd');
         dateFormat = dateFormat.replace("Y", "yy");
         DateFormat parser = new SimpleDateFormat(dateFormat);
         try {
-            date.setTime(parser.parse(formData.get(id)));
+            date.setTime(parser.parse(formData.getString(id)));
         } catch (Exception e) {
             return FormValidator.errorMessage("Invalid date format",
                     properties, formData);
         }
-        
+
         // Used to parse the Javascript formatted dates stored in the
         // exclude dataset
         DateFormat dateParser = new SimpleDateFormat("MMMM d, yyyy");
 
-        for (Dataset filter : filters.getChildren("filter")) {
-            if (filter.get("type").equals("dayOfWeek")) {
+        for (Dataset filter : filters.getDatasetList("filter")) {
+            if (filter.getString("type").equals("dayOfWeek")) {
                 // Excludes the day of the week
-                int dayOfWeek = Integer.parseInt(filter.get("dayOfWeek"));
+                int dayOfWeek = Integer.parseInt(filter.getString("dayOfWeek"));
                 int curDayOfWeek = date.get(Calendar.DAY_OF_WEEK);
                 if (dayOfWeek + 1 == curDayOfWeek) {
                     return FormValidator.errorMessage("Invalid day of the week",
                             properties, formData);
                 }
-            } else if (filter.get("type").equals("date")) {
+            } else if (filter.getString("type").equals("date")) {
                 // Excludes the specified date
                 Date filterDate = null;
                 try {
-                    filterDate = dateParser.parse(filter.get("date"));
+                    filterDate = dateParser.parse(filter.getString("date"));
                 } catch (Exception e) {
                 }
                 if (filterDate.compareTo(date.getTime()) == 0) {
                     return FormValidator.errorMessage("Invalid date",
                             properties, formData);
                 }
-            } else if (filter.get("type").equals("annualDate")) {
+            } else if (filter.getString("type").equals("annualDate")) {
                 // Excludes the specified date for all years
-                int month = Integer.parseInt(filter.get("month"));
-                int day = Integer.parseInt(filter.get("day"));
+                int month = Integer.parseInt(filter.getString("month"));
+                int day = Integer.parseInt(filter.getString("day"));
                 if (date.get(Calendar.MONTH) == month - 1
                         && date.get(Calendar.DATE) == day) {
                     return FormValidator.errorMessage("Invalid day of the year",
                             properties, formData);
                 }
-            } else if (filter.get("type").equals("range")) {
+            } else if (filter.getString("type").equals("range")) {
                 // Excludes a range of dates
                 // If an endpoint on a range is null, then we only look at the
                 // other endpoint to determine if a date is within range. We
                 // use the value 0 to ignore an endpoint.
-                String startDate = filter.get("startDate");
-                String endDate = filter.get("endDate");
+                String startDate = filter.getString("startDate");
+                String endDate = filter.getString("endDate");
                 int startCompare = 0, endCompare = 0;
                 try {
                     if (!startDate.equals("null")) {
@@ -515,7 +515,7 @@ public class DateFormElement extends FormElement {
                 }
             }
         }
-        
+
         return null;
     }
 }

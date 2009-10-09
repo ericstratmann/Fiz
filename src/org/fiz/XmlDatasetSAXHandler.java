@@ -26,8 +26,8 @@ import org.xml.sax.helpers.*;
  */
 
 class XmlDatasetSAXHandler extends DefaultHandler {
-    // Top-level HashMap for the dataset being parsed.
-    protected HashMap<String,Object> map;
+    // Top-level Dataset
+    protected Dataset top;
 
     // True means that we have not yet seen the outermost element
     // for the XML data; once this becomes false there's always
@@ -38,8 +38,7 @@ class XmlDatasetSAXHandler extends DefaultHandler {
     // The ancestors of the current element, with the current element's
     // parent in the highest index position.  Empty means the current
     // element is the outermost XML element.
-    protected ArrayList<HashMap<String,Object>> ancestors =
-            new ArrayList<HashMap<String,Object>>();
+    protected ArrayList<Dataset> ancestors = new ArrayList<Dataset>();
 
     // Textual data that has accumulated for the current element.
     protected StringBuilder elementText = new StringBuilder();
@@ -48,7 +47,7 @@ class XmlDatasetSAXHandler extends DefaultHandler {
     // is a dataset, so it cannot have a string value; it can only contain
     // nested datasets.  The nested datasets are the values in the
     // HashMap.
-    protected HashMap<String,Object> elementChildren;
+    protected Dataset elementChildren;
 
     // This object is provided by SAX; we can use it to get line number
     // information for error messages.
@@ -56,11 +55,11 @@ class XmlDatasetSAXHandler extends DefaultHandler {
 
     /**
      * Constructor for XmlDatasetSAXHandlers.
-     * @param map                  Top-level HashMap for the new dataset;
+     * @param top                  Top-level Dataset for the new dataset;
      *                             should initially be empty.
      */
-    public XmlDatasetSAXHandler(HashMap<String,Object> map) {
-        this.map = map;
+    public XmlDatasetSAXHandler(Dataset top) {
+        this.top = top;
     }
 
     /**
@@ -88,7 +87,7 @@ class XmlDatasetSAXHandler extends DefaultHandler {
             // We are just entering the outermost XML element, which
             // corresponds to the overall dataset.
             notStarted = false;
-            elementChildren = map;
+            elementChildren = top;
             return;
         }
 
@@ -98,7 +97,7 @@ class XmlDatasetSAXHandler extends DefaultHandler {
         // 1. The current element better not not have any nonblank text
         //   (we do ignore whitespace as a convenience in writing
         //   XML files).
-        // 2. If we haven't already created a HashMap to hold the
+        // 2. If we haven't already created a Dataset to hold the
         //    children of the current element, create it now.
 
         if (!StringUtil.isWhitespace(elementText)) {
@@ -108,12 +107,12 @@ class XmlDatasetSAXHandler extends DefaultHandler {
                     + qName + ")");
         }
         if (elementChildren == null) {
-            elementChildren = new HashMap<String,Object>();
+            elementChildren = new Dataset();
         }
 
         // Adjust our state to reflect the fact that we now have a new
         // current element.  Note that we don't know what kind of element
-        // this will be yet (string, dataset, listed datasets).  Thus,
+        // this will be yet (string, dataset, list).  Thus,
         // we don't make an official entry for the new element in its parent
         // yet; that will happen when endElement is invoked.
         ancestors.add(elementChildren);
@@ -140,51 +139,16 @@ class XmlDatasetSAXHandler extends DefaultHandler {
             // We are ending the outermost XML element; nothing to do here.
             return;
         }
-        HashMap<String,Object> parent = ancestors.get(last);
+
+        Dataset parent = ancestors.get(last);
         ancestors.remove(last);
-        Object existingValue = parent.get(qName);
 
         if (elementChildren == null) {
             // The current element is a simple string value (no children).
-            if (existingValue != null) {
-                // Parent already has a child with the same name; this
-                // isn't legal for us.
-                throw new SAXException("improper use of XML" +
-                        locationMessage() + ": conflicting elements named \"" +
-                        qName + "\"");
-            }
-            parent.put(qName, elementText.toString());
+            parent.add(qName, elementText.toString());
         } else {
-            // The current element is a dataset.  This gets handled in any
-            // of several different ways, depending on whether the parent
-            // already contains a child with the same name.
-            if (existingValue == null) {
-                // Simple case: name isn't already in use.
-                parent.put(qName, elementChildren);
-            } else if (existingValue instanceof HashMap) {
-                // The current element's name is already in use, by another
-                // nested dataset.  This is fine; just combined the two
-                // datasets into a list under the same name.
-                ArrayList<HashMap<String,Object>> list
-                        = new ArrayList<HashMap<String,Object>>(2);
-                list.add((HashMap<String,Object>) existingValue);
-                list.add(elementChildren);
-                parent.put(qName, list);
-            } else if (existingValue instanceof ArrayList) {
-                // The parent already contains multiple nested datasets with
-                // the current element's name; just add the current element to
-                // the end of the list
-                ArrayList<HashMap<String,Object>> list
-                        = (ArrayList<HashMap<String,Object>>) existingValue;
-                list.add(elementChildren);
-                return;
-            } else {
-                // The current element's name is already in use in the parent,
-                // by another string value.  This is not legal.
-                throw new SAXException("improper use of XML" +
-                        locationMessage() + ": conflicting elements named \"" +
-                        qName + "\"");
-            }
+            // Element is a dataset
+            parent.add(qName, elementChildren);
         }
 
         // Restore context back to the parent.

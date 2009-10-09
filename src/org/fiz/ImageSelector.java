@@ -47,8 +47,8 @@ public class ImageSelector extends Formatter {
      *                          for the supported values.
      */
     public ImageSelector(Dataset properties) {
-        map = properties.getChild("map");
-        id = properties.get("id");
+        map = properties.getDataset("map");
+        id = properties.getString("id");
     }
 
     /**
@@ -76,11 +76,11 @@ public class ImageSelector extends Formatter {
 
         StringBuilder out = cr.getHtml().getBody();
         String src, alt = null;
-        String key = data.get(id);
-        Object value = map.lookup(key);
+        String key = data.getString(id);
+        Object value = map.check(key);
 
         if (value == null) {
-            value = map.lookup(DEFAULT_KEY);
+            value = map.check(DEFAULT_KEY);
 
             if (value == null) {
                 throw new Dataset.MissingValueError(key);
@@ -91,8 +91,8 @@ public class ImageSelector extends Formatter {
             src = (String) value;
         } else if (value instanceof Dataset) {
             Dataset imgData = (Dataset) value;
-            src = imgData.get("src");
-            alt = imgData.check("alt");
+            src = imgData.getString("src");
+            alt = imgData.checkString("alt");
         } else {
             throw new InternalError("ImageSelector does not support class " +
                 value.getClass().getSimpleName() + ". It only supports " +

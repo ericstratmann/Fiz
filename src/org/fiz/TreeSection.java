@@ -151,10 +151,10 @@ public class TreeSection extends Section implements DirectAjax {
      */
     public TreeSection(Dataset properties) {
         this.properties = properties;
-        pageProperty = new PageProperty(properties.check("class"),
-                properties.check("edgeFamily"), properties.get("id"),
-                properties.check("leafStyle"), properties.check("nodeStyle"),
-                properties.get("requestFactory"));
+        pageProperty = new PageProperty(properties.checkString("class"),
+                properties.checkString("edgeFamily"), properties.getString("id"),
+                properties.checkString("leafStyle"), properties.checkString("nodeStyle"),
+                properties.getString("requestFactory"));
         if (pageProperty.edgeFamily == null) {
             pageProperty.edgeFamily = "treeSolid.gif";
         }
@@ -194,12 +194,12 @@ public class TreeSection extends Section implements DirectAjax {
         // Retrieve state information about the row and the overall section.
         Dataset main = cr.getMainDataset();
         PageProperty pageProperty = (PageProperty)
-                cr.getPageProperty(main.get("sectionId"));
+                cr.getPageProperty(main.getString("sectionId"));
 
         // Invoke a data request to fetch information about the children of
         // the element being expanded, then generate a <table> that will
         // display the children.
-        String id = main.get("nodeId");
+        String id = main.getString("nodeId");
         DataRequest request = (DataRequest) Util.invokeStaticMethod(
                 pageProperty.requestFactory, pageProperty.names.get(id));
 
@@ -208,7 +208,7 @@ public class TreeSection extends Section implements DirectAjax {
                 "class=\"@1?{TreeSection}\" " +
                 "id=\"@2\">\n", pageProperty.className, id);
         renderChildren(cr, pageProperty,
-                request.getResponseOrAbort().getChildren("record"),
+                request.getResponseOrAbort().getDatasetList("record"),
                 id, html);
         html.append("</table>\n");
 
@@ -240,7 +240,7 @@ public class TreeSection extends Section implements DirectAjax {
                 "<table cellspacing=\"0\" class=\"@2?{TreeSection}\" " +
                 "id=\"@1\">\n", pageProperty.id, pageProperty.className);
         renderChildren(cr, pageProperty,
-                dataRequest.getResponseOrAbort().getChildren("record"),
+                dataRequest.getResponseOrAbort().getDatasetList("record"),
                 pageProperty.id, out);
         Template.appendHtml(out, "</table>\n" +
                 "<!-- End TreeSection @1 -->\n", pageProperty.id);
@@ -283,13 +283,13 @@ public class TreeSection extends Section implements DirectAjax {
 
             // Is this child a node (expandable) or a leaf?
             Boolean expandable = false;
-            String value = child.check("expandable");
+            String value = child.checkString("expandable");
             if ((value != null) && (value.equals("1"))) {
                 expandable = true;
             }
 
             // Compute the style to use for this child.
-            String style = child.check("style");
+            String style = child.checkString("style");
             if (style == null) {
                 style = (expandable ? pageProperty.nodeStyle :
                         pageProperty.leafStyle);
@@ -335,14 +335,14 @@ public class TreeSection extends Section implements DirectAjax {
             // Render the cell on the right, using a template selected by
             // the style.
             out.append("    <td class=\"right\">");
-            Template.appendHtml(out, styles.getPath(style), child);
+            Template.appendHtml(out, styles.getString(style), child);
             out.append("</td>\n");
             out.append("  </tr>\n");
 
             // If this element is expandable then do some additional things
             // to support expansion and unexpansion of this element.
             if (expandable) {
-                pageProperty.names.put(rowId, child.get("name"));
+                pageProperty.names.put(rowId, child.getString("name"));
 
                 // Next, create a Javascript object holding two copies of
                 // the HTML for the table row: the one we just rendered (used
@@ -357,7 +357,7 @@ public class TreeSection extends Section implements DirectAjax {
                         StringUtil.addSuffix(pageProperty.edgeFamily, "-minus"));
                 expandedRow.append("    <td class=\"right\">");
                 Template.appendHtml(expandedRow,
-                        styles.getPath(style + "-expanded"), child);
+                        styles.getString(style + "-expanded"), child);
                 expandedRow.append("</td>\n");
                 expandedRow.append("  </tr>\n");
                 cr.evalJavascript(

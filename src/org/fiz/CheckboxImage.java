@@ -56,8 +56,8 @@ public class CheckboxImage extends Formatter {
      */
     public CheckboxImage(Dataset properties, ArrayList<String> falseValues) {
         this.falseValues = falseValues;
-        id = properties.get("id");
-        family = properties.check("family");
+        id = properties.getString("id");
+        family = properties.checkString("family");
 
         if (family == null) {
             family = DEFAULT_FAMILY;
@@ -102,7 +102,7 @@ public class CheckboxImage extends Formatter {
      */
     public void render(ClientRequest cr, Dataset data) {
         StringBuilder out = cr.getHtml().getBody();
-        String key = data.get(id);
+        String key = data.getString(id);
         String src, alt;
         String checked;
 

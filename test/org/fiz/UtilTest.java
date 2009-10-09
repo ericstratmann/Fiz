@@ -28,13 +28,13 @@ public class UtilTest extends junit.framework.TestCase {
     // The following classes used for testing invokeStaticMethod.
     protected static class Dummy {        
         public static String checkDataset(Dataset d, String key) {
-            return d.check(key);
+            return d.checkString(key);
         }
         public static String checkDataset(Dataset d, Dataset d2) {
-            return d2.check("name");
+            return d2.checkString("name");
         }
         public static String checkDataset(Dataset d) {
-            return d.check("name");
+            return d.checkString("name");
         }
         public String foo(String s) {
             return "abc";

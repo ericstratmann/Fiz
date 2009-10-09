@@ -95,13 +95,13 @@ public class Link extends Formatter {
      *                             icon, or both.
      */
     public Link(Dataset properties, DisplayForm displayForm) {
-        text = properties.check("text");
-        url = properties.check("url");
-        ajaxUrl = properties.check("ajaxUrl");
-        javascript = properties.check("javascript");
-        iconUrl = properties.check("iconUrl");
-        alt = properties.check("alt");
-        confirm = properties.check("confirm");
+        text = properties.checkString("text");
+        url = properties.checkString("url");
+        ajaxUrl = properties.checkString("ajaxUrl");
+        javascript = properties.checkString("javascript");
+        iconUrl = properties.checkString("iconUrl");
+        alt = properties.checkString("alt");
+        confirm = properties.checkString("confirm");
         this.displayForm = displayForm;
     }
 
@@ -125,7 +125,7 @@ public class Link extends Formatter {
      *                             icon, or both.
      */
     public Link(String name, DisplayForm displayForm) {
-        this(Config.getDataset("links").getChild(name), displayForm);
+        this(Config.getDataset("links").getDataset(name), displayForm);
     }
 
     /**
@@ -135,7 +135,7 @@ public class Link extends Formatter {
      *                             "links" configuration dataset.
      */
     public Link(String name) {
-        this(Config.getDataset("links").getChild(name), DisplayForm.BOTH);
+        this(Config.getDataset("links").getDataset(name), DisplayForm.BOTH);
     }
 
     /**
@@ -244,8 +244,6 @@ public class Link extends Formatter {
 
     /**
      * Generate an HTML <img> element for the link's icon.
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
      * @param data                 Used for expanding "alt" template.
      * @param out                  HTML gets appended here.
      */

@@ -164,7 +164,7 @@ public class TableSection extends Section {
 
         // Body rows.
         DataRequest dataRequest = cr.getDataRequest(
-                properties.get("request"));
+                properties.getString("request"));
         Dataset response = dataRequest.getResponseData();
         if (response == null) {
             // The request generated an error.  Display information about
@@ -174,18 +174,18 @@ public class TableSection extends Section {
             out.append("\">");
             Dataset[] errors = dataRequest.getErrorData();
             errors[0].set("sectionType", "table");
-            cr.showErrorInfo(properties.check("errorStyle"),
+            cr.showErrorInfo(properties.checkString("errorStyle"),
                     "TableSection.error", errors[0]);
             out.append("</td>\n  </tr>\n");
         } else {
-            ArrayList<Dataset> rows = response.getChildren("record");
+            ArrayList<Dataset> rows = response.getDatasetList("record");
             if (rows.size() == 0) {
                 // The table is empty.  Display a single row containing
                 // information about that fact.
                 out.append("  <tr class=\"empty\">\n    <td colspan=\"");
                 out.append(columns.length);
                 out.append("\">");
-                String template = properties.check("emptyTemplate");
+                String template = properties.checkString("emptyTemplate");
                 if (template == null) {
                     template = "There are no records to display";
                 }

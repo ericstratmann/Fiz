@@ -74,9 +74,7 @@ public class FileDataManager {
     public DataRequest newCreateRequest(String file, String path,
             Dataset values) {
         Dataset root = loadDataset(file);
-        Dataset target = root.createChildPath(path);
-        target.clear();
-        target.copyFrom(values);
+        root.setPath(path, values.clone());
         root.writeFile(root.getFileName(), null);
         DataRequest request = new DataRequest("file.create");
         request.setComplete(new Dataset());
@@ -97,7 +95,7 @@ public class FileDataManager {
         DataRequest request = new DataRequest("file.delete");
         Dataset d = loadDataset(file);
         if (path != null) {
-            d.deletePath(path);
+            d.delete(path);
         } else {
             d.clear();
         }
@@ -192,7 +190,7 @@ public class FileDataManager {
             return root;
         }
         try {
-            return root.getChildPath(path);
+            return root.getDataset(path);
         }
         catch (Dataset.MissingValueError e) {
             request.setError (new Dataset("message", "nested dataset \"" +

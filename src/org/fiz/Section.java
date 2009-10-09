@@ -58,7 +58,7 @@ public abstract class Section {
      */
     public String checkId() {
         if (properties != null) {
-            String result = properties.check("id");
+            String result = properties.checkString("id");
             if (result != null) {
                 return result;
             }
@@ -74,7 +74,7 @@ public abstract class Section {
      */
     public String getId() {
         if (properties != null) {
-            String result = properties.check("id");
+            String result = properties.checkString("id");
             if (result != null) {
                 return result;
             }

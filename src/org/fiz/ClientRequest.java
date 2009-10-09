@@ -284,7 +284,7 @@ public class ClientRequest {
      *                             authentication token.
      */
     protected void checkAuthToken() throws AuthenticationError {
-        String inputToken = getMainDataset().check("fiz_auth");
+        String inputToken = getMainDataset().checkString("fiz_auth");
         String sessionToken = getAuthToken();
         if ((inputToken == null) || !(inputToken.equals(sessionToken))) {
             throw new AuthenticationError();
@@ -628,7 +628,7 @@ public class ClientRequest {
                 // dataset for each of them, and store the value with the
                 // name "value".
                 for (String value: values) {
-                    mainDataset.addChild(name, new Dataset("value", value));
+                    mainDataset.add(name, new Dataset("value", value));
                 }
             }
         }
@@ -930,14 +930,12 @@ public class ClientRequest {
             }
             boolean foundTemplate = false;
             Dataset styles = Config.getDataset("styles");
-            String template = (String) styles.lookupPath(style,
-                    Dataset.DesiredType.STRING, Dataset.Quantity.FIRST_ONLY);
+            String template = styles.checkString(style);
             if (template != null) {
                 foundTemplate = true;
                 Template.appendHtml(getHtml().getBody(), template, compound);
             }
-            template = (String) styles.lookupPath(style + "-bulletin",
-                    Dataset.DesiredType.STRING, Dataset.Quantity.FIRST_ONLY);
+            template = styles.checkString(style + "-bulletin");
             if (template != null) {
                 foundTemplate = true;
                 getHtml().includeJsFile("static/fiz/Fiz.js");
@@ -1046,7 +1044,7 @@ public class ClientRequest {
         // If this is a form post or Ajax request, then the request may
         // include a page identifier (if one was assigned in some previous
         // request for this page).  If this is the case, use that id.
-        pageId = getMainDataset().check("fiz_pageId");
+        pageId = getMainDataset().checkString("fiz_pageId");
         if ((pageId != null) && (pageId.length() > 0)) {
             return pageId;
         }
@@ -1144,7 +1142,7 @@ public class ClientRequest {
      */
     protected void readMultipartFormData() {
         DiskFileItemFactory factory = new DiskFileItemFactory();
-        String tempDir = Config.getDataset("main").check("uploadTempDirectory");
+        String tempDir = Config.getDataset("main").checkString("uploadTempDirectory");
         if (tempDir != null) {
             factory.setRepository(new File(tempDir));
         }
@@ -1152,7 +1150,7 @@ public class ClientRequest {
             factory.setSizeThreshold(testSizeThreshold);
         }
         ServletFileUpload upload = new ServletFileUpload(factory);
-        String maxSize = Config.getDataset("main").check("uploadMaxSize");
+        String maxSize = Config.getDataset("main").checkString("uploadMaxSize");
         if (maxSize != null) {
             try {
                 upload.setFileSizeMax(new Long(maxSize));
@@ -1174,19 +1172,17 @@ public class ClientRequest {
                     // of child datasets, each with a single "value"
                     // element.
                     String name = item.getFieldName();
-                    Object existing = mainDataset.lookup(name,
-                            Dataset.DesiredType.ANY,
-                            Dataset.Quantity.FIRST_ONLY);
+                    Object existing = mainDataset.check(name);
                     if (existing == null) {
                         mainDataset.set(name, item.getString());
                     } else {
-                        if (existing instanceof String) {
+                        if (existing instanceof Dataset == false) {
                             // Must convert the existing string value to
                             // a nested dataset.
-                            mainDataset.addChild(name, new Dataset(
+                            mainDataset.set(name, new Dataset(
                                     "value",  existing));
                         }
-                        mainDataset.addChild(name, new Dataset(
+                        mainDataset.add(name, new Dataset(
                                 "value", item.getString()));
                     }
                 } else {

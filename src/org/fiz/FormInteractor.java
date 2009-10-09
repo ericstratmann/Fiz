@@ -156,11 +156,11 @@ public class FormInteractor extends Interactor {
         query = query.toLowerCase();
 
         Dataset matches = new Dataset();
-        for(Dataset data : autocompleteData.getChildren("name")) {
-            String dataName = data.get("choice").toLowerCase();
+        for(Dataset data : autocompleteData.getDatasetList("name")) {
+            String dataName = data.getString("choice").toLowerCase();
             if(dataName.substring(0, Math.min(query.length(),
                     dataName.length())).equals(query)) {
-                matches.addChild("record", data);
+                matches.add("record", data);
             }
         }
 

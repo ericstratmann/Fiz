@@ -853,6 +853,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 cr.getHtml().jsCode.toString());
     }
 
+    /*
     public void test_readAjaxData_basics() {
         cr.clearData();                 // Discard default info from fixture.
         cr.mainDataset = new Dataset();
@@ -891,6 +892,8 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("main dataset contents", "age:  24\n" +
                 "name: Alice\n", cr.getMainDataset().toString());
     }
+
+    */
     public void test_readAjaxData_missingDotAfterType() {
         cr.clearData();                 // Discard default info from fixture.
         cr.mainDataset = new Dataset();
@@ -1019,6 +1022,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
+
     public void test_readMultipartFormData_multipleValuesForName() {
         cr.clearData();                 // Discard default info from fixture.
         cr.mainDataset = new Dataset();
@@ -1045,6 +1049,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "  - value: Bob\n" +
                 "  - value: Carol\n", cr.getMainDataset().toString());
     }
+
     public void test_readMultipartFormData_fileUploads() {
         cr.clearData();                 // Discard default info from fixture.
         cr.mainDataset = new Dataset();

@@ -60,7 +60,7 @@ public class RadioFormElement extends FormElement {
      */
     public RadioFormElement(Dataset properties) {
         super(properties);
-        value = properties.get("value");
+        value = properties.getString("value");
     }
 
     /**
@@ -75,7 +75,7 @@ public class RadioFormElement extends FormElement {
     public void render(ClientRequest cr, Dataset data) {
         StringBuilder out = cr.getHtml().getBody();
         cr.getHtml().includeCssFile("RadioFormElement.css");
-        String actual = data.check(id);
+        String actual = data.checkString(id);
         Template.appendHtml(out, "<div class=\"@class?{RadioFormElement}\">" +
                 "<input type=\"radio\" name=\"@id\" id=\"@(id)_@value\" " +
                 "value=\"@value\"", properties);
@@ -85,7 +85,7 @@ public class RadioFormElement extends FormElement {
         out.append(" />");
 
         // Display extra information, if any was requested.
-        String extra = properties.check("extra");
+        String extra = properties.checkString("extra");
         if (extra != null) {
             out.append("<span class=\"extra\" onclick=\"");
             Html.escapeHtmlChars("getElementById(" +

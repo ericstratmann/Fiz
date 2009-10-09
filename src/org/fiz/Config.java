@@ -73,7 +73,7 @@ public class Config {
      *                             {@code datasetName}.
      */
     public static String get(String datasetName, String name) {
-        return getDataset(datasetName).get(name);
+        return getDataset(datasetName).getString(name);
     }
 
     /**
@@ -87,7 +87,7 @@ public class Config {
      *                             {@code datasetName}.
      */
     public static String getPath(String datasetName, String path) {
-        return getDataset(datasetName).getPath(path);
+        return getDataset(datasetName).getString(path);
     }
 
     /**

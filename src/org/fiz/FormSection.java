@@ -208,18 +208,18 @@ public class FormSection extends Section {
         for (FormElement element : elements) {
             element.setParentForm(this);
         }
-        id = properties.check("id");
+        id = properties.checkString("id");
         if (id == null) {
             id = "form";
             properties.set("id", "form");
         }
-        buttonStyle = properties.check("buttonStyle");
+        buttonStyle = properties.checkString("buttonStyle");
         if (buttonStyle == null) {
             buttonStyle = "FormSection.button";
         }
 
         helpConfig = Config.getDataset("help");
-        nestedHelp = helpConfig.checkChild(id);
+        nestedHelp = helpConfig.checkDataset(id);
     }
 
     /**
@@ -232,7 +232,7 @@ public class FormSection extends Section {
      */
     @Override
     public void addDataRequests(ClientRequest cr) {
-        boolean empty = (properties.check("request") == null);
+        boolean empty = (properties.checkString("request") == null);
         for (FormElement element : elements) {
             element.addDataRequests(cr, empty);
         }
@@ -295,7 +295,7 @@ public class FormSection extends Section {
      */
     public void displayErrors(ClientRequest cr, Dataset... errorData) {
         for (Dataset error : errorData) {
-            String culprit = error.check("culprit");
+            String culprit = error.checkString("culprit");
             boolean foundCulprit = false;
             if (culprit != null) {
                 for (FormElement element : elements) {
@@ -409,7 +409,7 @@ public class FormSection extends Section {
 
         // Create a dataset that provides access to the initial values
         // for the form elements.
-        String requestName = properties.check("request");
+        String requestName = properties.checkString("request");
         Dataset data;
         if (requestName != null) {
             DataRequest dataRequest = cr.getDataRequest(requestName);
@@ -418,18 +418,18 @@ public class FormSection extends Section {
                 // An error occurred in the request.
                 Template.appendHtml(out, "\n<!-- Start FormSection @id -->\n",
                         properties);
-                cr.showErrorInfo(properties.check("errorStyle"),
+                cr.showErrorInfo(properties.checkString("errorStyle"),
                         "FormSection.error", dataRequest.getErrorData());
                 Template.appendHtml(out, "\n<!-- End FormSection @id -->\n",
                         properties);
                 return;
             }
             if (response.containsKey("record")) {
-                response = response.getChild("record");
+                response = response.getDataset("record");
             }
             data = new CompoundDataset(response, mainDataset);
         } else {
-            Dataset initialValues = properties.checkChild("initialValues");
+            Dataset initialValues = properties.checkDataset("initialValues");
             if (initialValues != null) {
                 data = new CompoundDataset(initialValues, mainDataset);
             } else {
@@ -480,7 +480,7 @@ public class FormSection extends Section {
      */
     protected String checkElementErrorStyle() {
         if (properties != null) {
-            String result = properties.check("elementErrorStyle");
+            String result = properties.checkString("elementErrorStyle");
             if (result == null) {
                 return "FormSection.elementError";
             } else {
@@ -509,12 +509,12 @@ public class FormSection extends Section {
         }
         String id = element.getId();
         if (nestedHelp != null) {
-            result = nestedHelp.check(id);
+            result = nestedHelp.checkString(id);
             if (result != null) {
                 return result;
             }
         }
-        return helpConfig.check(id);
+        return helpConfig.checkString(id);
     }
 
     /**
@@ -533,7 +533,7 @@ public class FormSection extends Section {
             StringBuilder out) {
         boolean anyHidden = false;
 
-        String layout = properties.check("layout");
+        String layout = properties.checkString("layout");
         boolean vertical = (layout != null) && layout.equals("vertical");
         Template.appendHtml(out, "  <table cellspacing=\"0\" class=\"@1\">\n",
                 vertical ? "vertical" : "sideBySide");
@@ -588,7 +588,6 @@ public class FormSection extends Section {
      * @param data                 Data for the form (a CompoundDataset
      *                             including both form data, if any, and the
      *                             main dataset).
-     * @param out                  Generated HTML is appended here.
      */
     protected void sideBySideElement(ClientRequest cr, FormElement element,
             Dataset data) {
@@ -630,7 +629,6 @@ public class FormSection extends Section {
      * @param data                 Data for the form (a CompoundDataset
      *                             including both form data, if any, and the
      *                             main dataset).
-     * @param out                  Generated HTML is appended here.
      */
     protected void verticalElement(ClientRequest cr, FormElement element,
             Dataset data) {

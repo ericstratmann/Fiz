@@ -67,7 +67,7 @@ public class TextAreaFormElement extends FormElement {
      *                             {@code id} property.
      */
     public void collect(ClientRequest cr, Dataset in, Dataset out) {
-        String formValue = in.check(id);
+        String formValue = in.checkString(id);
         if (formValue != null) {
             out.set(id, formValue.replace("\r\n", "\n"));
         }
@@ -87,6 +87,6 @@ public class TextAreaFormElement extends FormElement {
         cr.getHtml().includeCssFile("TextAreaFormElement.css");
         Template.appendHtml(out, "<textarea id=\"@id\" name=\"@id\" " +
                 "class=\"@class?{TextAreaFormElement}\" rows=\"@rows?{10}\">" +
-                "{{@1}}</textarea>", properties, data.check(id));
+                "{{@1}}</textarea>", properties, data.checkString(id));
     }
 }

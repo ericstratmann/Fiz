@@ -27,7 +27,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <target name="compile" description="Compile from source">
         <!-- Compile the sources -->
         <mkdir dir="${classdir}" />
-        <javac srcdir="src" destdir="${classdir}" classpathref="classpath" />
+        <javac srcdir="src" destdir="${classdir}"
+        classpathref="classpath" debug="on"/>
         <!-- Create the jar file for these tools -->
         <mkdir dir="${genlibdir}" />
         <jar destfile="${genlibdir}/fiz.jar" basedir="${classdir}" />
@@ -35,7 +36,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
     <target name="compile-test" depends="compile" description="Compile unit tests">
         <mkdir dir="${testclassdir}" />
-        <javac destdir="${testclassdir}" srcdir="test">
+        <javac destdir="${testclassdir}" srcdir="test" debug="on">
             <classpath refid="classpath.test" />
         </javac>
     </target>
@@ -77,9 +78,17 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
             <arg value="test/jsunit" />
         </java>
     </target>
+	
+    <target name="perf" depends="compile" description="Execute javascript unit tests">
+        <java classname="org.fiz.PerfString">
+            <classpath refid="classpath.test" />
+        </java>
+    </target>
+
 
     <target name="javadoc" depends="compile">
-        <javadoc sourcepath="src" destdir="${docdir}" public="true" Windowtitle="Fiz documentation" docletpath="${classdir}" doclet="org.fiz.FizDoc">
+        <javadoc sourcepath="src" destdir="${docdir}"
+            Windowtitle="Fiz documentation" docletpath="${classdir}" doclet="org.fiz.FizDoc">
             <classpath>
                 <path refid="classpath" />
                 <pathelement location="C:/Program Files/Java/jdk1.6.0_13/lib/tools.jar" />

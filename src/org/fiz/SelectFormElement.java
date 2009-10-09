@@ -75,7 +75,7 @@ public class SelectFormElement extends FormElement {
      */
     public SelectFormElement(Dataset properties) {
         super(properties);
-        multiple = this.properties.check("multiple");
+        multiple = this.properties.checkString("multiple");
         if ((multiple != null) && !multiple.equals("multiple")) {
             throw new InternalError("\"multiple\" property for " +
                     "SelectFormElement has illegal value \"" + multiple +
@@ -83,7 +83,7 @@ public class SelectFormElement extends FormElement {
         }
         validatorData = new ValidatorData(id);
     }
-    
+
     /**
      * Invoked by FormSection when a form has been posted: prepares data
      * for inclusion in the update request for the form.
@@ -99,15 +99,15 @@ public class SelectFormElement extends FormElement {
      */
     public void collect(ClientRequest cr, Dataset in, Dataset out) {
         if (multiple == null) {
-            out.set(id, in.get(id));
+            out.set(id, in.getString(id));
         } else {
             // Must return multiple values:
-            for (Dataset d : in.getChildren(id)) {
-                out.addChild(id, d);
+            for (Dataset d : in.getDatasetList(id)) {
+                out.add(id, d);
             }
         }
     }
-    
+
     /**
      * This method is invoked to generate HTML for this form element.
      * @param cr                   Overall information about the client
@@ -122,23 +122,23 @@ public class SelectFormElement extends FormElement {
         // Create a HashSet that keeps track of the initially selected values.
         HashSet<String> initialSelections = new HashSet<String>();
         if (multiple == null) {
-            String initialValue = data.check(id);
+            String initialValue = data.checkString(id);
             if (initialValue != null) {
                 initialSelections.add(initialValue);
             }
         } else {
-            ArrayList<Dataset> children = data.getChildren(id);
+            ArrayList<Dataset> children = data.getDatasetList(id);
             for (Dataset d : children) {
-                initialSelections.add(d.get("value"));
+                initialSelections.add(d.getString("value"));
             }
         }
 
-        String choiceName = properties.check("choiceName");
+        String choiceName = properties.checkString("choiceName");
         ArrayList<Dataset> choices;
         if (choiceName == null) {
             choiceName = "choice";
         }
-        String choiceRequestName = properties.check("choiceRequest");
+        String choiceRequestName = properties.checkString("choiceRequest");
         if (choiceRequestName != null) {
             DataRequest request = cr.getDataRequest(choiceRequestName);
             Dataset responseData = request.getResponseData();
@@ -148,10 +148,10 @@ public class SelectFormElement extends FormElement {
                 cr.addErrorsToBulletin(request.getErrorData());
                 choices = new ArrayList<Dataset>();
             } else {
-                choices = responseData.getChildren(choiceName);
+                choices = responseData.getDatasetList(choiceName);
             }
         } else {
-            choices = properties.getChildren(choiceName);
+            choices = properties.getDatasetList(choiceName);
         }
 
         cr.getHtml().includeCssFile("SelectFormElement.css");
@@ -166,7 +166,7 @@ public class SelectFormElement extends FormElement {
             Dataset choice = choices.get(i);
 
             String selected = null;
-            if (initialSelections.contains(choice.get("value"))) {
+            if (initialSelections.contains(choice.getString("value"))) {
                 selected = "selected";
             }
             Template.appendHtml(out, "  <option {{selected=\"@1\"}} " +
@@ -176,7 +176,7 @@ public class SelectFormElement extends FormElement {
             if (i > 0) {
                 allChoices += ",";
             }
-            allChoices += choice.get("value");
+            allChoices += choice.getString("value");
         }
         out.append("</select>\n<!-- End SelectFormElement @id -->\n");
 
@@ -185,16 +185,16 @@ public class SelectFormElement extends FormElement {
                 "multiple", multiple != null && multiple.equals("multiple") ?
                         "multiple" : "false"));
     }
-    
+
     /**
      * Validates that the value of {@code id} is contained in the list of valid
      * inputs. The following properties are supported:
-     * 
+     *
      *   valid                      Comma separated list of valid inputs
      *   multiple                   If "multiple" is set, the validator will
      *                              run once for each nested dataset in the
      *                              formData for {@code id}.
-     *   
+     *
      * @param id                        id of the input element to validate
      * @param properties                Configuration properties for the
      *                                  validator: see above for supported
@@ -206,13 +206,13 @@ public class SelectFormElement extends FormElement {
      */
     public static String validateIn(String id, Dataset properties,
             Dataset formData) {
-        String allValues = properties.get("valid");
+        String allValues = properties.getString("valid");
 
-        if (properties.get("multiple").equals("multiple")) {
-            for (Dataset data : formData.getChildren(id)) {
-                String error = FormValidator.validateIn(id, 
+        if (properties.getString("multiple").equals("multiple")) {
+            for (Dataset data : formData.getDatasetList(id)) {
+                String error = FormValidator.validateIn(id,
                         new Dataset("valid", allValues),
-                        new Dataset(id, data.get("value")));
+                        new Dataset(id, data.getString("value")));
                 if (error != null) {
                     return error;
                 }

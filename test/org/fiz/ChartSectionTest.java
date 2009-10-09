@@ -46,7 +46,7 @@ public class ChartSectionTest extends junit.framework.TestCase {
         Dataset properties = new Dataset("foo", "bar");
         cs = new ChartSection(properties);
         assertNotSame("properties has been cloned", properties, cs.properties);
-        assertEquals("contents are equal", "bar", cs.properties.check("foo"));
+        assertEquals("contents are equal", "bar", cs.properties.checkString("foo"));
     }
 
     public void test_render_includedJS() {
@@ -338,7 +338,7 @@ public class ChartSectionTest extends junit.framework.TestCase {
         cr = new ClientRequestFixture();
         String id = cs.getId(data, "baz");
         assertEquals("return value", "baz0", id);
-        assertEquals("dataset value", "baz0", data.check("id"));
+        assertEquals("dataset value", "baz0", data.checkString("id"));
         assertEquals("second time", "baz1", cs.getId(new Dataset(), "baz"));
     }
 

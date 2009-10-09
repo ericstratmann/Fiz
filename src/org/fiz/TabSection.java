@@ -100,7 +100,7 @@ public class TabSection extends Section{
     public TabSection(Dataset properties, Dataset ... tabs) {
         this.properties = properties;
         this.tabs = tabs;
-        if (properties.check("id") == null) {
+        if (properties.checkString("id") == null) {
             properties.set("id", "tabs");
         }
     }
@@ -128,21 +128,21 @@ public class TabSection extends Section{
         StringBuilder out = html.getBody();
         StringBuilder javascript = new StringBuilder();
         boolean anyJavascript = false;
-        String sectionId = properties.get("id");
+        String sectionId = properties.getString("id");
 
         // Get information about which tab is selected.
         String selected = null;
-        String selector = properties.check("selector");
+        String selector = properties.checkString("selector");
         if (selector == null) {
             selector = "currentTabId";
         }
-        selected = cr.getMainDataset().check(selector);
+        selected = cr.getMainDataset().checkString(selector);
 
         // Collect the data that will be available for templates, including
         // the response to the section's request, if there was one.
 
         Dataset data;
-        String requestName = properties.check("request");
+        String requestName = properties.checkString("request");
         if (requestName == null) {
             data = cr.getMainDataset();
         } else {
@@ -153,12 +153,12 @@ public class TabSection extends Section{
 
         // Use the style information to generate CSS for the tabs.
         StringBuilder expandedCss = new StringBuilder();
-        String style = properties.check("style");
+        String style = properties.checkString("style");
         if (style == null) {
             style = "tabGray";
         }
         Dataset styleData = new CompoundDataset(
-                Config.getDataset("tabSections").getChild(style),
+                Config.getDataset("tabSections").getDataset(style),
                 properties,
                 Config.getDataset("css"));
         Template.appendRaw(expandedCss, getTemplate(), styleData);
@@ -177,7 +177,7 @@ public class TabSection extends Section{
         // and one for the right edge of the tab.  There is one additional
         // spacer to the right of all of the tabs.
         for (Dataset tab: tabs) {
-            String tabId = tab.get("id");
+            String tabId = tab.getString("id");
             String suffix = ((selected != null) && (tabId.equals(selected))) ?
                     "Selected" : "";
             tabId = sectionId + "_" + tabId;
@@ -198,7 +198,7 @@ public class TabSection extends Section{
 
             // Generate the action for this tab (the contents of the href
             // attribute for the <a> element).
-            String url = tab.check("url");
+            String url = tab.checkString("url");
             if (url != null) {
                 out.append(" href=\"");
                 Template.appendUrl(out, url, data);
@@ -217,13 +217,13 @@ public class TabSection extends Section{
                 // because an entirely new page will be displayed).
                 Template.appendJs(javascript, "Fiz.TabSection.selectTab(\"@1\"); ",
                         tabId);
-                String ajaxUrl = tab.check("ajaxUrl");
+                String ajaxUrl = tab.checkString("ajaxUrl");
                 if (ajaxUrl != null) {
                     // AJAX action.
                     Ajax.invoke(cr, ajaxUrl, data, javascript);
                 } else {
                     // Javascript action.
-                    String jsTemplate = tab.check("javascript");
+                    String jsTemplate = tab.checkString("javascript");
                     if (jsTemplate != null) {
                         Template.appendJs(javascript, jsTemplate, data);
                     }
@@ -236,7 +236,7 @@ public class TabSection extends Section{
             // the text needs to be enclosed in an extra <div>; otherwise
             // padding specified for it gets lost.
             out.append("><div>");
-            Template.appendHtml(out, tab.get("text"), data);
+            Template.appendHtml(out, tab.getString("text"), data);
             Template.appendHtml(out, "</div></a></td>\n" +
                     "    <td class=\"right@1\">" +
                     "<img src=\"/static/fiz/images/blank.gif\" alt=\"\" /></td>\n",

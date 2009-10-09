@@ -49,11 +49,11 @@ public class CheckboxFormElement extends FormElement {
      */
     public CheckboxFormElement(Dataset properties) {
         super(properties);
-        trueValue = properties.check("trueValue");
+        trueValue = properties.checkString("trueValue");
         if (trueValue == null) {
             trueValue = "true";
         }
-        falseValue = properties.check("falseValue");
+        falseValue = properties.checkString("falseValue");
         if (falseValue == null) {
             falseValue = "false";
         }
@@ -89,7 +89,7 @@ public class CheckboxFormElement extends FormElement {
      *                             our {@code falseValue} property.
      */
     public void collect(ClientRequest cr, Dataset in, Dataset out) {
-        String formValue = in.check(id);
+        String formValue = in.checkString(id);
         if ((formValue != null) && formValue.equals("true")) {
             out.set(id, trueValue);
         } else {
@@ -109,7 +109,7 @@ public class CheckboxFormElement extends FormElement {
     public void render(ClientRequest cr, Dataset data) {
         StringBuilder out = cr.getHtml().getBody();
         cr.getHtml().includeCssFile("CheckboxFormElement.css");
-        String value = data.check(id);
+        String value = data.checkString(id);
         Template.appendHtml(out, "<div class=\"@class?{CheckboxFormElement}\">" +
                 "<input type=\"checkbox\" id=\"@id\" name=\"@id\" " +
                 "value=\"true\"", properties);
@@ -119,7 +119,7 @@ public class CheckboxFormElement extends FormElement {
         out.append(" />");
 
         // Display extra information, if any was requested.
-        String extra = properties.check("extra");
+        String extra = properties.checkString("extra");
         if (extra != null) {
             out.append("<span class=\"extra\" onclick=\"");
             Html.escapeHtmlChars("el=getElementById(\"" + id + "\"); " +

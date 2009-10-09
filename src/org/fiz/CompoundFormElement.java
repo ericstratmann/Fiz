@@ -125,7 +125,7 @@ public class CompoundFormElement extends FormElement {
     public void render(ClientRequest cr, Dataset data) {
         // If we have our own data request, combine its output with the
         // incoming data from the form.
-        String requestName = properties.check("request");
+        String requestName = properties.checkString("request");
         if (requestName != null) {
             DataRequest request = cr.getDataRequest(requestName);
             Dataset responseData = request.getResponseData();
@@ -139,7 +139,7 @@ public class CompoundFormElement extends FormElement {
         }
 
         // Handle the case where there is no template.
-        String template = properties.check("template");
+        String template = properties.checkString("template");
         if (template == null) {
             for (FormElement component : components) {
                 component.render(cr, data);

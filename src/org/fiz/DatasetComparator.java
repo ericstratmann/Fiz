@@ -136,10 +136,8 @@ public class DatasetComparator implements Comparator<Dataset> {
         int result;
         for (SortKey key : keys) {
             // Fetch the elements.
-            String value1 = (String) d1.lookupPath(key.path,
-                    Dataset.DesiredType.STRING, Dataset.Quantity.FIRST_ONLY);
-            String value2 = (String) d2.lookupPath(key.path,
-                    Dataset.DesiredType.STRING, Dataset.Quantity.FIRST_ONLY);
+            String value1 = d1.checkString(key.path);
+            String value2 = d2.checkString(key.path);
 
             // If either value is nonexistent then their ordering is unknown.
             if ((value1 == null) || (value2 == null)) {

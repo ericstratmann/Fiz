@@ -58,7 +58,7 @@ public class TemplateFormElement extends FormElement {
     @Override
     public void render(ClientRequest cr, Dataset data) {
         StringBuilder out = cr.getHtml().getBody();
-        Template.appendHtml(out, properties.get("template"), data);
+        Template.appendHtml(out, properties.getString("template"), data);
     }
 
     /**
@@ -77,7 +77,7 @@ public class TemplateFormElement extends FormElement {
      */
     @Override
     public boolean renderLabel(ClientRequest cr, Dataset data) {
-        String span = properties.check("span");
+        String span = properties.checkString("span");
         if ((span != null) && (span.equals("true"))) {
             return false;
         }

@@ -78,7 +78,7 @@ public class Demo3Interactor extends Interactor {
         // Make sure that values were provided for required fields.
         for (String id : new String[] {"name", "street1", "city",
                 "state", "zip"}) {
-            if (data.get(id).length() == 0) {
+            if (data.getString(id).length() == 0) {
                 form.elementError(cr, id,
                         "You must provide a value for this field");
                 success = false;
@@ -86,7 +86,7 @@ public class Demo3Interactor extends Interactor {
         }
 
         // Make sure that the ZIP code includes exactly 5 decimal digits.
-        String zip = data.get("zip");
+        String zip = data.getString("zip");
         if (zip.length() > 0) {
             if (zip.length() != 5) {
                 form.elementError(cr, "zip",

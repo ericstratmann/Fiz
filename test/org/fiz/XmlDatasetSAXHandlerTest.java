@@ -45,25 +45,25 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
         }
     }
 
-    HashMap<String,Object> map;
+    Dataset top;
     XmlDatasetSAXHandler handler;
 
     public void setUp() {
-        map = new HashMap<String,Object>();
-        handler = new XmlDatasetSAXHandler(map);
+        top = new Dataset();
+        handler = new XmlDatasetSAXHandler(top);
         handler.locator = new LocatorFixture(3);
     }
 
     public void test_constructor() {
-        handler = new XmlDatasetSAXHandler(map);
-        assertEquals("map", map, handler.map);
+        handler = new XmlDatasetSAXHandler(top);
+        assertEquals("top dataset", top, handler.top);
         assertEquals("notStarted", true, handler.notStarted);
     }
 
     public void test_startElement_notStarted() throws SAXException {
         handler.startElement("url", "localName", "qName", null);
         assertEquals("notStarted", false, handler.notStarted);
-        assertEquals("ancestors length", map, handler.elementChildren);
+        assertEquals("ancestors length", top, handler.elementChildren);
         assertEquals("elementChildren", 0, handler.ancestors.size());
     }
     public void test_startElement_started() throws SAXException {
@@ -99,58 +99,39 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
         handler.endElement("url", "localName", "qName");
         assertEquals("elementText", "xyz", handler.elementText.toString());
     }
-    public void test_endElement_illegalText() throws SAXException {
-        handler.startElement("url", "localName", "qName", null);
-        handler.startElement("url", "localName", "child", null);
-        handler.elementText.append("abc");
-        map.put("child", "text");
-        boolean gotException = false;
-        try {
-            handler.endElement("url", "localName", "child");
-        }
-        catch (SAXException e) {
-            assertEquals("exception message",
-                    "improper use of XML (line 3): conflicting elements " +
-                    "named \"child\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
     public void test_endElement_childIsString() throws SAXException {
         handler.startElement("url", "localName", "qName", null);
         handler.startElement("url", "localName", "child", null);
         handler.elementText.append("xyz");
         handler.endElement("url", "localName", "child");
         assertEquals("value of new element", "xyz",
-                map.get("child").toString());
+                  top.getString("child"));
     }
     public void test_endElement_childIsDataset() throws SAXException {
         handler.startElement("url", "localName", "qName", null);
         handler.startElement("url", "localName", "child", null);
-        handler.elementChildren = new HashMap<String,Object>();
-        handler.elementChildren.put("key 46", "value 18");
+        handler.elementChildren = new Dataset();
+        handler.elementChildren.set("key 46", "value 18");
         handler.endElement("url", "localName", "child");
-        assertEquals("class of new value", "HashMap",
-                map.get("child").getClass().getSimpleName());
+        assertEquals("class of new value", "Dataset",
+                top.get("child").getClass().getSimpleName());
         assertEquals("value in new dataset", "value 18",
-                ((HashMap) map.get("child")).get("key 46").toString());
+                     top.getDataset("child").getString("key 46"));
     }
     @SuppressWarnings("unchecked")
     public void test_endElement_newDatasetWithExistingDataset()
             throws SAXException {
         handler.startElement("url", "localName", "qName", null);
         handler.startElement("url", "localName", "child", null);
-        HashMap<String,Object> oldChild = new HashMap<String,Object>();
-        map.put("child", oldChild);
-        HashMap<String,Object> newChild = new HashMap<String,Object>();
+        Dataset oldChild = new Dataset();
+        top.add("child", oldChild);
+        Dataset newChild = new Dataset();
         handler.elementChildren = newChild;
-        newChild.put("key 46", "value 18");
+        newChild.set("key 46", "value 18");
         handler.endElement("url", "localName", "child");
         assertEquals("class of new value", "ArrayList",
-                map.get("child").getClass().getSimpleName());
-        ArrayList<HashMap<String,Object>> list =
-                (ArrayList<HashMap<String,Object>>) map.get("child");
+                top.getDatasetList("child").getClass().getSimpleName());
+        ArrayList<Dataset> list = top.getDatasetList("child");
         assertEquals("size of list", 2, list.size());
         assertEquals("first dataset in list", oldChild, list.get(0));
         assertEquals("second dataset in list", newChild, list.get(1));
@@ -160,17 +141,14 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
             throws SAXException {
         handler.startElement("url", "localName", "qName", null);
         handler.startElement("url", "localName", "child", null);
-        ArrayList<HashMap<String,Object>> list
-                = new ArrayList<HashMap<String,Object>>();
-        list.add(new HashMap<String,Object>());
-        list.add(new HashMap<String,Object>());
-        list.add(new HashMap<String,Object>());
-        map.put("child", list);
-        HashMap<String,Object> newChild = new HashMap<String,Object>();
+        top.add("child", new Dataset());
+        top.add("child", new Dataset());
+        top.add("child", new Dataset());
+        Dataset newChild = new Dataset();
         handler.elementChildren = newChild;
-        newChild.put("key 46", "value 18");
+        newChild.set("key 46", "value 18");
         handler.endElement("url", "localName", "child");
-        assertEquals("child object", list, map.get("child"));
+        ArrayList<Dataset> list = top.getDatasetList("child");
         assertEquals("size of list", 4, list.size());
         assertEquals("second dataset in list", newChild, list.get(3));
     }
@@ -178,29 +156,20 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
             throws SAXException {
         handler.startElement("url", "localName", "qName", null);
         handler.startElement("url", "localName", "child2", null);
-        map.put("child2", "text");
-        HashMap<String,Object> newChild = new HashMap<String,Object>();
+        top.set("child2", "text");
+        Dataset newChild = new Dataset();
         handler.elementChildren = newChild;
-        newChild.put("key 46", "value 18");
-        boolean gotException = false;
-        try {
-            handler.endElement("url", "localName", "child2");
-        }
-        catch (SAXException e) {
-            assertEquals("exception message",
-                    "improper use of XML (line 3): conflicting elements " +
-                    "named \"child2\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
+        newChild.set("key 46", "value 18");
+        handler.endElement("url", "localName", "child2");
+        assertEquals("text", top.getStringList("child2").get(0));
+        assertEquals(newChild, top.getList("child2").get(1));
     }
     public void test_endElement_popStateBackToParent() throws SAXException {
         handler.startElement("url", "localName", "qName", null);
         handler.startElement("url", "localName", "child", null);
         handler.elementText.append("xyz");
         handler.endElement("url", "localName", "child");
-        assertEquals("elementChildren", map, handler.elementChildren);
+        assertEquals("elementChildren", top, handler.elementChildren);
         assertEquals("ancestors length", 0, handler.ancestors.size());
         assertEquals("elementText", "", handler.elementText.toString());
     }
@@ -218,7 +187,7 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
             throws SAXException {
         handler.startElement("url", "localName", "qName", null);
         handler.startElement("url", "localName", "child", null);
-        handler.elementChildren = new HashMap<String,Object>();
+        handler.elementChildren = new Dataset();
         handler.characters(StringUtil.newCharArray("  \n\t"), 0, 4);
         assertEquals("elementText", "", handler.elementText.toString());
     }
@@ -226,7 +195,7 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
             throws SAXException {
         handler.startElement("url", "localName", "qName", null);
         handler.startElement("url", "localName", "child", null);
-        handler.elementChildren = new HashMap<String,Object>();
+        handler.elementChildren = new Dataset();
         boolean gotException = false;
         try {
             handler.characters(StringUtil.newCharArray("abcd"), 0, 4);

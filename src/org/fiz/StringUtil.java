@@ -139,7 +139,7 @@ public final class StringUtil {
             }
 
             // Generate a header line containing the message, if there is one.
-            String message = error.check("message");
+            String message = error.checkString("message");
             if (message != null) {
                 result.append(message);
             } else {
@@ -160,13 +160,13 @@ public final class StringUtil {
                 if (name.equals("message")) {
                     continue;
                 }
-                String value = error.check(name);
-                if (value == null) {
+                Object value = error.check(name);
+                if (value == null || value instanceof String == false) {
                     continue;
                 }
                 result.append(prefix);
                 result.append(String.format("%-12s %s", (name + ":"),
-                        value.replace("\n", indent)));
+                            ((String) value).replace("\n", indent)));
                 prefix = prefix2;
             }
         }
@@ -250,7 +250,7 @@ public final class StringUtil {
     public static String errorMessage(Dataset... errors) {
         // Handle the simple case of a single error with a "message" value.
         if (errors.length == 1) {
-            String message = errors[0].check("message");
+            String message = errors[0].checkString("message");
             if (message != null) {
                 return message;
             }
@@ -266,13 +266,13 @@ public final class StringUtil {
 
             // Ideally, there is a "message" value in the error; if so, it is
             // just what we're looking for.
-            String value = error.check("message");
+            String value = error.checkString("message");
             if (value != null) {
                 message.append(value);
             } else {
                 // Next choice is a "code" value in the error; this is pretty terse,
                 // but better than nothing.
-                value = error.check("code");
+                value = error.checkString("code");
                 if (value != null) {
                     message.append("error ");
                     message.append(value);
@@ -759,7 +759,7 @@ public final class StringUtil {
      */
     public static String addSuffix(String filename, String suffix) {
         int lastDot = filename.lastIndexOf(".");
-        
+
         if (lastDot == -1) {
             return filename + suffix;
         }
@@ -768,5 +768,5 @@ public final class StringUtil {
             filename.substring(lastDot);
 
     }
-    
+
 }

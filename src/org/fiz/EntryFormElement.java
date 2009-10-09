@@ -58,6 +58,6 @@ public class EntryFormElement extends FormElement {
         cr.getHtml().includeCssFile("EntryFormElement.css");
         Template.appendHtml(out, "<input type=\"text\" id=\"@id\" " +
                 "name=\"@id\" class=\"@class?{EntryFormElement}\" " +
-                "{{value=\"@1\"}} />", properties, data.check(id));
+                "{{value=\"@1\"}} />", properties, data.checkString(id));
     }
 }

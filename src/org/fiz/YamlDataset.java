@@ -22,37 +22,10 @@ import org.ho.yaml.exception.YamlException;
 
 /**
  * YamlDataset allows YAML documents to be accessed using the standard
- * Dataset mechanisms.  A slightly restricted subset of YAML is supported
- * here: documents must not contain lists of values like the following:
- * <pre>
- * foo:
- *   - first
- *   - second
- *   - third
- * </pre>
- * List of hashes are OK: these translate into nested datasets.
+ * Dataset mechanisms.
  */
 
 public class  YamlDataset extends Dataset {
-    /**
-     * UnnamedValueError is thrown if YamlDataset encounters unnamed values
-     * in the YAML, such as a list of values with no names.
-     */
-    public static class UnnamedValueError extends Error {
-        /**
-         * Construct an UnnamedValueError within message including the
-         * name of the YAML file where the problem occurred.
-         * @param fileName         If the dataset input came from a file,
-         *                         this gives the file name; null means
-         *                         the input didn't come from a file.
-         */
-        public UnnamedValueError(String fileName) {
-            super("YAML dataset contains sequence(s) with unnamed values"
-                    + ((fileName != null)
-                    ? (" (file \"" + fileName + "\")")
-                    : ""));
-        }
-    }
 
     /**
      * This method is only for the use of the static constructors
@@ -71,10 +44,9 @@ public class  YamlDataset extends Dataset {
      * @param s                    String in YAML format
      * @throws SyntaxError         <code> s</code> does not contain
      *                             well-formed YAML
-     * @throws UnnamedValueError   The YAML contains a list of string values
      */
     public static YamlDataset newStringInstance(String s)
-            throws SyntaxError, UnnamedValueError {
+            throws SyntaxError {
         try {
             Object yamlInfo = Yaml.load(s);
             checkAndConvert(yamlInfo, null);
@@ -89,13 +61,12 @@ public class  YamlDataset extends Dataset {
      * Create a dataset from information contained in a YAML file.
      * @param fileName             Name of a file in YAML format
      * @return                     New YamlDataset object containing contents
-     *                             of <code>fileName</code>
+     *                             of {@code fileName}
      * @throws FileNotFoundError   The file doesn't exist or can't be read
      * @throws SyntaxError         The file does not contain well-formed YAML
-     * @throws UnnamedValueError   The YAML contains a list of string values
      */
     public static YamlDataset newFileInstance(String fileName)
-            throws FileNotFoundError, SyntaxError, UnnamedValueError {
+            throws FileNotFoundError, SyntaxError {
         Object yamlInfo;
 
         // Note: if we pass the file name to JYaml and let it open the
@@ -259,7 +230,8 @@ public class  YamlDataset extends Dataset {
         for (Object nameObject: names) {
             String name = (String) nameObject;
             if ((name.length() > maxLength)
-                    && (dataset.get(name) instanceof String)) {
+                && (dataset.get(name) instanceof Dataset == false)
+                && (dataset.get(name) instanceof DSArrayList == false)) {
                 maxLength = name.length();
             }
         }
@@ -270,17 +242,24 @@ public class  YamlDataset extends Dataset {
             Object value = dataset.get(name);
             writer.append(prefix);
             writer.append(escapeYamlChars(name));
-            if (value instanceof HashMap) {
+            if (value instanceof Dataset) {
                 writer.append(":\n");
                 String childIndent = otherPrefix + "    ";
-                writeSubtree((HashMap) value, writer, childIndent,
+                writeSubtree(((Dataset) value).map, writer, childIndent,
                         childIndent);
-            } else if (value instanceof ArrayList) {
-                ArrayList<HashMap> list = (ArrayList <HashMap>) value;
+            } else if (value instanceof DSArrayList) {
+                ArrayList<Object> list = (DSArrayList <Object>) value;
                 writer.append(":\n");
                 for (int i = 0; i < list.size(); i++) {
-                    writeSubtree(list.get(i), writer, otherPrefix + "  - ",
-                            otherPrefix + "    ");
+                    Object o = list.get(i);
+                    if (o instanceof Dataset) {
+                        writeSubtree(((Dataset) o).map, writer, otherPrefix + "  - ",
+                                     otherPrefix + "    ");
+                    } else {
+                        writer.append(otherPrefix + "  - ");
+                        writer.append(o.toString());
+                        writer.append("\n");
+                    }
                 }
             } else {
                 writer.append(": ");
@@ -355,14 +334,8 @@ public class  YamlDataset extends Dataset {
 
     /**
      * This method is called to scan a YAML dataset immediately after
-     * it is parsed.  The method handles 2 situations:
-     * 1. We don't currently support list values (lists of sub-datasets
-     *    are OK, just not list values).  If any list values are found,
-     *    generate a syntax error.
-     * 2. JYaml converts string values to Integer or Double types whenever
-     *    they have the appropriate syntax.  We need to return all values
-     *    as strings, so this method converts all of the non-string values
-     *    back to strings.
+     * it is parsed.  The method handles 2 situations: HashMaps are turned
+     * into Datasets and ArrayLists into DSArrayLists
      * @param yamlInfo             YAML object to check and convert.  This
      *                             is supposed to be a HashMap; if it isn't,
      *                             it's because the YAML source contained
@@ -373,37 +346,35 @@ public class  YamlDataset extends Dataset {
      */
 
     @SuppressWarnings("unchecked")
-    protected static void checkAndConvert(Object yamlInfo, String fileName)
-            throws SyntaxError {
-        if (!(yamlInfo instanceof HashMap)) {
-            throw new UnnamedValueError(fileName);
+    protected static void checkAndConvert(Object yamlInfo, String fileName) {
+        HashMap dataset;
+        if (yamlInfo instanceof HashMap == false) {
+            return;
+        } else {
+            dataset = (HashMap) yamlInfo;
         }
-        HashMap dataset = (HashMap) yamlInfo;
         for (Map.Entry<String,Object> pair :
                 ((HashMap<String,Object>) dataset).entrySet()) {
             Object value = pair.getValue();
             if (value instanceof HashMap) {
                 checkAndConvert(value, fileName);
+                pair.setValue(new Dataset((HashMap) value, fileName));
             } else if (value instanceof ArrayList) {
                 ArrayList list = (ArrayList) value;
                 for (Object value2 : list) {
                    checkAndConvert(value2, fileName);
+                   if (value2 instanceof HashMap) {
+                       list.set(list.indexOf(value2),
+                                new Dataset((HashMap) value2, fileName));
+                   }
                 }
+                pair.setValue(new DSArrayList((ArrayList) value));
             } else if (value == null) {
                 // This seems to happen if a hash is specified with
                 // no members (e.g., " child:" on one line, and no
                 // following lines containing members).  Create an empty
-                // HashMap for this.
-                pair.setValue (new HashMap());
-            } else {
-                // String value: see if it needs to be converted to a string.
-                Class valueClass = value.getClass();
-                if ((valueClass == Integer.class)
-                        || (valueClass == Double.class)
-                        || (valueClass == Float.class)
-                        || (valueClass == Boolean.class)) {
-                    pair.setValue(value.toString());
-                }
+                // Dataset for this.
+                pair.setValue (new Dataset());
             }
         }
     }

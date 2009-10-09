@@ -162,10 +162,10 @@ public class DemoInteractor extends Interactor {
         query = query.toLowerCase();
 
         Dataset matches = new Dataset();
-        for(Dataset data : autocompleteData.getChildren("name")) {
-            String dataName = data.get("name").toLowerCase();
+        for(Dataset data : autocompleteData.getDatasetList("name")) {
+            String dataName = data.getString("name").toLowerCase();
             if(dataName.substring(0, Math.min(query.length(), dataName.length())).equals(query)) {
-                matches.addChild("data", data);
+                matches.add("data", data);
             }
         }
 
@@ -287,7 +287,7 @@ public class DemoInteractor extends Interactor {
      */
     public void ajaxTab(ClientRequest cr) {
         cr.updateElement("text", "You clicked on tab \"" +
-                cr.getMainDataset().get("tab") +
+                cr.getMainDataset().getString("tab") +
                 "\", which caused this text to be updated via AJAX.");
     }
 
@@ -421,7 +421,7 @@ public class DemoInteractor extends Interactor {
                 DatasetComparator.Order.DECREASING));
         Dataset statsDataset = new Dataset();
         for (Dataset d : stats) {
-            statsDataset.addChild("record", d);
+            statsDataset.add("record", d);
         }
         cr.addDataRequest("stats", RawDataManager.newRequest(statsDataset));
         cr.showSections(
@@ -461,7 +461,7 @@ public class DemoInteractor extends Interactor {
         html.clear();
         html.setTitle("TreeSection Demo");
         Dataset main = cr.getMainDataset();
-        String edgeFamily = main.check("edgeFamily");
+        String edgeFamily = main.checkString("edgeFamily");
         if (edgeFamily == null) {
             edgeFamily = "treeSolid.gif";
         }
@@ -526,9 +526,9 @@ public class DemoInteractor extends Interactor {
 
         );
         if (name.length() == 0) {
-            return RawDataManager.newRequest(data.getChild("top"));
+            return RawDataManager.newRequest(data.getDataset("top"));
         }
-        return RawDataManager.newRequest(data.getChild(name));
+        return RawDataManager.newRequest(data.getDataset(name));
     }
 
     public void ajaxClearStats(ClientRequest cr) {
@@ -562,7 +562,7 @@ public class DemoInteractor extends Interactor {
         }
         logger.info("Page property value: " + cr.getPageProperty("formInfo"));
         Dataset formData = sideBySideForm.collectFormData(cr);
-        if (formData.get("state").length() == 0) {
+        if (formData.getString("state").length() == 0) {
             sideBySideForm.displayErrors(cr, new Dataset("culprit", "name",
                     "message",
                     "User doesn't exist; this is a very long message " +
@@ -587,7 +587,7 @@ public class DemoInteractor extends Interactor {
                 "message", "You have chosen an exceptionally bad " +
         "tasting fruit; please pick another."));
     }
-    
+
     RatingSection ratingStars1 = new RatingSection(
             new Dataset("numImages", "5",
                     "granularity", "0.25",
@@ -624,7 +624,7 @@ public class DemoInteractor extends Interactor {
                 new Dataset("initRating", "3.4")));
         cr.getHtml().setTitle("Rating Sections");
         cr.showSections(
-                new TemplateSection("<h1>Rating Sections</h1>\n<ul>"), 
+                new TemplateSection("<h1>Rating Sections</h1>\n<ul>"),
                 new TemplateSection("<li><h3>Basic Stars</h3>"),
                 ratingStars1,
                 new TemplateSection("<p><b>Current Rating:</b> " +
@@ -658,26 +658,26 @@ public class DemoInteractor extends Interactor {
                 new TemplateSection("</ul>")
         );
     }
-    
+
     /**
      * Updates the RatingSection demo page via Ajax.
-     * 
+     *
      * @param cr                   Overall information about the client
      *                             request being serviced.
      */
     public void ajaxReceiveData(ClientRequest cr) {
-        String section = cr.getMainDataset().get("section");
+        String section = cr.getMainDataset().getString("section");
         cr.updateElement(section + "_rating", Template.expandHtml(
                 "@rating (updated via Ajax)", cr.getMainDataset()));
-        
+
         if (section.equals("ratingStars2")) {
             ratingStars2.setReadOnly(cr, true);
         }
     }
-    
+
     /**
      * Resets one of the RatingSections on the RatingSection demo page.
-     * 
+     *
      * @param cr                   Overall information about the client
      *                             request being serviced.
      */

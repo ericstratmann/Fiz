@@ -227,9 +227,9 @@ public class XmlDatasetTest extends junit.framework.TestCase {
         assertEquals("element with trailing space", "trailing space ",
                 d2.get("a"));
         assertEquals("value from list of children", "Bill",
-                d2.getPath("children.name"));
+                d2.getString("children.name"));
         assertEquals("bested value", "California",
-                d2.getPath("c.d"));
+                d2.getString("c.d"));
         assertEquals("value with special characters", "&abcd\n\n",
                 d2.get("special"));
     }
@@ -264,21 +264,7 @@ public class XmlDatasetTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
-    public void test_parse_disallowedStructure() {
-        boolean gotException = false;
-        try {
-            Dataset d = XmlDataset.parse("<head> <name>Bill</name>\n" +
-                    "<name><a></a></name>\n</head>\n", null);
-        }
-        catch (Dataset.SyntaxError e) {
-            assertEquals("exception message",
-                    "syntax error in dataset: improper use of XML " +
-                    "(line 2): conflicting elements named \"name\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
+
     public void test_parse_nonexistentFile() {
         boolean gotException = false;
         try {

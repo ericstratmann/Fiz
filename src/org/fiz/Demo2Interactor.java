@@ -146,12 +146,12 @@ public class Demo2Interactor extends Interactor {
                 new EntryFormElement(new Dataset("id", "gpa",
                         "label", "GPA:")));
         boolean anyErrors = false;
-        if (cr.getMainDataset().get("last").length() == 0) {
+        if (cr.getMainDataset().getString("last").length() == 0) {
             form.elementError (cr, "last", new Dataset("message",
                     "You must supply the student's last name."));
             anyErrors = true;
         };
-        String gpa = cr.getMainDataset().get("gpa");
+        String gpa = cr.getMainDataset().getString("gpa");
         boolean gpaError = false;
         if (gpa.length() == 0) {
             form.elementError (cr, "gpa", new Dataset("message",

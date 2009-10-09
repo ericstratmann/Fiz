@@ -26,7 +26,7 @@ import org.xml.sax.*;
  *  - Elements with children become nested datasets; elements without
  *    children become string values.
  *  - If multiple elements in the same parent have the same name, then they
- *    must all have children: they become a list of nested datasets.
+ *    become a list of values.
  *  - If an element has children than it must not contain any text except
  *    whitespace (which is ignored).
  *  - Whitespace is not ignored in elements without children.
@@ -99,7 +99,7 @@ public class XmlDataset extends Dataset {
             StringWriter out = new StringWriter();
             out.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
             out.append("<dataset>\n");
-            writeSubtree(d.map, out, "  ");
+            writeSubtree(d, out, "  ");
             out.append("</dataset>\n");
             return out.toString();
         }
@@ -155,7 +155,7 @@ public class XmlDataset extends Dataset {
                 out.append (" -->\n");
             }
             out.append("<dataset>\n");
-            writeSubtree(d.map, out, "  ");
+            writeSubtree(d, out, "  ");
             out.append("</dataset>\n");
             out.close();
             if (d.generateIoException) {
@@ -204,31 +204,26 @@ public class XmlDataset extends Dataset {
      *                             problem.
      */
     @SuppressWarnings("unchecked")
-    protected static void writeSubtree(HashMap dataset, Writer writer,
+    protected static void writeSubtree(Dataset dataset, Writer writer,
             String indent) throws IOException {
-        StringBuilder quotedValue = new StringBuilder();
         ArrayList names = new ArrayList();
+        StringBuilder quotedValue = new StringBuilder();
         names.addAll(dataset.keySet());
         Collections.sort(names);
         for (Object nameObject: names) {
             String name = (String) nameObject;
-            Object value = dataset.get(name);
-            if (value instanceof HashMap) {
-                writer.append(String.format("%s<%s>\n", indent, name));
-                writeSubtree((HashMap) value, writer, indent + "  ");
-                writer.append(String.format("%s</%s>\n", indent, name));
-            } else if (value instanceof ArrayList) {
-                ArrayList<HashMap> list = (ArrayList <HashMap>) value;
-                for (int i = 0; i < list.size(); i++) {
+            ArrayList<Object> list = dataset.getList(name);
+            for (Object value : list) {
+                if (value instanceof Dataset) {
                     writer.append(String.format("%s<%s>\n", indent, name));
-                    writeSubtree(list.get(i), writer, indent + "  ");
+                    writeSubtree((Dataset) value, writer, indent + "  ");
                     writer.append(String.format("%s</%s>\n", indent, name));
+                } else {
+                    quotedValue.setLength(0);
+                    Html.escapeHtmlChars(value.toString(), quotedValue);
+                    writer.append(String.format("%s<%s>%s</%s>\n", indent, name,
+                                                quotedValue.toString(), name));
                 }
-            } else {
-                quotedValue.setLength(0);
-                Html.escapeHtmlChars(value.toString(), quotedValue);
-                writer.append(String.format("%s<%s>%s</%s>\n", indent, name,
-                        quotedValue.toString(), name));
             }
         }
     }
@@ -256,14 +251,14 @@ public class XmlDataset extends Dataset {
             } else {
                 parser.reset();
             }
-            HashMap<String,Object> map = new HashMap<String,Object>();
-            XmlDatasetSAXHandler handler = new XmlDatasetSAXHandler(map);
+            XmlDataset dataset = new XmlDataset(new HashMap(), fileName);
+            XmlDatasetSAXHandler handler = new XmlDatasetSAXHandler(dataset);
             if (fileName != null) {
                 parser.parse(new File(fileName), handler);
             } else {
                 parser.parse(new InputSource(new StringReader(s)), handler);
             }
-            return new XmlDataset(map, null);
+            return dataset;
         }
         catch (SAXException e) {
             throw new Dataset.SyntaxError(null, e.getMessage());

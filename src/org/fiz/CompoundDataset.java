@@ -22,9 +22,9 @@ import java.util.*;
  * into a single dataset.
  * * The components of a CompoundDataset are ordered, with values in earlier
  *   components considered "earlier" and values in later components.  Methods
- *   that return a single result (such as {@code getPath} will search the
+ *   that return a single result (such as {@code get} will search the
  *   component datasets in order, returning the first value found.
- *   Methods that return multiple results (such as {@code getChildren}
+ *   Methods that return multiple results (such as {@code getList}
  *   will return all of the values found in any component; the order of
  *   the results will reflect the order of the components.
  * * A CompoundDataset refers to its component datasets by reference,
@@ -86,12 +86,31 @@ public class CompoundDataset extends Dataset {
 
     /**
      * Not implemented for CompoundDatasets; always throws InternalError.
+     * @param source               Ignored.
+     */
+    @Override
+    public void addSerializedData(CharSequence source) {
+        throw new InternalError("addSerializedData invoked on a CompoundDataset");
+    }
+
+    /**
+     * Not implemented for CompoundDatasets; always throws InternalError.
      * @param key                  Ignored.
      * @param child                Ignored.
      */
     @Override
-    public void addChild(String key, Dataset child) {
-        throw new InternalError("addChild invoked on a CompoundDataset");
+    public void add(String key, Object child) {
+        throw new InternalError("add invoked on a CompoundDataset");
+    }
+
+    /**
+     * Not implemented for CompoundDatasets; always throws InternalError.
+     * @param path                 Ignored.
+     * @param child                Ignored.
+     */
+    @Override
+    public void addPath(String path, Object child) {
+        throw new InternalError("addPath invoked on a CompoundDataset");
     }
 
     /**
@@ -116,6 +135,15 @@ public class CompoundDataset extends Dataset {
             clones[i] = components[i].clone();
         }
         return new CompoundDataset(clones);
+    }
+
+    /**
+     * Not implemented for CompoundDatasets; always throws InternalError.
+     * @param dest                      Ignored
+     */
+    @Override
+    public CompoundDataset clone(Dataset dest) {
+        throw new InternalError("clone with argument invoked on a CompoundDataset");
     }
 
 
@@ -148,62 +176,10 @@ public class CompoundDataset extends Dataset {
     /**
      * Not implemented for CompoundDatasets; always throws InternalError.
      * @param key                  Ignored.
-     * @return                     Doesn't return.
-     */
-    @Override
-    public Dataset createChild(String key) {
-        throw new InternalError("createChild invoked on a CompoundDataset");
-    }
-
-    /**
-     * Not implemented for CompoundDatasets; always throws InternalError.
-     * @param key                  Ignored.
-     * @param dataset              Ignored.
-     * @return                     Doesn't return.
-     */
-    @Override
-    public Dataset createChild(String key, Dataset dataset) {
-        throw new InternalError("createChild invoked on a CompoundDataset");
-    }
-
-    /**
-     * Not implemented for CompoundDatasets; always throws InternalError.
-     * @param path                 Ignored.
-     * @return                     Doesn't return.
-     */
-    @Override
-    public Dataset createChildPath(String path) {
-        throw new InternalError("createChildPath invoked on a CompoundDataset");
-    }
-
-    /**
-     * Not implemented for CompoundDatasets; always throws InternalError.
-     * @param path                 Ignored.
-     * @param dataset              Ignored.
-     * @return                     Doesn't return.
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    public Dataset createChildPath(String path, Dataset dataset) {
-        throw new InternalError("createChildPath invoked on a CompoundDataset");
-    }
-
-    /**
-     * Not implemented for CompoundDatasets; always throws InternalError.
-     * @param key                  Ignored.
      */
     @Override
     public void delete(String key) {
         throw new InternalError("delete invoked on a CompoundDataset");
-    }
-
-    /**
-     * Not implemented for CompoundDatasets; always throws InternalError.
-     * @param path                 Ignored.
-     */
-    @Override
-    public void deletePath(String path) {
-        throw new InternalError("deletePath invoked on a CompoundDataset");
     }
 
     /**
@@ -255,148 +231,6 @@ public class CompoundDataset extends Dataset {
     }
 
     /**
-     * Searches the component data sets in order, looking for one or more
-     * top-level values matching {@code key} and {@code wanted}.
-     * @param key                  Name of the desired value.
-     * @param wanted               Indicates what kind of value is desired
-     *                             (string, nested dataset, or either).
-     * @param quantity             Indicates whether all matching values
-     *                             should be returned, or only the first
-     *                             one found.
-     * @return                     The return value is null if no matching
-     *                             value is found.  Otherwise, if
-     *                             {@code quantity} is {@code FIRST_ONLY}
-     *                             then the return value is a String or
-     *                             Dataset; otherwise the return value is
-     *                             an ArrayList, each of whose members is
-     *                             a String or Dataset.
-     */
-    @Override
-    public Object lookup(String key, DesiredType wanted, Quantity quantity) {
-        return lookup(key, wanted, quantity, null);
-    }
-
-    /**
-     * Searches the component data sets in order, looking for one or more
-     * top-level values matching {@code key} and {@code wanted}.
-     * @param key                  Name of the desired value.
-     * @param wanted               Indicates what kind of value is desired
-     *                             (string, nested dataset, or either).
-     * @param quantity             Indicates whether all matching values
-     *                             should be returned, or only the first
-     *                             one found.
-     * @param out                  If {@code quantity} is {@code ALL} and
-     *                             this argument is non-null then the
-     *                             matching values are appended to this
-     *                             rather than creating a new ArrayList,
-     *                             and the return value will be {@code out}.
-     * @return                     The return value is null if no matching
-     *                             value is found.  Otherwise, if
-     *                             {@code quantity} is {@code FIRST_ONLY}
-     *                             then the return value is a String or
-     *                             Dataset; otherwise the return value is
-     *                             an ArrayList, each of whose members is
-     *                             a String or Dataset.
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    public Object lookup(String key, DesiredType wanted, Quantity quantity,
-            ArrayList<Object> out) {
-        boolean foundAny = false;
-        for (Dataset component : components) {
-            Object result = component.lookup(key, wanted, quantity, out);
-            if (result != null) {
-                if (quantity == Quantity.FIRST_ONLY) {
-                    return result;
-                }
-                foundAny = true;
-
-                // The following statement is necessary in the case where
-                // {@code out} is initially null: once a list has been
-                // created, use it for future nested lookups.
-                out = (ArrayList<Object>) result;
-            }
-        }
-        return (foundAny) ? out : null;
-    }
-
-    /**
-     * Searches the component data sets in order, looking for one or more
-     * values matching {@code path} and {@code wanted}.
-     * @param path                 A sequence of keys separated by dots.
-     *                             For example, {@code a.b.c} refers to a value
-     *                             {@code c} contained in a nested dataset
-     *                             {@code b} contained in a dataset {@code a}
-     *                             contained in the current dataset.
-     * @param wanted               Indicates what kind of value is desired
-     *                             (string, nested dataset, or either).
-     * @param quantity             Indicates whether all matching values
-     *                             should be returned, or only the first
-     *                             one found.
-     * @return                     The return value is null if no matching
-     *                             value is found.  Otherwise, if
-     *                             {@code quantity} is {@code FIRST_ONLY}
-     *                             then the return value is a String or
-     *                             Dataset; otherwise the return value is
-     *                             an ArrayList, each of whose members is
-     *                             a String or Dataset.
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    public Object lookupPath(String path, DesiredType wanted,
-            Quantity quantity) {
-        return lookupPath(path, wanted, quantity, null);
-    }
-
-    /**
-     * Searches the component data sets in order, looking for one or more
-     * values matching {@code path} and {@code wanted}.
-     * @param path                 A sequence of keys separated by dots.
-     *                             For example, {@code a.b.c} refers to a value
-     *                             {@code c} contained in a nested dataset
-     *                             {@code b} contained in a dataset {@code a}
-     *                             contained in the current dataset.
-     * @param wanted               Indicates what kind of value is desired
-     *                             (string, nested dataset, or either).
-     * @param quantity             Indicates whether all matching values
-     *                             should be returned, or only the first
-     *                             one found.
-     * @param out                  If {@code quantity} is {@code ALL} and
-     *                             this argument is non-null then the
-     *                             matching values are appended to this
-     *                             rather than creating a new ArrayList,
-     *                             and the return value will be {@code out}.
-     * @return                     The return value is null if no matching
-     *                             value is found.  Otherwise, if
-     *                             {@code quantity} is {@code FIRST_ONLY}
-     *                             then the return value is a String or
-     *                             Dataset; otherwise the return value is
-     *                             an ArrayList, each of whose members is
-     *                             a String or Dataset.
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    public Object lookupPath(String path, DesiredType wanted,
-            Quantity quantity, ArrayList<Object> out) {
-        boolean foundAny = false;
-        for (Dataset component : components) {
-            Object result = component.lookupPath(path, wanted, quantity, out);
-            if (result != null) {
-                if (quantity == Quantity.FIRST_ONLY) {
-                    return result;
-                }
-                foundAny = true;
-
-                // The following statement is necessary in the case where
-                // {@code out} is initially null: once a list has been
-                // created, use it for future nested lookups.
-                out = (ArrayList<Object>) result;
-            }
-        }
-        return (foundAny) ? out : null;
-    }
-
-    /**
      * Not implemented for CompoundDatasets; always throws InternalError.
      * @param out                  Ignored.
      */
@@ -419,8 +253,18 @@ public class CompoundDataset extends Dataset {
      * @param value                Ignored.
      */
     @Override
-    public void set(String key, String value) {
+    public void set(String key, Object value) {
         throw new InternalError("set invoked on a CompoundDataset");
+    }
+
+    /**
+     * Not implemented for CompoundDatasets; always throws InternalError.
+     * @param path                 Ignored.
+     * @param value                Ignored.
+     */
+    @Override
+    public void setPath(String path, Object value) {
+        throw new InternalError("setPath invoked on a CompoundDataset");
     }
 
     /**
@@ -449,7 +293,7 @@ public class CompoundDataset extends Dataset {
      * @param out                  Ignored.
      */
     @Override
-    public void toJavascript(Appendable out) {
+    public void toJavascript(StringBuilder out) {
         throw new InternalError("toJavascript invoked on a CompoundDataset");
     }
 
@@ -484,4 +328,46 @@ public class CompoundDataset extends Dataset {
     public void writeFile(String name, String comment) {
         throw new InternalError("writeFile invoked on a CompoundDataset");
     }
+
+    /**
+     * Searches the component data sets in order, looking for one or more
+     * values (either top level or a path) matching {@code key}.
+     * @param keyOrPath            Name of the desired element (key in
+     *                             top-level dataset or multi-level path).
+     * @param quantity             Indicates whether all matching values
+     *                             should be returned, or only the first
+     *                             one found.
+     * @return                     The return value is null if no matching
+     *                             values are found.  If {@code quantity} is
+     *                             {@code FIRST_ONLY} then the return
+     *                             value is the first match found; otherwise
+     *                             the return value is a DSArrayList, containing
+     *                             all matches.
+     */
+    @Override
+    protected Object lookup(String keyOrPath, Quantity quantity) {
+        Object result;
+        DSArrayList<Object> out = null;
+        if (quantity == Quantity.ALL) {
+            out = new DSArrayList<Object>();
+        }
+
+        boolean foundAny = false;
+        for (Dataset component : components) {
+            result = component.lookup(keyOrPath, quantity);
+            if (result != null) {
+                if (quantity == Quantity.FIRST_ONLY) {
+                    return result;
+                }
+                foundAny = true;
+                if (result instanceof DSArrayList) {
+                    out.addAll((DSArrayList) result);
+                } else {
+                    out.add(result);
+                }
+            }
+        }
+        return (foundAny) ? out : null;
+    }
+
 }

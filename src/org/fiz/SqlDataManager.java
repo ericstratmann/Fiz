@@ -141,15 +141,15 @@ public class SqlDataManager {
      *                             for supported values.
      */
     public SqlDataManager(Dataset properties) {
-        serverUrl = properties.get("serverUrl");
-        user = properties.get("user");
-        password = properties.get("password");
+        serverUrl = properties.getString("serverUrl");
+        user = properties.getString("user");
+        password = properties.getString("password");
         try {
-            Class.forName(properties.get("driverClass"));
+            Class.forName(properties.getString("driverClass"));
         }
         catch (ClassNotFoundException e) {
             throw new InternalError("SqlDataManager couldn't load driver " +
-                    "class \"" + properties.get("driverClass") + "\"");
+                    "class \"" + properties.getString("driverClass") + "\"");
         }
         try {
             connection = DriverManager.getConnection(serverUrl,
@@ -489,7 +489,7 @@ public class SqlDataManager {
                 statement.clearParameters();
                 int i = 1;
                 for (String name : names) {
-                    statement.setString(i, row.get(name));
+                    statement.setString(i, row.getString(name));
                     i++;
                 }
                 statement.executeUpdate();
@@ -577,7 +577,7 @@ public class SqlDataManager {
                 statement.clearParameters();
                 int i = 1;
                 for (String name : names) {
-                    statement.setString(i, newValues.get(name));
+                    statement.setString(i, newValues.getString(name));
                     i++;
                 }
                 statement.setString(i, value);
@@ -851,7 +851,7 @@ public class SqlDataManager {
                 String value = rs.getString(i);
                 row.set(names[i-1], (value != null)?  value : "");
             }
-            result.addChild("record", row);
+            result.add("record", row);
         }
         return result;
     }

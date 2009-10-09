@@ -724,7 +724,7 @@ public class Template {
      *                             Info.end is set to the index of the first
      *                             character following the @-specifier (e.g.
      *                             for {@code @foo+bar} info.end will refer
-     *                             to the {@code +} and for {@code@{abc}
+     *                             to the {@code +} and for {@code @abc}
      *                             info.end will refer to the "a".
      * @param start                Index of the character immediately after
      *                             the {@code @}.
@@ -818,7 +818,7 @@ public class Template {
 
     /**
      * This method is invoked to expand parenthesized names, such as
-     * @(@first+@second).
+     * {@code @(@first+@second)}.
      * @param info                 Contains information about the template
      *                             being expanded.  This method modifies
      *                             info.out, info.missingInfo, and info.end.
@@ -1109,7 +1109,7 @@ public class Template {
         String result = null;
         if (info.data != null) {
             info.currentQuoting = info.quoting;
-            result = info.data.check(name);
+            result = info.data.checkString(name);
         }
         if ((result != null) || !required) {
             return result;

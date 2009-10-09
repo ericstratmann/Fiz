@@ -42,7 +42,7 @@ public class PasswordFormElement extends FormElement {
      */
     public PasswordFormElement(Dataset properties) {
         super(properties);
-        String duplicate = properties.check("duplicate");
+        String duplicate = properties.checkString("duplicate");
         if (duplicate != null) {
             addValidator(new Dataset("type", "duplicate", 
                     "otherFields", duplicate,

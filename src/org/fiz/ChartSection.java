@@ -63,7 +63,6 @@ import java.util.*;
  *
  * In cases where there is only one series for a plot or one plot for the chart,
  * it is possible to "collapse" the datasets. This is done by not including the
-
  * {@code plot} or {@code series} parameter, and instead placing the parameters
  * that would have been in that dataset in the chart or plot dataset.
  *
@@ -243,7 +242,6 @@ public class ChartSection extends Section {
                         id);
         out.append("</div>\n");
 
-
         chart = Template.expandRaw("Fiz.ids.@1", id);
         Template.appendRaw(js, "try {\n");
         Template.appendRaw(js, "@1 = {};\n", chart);
@@ -251,7 +249,7 @@ public class ChartSection extends Section {
                         chart, id);
 
 
-        ArrayList<Dataset> plots = properties.getChildren("plot");
+        ArrayList<Dataset> plots = properties.getDatasetList("plot");
         for (Dataset plot : plots) {
             addPlot(plot);
         }
@@ -277,7 +275,7 @@ public class ChartSection extends Section {
      * @param plot       Dataset describing the plot to add.
      */
     protected void addPlot(Dataset plot) {
-        String request = plot.check("request");
+        String request = plot.checkString("request");
         String plotId = getId(plot, "plot");
 
         // If there is a request, then we are not using series. Otherwise, we
@@ -294,9 +292,9 @@ public class ChartSection extends Section {
             Template.appendRaw(js, "@1.@(2) = new Fiz.Chart.@3();\n",
                             chart, plotId, getTypeOfPlot(plot));
             setProperties(plot, plotId);
-            ArrayList<Dataset> series = plot.getChildren("series");
+            ArrayList<Dataset> series = plot.getDatasetList("series");
             for (Dataset serie : series) { // add each series in turn
-                String seriesRequest = serie.get("request");
+                String seriesRequest = serie.getString("request");
                 String serieId = getId(serie, "series");
                 addData(serie);
                 Template.appendRaw(js, "@1.@2 = new Fiz.Chart.Series(@1.@(2)_data);\n",
@@ -320,7 +318,7 @@ public class ChartSection extends Section {
      *              Fiz.Chart.ReturnValue)
      */
     protected String getTypeOfPlot(Dataset plot) {
-        String type = plot.check("type");
+        String type = plot.checkString("type");
         return type == null ? "Bar" : type;
     };
 
@@ -334,19 +332,19 @@ public class ChartSection extends Section {
      *                        the id, request, xId, and yId properties.
      */
     protected void addData(Dataset properties) {
-        DataRequest req = cr.getDataRequest(properties.get("request"));
+        DataRequest req = cr.getDataRequest(properties.getString("request"));
         Dataset response = req.getResponseOrAbort();
 
-        Template.appendRaw(js, "@1.@(2)_data = [", chart, properties.get("id"));
-        ArrayList<Dataset> rows = response.getChildren("record");
+        Template.appendRaw(js, "@1.@(2)_data = [", chart, properties.getString("id"));
+        ArrayList<Dataset> rows = response.getDatasetList("record");
 
         if (rows.size() != 0) {
-            String xIdVal = properties.get("xId");
-            String yIdVal = properties.get("yId");
+            String xIdVal = properties.getString("xId");
+            String yIdVal = properties.getString("yId");
             for (int i = 0; i < rows.size(); i++) {
                 Dataset row = rows.get(i);
-                Template.appendJs(js, "[\"@1\", @2]", row.get(xIdVal),
-                                          row.get(yIdVal));
+                Template.appendJs(js, "[\"@1\", @2]", row.getString(xIdVal),
+                                          row.getString(yIdVal));
                 if (i != rows.size() - 1) {
                     js.append(", ");
                 }
@@ -372,16 +370,16 @@ public class ChartSection extends Section {
         Set<String> keySet = plot.keySet();
         for (String key : keySet) {
             if (name == "chart" && hasKey(prefixes, key)) {
-                Dataset sub = plot.getChild(key);
+                Dataset sub = plot.getDataset(key);
                 Set<String> subKeys = sub.keySet();
                 for (String subKey : subKeys) {
-                    String value = sub.get(subKey);
+                    String value = sub.getString(subKey);
                     Template.appendRaw(js, "@1.@2.set(\"@3\", \"@4\");\n",
                                        chart, name, combineCamel(key, subKey), value);
                 }
                 continue;
             }
-            String value = plot.check(key);
+            String value = plot.checkString(key);
             if (value != null) {
                 if (!hasKey(reserved, key)) {
                     if (!hasKey(chartVars, key) ^ (name == "chart")) {
@@ -439,7 +437,7 @@ public class ChartSection extends Section {
      * @return                The id associated with the dataset
      */
     protected String getId(Dataset properties, String base) {
-        String id = properties.check("id");
+        String id = properties.checkString("id");
         if (id == null) {
             id = cr.uniqueId(base);
             properties.set("id", id);

@@ -82,12 +82,12 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
      */
     public AutocompleteFormElement(Dataset properties) {
         super(properties);
-        String choiceName = properties.check("choiceName");
+        String choiceName = properties.checkString("choiceName");
         if (choiceName == null) {
             choiceName = "choice";
         }
-        pageProperty = new PageProperty(properties.get("id"),
-                properties.get("requestFactory"), choiceName);
+        pageProperty = new PageProperty(properties.getString("id"),
+                properties.getString("requestFactory"), choiceName);
     }
 
     /**
@@ -104,21 +104,21 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
     public static void ajaxQuery(ClientRequest cr) {
         Dataset main = cr.getMainDataset();
         PageProperty pageProperty = (PageProperty)
-                cr.getPageProperty(main.get("id"));
+                cr.getPageProperty(main.getString("id"));
 
-        String query = main.get("userInput");
+        String query = main.getString("userInput");
 
         DataRequest request = (DataRequest) Util.invokeStaticMethod(
                 pageProperty.requestFactory, query);
 
         Dataset data = request.getResponseOrAbort();
 
-        if (data.getChildren("record").size() > 0) {
+        if (data.getDatasetList("record").size() > 0) {
             StringBuilder html = new StringBuilder();
             Template.appendHtml(html, "<ul id=\"@(1)_choices\">",
                     pageProperty.id);
-            for(Dataset dataValue : data.getChildren("record")) {
-                String value = dataValue.get(pageProperty.choiceName);
+            for(Dataset dataValue : data.getDatasetList("record")) {
+                String value = dataValue.getString(pageProperty.choiceName);
 
                 // Extracts the position of the query to highlight it
                 int queryIndex = value.toLowerCase()
@@ -183,7 +183,7 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
                 "  <div id=\"@(id)_dropdown\" class=\"dropdown\" " +
                 "onmouseover=\"Fiz.ids.@id.keepOpen = true\" " +
                 "onmouseout=\"Fiz.ids.@id.keepOpen = false\"></div>\n",
-                properties, data.check(id));
+                properties, data.checkString(id));
         out.append("</div>\n");
         Template.appendHtml(out, "<!-- End AutocompleteFormElement @id -->\n",
                 properties);

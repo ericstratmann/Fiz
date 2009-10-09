@@ -53,6 +53,6 @@ public class HiddenFormElement extends FormElement {
     public void render(ClientRequest cr, Dataset data) {
         StringBuilder out = cr.getHtml().getBody();
         Template.appendHtml(out, "<input type=\"hidden\" id=\"@id\" " +
-                "name=\"@id\" {{value=\"@1\"}} />", properties, data.check(id));
+                "name=\"@id\" {{value=\"@1\"}} />", properties, data.checkString(id));
     }
 }

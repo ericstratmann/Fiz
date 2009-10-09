@@ -31,11 +31,11 @@ public class ConfigTest extends junit.framework.TestCase {
                 "directory: _test1_/child\n");
         Config.init("_test1_");
         Dataset d = Config.getDataset("main");
-        assertEquals("dataset in _test1_", "_test1_", d.check("directory"));
+        assertEquals("dataset in _test1_", "_test1_", d.checkString("directory"));
         Config.init("_test1_/child");
         d = Config.getDataset("main");
         assertEquals("dataset in _test1_/child", "_test1_/child",
-                d.check("directory"));
+                d.checkString("directory"));
         TestUtil.deleteTree("_test1_");
     }
 
@@ -63,7 +63,7 @@ public class ConfigTest extends junit.framework.TestCase {
         Config.init(".");
         TestUtil.writeFile("main.yaml",
                 "child:\n  name: Alice\n  age: 24\n");
-        assertEquals("Alice", Config.getPath("main", "child.name"));
+        assertEquals("Alice", Config.get("main", "child.name"));
         TestUtil.deleteTree("main.yaml");
     }
 
@@ -75,11 +75,11 @@ public class ConfigTest extends junit.framework.TestCase {
                 "name1: value1\nname2: value2\n");
         Dataset d = Config.getDataset("main");
         assertEquals("value from first call (uncached)", "value2",
-                d.check("name2"));
+                d.checkString("name2"));
         TestUtil.deleteTree("_test1_");
         d = Config.getDataset("main");
         assertEquals("value from second call (cached)", "value1",
-                d.check("name1"));
+                d.checkString("name1"));
     }
 
     public void test_setDataset() {
@@ -89,11 +89,11 @@ public class ConfigTest extends junit.framework.TestCase {
                 "name1: value1\nname2: value2\n");
         Dataset d = Config.getDataset("main");
         assertEquals("value from first call (file from disk)", "value1",
-                d.check("name1"));
+                d.checkString("name1"));
         Config.setDataset("main", new Dataset("name1", "xyzzy"));
         d = Config.getDataset("main");
         assertEquals("value from second call (overridden with setDataset)",
-                "xyzzy", d.check("name1"));
+                "xyzzy", d.checkString("name1"));
         TestUtil.deleteTree("_test1_");
 
     }

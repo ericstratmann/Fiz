@@ -359,13 +359,13 @@ public class Fiz {
         }
 
         ArrayList<Dataset> versionDataList =
-                YamlDataset.newStringInstance(result).getChildren("record");
+                YamlDataset.newStringInstance(result).getDatasetList("record");
         log(LogLevel.quiet, "new releases since Fiz version " +
                 versionSince + ":");
         // Print out version information for each new new version.
         for(Dataset versionData : versionDataList) {
-            log(LogLevel.quiet, versionData.get("version"));
-            String description = versionData.check("short_description");
+            log(LogLevel.quiet, versionData.getString("version"));
+            String description = versionData.checkString("short_description");
             if (description != null) {
                 log(LogLevel.verbose, "    " + description);
             }
@@ -421,7 +421,7 @@ public class Fiz {
         }
 
         ArrayList<Dataset> versionDataList =
-                YamlDataset.newStringInstance(result).getChildren("record");
+                YamlDataset.newStringInstance(result).getDatasetList("record");
         if (versionSince != null) {
             log(LogLevel.quiet, "new releases of " + extName +
                     " since version " + versionSince + ":");
@@ -431,8 +431,8 @@ public class Fiz {
         }
         // Print out version information for each new new version.
         for(Dataset versionData : versionDataList) {
-            log(LogLevel.quiet, versionData.get("version"));
-            String description = versionData.check("short_description");
+            log(LogLevel.quiet, versionData.getString("version"));
+            String description = versionData.checkString("short_description");
             if (description != null) {
                 log(LogLevel.verbose, "    " + description);
             }

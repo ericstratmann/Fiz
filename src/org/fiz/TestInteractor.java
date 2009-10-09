@@ -136,7 +136,7 @@ public class TestInteractor extends Interactor {
     // Return the contents of a file, specified with the "name"
     // query value.
     public void file(ClientRequest cr) throws IOException {
-        String name = cr.getMainDataset().check("name");
+        String name = cr.getMainDataset().checkString("name");
         if (name == null) {
             name = "src/src/org/fiz/Dataset.java";
         }
@@ -153,7 +153,7 @@ public class TestInteractor extends Interactor {
         globalData.set("name", "Alice");
         globalData.set("age", "21");
         globalData.set("saying", "\"All's well that ends well\"");
-        String current = globalData.check("current");
+        String current = globalData.checkString("current");
         if ((current != null) && (current.equals("2"))) {
             globalData.set("next", "1");
         } else {
@@ -227,7 +227,7 @@ public class TestInteractor extends Interactor {
     }
 
     public void ajaxUncaught(ClientRequest cr) {
-        new Dataset("name", "Alice").get("age");
+        new Dataset("name", "Alice").getString("age");
     }
 
     static class TestFilter extends FilterOutputStream {

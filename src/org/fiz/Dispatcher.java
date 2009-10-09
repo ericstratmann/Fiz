@@ -178,7 +178,7 @@ public class Dispatcher extends HttpServlet {
         Config.init(configFolders.toArray(new String[0]));
 
         initMainConfigDataset(contextRoot);
-        String debug = Config.getDataset("main").check("debug");
+        String debug = Config.getDataset("main").checkString("debug");
         clearCaches = (debug != null) && (debug.equals("1"));
 
         logger.info("main configuration dataset:\n    " +
@@ -293,7 +293,7 @@ public class Dispatcher extends HttpServlet {
                 if (pathInfo.length() <= 1) {
                     // This is the application's home URL ("/"); redirect to
                     // an interactor if one has been specified.
-                    String homeUrl = Config.getDataset("main").check(
+                    String homeUrl = Config.getDataset("main").checkString(
                             "homeRedirectUrl");
                     if (homeUrl != null) {
                         cr = new ClientRequest(this, request, response);

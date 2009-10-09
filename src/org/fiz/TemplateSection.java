@@ -55,7 +55,7 @@ public class TemplateSection extends Section {
      *                             for the section; see description above.
      */
     public TemplateSection(Dataset properties) {
-        template = properties.check("template");
+        template = properties.checkString("template");
         this.properties = properties;
     }
 
@@ -95,7 +95,7 @@ public class TemplateSection extends Section {
         Dataset data;
         String requestName;
         if (properties != null) {
-            requestName = properties.check("request");
+            requestName = properties.checkString("request");
         } else {
             requestName = null;
         }
@@ -107,13 +107,13 @@ public class TemplateSection extends Section {
                 // appropriate error information.
                 Dataset[] errors = dataRequest.getErrorData();
                 String errorStyle = (properties == null) ? null :
-                        properties.check("errorStyle");
+                        properties.checkString("errorStyle");
                 cr.showErrorInfo(errorStyle, "TemplateSection.error",
                         errors[0]);
                 return;
             }
             if (response.containsKey("record")) {
-                response = response.getChild("record");
+                response = response.getDataset("record");
             }
             data = new CompoundDataset(response, cr.getMainDataset());
         } else {
@@ -123,7 +123,7 @@ public class TemplateSection extends Section {
         // Find the template (either a file on disk or a property from the
         // configuration data set) and expand it.
         if (properties != null) {
-            String fileName = properties.check("file");
+            String fileName = properties.checkString("file");
             if (fileName != null) {
                 StringBuilder contents = Util.readFileFromPath(fileName,
                         "template",

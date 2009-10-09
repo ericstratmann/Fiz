@@ -104,14 +104,14 @@ public abstract class FormElement extends Formatter implements DirectAjax {
      */
     public FormElement(Dataset properties) {
         this.properties = properties;
-        id = properties.get("id");
+        id = properties.getString("id");
 
         // Sets up the "required" validator
-        if ("true".equals(properties.check("required"))) {
+        if ("true".equals(properties.checkString("required"))) {
             addValidator(new Dataset("type", "required"));
         }
 
-        for (Dataset validator : properties.getChildren("validator")) {
+        for (Dataset validator : properties.getDatasetList("validator")) {
             addValidator(validator);
         }
     }
@@ -163,8 +163,8 @@ public abstract class FormElement extends Formatter implements DirectAjax {
         Dataset main = cr.getMainDataset();
 
         String[] elementsToValidate =
-            StringUtil.split(main.get("elementsToValidate"), ',');
-        Dataset formData = main.getChild("formData");
+            StringUtil.split(main.getString("elementsToValidate"), ',');
+        Dataset formData = main.getDataset("formData");
 
         // We validate each of the form elements listed in
         // {@code elementsToValidate}
@@ -196,7 +196,7 @@ public abstract class FormElement extends Formatter implements DirectAjax {
      *                             or null if it doesn't exist.
      */
     public String checkProperty(String name) {
-        return properties.check(name);
+        return properties.checkString(name);
     }
 
     /**
@@ -227,7 +227,7 @@ public abstract class FormElement extends Formatter implements DirectAjax {
      */
     public void collect(ClientRequest cr, Dataset in, Dataset out)
             throws FormSection.FormDataException {
-        String value = in.check(id);
+        String value = in.checkString(id);
         if (value != null) {
             out.set(id, value);
         }
@@ -261,7 +261,7 @@ public abstract class FormElement extends Formatter implements DirectAjax {
      */
     public boolean renderLabel(ClientRequest cr, Dataset data) {
         StringBuilder out = cr.getHtml().getBody();
-        String template = properties.check("label");
+        String template = properties.checkString("label");
         if (template != null) {
             Template.appendHtml(out, template, data);
         }
@@ -290,7 +290,7 @@ public abstract class FormElement extends Formatter implements DirectAjax {
         Set<String> otherIds = new TreeSet<String>();
         otherIds.add(id);
         for (Dataset validator : validatorData.validators) {
-            String otherFields = validator.check("otherFields");
+            String otherFields = validator.checkString("otherFields");
             if (otherFields == null) {
                 continue;
             }
@@ -390,7 +390,7 @@ public abstract class FormElement extends Formatter implements DirectAjax {
             Dataset in) throws FormDataException {
         FormSection.FormDataException e = null;
         for (Dataset validator : validatorData.validators) {
-            String method = validator.get("type");
+            String method = validator.getString("type");
 
             // If there is no period in the validator type, we assume the
             // developer is specifying a built-in validator type

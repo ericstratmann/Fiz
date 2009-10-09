@@ -130,7 +130,7 @@ public final class Util {
             // Couldn't find the given name; try prepending various package
             // names provided by configuration information.
             Dataset config = Config.getDataset("main");
-            String path = config.check("searchPackages");
+            String path = config.checkString("searchPackages");
             if (path != null) {
                 for (String packageName : StringUtil.split(path, ',')) {
                     try {

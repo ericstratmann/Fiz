@@ -255,7 +255,7 @@ public class FormElementTest extends junit.framework.TestCase {
 
         boolean gotException = false;
         try {
-            element.validate(cr.getMainDataset().getChild("formData"));
+            element.validate(cr.getMainDataset().getDataset("formData"));
         } catch (FormSection.FormDataException e) {
 
         }
@@ -278,7 +278,7 @@ public class FormElementTest extends junit.framework.TestCase {
 
         boolean gotException = false;
         try {
-            FormElement.validate(v, cr.getMainDataset().getChild("formData"));
+            FormElement.validate(v, cr.getMainDataset().getDataset("formData"));
         } catch (FormSection.FormDataException e) {
 
         }
@@ -302,7 +302,7 @@ public class FormElementTest extends junit.framework.TestCase {
 
         boolean gotException = false;
         try {
-            FormElement.validate(v, cr.getMainDataset().getChild("formData"));
+            FormElement.validate(v, cr.getMainDataset().getDataset("formData"));
         } catch (FormSection.FormDataException e) {}
         assertEquals("exception did not happen", false, gotException);
     }
@@ -325,7 +325,7 @@ public class FormElementTest extends junit.framework.TestCase {
 
         boolean gotException = false;
         try {
-            FormElement.validate(v, cr.getMainDataset().getChild("formData"));
+            FormElement.validate(v, cr.getMainDataset().getDataset("formData"));
         } catch (FormSection.FormDataException e) {}
         assertEquals("exception did not happen", false, gotException);
     }
@@ -350,7 +350,7 @@ public class FormElementTest extends junit.framework.TestCase {
         boolean gotException = false;
         try {
             FormElement.validate(v, cr.getMainDataset()
-                    .getChild("formData"));
+                    .getDataset("formData"));
         } catch (FormSection.FormDataException e) {
             assertEquals("exception message - range",
                     "culprit: elem\n" +
@@ -381,7 +381,7 @@ public class FormElementTest extends junit.framework.TestCase {
         boolean gotException = false;
         try {
             FormElement.validate(v, cr.getMainDataset()
-                    .getChild("formData"));
+                    .getDataset("formData"));
         }
         catch (FormSection.FormDataException e) {
             assertEquals("exception message",
