@@ -1023,9 +1023,16 @@ public class Dataset implements Cloneable, Serializable {
             if (value instanceof Dataset) {
                 ((Dataset) value).serialize(out);
             } else if (value instanceof DSArrayList) {
-                DSArrayList<Dataset> list = (DSArrayList <Dataset>) value;
-                for (int i = 0; i < list.size(); i++) {
-                    ((Dataset) list.get(i)).serialize(out);
+                DSArrayList<Object> list = (DSArrayList <Object>) value;
+                for (Object value2 : list) {
+                    if (value2 instanceof Dataset) {
+                        ((Dataset) value2).serialize(out);
+                    } else {
+                        String s = value2.toString();
+                        out.append(s.length());
+                        out.append('.');
+                        out.append(s);
+                    }
                 }
             } else {
                 String s = value.toString();

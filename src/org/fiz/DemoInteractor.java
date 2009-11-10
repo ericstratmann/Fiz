@@ -54,8 +54,9 @@ public class DemoInteractor extends Interactor {
     // Datasets that supply results for raw data requests.
     Dataset formData = new Dataset("name", "Bill", "age", "41",
             "height", "73", "weight", "195",
-            "saying", "Line 1\nLine 2\n<Line 3>\n", "fruit", "grape",
-            "notify", "all", "state", "California", "mascot", "Spartans");
+            "saying", "Line 1\nLine 2\n<Line 3>\n", "fruit",
+            new Dataset("value", "grape"), "notify", "all", "state", "California",
+            "mascot", "Spartans");
 
     Dataset fruitInfo = new Dataset(
             "fruit", new Dataset("name", "Apple", "value", "Apple"),

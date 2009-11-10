@@ -819,11 +819,12 @@ public class DatasetTest extends junit.framework.TestCase {
         Dataset.sortOutput = true;
         Dataset d = new Dataset("child", new Dataset("name", "Bill"));
         d.add("child", new Dataset("name", "Carol"));
-        d.add("child", new Dataset("name", "David"));
+        d.add("child", "David");
         assertEquals("serialized result",
-                "(5.child(4.name4.Bill)(4.name5.Carol)(4.name5.David))",
+                "(5.child(4.name4.Bill)(4.name5.Carol)5.David)",
                 d.serialize());
     }
+
     public void test_serialize_emptyDataset() {
         Dataset d = new Dataset();
         assertEquals("serialized result", "()",
