@@ -14,6 +14,7 @@
  */
 
 package org.fiz;
+import java.util.*;
 
 /**
  * The CompoundFormElement class creates a form element consisting of
@@ -166,10 +167,13 @@ public class CompoundFormElement extends FormElement {
         // completely valid HTML (don't want to quote <> etc.).
         // However, information coming from {@code data} must still be
         // quoted.
-        Template.ParseInfo info = new Template.ParseInfo(template, out,
-                Template.SpecialChars.HTML, data, componentHtml);
-        info.indexedQuoting = Template.SpecialChars.NONE;
-        Template.expandRange(info, 0, template.length());
+        Dataset escapedData = new Dataset();
+        String escapedTemplate = Html.escapeHtmlChars(template);
+        Set<String> keys = data.keySet();
+        for (String key : keys) {
+            escapedData.set(key, Html.escapeHtmlChars(data.getString(key)));
+        }
+        Template.appendRaw(out, escapedTemplate, escapedData, componentHtml);
     }
 
     /**

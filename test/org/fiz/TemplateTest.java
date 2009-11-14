@@ -22,142 +22,278 @@ import java.util.*;
  */
 
 public class TemplateTest extends junit.framework.TestCase {
+    StringBuilder out;
+    Dataset data;
+    Template.ExpandInfo info;
+    Template.TextFragment text = new Template.TextFragment("hello");
+    ArrayList list = new ArrayList();
+    Template.ParsedTemplate parsed;
+    Template.SpecialChars none = Template.SpecialChars.NONE;
+
+    public void setUp() {
+        list = new ArrayList();
+        list.add(text);
+        parsed  = new Template.ParsedTemplate(list);
+        out = new StringBuilder();
+        data = new Dataset("hello", "olleh", "foo", "oof", "bar", "rab");
+        info = new Template.ExpandInfo(out, "mytemplate", none, null, data, "hi", "bye", null);
+    }
+
     // The following class definition provides a mechanism for accessing
     // protected/private fields and methods.
     protected static class TemplateFixture {
-        public static int templateEnd;
-        public static boolean missingData;
-        public static boolean conditional;
-        public static boolean skip;
         public static int end;
+        public static String text;
         public static int lastDeletedSpace;
-        public static Template.SpecialChars currentQuoting;
 
-        public static void expandRange(String template, Dataset data,
-                StringBuilder out, int start, int end) {
-            Template.ParseInfo info = new Template.ParseInfo(template,
-                    out, Template.SpecialChars.NONE, data, null);
-            info.templateEnd = -15;
-            info.skip = false;
+        public static String expandCache(Template.ParsedTemplate cache, Dataset data) {
+            StringBuilder out = new StringBuilder();
+            Template.ExpandInfo info = new Template.ExpandInfo(out, "", Template.SpecialChars.NONE,
+                                                               null, data, "hi", "bye");
+            cache.expand(info);
+            return info.out.toString();
+        }
+
+        public static String parseTo(String template, Dataset data,
+                int start, String ... delims) {
+            Template.ParseInfo info = new Template.ParseInfo(template);
             info.end = -1;
-            Template.expandRange(info, start, end);
-            templateEnd = info.templateEnd;
+            Template.parseTo(info, start, delims);
             TemplateFixture.end = info.end;
+            return TemplateFixture.expandCache(info.parse, data);
         }
 
-        public static void expandAtSign(String template, Dataset data,
-                StringBuilder out, boolean conditional, int start) {
-            Template.ParseInfo info = new Template.ParseInfo(template,
-                    out, Template.SpecialChars.NONE, data, null);
-            info.templateEnd = template.length();
-            info.ignoreMissing = conditional;
-            info.skip = false;
+        public static String parseAtSign(String template, Dataset data,
+                boolean conditional, int start) {
+            Template.ParseInfo info = new Template.ParseInfo(template);
             info.end = -1;
-            Template.expandAtSign(info, start);
-            missingData = info.missingData;
+            Template.parseAtSign(info, start);
             end = info.end;
+            text = info.text.toString();
+            return TemplateFixture.expandCache(info.parse, data);
         }
 
-        public static void expandChoice(String template, Dataset data,
-                StringBuilder out, String name, int start) {
-            Template.ParseInfo info = new Template.ParseInfo(template,
-                    out, Template.SpecialChars.HTML, data, null);
-            info.templateEnd = template.length();
-            info.skip = false;
+        public static String parseChoice(String template, Dataset data,
+                String name, int start) {
+            Template.ParseInfo info = new Template.ParseInfo(template);
             info.end = -1;
-            Template.expandChoice(info, name, start);
+            Template.parseChoice(info, name, start);
             end = info.end;
+            return TemplateFixture.expandCache(info.parse, data);
         }
 
-        public static void expandParenName(String template, Dataset data,
-                StringBuilder out, boolean conditional, int start,
+        public static String parseParenName(String template, Dataset data,
+                boolean conditional, int start,
                 Template.SpecialChars encoding) {
-            Template.ParseInfo info = new Template.ParseInfo(template,
-                    out, encoding, data, null);
-            info.templateEnd = template.length();
-            info.ignoreMissing = conditional;
-            info.skip = false;
+            Template.ParseInfo info = new Template.ParseInfo(template);
             info.end = -1;
-            Template.expandParenName(info, start);
-            missingData = info.missingData;
+            Template.parseParenName(info, start);
             end = info.end;
+            return TemplateFixture.expandCache(info.parse, data);
         }
 
-        public static void appendValue(String name, Dataset data,
-                StringBuilder out, boolean conditional,
-                Template.SpecialChars encoding,
-                ArrayList<String> sqlParameters) {
-            Template.ParseInfo info = new Template.ParseInfo("dummy template",
-                    out, encoding, data, null);
-            info.sqlParameters = sqlParameters;
-            info.ignoreMissing = conditional;
-            info.skip = false;
+        public static String parseBraces(String template, Dataset data,
+                                         int start, int lastDeletedSpace) {
+            Template.ParseInfo info = new Template.ParseInfo(template);
             info.end = -1;
-            Template.appendValue(info, name);
-            missingData = info.missingData;
+            Template.parseBraces(info, start);
             end = info.end;
+            lastDeletedSpace = info.lastDeletedSpace;
+            return TemplateFixture.expandCache(info.parse, data);
         }
 
-        public static void expandBraces(String template, Dataset data,
-                StringBuilder out, int start, int lastDeletedSpace) {
-            Template.ParseInfo info = new Template.ParseInfo(template,
-                    out, Template.SpecialChars.NONE, data, null);
-            info.templateEnd = template.length();
-            info.missingData = true;
-            info.skip = false;
-            info.end = -1;
-            info.lastDeletedSpace = lastDeletedSpace;
-            Template.expandBraces(info, start);
-            missingData = info.missingData;
-            conditional = info.ignoreMissing;
-            end = info.end;
-            TemplateFixture.lastDeletedSpace = info.lastDeletedSpace;
-        }
-
-        public static void expandBraces(String template, Dataset data,
-                StringBuilder out, int start) {
-            expandBraces(template, data, out, start, start-1);
-        }
-
-        public static int skipTo(String template, StringBuilder out,
-                int start, char c1, char c2) {
-            Template.ParseInfo info = new Template.ParseInfo(template,
-                    out, Template.SpecialChars.NONE, new Dataset(), null);
-            info.templateEnd = template.length();
-            info.skip = false;
-            info.end = -1;
-            info.lastDeletedSpace = lastDeletedSpace;
-            int result = Template.skipTo(info, start, c1, c2);
-            missingData = info.missingData;
-            conditional = info.ignoreMissing;
-            skip = info.skip;
-            end = info.end;
-            TemplateFixture.lastDeletedSpace = info.lastDeletedSpace;
-            return result;
-        }
-
-        public static String findValue(String name, boolean required,
-                Dataset data, Template.SpecialChars quoting,
-                Object[] indexedData, Template.SpecialChars indexedQuoting) {
-            Template.ParseInfo info = new Template.ParseInfo(
-                    "dummy template", null, quoting, data, indexedData);
-            info.indexedQuoting = indexedQuoting;
-            String result = Template.findValue(info, name, required);
-            currentQuoting = info.currentQuoting;
-            return result;
+        public static String parseBraces(String template, Dataset data,
+                                         int start) {
+            return parseBraces(template, data, start, -1);
         }
     }
 
     public void test_missingValueError() {
-        Template.MissingValueError e = new Template.MissingValueError(
-                "sample message");
-        assertEquals("error message", "sample message", e.getMessage());
+        Template.MissingValueError e = new Template.MissingValueError("a", "b");
+        assertEquals("error message", "missing value \"a\" in template \"b\"",
+                     e.getMessage());
     }
-
     public void test_syntaxError() {
         Template.SyntaxError e = new Template.SyntaxError(
                 "sample message");
         assertEquals("error message", "sample message", e.getMessage());
+    }
+    public void test_ParsedTemplate() {
+        Template.ParsedTemplate c = new Template.ParsedTemplate();
+        assertEquals("number fragments, empty", 0, c.fragments.size());
+
+        list.add(new Template.IdFragment("blah"));
+        c = new Template.ParsedTemplate(list);
+        assertEquals("number fragments with list", 2, c.fragments.size());
+
+        Template.TextFragment f = new Template.TextFragment("blah2");
+        c.addFragment(f);
+        assertEquals("add fragement", f, c.fragments.get(2));
+
+        c.expand(new Template.ExpandInfo(out, "", none, null, new Dataset("blah", "halb")));
+        assertEquals("expand", "hellohalbblah2", out.toString());
+
+    }
+    public void test_TextFragment() {
+        Template.TextFragment text = new Template.TextFragment("@hi");
+        text.expand(info);
+        assertEquals("@hi", out.toString());
+    }
+    public void test_IDFragment_string() {
+        Template.IdFragment text = new Template.IdFragment("foo");
+        text.expand(info);
+        assertEquals("oof", out.toString());
+    }
+    public void test_IDFragment_int() {
+        Template.IdFragment text = new Template.IdFragment("1");
+        text.expand(info);
+        assertEquals("hi", out.toString());
+    }
+    public void test_IDFragment_parens() {
+        Template.ParsedTemplate pt = new Template.ParsedTemplate(list);
+        Template.IdFragment text = new Template.IdFragment(pt);
+        text.expand(new Template.ExpandInfo(out, null, none, null, new Dataset("hello", "olleh")));
+        assertEquals("olleh", out.toString());
+    }
+    public void test_IDFragment_findValue_parens() {
+        Template.IdFragment idf = new Template.IdFragment(parsed);
+        String val = idf.findValue(info, true);
+        assertEquals("dataset value", "olleh", val);
+
+        list = new ArrayList<Template.Fragment>();
+        list.add(new Template.TextFragment("2"));
+        parsed = new Template.ParsedTemplate(list);
+        idf = new Template.IdFragment(parsed);
+        info = new Template.ExpandInfo(out, null, none, null, data, null, "bye");
+        val = idf.findValue(info, true);
+        assertEquals("indexed value", "bye", val);
+    }
+    public void test_IDFragment_findValue_String() {
+        Template.IdFragment idf = new Template.IdFragment("hello");
+        String val = idf.findValue(info, true);
+        assertEquals("dataset value", "olleh", val);
+
+        idf = new Template.IdFragment("2");
+        val = idf.findValue(info, true);
+        assertEquals("index value", "bye", val);
+    }
+    public void test_IDFragment_findValue_throwError() {
+        Template.IdFragment idf = new Template.IdFragment("bogus");
+        try {
+            idf.findValue(info, true);
+            fail("Exception not thrown");
+        } catch (Template.MissingValueError e) {
+            assertEquals("missing value \"bogus\" in template \"mytemplate\"",
+                         e.getMessage());
+        }
+    }
+    public void test_IDFragment_findValue_dontThrowError() {
+        Template.IdFragment idf;
+        String val;
+
+        idf = new Template.IdFragment("bogus");
+        val = idf.findValue(info, false);
+        assertEquals("bogus dataset value", null, val);
+
+        idf = new Template.IdFragment("10");
+        val = idf.findValue(info, false);
+        assertEquals("bogus index", null, val);
+
+        idf = new Template.IdFragment("3");
+        val = idf.findValue(info, false);
+        assertEquals("null index", null, val);
+
+        idf = new Template.IdFragment("bogus");
+        val = idf.findValue(new Template.ExpandInfo(out, null, none, null, null,
+                                                    false), false);
+        assertEquals("null dataset", null, val);
+    }
+    public void test_DefaultFragment() {
+        Template.IdFragment id = new Template.IdFragment("foo");
+        Template.DefaultFragment frag = new Template.DefaultFragment(id, parsed);
+        frag.expand(new Template.ExpandInfo(out, null, none, null, data));
+        assertEquals("use @ variable", "oof", out.toString());
+
+        out.setLength(0);
+        id = new Template.IdFragment("bogus");
+        frag = new Template.DefaultFragment(id, parsed);
+        frag.expand(new Template.ExpandInfo(out, null, none, null, data));
+        assertEquals("use default value", "hello", out.toString());
+    }
+    public void test_ChoiceFragment() {
+        text = new Template.TextFragment("goodbye");
+        ArrayList list2 = new ArrayList();
+        list2.add(text);
+        Template.ParsedTemplate cache2 = new Template.ParsedTemplate(list2);
+
+        Template.IdFragment id = new Template.IdFragment("foo");
+        Template.ChoiceFragment frag = new Template.ChoiceFragment(id, parsed, cache2);
+        frag.expand(new Template.ExpandInfo(out, null, none, null, data));
+        assertEquals("first choice", "hello", out.toString());
+
+        out.setLength(0);
+        id = new Template.IdFragment("bogus");
+        frag = new Template.ChoiceFragment(id, parsed, cache2);
+        frag.expand(new Template.ExpandInfo(out, null, none, null, data));
+        assertEquals("second choice", "goodbye", out.toString());
+    }
+
+    public void test_ConditionalFragment() {
+        Template.ConditionalFragment bracket = new Template.ConditionalFragment(parsed);
+        bracket.expand(new Template.ExpandInfo(out, null, none, null, data));
+        assertEquals("add to output", "hello", out.toString());
+
+        // make sure it doesn't just wipe out the string builder
+        out.setLength(2);
+        list = new ArrayList();
+        Template.IdFragment id = new Template.IdFragment("bogus");
+        list.add(id);
+        parsed = new Template.ParsedTemplate(list);
+        bracket = new Template.ConditionalFragment(parsed);
+        bracket.expand(new Template.ExpandInfo(out, null, none, null, data));
+        assertEquals("do not add to output", "he", out.toString());
+    }
+
+    public void test_addValue() {
+        String val = "< \"a";
+        info = new Template.ExpandInfo(out, null, Template.SpecialChars.HTML,
+                                       null, data);
+        Template.addValue(info, val);
+        assertEquals("html", "&lt; &quot;a", out.toString());
+
+        out.setLength(0);
+        info = new Template.ExpandInfo(out, null, Template.SpecialChars.JS,
+                                       null, data);
+        Template.addValue(info, val);
+        assertEquals("javascript", "< \\\"a", out.toString());
+
+        out.setLength(0);
+        info = new Template.ExpandInfo(out, null, Template.SpecialChars.URL,
+                                       null, data);
+        Template.addValue(info, val);
+        assertEquals("url", "%3c+%22a", out.toString());
+
+        out.setLength(0);
+        info = new Template.ExpandInfo(out, null, Template.SpecialChars.NONE,
+                                       null, data);
+        Template.addValue(info, val);
+        assertEquals("none", "< \"a", out.toString());
+
+        out.setLength(0);
+        info = new Template.ExpandInfo(out, null, null,
+                                       new ArrayList<String>(), data);
+        Template.addValue(info, val);
+        assertEquals("sql out", "?", out.toString());
+        assertEquals("sql add to array", "< \"a", info.sqlParameters.get(0).toString());
+    }
+
+    public void test_expand_getFromCache() {
+        out = Template.expand(null, "foo", none, null);
+        assertEquals("first expand", "foo", out.toString());
+
+        Template.parsedTemplates.put("foo", new Template.ParsedTemplate(list));
+        out = Template.expand(null, "foo", none, null);
+        assertEquals("second expand", "hello", out.toString());
     }
 
     public void test_expandHtml() {
@@ -314,20 +450,18 @@ public class TemplateTest extends junit.framework.TestCase {
                 StringUtil.join(parameters, ", "));
     }
 
-    public void test_expandRange_atSign() {
+    public void test_parseTo_atSign() {
         Dataset data = new Dataset("name", "Alice", "age", "28");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandRange("---name: @name ---", data, out, 2, 16);
-        assertEquals("output string", "123-name: Alice -", out.toString());
+        String s = TemplateFixture.parseTo("---name: @name ---", data, 2);
+        assertEquals("output string", "-name: Alice ---", s);
     }
-    public void test_expandRange_openBracesAtEnd() {
+    public void test_parseTo_openBracesAtEnd() {
         Dataset data = new Dataset("name", "Alice", "age", "28");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandRange("abc{{x", data, out, 0, 4);
-        assertEquals("output string", "123abc{", out.toString());
+        String s = TemplateFixture.parseTo("abc{", data, 0);
+        assertEquals("output string", "abc{", s);
         boolean gotException = false;
         try {
-            TemplateFixture.expandRange("abc{{", data, out, 1, 5);
+            TemplateFixture.parseTo("abc{{", data, 1);
         }
         catch (Template.SyntaxError e) {
             assertEquals("exception message",
@@ -337,26 +471,16 @@ public class TemplateTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
-    public void test_expandRange_singleBrace() {
+    public void test_parseTo_singleBrace() {
         Dataset data = new Dataset("name", "Alice", "age", "28");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandRange("{}}", data, out, 0, 3);
-        assertEquals("output string", "123{}}", out.toString());
+        String s = TemplateFixture.parseTo("{}}", data, 0);
+        assertEquals("output string", "{}}", s);
     }
-    public void test_expandRange_restoreTemplateEnd() {
-        Dataset data = new Dataset("name", "Alice", "age", "28");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandRange("name: @name", data, out, 0, 11);
-        assertEquals("output string", "123name: Alice", out.toString());
-        assertEquals("info.templateEnd", -15, TemplateFixture.templateEnd);
-    }
-
-    public void test_expandAtSign_nothingAfterAtSign() {
+    public void test_parseAtSign_nothingAfterAtSign() {
         boolean gotException = false;
         try {
             Dataset data = new Dataset();
-            StringBuilder out = new StringBuilder("123");
-            TemplateFixture.expandAtSign("xx@", data, out, false, 3);
+            TemplateFixture.parseAtSign("xx@", data, false, 3);
         }
         catch (Template.SyntaxError e) {
             assertEquals("exception message",
@@ -366,60 +490,52 @@ public class TemplateTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
-    public void test_expandAtSign_choice() {
+    public void test_parseAtSign_choice() {
         Dataset data = new Dataset("age", "28");
         StringBuilder out = new StringBuilder("123");
         Template.appendHtml(out, "name: @name?{unknown}, xyz", data, out);
         assertEquals("output string", "123name: unknown, xyz", out.toString());
     }
-    public void test_expandAtSign_simpleName() {
+    public void test_parseAtSign_simpleName() {
         Dataset data = new Dataset("name", "Alice");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandAtSign("xx@name + foo", data, out, false, 3);
+        String s = TemplateFixture.parseAtSign("xx@name + foo", data, false, 3);
         assertEquals("end of specifier", 7, TemplateFixture.end);
-        assertEquals("output string", "123Alice", out.toString());
+        assertEquals("output string", "Alice", s);
     }
-    public void test_expandAtSign_simpleNameStartsWithDigit() {
-        Dataset data = new Dataset("444", "Alice");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandAtSign("xx@444 + foo", data, out, false, 3);
-        assertEquals("end of specifier", 6, TemplateFixture.end);
-        assertEquals("output string", "123Alice", out.toString());
+    public void test_parseAtSign_simpleNameStartsWithDigit() {
+        String s = TemplateFixture.parseAtSign("xx@2t + foo", data, false, 3);
+        assertEquals("end of specifier", 4, TemplateFixture.end);
+        assertEquals("output string", "bye", s);
     }
-    public void test_expandAtSign_nameInParens() {
+    public void test_parseAtSign_nameInParens() {
         Dataset data = new Dataset("name", "Alice");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandAtSign("xx@(name)", data, out, false, 3);
+        String s = TemplateFixture.parseAtSign("xx@(name)", data, false, 3);
         assertEquals("end of specifier", 9, TemplateFixture.end);
-        assertEquals("output string", "123Alice", out.toString());
+        assertEquals("output string", "Alice", s);
     }
-    public void test_expandAtSign_atSign() {
+    public void test_parseAtSign_atSign() {
         Dataset data = new Dataset("name", "Alice");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandAtSign("xx@@yyy", data, out, false, 3);
+        TemplateFixture.parseAtSign("xx@@yyy", data, false, 3);
         assertEquals("end of specifier", 4, TemplateFixture.end);
-        assertEquals("output string", "123@", out.toString());
+        assertEquals("output string", "@", TemplateFixture.text);
     }
-    public void test_expandAtSign_openBrace() {
+    public void test_parseAtSign_openBrace() {
         Dataset data = new Dataset("name", "Alice");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandAtSign("xx@{yyy", data, out, false, 3);
+        TemplateFixture.parseAtSign("xx@{yyy", data, false, 3);
         assertEquals("end of specifier", 4, TemplateFixture.end);
-        assertEquals("output string", "123{", out.toString());
+        assertEquals("output string", "{", TemplateFixture.text);
     }
-    public void test_expandAtSign_closeBrace() {
+    public void test_parseAtSign_closeBrace() {
         Dataset data = new Dataset("name", "Alice");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandAtSign("xx@}yyy", data, out, false, 3);
+        TemplateFixture.parseAtSign("xx@}yyy", data, false, 3);
         assertEquals("end of specifier", 4, TemplateFixture.end);
-        assertEquals("output string", "123}", out.toString());
+        assertEquals("output string", "}", TemplateFixture.text);
     }
-    public void test_expandAtSign_illegalCharacter() {
+    public void test_parseAtSign_illegalCharacter() {
         boolean gotException = false;
         try {
             Dataset data = new Dataset();
-            StringBuilder out = new StringBuilder("123");
-            TemplateFixture.expandAtSign("xx@+yyy", data, out, false, 3);
+            TemplateFixture.parseAtSign("xx@+yyy", data, false, 3);
         }
         catch (Template.SyntaxError e) {
             assertEquals("exception message",
@@ -429,13 +545,11 @@ public class TemplateTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
-
-    public void test_expandChoice_endOfTemplate() {
+    public void test_parseChoice_endOfTemplate() {
         boolean gotException = false;
         try {
             Dataset data = new Dataset();
-            StringBuilder out = new StringBuilder("123");
-            TemplateFixture.expandChoice("@foo?", data, out, "name", 5);
+            TemplateFixture.parseChoice("@foo?", data, "name", 5);
         }
         catch (Template.SyntaxError e) {
             assertEquals("exception message",
@@ -445,12 +559,11 @@ public class TemplateTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
-    public void test_expandChoice_braceMissing() {
+    public void test_parseChoice_braceMissing() {
         boolean gotException = false;
         try {
             Dataset data = new Dataset();
-            StringBuilder out = new StringBuilder("123");
-            TemplateFixture.expandChoice("@foo?(", data, out, "name", 5);
+            TemplateFixture.parseChoice("@foo?(", data, "name", 5);
         }
         catch (Template.SyntaxError e) {
             assertEquals("exception message",
@@ -460,12 +573,11 @@ public class TemplateTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
-    public void test_expandChoice_noBarOrCloseBrace() {
+    public void test_parseChoice_noBarOrCloseBrace() {
         boolean gotException = false;
         try {
             Dataset data = new Dataset();
-            StringBuilder out = new StringBuilder("123");
-            TemplateFixture.expandChoice("@foo?{aaa", data, out, "name", 5);
+            TemplateFixture.parseChoice("@foo?{aaa", data, "name", 5);
         }
         catch (Template.SyntaxError e) {
             assertEquals("exception message",
@@ -476,34 +588,30 @@ public class TemplateTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
-    public void test_expandChoice_noVerticalBar_variableExists() {
+    public void test_parseChoice_noVerticalBar_variableExists() {
         Dataset data = new Dataset("name", "<West>");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandChoice("@foo?{aaa}zz", data, out, "name", 5);
-        assertEquals("output string", "123&lt;West&gt;", out.toString());
+        String s = TemplateFixture.parseChoice("@foo?{aaa}zz", data, "name", 5);
+        assertEquals("output string", "<West>", s);
         assertEquals("info.end", 10, TemplateFixture.end);
     }
-    public void test_expandChoice_noVerticalBar_variableDoesntExist() {
+    public void test_parseChoice_noVerticalBar_variableDoesntExist() {
         Dataset data = new Dataset("age", "50");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandChoice("@foo?{@age!}zz", data, out,
+        String s = TemplateFixture.parseChoice("@foo?{@age!}zz", data,
                     "name", 5);
-        assertEquals("output string", "12350!", out.toString());
+        assertEquals("output string", "50!", s);
         assertEquals("info.end", 12, TemplateFixture.end);
     }
-    public void test_expandChoice_noVerticalBar_emptyValue() {
+    public void test_parseChoice_noVerticalBar_emptyValue() {
         Dataset data = new Dataset("name", "", "age", "50");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandChoice("@foo?{@age!}zz", data, out,
+        String s = TemplateFixture.parseChoice("@foo?{@age!}zz", data,
                     "name", 5);
-        assertEquals("output string", "12350!", out.toString());
+        assertEquals("output string", "50!", s);
     }
-    public void test_expandChoice_barButNoCloseBrace() {
+    public void test_parseChoice_barButNoCloseBrace() {
         boolean gotException = false;
         try {
             Dataset data = new Dataset();
-            StringBuilder out = new StringBuilder("123");
-            TemplateFixture.expandChoice("@foo?{aaa|zz", data, out, "name", 5);
+            TemplateFixture.parseChoice("@foo?{aaa|zz", data, "name", 5);
         }
         catch (Template.SyntaxError e) {
             assertEquals("exception message",
@@ -514,75 +622,63 @@ public class TemplateTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
-    public void test_expandChoice_verticalBar_variableExists() {
+    public void test_parseChoice_verticalBar_variableExists() {
         Dataset data = new Dataset("name", "<West>", "age", "24",
                 "weight", "125");
-        StringBuilder out = new StringBuilder("123");
         String template = "@foo?{(@age)|[@weight]}zz";
-        TemplateFixture.expandChoice(template, data, out, "name", 5);
-        assertEquals("output string", "123(24)", out.toString());
+        String s = TemplateFixture.parseChoice(template, data, "name", 5);
+        assertEquals("output string", "(24)", s);
         assertEquals("remainder of template", "zz",
                 template.substring(TemplateFixture.end));
     }
-    public void test_expandChoice_verticalBar_variableDoesntExist() {
+    public void test_parseChoice_verticalBar_variableDoesntExist() {
         Dataset data = new Dataset("age", "24", "weight", "125");
-        StringBuilder out = new StringBuilder("123");
         String template = "@foo?{(@age)|[@weight]}zz";
-        TemplateFixture.expandChoice(template, data, out, "name", 5);
-        assertEquals("output string", "123[125]", out.toString());
+        String s = TemplateFixture.parseChoice(template, data, "name", 5);
+        assertEquals("output string", "[125]", s);
         assertEquals("remainder of template", "zz",
                 template.substring(TemplateFixture.end));
     }
-    public void test_expandChoice_verticalBar_emptyValue() {
+    public void test_parseChoice_verticalBar_emptyValue() {
         Dataset data = new Dataset("name", "", "age", "24", "weight", "125");
-        StringBuilder out = new StringBuilder("123");
         String template = "@foo?{(@age)|[@weight]}zz";
-        TemplateFixture.expandChoice(template, data, out, "name", 5);
-        assertEquals("output string", "123[125]", out.toString());
+        String s = TemplateFixture.parseChoice(template, data, "name", 5);
+        assertEquals("output string", "[125]", s);
     }
-
-    public void test_expandParenName_saveAndRestoreEncoding() {
+    public void test_parseParenName_saveAndRestoreEncoding() {
         Dataset data = new Dataset("<name>", "<West>");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandParenName("@(<name>)", data, out, false, 2,
-                Template.SpecialChars.HTML);
-        assertEquals("output string", "123&lt;West&gt;", out.toString());
+        String s = TemplateFixture.parseParenName("@(<name>)", data,
+                false, 2, Template.SpecialChars.HTML);
+        assertEquals("output string", "<West>", s);
     }
-    public void test_expandParenName_nestedAtSign() {
+    public void test_parseParenName_nestedAtSign() {
         Dataset data = new Dataset("last_name", "West", "name", "last_name");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandParenName("@(@name)", data, out, false, 2,
+        String s = TemplateFixture.parseParenName("@(@name)", data, false, 2,
                 Template.SpecialChars.NONE);
         assertEquals("end of specifier", 8, TemplateFixture.end);
-        assertEquals("missingData", false, TemplateFixture.missingData);
-        assertEquals("output string", "123West", out.toString());
+        assertEquals("output string", "West", s);
     }
-    public void test_expandParenName_doublyNestedAtSign() {
+    public void test_parseParenName_doublyNestedAtSign() {
         Dataset data = new Dataset("last_name", "West", "name", "name2",
                 "name2", "last_name");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandParenName("@(@(@name))", data, out, false, 2,
+        String s = TemplateFixture.parseParenName("@(@(@name))", data, false, 2,
                 Template.SpecialChars.NONE);
         assertEquals("end of specifier", 11, TemplateFixture.end);
-        assertEquals("missingData", false, TemplateFixture.missingData);
-        assertEquals("output string", "123West", out.toString());
+        assertEquals("output string", "West", s);
     }
-    public void test_expandParenName_concatenation() {
+    public void test_parseParenName_concatenation() {
         Dataset data = new Dataset("last_name", "West", "name1", "last",
                 "name2", "name");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandParenName("@(@(name1)_@name2)", data, out, false, 2,
+        String s = TemplateFixture.parseParenName("@(@(name1)_@name2)", data, false, 2,
                 Template.SpecialChars.NONE);
         assertEquals("end of specifier", 18, TemplateFixture.end);
-        assertEquals("missingData", false, TemplateFixture.missingData);
-        assertEquals("output string", "123West", out.toString());
+        assertEquals("output string", "West", s);
     }
-    public void test_expandParenName_missingCloseParen() {
+    public void test_parseParenName_missingCloseParen() {
         boolean gotException = false;
         try {
             Dataset data = new Dataset();
-            StringBuilder out = new StringBuilder("123");
-            TemplateFixture.expandParenName("@(abcdef", data, out, false, 2,
+            TemplateFixture.parseParenName("@(abcdef", data, false, 2,
                     Template.SpecialChars.NONE);
         }
         catch (Template.SyntaxError e) {
@@ -593,115 +689,22 @@ public class TemplateTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
-
-    public void test_appendValue_conditionalSucceeded() {
+    public void test_parseBraces_basics() {
         Dataset data = new Dataset("last_name", "West");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.appendValue("last_name", data, out, true,
-                Template.SpecialChars.HTML, null);
-        assertEquals("missingData", false, TemplateFixture.missingData);
-        assertEquals("output string", "123West", out.toString());
-    }
-    public void test_appendValue_conditionalFailed() {
-        Dataset data = new Dataset("last_name", "West");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.appendValue("first_name", data, out, true,
-                Template.SpecialChars.HTML, null);
-        assertEquals("missingData", true, TemplateFixture.missingData);
-        assertEquals("output string", "123", out.toString());
-    }
-    public void test_appendValue_emptyConditionalValue() {
-        Dataset data = new Dataset("first_name", "");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.appendValue("first_name", data, out, true,
-                Template.SpecialChars.HTML, null);
-        assertEquals("missingData", true, TemplateFixture.missingData);
-        assertEquals("output string", "123", out.toString());
-    }
-    public void test_appendValue_unconditionalSucceeded() {
-        Dataset data = new Dataset("last_name", "West");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.appendValue("last_name", data, out, false,
-                Template.SpecialChars.HTML, null);
-        assertEquals("missingData", false, TemplateFixture.missingData);
-        assertEquals("output string", "123West", out.toString());
-    }
-    public void test_appendValue_unconditionalFailed() {
-        boolean gotException = false;
-        try {
-            Dataset data = new Dataset();
-            StringBuilder out = new StringBuilder("123");
-            TemplateFixture.appendValue("last_name", data, out, false,
-                    Template.SpecialChars.HTML, null);
-        }
-        catch (Template.MissingValueError e) {
-            assertEquals("exception message",
-                    "missing value \"last_name\" in template " +
-                    "\"dummy template\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-    public void test_appendValue_HtmlEncoding() {
-        Dataset data = new Dataset("last_name", "<West>");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.appendValue("last_name", data, out, false,
-                Template.SpecialChars.HTML, null);
-        assertEquals("output string", "123&lt;West&gt;", out.toString());
-    }
-    public void test_appendValue_UrlEncoding() {
-        Dataset data = new Dataset("last_name", "<West>");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.appendValue("last_name", data, out, false,
-                Template.SpecialChars.URL, null);
-        assertEquals("output string", "123%3cWest%3e", out.toString());
-    }
-    public void test_appendValue_JavascriptEncoding() {
-        Dataset data = new Dataset("value", "\\\n\"");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.appendValue("value", data, out, false,
-                Template.SpecialChars.JAVASCRIPT, null);
-        assertEquals("output string", "123\\\\\\n\\\"", out.toString());
-    }
-    public void test_appendValue_NoEncoding() {
-        Dataset data = new Dataset("last_name", "<West>");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.appendValue("last_name", data, out, false,
-                Template.SpecialChars.NONE, null);
-        assertEquals("output string", "123<West>", out.toString());
-    }
-    public void test_appendValue_Sql() {
-        Dataset data = new Dataset("last_name", "<West>");
-        StringBuilder out = new StringBuilder("123");
-        ArrayList<String> parameters = new ArrayList<String>();
-        TemplateFixture.appendValue("last_name", data, out, false,
-                null, parameters);
-        assertEquals("output string", "123?", out.toString());
-        assertEquals("saved variables", "<West>",
-                StringUtil.join(parameters, ", "));
-    }
-
-    public void test_expandBraces_basics() {
-        Dataset data = new Dataset("last_name", "West");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandBraces("{{abc@last_name@}}x}}y", data, out, 2);
+        String s = TemplateFixture.parseBraces("{{abc@last_name@}}x}}y", data, 2);
         assertEquals("end of specifier", 21, TemplateFixture.end);
-        assertEquals("ignoreMissing", false, TemplateFixture.conditional);
-        assertEquals("output string", "123abcWest}}x", out.toString());
+        assertEquals("output string", "abcWest}}x", s);
     }
-    public void test_expandBraces_closeBracesAtEnd() {
+    public void test_parseBraces_closeBracesAtEnd() {
         Dataset data = new Dataset("last_name", "West");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandBraces("{{abc}}", data, out, 2);
-        assertEquals("output string", "123abc", out.toString());
+        String s = TemplateFixture.parseBraces("{{abc}}", data, 2);
+        assertEquals("output string", "abc", s);
     }
-    public void test_expandBraces_singleCloseBraceAtEnd() {
+    public void test_parseBraces_singleCloseBraceAtEnd() {
         Dataset data = new Dataset("last_name", "West");
-        StringBuilder out = new StringBuilder("123");
         boolean gotException = false;
         try {
-            TemplateFixture.expandBraces("{{abc}", data, out, 2);
+            TemplateFixture.parseBraces("{{abc}", data, 2);
         }
         catch (Template.SyntaxError e) {
             assertEquals("exception message",
@@ -711,15 +714,35 @@ public class TemplateTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
-    public void test_expandBraces_missingData() {
+    public void test_parseBraces_missingData() {
         Dataset data = new Dataset("last_name", "West");
-        StringBuilder out = new StringBuilder("123");
-        TemplateFixture.expandBraces("{{abc@data.47@data2}}x", data, out, 2);
+        String s = TemplateFixture.parseBraces("{{abc@data.47@data2}}x", data, 2);
         assertEquals("end of specifier", 21, TemplateFixture.end);
-        assertEquals("ignoreMissing", false, TemplateFixture.conditional);
-        assertEquals("output string", "123", out.toString());
+        assertEquals("output string", "", out.toString());
     }
-    public void test_expandBraces_collapsePrecedingSpace() {
+    public void test_parseBraces_discardCollectedVariables() {
+        Dataset data = new Dataset("a", "0", "x", "1", "y", "2");
+        ArrayList<String> parameters = new ArrayList<String>();
+        String out = Template.expandSql("a:@a {{x:@x x:@x z:@z}} y:@y", data, parameters);
+        assertEquals("expanded template", "a:? y:?", out);
+        assertEquals("saved variables", "0, 2",
+                StringUtil.join(parameters, ", "));
+    }
+    public void test_parseBraces_missingCloseBrace() {
+        boolean gotException = false;
+        try {
+            Dataset data = new Dataset();
+            TemplateFixture.parseBraces("{{abc", data, 2);
+        }
+        catch (Template.SyntaxError e) {
+            assertEquals("exception message",
+                    "unmatched \"{{\" in template \"{{abc\"",
+                    e.getMessage());
+            gotException = true;
+        }
+        assertEquals("exception happened", true, gotException);
+    }
+    public void test_collapseSpaces_precedingSpace() {
         Dataset data = new Dataset();
         StringBuilder out = new StringBuilder();
         Template.appendHtml(out, "x {{@foo}}", data);
@@ -733,11 +756,7 @@ public class TemplateTest extends junit.framework.TestCase {
                 data);
         assertEquals("close-delimiter follows braces", "x] x> x} x) x\" x'",
                 out.toString());
-        out.setLength(0);
-        out.append("x ");
-        TemplateFixture.expandBraces("x {{@x}}]", data, out, 4, -1);
-        assertEquals("update lastDeletedSpace", 1,
-                TemplateFixture.lastDeletedSpace);
+
         out.setLength(0);
         Template.appendHtml(out, "<{{@x}} {{@x}}>", data);
         assertEquals("don't delete the same space twice", "<>",
@@ -747,7 +766,7 @@ public class TemplateTest extends junit.framework.TestCase {
         assertEquals("don't remove spaces", ") + b> + y",
                 out.toString());
     }
-    public void test_expandBraces_collapseTrailingSpace() {
+    public void test_collapseSpaces_trailingSpace() {
         Dataset data = new Dataset();
         StringBuilder out = new StringBuilder();
         Template.appendHtml(out, "{{@x}} bcd", data);
@@ -758,121 +777,49 @@ public class TemplateTest extends junit.framework.TestCase {
                 data);
         assertEquals("open-delimiter precedes braces", "[+ <+ {+ (+ \"+ '+",
                 out.toString());
-        out.setLength(0);
-        TemplateFixture.expandBraces("<{{@x}} abc]", data, out, 3, -1);
-        assertEquals("update lastDeletedSpace", 7,
-                TemplateFixture.lastDeletedSpace);
+
         out.setLength(0);
         Template.appendHtml(out, "<{{@x}}abc + y{{@x}}y + <{{@x}}", data);
         assertEquals("don't remove spaces", "<abc + yy + <",
                 out.toString());
     }
-    public void test_expandBraces_discardCollectedVariables() {
-        Dataset data = new Dataset("a", "0", "x", "1", "y", "2");
-        ArrayList<String> parameters = new ArrayList<String>();
-        String out = Template.expandSql("a:@a {{x:@x x:@x z:@z}} y:@y", data, parameters);
-        assertEquals("expanded template", "a:? y:?", out);
-        assertEquals("saved variables", "0, 2",
-                StringUtil.join(parameters, ", "));
-    }
-    public void test_expandEmbraces_missingCloseBrace() {
-        boolean gotException = false;
-        try {
-            Dataset data = new Dataset();
-            StringBuilder out = new StringBuilder("123");
-            TemplateFixture.expandBraces("{{abc", data, out, 2);
-        }
-        catch (Template.SyntaxError e) {
-            assertEquals("exception message",
-                    "unmatched \"{{\" in template \"{{abc\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
+    /*
+    public void test_movePreceedingSpace() {
+        Template.ParseInfo pInfo;
+        ArrayList<Template.Fragment> bogusId = new ArrayList<Template.Fragment>();
+        bogusId.add(new Template.IdFragment("bogus"));
+        Template.Fragment emptyConditional = new Template.ConditionalFragment(
+            new Template.ParsedTemplate(bogusId));
 
-    public void test_skipTo_basics() {
-        StringBuilder out = new StringBuilder();
-        int result = TemplateFixture.skipTo("}bc@}}", out, 1, '}', '}');
-        assertEquals("result index", 5, result);
+        ArrayList<Template.Fragment> list = new ArrayList<Template.Fragment>();
+        list.add(new Template.TextFragment("abc "));
+        list.add(emptyConditional);
+        parsed = new Template.ParsedTemplate(list);
+        pInfo = new Template.ParseInfo("");
+        pInfo.parse = parsed;
+        Template.movePreceedingSpace(pInfo);
+        parsed.expand(info);
+        assertEquals("empty conditional", "abc", info.out.toString());
     }
-    public void test_skipTo_atSign() {
-        StringBuilder out = new StringBuilder();
-        String template = "@(first})@second@}}123";
-        int result = TemplateFixture.skipTo(template, out, 0, '}', '}');
-        assertEquals("remainder of template", "}123",
-                template.substring(result));
+    */
+    public void test_foundDelimiter() {
+        assertEquals("one delim, not at end", true, Template.foundDelimiter("}|", 0, "}"));
+        assertEquals("two delim", true, Template.foundDelimiter("o}", 1, "|", "}"));
+        assertEquals("multiple characters", true, Template.foundDelimiter("abc", 0, "ab"));
+        assertEquals("no delim", false, Template.foundDelimiter("}", 0));
+        assertEquals("not found", false, Template.foundDelimiter("abc", 0, "d", "e", "fghij"));
+        assertEquals("at end", false, Template.foundDelimiter("abc", 3, "d"));
     }
-    public void test_skipTo_doubleBraces() {
-        StringBuilder out = new StringBuilder();
-        String template = "{{xyz@(foo})x}yy@}}}}123";
-        int result = TemplateFixture.skipTo(template, out, 0, '}', '}');
-        assertEquals("remainder of template", "}123",
-                template.substring(result));
-    }
-    public void test_skipTo_checkTwoCharacters() {
-        StringBuilder out = new StringBuilder();
-        String template = "abc,xyz|123";
-        int result = TemplateFixture.skipTo(template, out, 0, '|', ',');
-        assertEquals("remainder of template", ",xyz|123",
-                template.substring(result));
-        template = "abc|xyz,123";
-        result = TemplateFixture.skipTo(template, out, 0, '|', ',');
-        assertEquals("remainder of template", "|xyz,123",
-                template.substring(result));
-    }
-    public void test_skipTo_restoreState() {
-        StringBuilder out = new StringBuilder("abc");
-        int result = TemplateFixture.skipTo("12345", out, 0, '|', ',');
-        assertEquals("truncate output", "abc", out.toString());
-        assertEquals("truncate output", false, TemplateFixture.skip);
-    }
+    public void test_flushText() {
+        Template.ParseInfo parseInfo = new Template.ParseInfo("");
+        Template.flushText(parseInfo);
+        assertEquals("no text", 0, parseInfo.parse.fragments.size());
 
-    public void test_findValue_indexedData() {
-        Object[] indexedData = new Object[] {"first", null, "third"};
-        String result = TemplateFixture.findValue("0", false, null, null,
-                indexedData, null);
-        assertEquals("index too small", null, result);
-        result = TemplateFixture.findValue("4", false, null, null,
-                indexedData, null);
-        assertEquals("index too large", null, result);
-        result = TemplateFixture.findValue("1", false, null, null,
-                indexedData, Template.SpecialChars.HTML);
-        assertEquals("index valid", "first", result);
-        assertEquals("currentQuoting", "HTML",
-                TemplateFixture.currentQuoting.toString());
-        result = TemplateFixture.findValue("2", false, null, null,
-                indexedData, null);
-        assertEquals("null object supplied", null, result);
+        parseInfo.text = new StringBuilder("hey");
+        Template.flushText(parseInfo);
+        assertEquals("with text", "hey",
+                     ((Template.TextFragment) parseInfo.parse.fragments.get(0)).text);
     }
-    public void test_findValue_datasetValue() {
-        Dataset data = new Dataset("name", "Alice", "age", "21");
-        String result = TemplateFixture.findValue("bogus", false, data, null,
-                null, null);
-        assertEquals("name not in dataset", null, result);
-        result = TemplateFixture.findValue("bogus", false, data,
-                Template.SpecialChars.NONE, null, null);
-        assertEquals("name in dataset", null, result);
-        assertEquals("currentQuoting", "NONE",
-                TemplateFixture.currentQuoting.toString());
-    }
-    public void test_findValue_throwError() {
-        Dataset data = new Dataset("name", "Alice", "age", "21");
-        boolean gotException = false;
-        try {
-            String result = TemplateFixture.findValue("6", true,
-                    new Dataset("name", "Alice"), null,
-                    new Object[] {"first"}, null);
-        }
-        catch (Template.MissingValueError e) {
-            assertEquals("exception message",
-                    "missing value \"6\" in template \"dummy template\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-
     public void test_variousComplexTemplates() {
         StringBuilder out = new StringBuilder();
         Template.appendHtml(out, "first {{name: @name, age: @age?{unknown}}}",
@@ -881,8 +828,9 @@ public class TemplateTest extends junit.framework.TestCase {
                 out.toString());
 
         out.setLength (0);
-        Template.appendHtml(out, "first {{name: @name, age: @age?{unknown}, " +
+        Template.appendHtml(out, "first {{name: {{@name}},{{@bogus}} age: @age?{unknown}, " +
                 "weight: @weight}}", new Dataset("name", "Bob"));
         assertEquals("output string", "first", out.toString());
     }
+
 }

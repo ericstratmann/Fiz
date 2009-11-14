@@ -650,6 +650,25 @@ public final class StringUtil {
     }
 
     /**
+     * Searches a string starting at a given location to find the first
+     * character that is not a valid digit.
+     * @param s                       String to search
+     * @param start                   Index of first character to consider
+     * @return                        Returns the index of the first character
+     *                                at or after {@code start} that
+     *                                is not a digit
+     */
+    public static int numberEnd(CharSequence s, int start) {
+        int i;
+        for (i = start; i < s.length(); i++) {
+            if (!Character.isDigit(s.charAt(i))) {
+                break;
+            }
+        }
+        return i;
+    }
+
+    /**
      * Find the next non-space character in a string.
      * @param s                        String to search
      * @param start                    Index of first character to check

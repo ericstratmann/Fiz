@@ -337,6 +337,15 @@ public class StringUtilTest extends junit.framework.TestCase {
         assertEquals("array contents", "abc", new String(ch));
     }
 
+    public void test_numberEnd() {
+        assertEquals("stop on alpha", 3,
+                StringUtil.numberEnd("123a", 2));
+        assertEquals("stop at end of string", 4,
+                StringUtil.numberEnd("1234", 0));
+        assertEquals("already past end of string", 10,
+                StringUtil.numberEnd("123", 10));
+    }
+
     public void test_skipSpaces() {
         assertEquals(6, StringUtil.skipSpaces("abc   def", 3));
         assertEquals(6, StringUtil.skipSpaces("abc   def", 5));

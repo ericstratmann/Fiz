@@ -28,9 +28,8 @@ import java.util.*;
  * @<i>name</i>             Copy the contents of the dataset element named
  *                          <i>name</i> to the output.  <i>name</i>
  *                          consists of all the standard Unicode identifier
-
- *                          characters following the {@code @}.  It is an
- *                          error if the name doesn't exist in the dataset.
+ *                          characters following the {@code @}. It is an error
+ *                          if the name doesn't exist in the dataset.
  * @(<i>name</i>)           Copy the contents of the data value named
  *                          <i>name</i> to the output.  <i>name</i>
  *                          consists of all the characters following the "("
@@ -55,31 +54,30 @@ import java.util.*;
  *                          copied to the output.  However, if there is a
  *                          data reference for which the name doesn't exist
  *                          then the information between the braces skipped:
- *                          nothing is copied to the output.  Furthermore, if
- *                          there are space characters next to either of the
- *                          curly braces then one of the spaces may be
- *                          removed to avoid reduncant spaces (enclose the
- *                          space in {{}} to keep this from happening.
+ *                          nothing is copied to the output.
  * @@                       Append "@" to the output.
  * @{                       Append "{" to the output.
  * @}                       Append "}" to the output.
  * @*                       Any other occurrence of "@" besides those
  *                          described above is illegal and results in an error.
  * When a dataset element is substituted into a template, special characters
- * in the value will be escaped according to a SpecialChars enum supplied
- * during expansion.  For example, if HTML encoding has been specified,
+ * in the value will be escaped according to the method name. For example, if
+ * HTML encoding has been specified, such as by calling expandHtml,
  * {@code <} characters will be translated to the entity reference
  * {@code &lt;}.  Translation occurs only for values coming from the
  * dataset, not for characters in the template itself;  you should ensure
  * that template characters already obey the output encoding rules.
- * Translation can be disabled for dataset values by specifying {@code NONE}
- * as the encoding.
+ * Translation can be disabled for dataset values by invoking one of the the
+ * methods ending in "Raw".
  *
  * When invoking template expansion, you can also provide data values using
  * one or more Objects instead of (or in addition to) a Dataset.  In this
  * case, you use numerical specifiers such as {@code @3} to refer to the
  * values: {@code @1} refers to the string value of the first object,
  * {@code @2} refers to the string value of the second object, and so on.
+ * If the @ starts with a number, the name ends at the first non-numeric
+ * character. E.g, "@2b" refers to the second object followed by a "b".
+ * Use @(2b) to refer to a dataset value with key "2b"
  */
 
 public class Template {
@@ -88,12 +86,21 @@ public class Template {
      * template does not exist.
      */
     public static class MissingValueError extends Error {
+        String name;
+        CharSequence template;
+
         /**
-         * Constructs a MissingValueError with a given message.
-         * @param message          Detailed information about the problem
+         * Constructs a MissingValueError
+         * @param name        Value which could not be found
+         * @param template    Template which was being expanded
          */
-        public MissingValueError(String message) {
-            super(message);
+        public MissingValueError(String name, CharSequence template) {
+            this.name = name;
+            this.template = template;
+        }
+
+        public String getMessage() {
+            return "missing value \"" + name + "\" " + "in template \"" + template + "\"";
         }
     }
 
@@ -128,7 +135,7 @@ public class Template {
          * substituted data values will be used in Javascript strings,
          * so use backslashes to quote special characters.
          */
-        JAVASCRIPT,
+        JS,
 
         /**
          * The output will be used as part of a URL, so use {@code %xx}
@@ -139,100 +146,446 @@ public class Template {
         /** Don't perform any transformations on the data values. */
         NONE}
 
+    /**
+     * A cache of all parsed templates. Keys are template strings.
+     */
+    protected static Map<CharSequence, ParsedTemplate> parsedTemplates =
+        Collections.synchronizedMap(new HashMap<CharSequence, ParsedTemplate>());
+
+    /**
+     * A ParsedTemplate is an efficient representation of a template after it has
+     * been parsed, so that we do not need to reparse a template every time it is
+     * used.
+     */
+    protected static class ParsedTemplate {
+        // List of fragments that make up the template
+        protected ArrayList<Fragment> fragments;
+
+        /**
+         * Creates a new ParsedTemplate with no fragments.
+         */
+        protected ParsedTemplate() {
+            this.fragments = new ArrayList<Fragment>();
+        }
+
+        /**
+         * Creates a new ParsedTemplate with the given fragments.
+         * @param fragments   List of fragments describing the template
+         */
+        protected ParsedTemplate(ArrayList<Fragment> fragments) {
+            this.fragments = fragments;
+        }
+
+        /**
+         * Expands a cached template, substituting values and quoting data.
+         * @param info         Information describing the current expansion
+         */
+        public void expand(ExpandInfo info) {
+            for (Fragment fragment : fragments) {
+                fragment.expand(info);
+            }
+        }
+
+        /**
+         * Appends the fragment to this cache's list of fragments.
+         * @param fragment    Describes part of this template
+         */
+        protected void addFragment(Fragment fragment) {
+            fragments.add(fragment);
+        }
+    }
+
+    /**
+     * A template is parsed into a list of {@code Fragment} objects. Expanding
+     * each of these in a row is equivalent to expanding the template.
+     */
+    protected static interface Fragment {
+        /**
+         * Evaluate the fragment and add its value to the output
+         * @param info         Information describing the current expansion
+         */
+        public abstract void expand(ExpandInfo info);
+    }
+
+    /**
+     * Represents plain text in a template. No substition is done on this
+     * text.
+     */
+    protected static class TextFragment implements Fragment {
+        String text;
+
+        /**
+         * Creates a new TextFragment
+         * @param text       String this fragment is representing
+         */
+        public TextFragment(String text) {
+            this.text = text;
+        }
+
+        /**
+         * Evaluate the fragment and add its value to the output
+         * @param info         Information describing the current expansion
+         */
+        public void expand(ExpandInfo info) {
+            info.out.append(text);
+        }
+    }
+
+    /**
+     * Represents one @ variable, such as @foo, @1, or @(@foo)
+     */
+    protected static class IdFragment implements Fragment {
+        String name;
+        // If the name is a number, such as "5", index represents the integer
+        // version of the number. Otherwise the index is -1.
+        int index;
+        // If the @ is the form of @(...), this object represents the parsed
+        // version of the text inside the parens. Otherwise this is null
+        ParsedTemplate parens;
+
+        /**
+         * Creates a new IdFragment
+         * @param name   Name of the @ variable. When the template is evaluated
+         *               it'll get expanded with a value from a dataset
+         */
+        public IdFragment(String name) {
+            this.name = name;
+            try {
+                index = Integer.parseInt(this.name);
+            } catch (NumberFormatException e) {
+                index = -1;
+            }
+            this.parens = null;
+        }
+
+        /**
+         * Creates a new IdFragment corresponding to text inside parens: @(...)
+         * @param parens  Parsed representation of the text in the parens. When
+         *                the template is evaluated, this will be expanded and
+         *                used as the name of a value to substitute
+         */
+        public IdFragment(ParsedTemplate parens) {
+            this.parens = parens;
+        }
+
+        /**
+         * Evaluate the fragment and add its value to the output
+         * @param info         Information describing the current expansion
+         */
+        public void expand(ExpandInfo info) {
+            addValue(info, findValue(info, true));
+        }
+
+        /**
+         * Finds and quotes a value from a dataset or indexed data
+         * @param info         Information describing the current expansion
+         * @param required     If true, throws a MissingValueError if the
+         *                     request value cannot be found
+         * @return             The quoted valued associated with this fragment
+         */
+        public String findValue(ExpandInfo info, boolean required) {
+            String tmpName = this.name;
+            int tmpIndex = this.index;
+
+            if (parens != null) {
+                int outLen = info.out.length();
+                SpecialChars oldQuoting = info.quoting;
+                info.quoting = SpecialChars.NONE;
+
+                parens.expand(info);
+
+                tmpName = info.out.substring(outLen);
+                info.quoting = oldQuoting;
+                info.out.setLength(outLen);
+                try {
+                    tmpIndex = Integer.parseInt(tmpName);
+                } catch (NumberFormatException e) {
+                    tmpIndex = -1;
+                }
+            }
+
+            String value = null;
+            // If there is indexed data in this expansion and the name is an
+            // integer, use an indexed value if there is one corresponding to
+            // the name.
+            if (tmpIndex > 0 && info.indexedData != null) {
+                if (tmpIndex <= info.indexedData.length) {
+                    Object tmp = info.indexedData[tmpIndex-1];
+                    if (tmp != null) {
+                        value = tmp.toString();
+                    }
+                }
+            } else {
+                if (info.data != null) {
+                    value = info.data.checkString(tmpName);
+                }
+            }
+
+            if (value != null || !required) {
+                return value;
+            }
+
+            throw new MissingValueError(tmpName, info.template);
+        }
+    }
+
+    /**
+     * Represents part of a template in the form of @id?{...}
+     */
+    protected static class DefaultFragment implements Fragment {
+        // id in @id?(frag)
+        IdFragment id;
+        // frag in @id?(frag)
+        ParsedTemplate defaultOption;
+
+        /**
+         * Creates a DefaultFragment
+         * @param id              The @ variable. If it exists, it is added to
+         *                        the output. Otherwise, {@code fragment} is.
+         * @param defaultOption   Added to the output if {@code id} does not exist
+         */
+        public DefaultFragment(IdFragment id, ParsedTemplate defaultOption) {
+            this.id = id;
+            this.defaultOption = defaultOption;
+        }
+
+        /**
+         * Evaluate the fragment and add its value to the output
+         * @param info         Information describing the current expansion
+         */
+        public void expand(ExpandInfo info) {
+            String value = id.findValue(info, false);
+            if (value == null || value.length() == 0) {
+                defaultOption.expand(info);
+            } else {
+                addValue(info, value);
+            }
+        }
+    }
+
+    /**
+     * Represents part of a template in the form @id{t1|t2}.
+     */
+    protected static class ChoiceFragment implements Fragment {
+        // id in @id{t1, t2}
+        IdFragment id;
+        // t1 in @id{t1, t2}
+        ParsedTemplate first;
+        // t2 in @id{t1, t2}
+        ParsedTemplate second;
+        /**
+         * Creates a new ChoiceFragment
+         * @param id      If id exists, first is expanded to the output,
+         *                otherwise second is
+         * @param first   Added to the output if {@code id} exists
+         * @param second  Added to the output if {@code id} does not exist
+         */
+        public ChoiceFragment(IdFragment id, ParsedTemplate first, ParsedTemplate second) {
+            this.id = id;
+            this.first = first;
+            this.second = second;
+        }
+
+        /**
+         * Evaluate the fragment and add its value to the output
+         * @param info         Information describing the current expansion
+         */
+        public void expand(ExpandInfo info) {
+            String value = id.findValue(info, false);
+            if (value == null || value.length() == 0) {
+                second.expand(info);
+            } else {
+                first.expand(info);
+            }
+        }
+    }
+
+    /**
+     * Represents part of a template in the form {{...}}
+     */
+    protected static class ConditionalFragment implements Fragment {
+        // Parsed representation of text inside brackets
+        ParsedTemplate contents;
+
+        /**
+         * Creates a new ConditionalFragment
+         * @param contents    Added to the output if all @ variables in it exist.
+         *                    Otherwise, nothing is added to the output.
+         */
+        public ConditionalFragment(ParsedTemplate contents) {
+            this.contents = contents;
+        }
+
+        /**
+         * Evaluate the fragment and add its value to the output
+         * @param info         Information describing the current expansion
+         */
+        public void expand(ExpandInfo info) {
+            int outLen = info.out.length();
+            int sqlLen = 0;
+            if (info.sqlParameters != null) {
+                sqlLen = info.sqlParameters.size();
+            }
+
+            try {
+                contents.expand(info);
+            } catch (MissingValueError e) {
+                info.out.setLength(outLen);
+                if (info.sqlParameters != null) {
+                    for (int size = info.sqlParameters.size(); size > sqlLen; ) {
+                        size--;
+                        info.sqlParameters.remove(size);
+                    }
+                }
+            }
+        }
+    }
+
+    // Holds information used during expansion
+    protected static class ExpandInfo {
+        // Output is appended here
+        protected StringBuilder out;
+        // String representation of the template we are expanding
+        // (Used in error messages)
+        protected CharSequence template;
+        // Style of quoting to use
+        protected SpecialChars quoting;
+        // If we are expanding for a SQL query, values are added here instead
+        // of being substituted in the template
+        protected ArrayList sqlParameters;
+        // Dataset of values to substitute
+        protected Dataset data;
+        // Indexed data to substitute
+        protected Object[] indexedData;
+
+        protected ExpandInfo(StringBuilder out, CharSequence template,
+                             SpecialChars quoting, ArrayList<String> sqlParameters,
+                             Dataset data, Object ... indexedData) {
+            if (out == null) {
+                out = new StringBuilder();
+            }
+            this.out = out;
+            this.template = template;
+            this.quoting = quoting;
+            this.sqlParameters = sqlParameters;
+            this.data = data;
+            this.indexedData = indexedData;
+        }
+    }
+
+
     // The following class is used internally to pass information between
     // methods.  Among other things, it provides a vehicle for returning
     // additional results from a method.
     protected static class ParseInfo {
         CharSequence template;     // The template being processed.
-        int templateEnd;           // Stop processing template characters
-                                   // after processing the character just
-                                   // before this one;  used to selectively
-                                   // process portions of the template.
-        Dataset data;              // Source of data for expansions.
-        StringBuilder out;         // Output information is appended here.
-        SpecialChars quoting;      // How to transform special characters
-                                   // in substituted values from {@code data}.
-                                   // Null means we are doing SQL template
-                                   // expansion.
-        Object[] indexedData;      // Used in some forms of expansion:
-                                   // provides additional data referenced with
-                                   // numerical specifiers such as {@code @1}.
-                                   // Null means no indexed data.
-        ArrayList<String> sqlParameters;
-                                   // Non-null means we are expanding an SQL
-                                   // template, so variables don't get
-                                   // substituted into the output string: this
-                                   // object (provided by the caller) collects
-                                   // the values of all of the variables,
-                                   // which are then added to the SQL statement
-                                   // by the caller.
-        SpecialChars indexedQuoting;
-                                   // How to transform special characters when
-                                   // substituting values from
-                                   // {@code indexedData}.  Null means we are
-                                   // doing SQL template expansion.
-        SpecialChars currentQuoting;
-                                   // Set by {@code findValue}: either
-                                   // {@code quoting} or {@code indexedQuoting}.
-        boolean ignoreMissing;     // True means we are processing information
-                                   // between curly braces, so don't get upset
-                                   // if data values can't be found.
-        boolean missingData;       // True means that a data value couldn't
-                                   // be found (or was empty) but ignoreMissing
-                                   // was true.
-        boolean skip;              // True means we are parsing part of the
-                                   // template without actually expanding it
-                                   // (e.g. in a @foo?{...|...} substitution)
-                                   // so don't bother looking up or copying
-                                   // data values.  Skip other copying also,
-                                   // if it's convenient; anything copied to
-                                   // {@code out} will be discarded.
         int end;                   // Modified by methods such as
-                                   // expandName to hold the index of the
+                                   // parseName to hold the index of the
                                    // character just after the last one
                                    // processed by the method.  For example,
                                    // if the method processed "@(name)"
                                    // then this value will give the index
                                    // of the next character after the ")".
+        StringBuilder text;        // When parsing plain text (e.g., not a @),
+                                   // text is appended here before being turned
+                                   // into a fragment
+        ParsedTemplate parse;      // Fragments are appended to this cache
         int lastDeletedSpace;      // Used in collapsing space characters
                                    // around braces to handle cumulative
-                                   // situations like "<{@a} {@b} {@c}>":
+                                   // situations like "<{{@a}} {{@b}} {{@c}}>":
                                    // if all three sets in braces drop out,
                                    // we want to eliminate exactly 2 spaces.
                                    // This field holds the index into the
                                    // template of the last space character
                                    // we collapsed out, or -1 if none.
-
         /**
          * Construct a ParseInfo object.
          * @param template         Template to be expanded.
-         * @param out              Append expanded information to this
-         *                         object.
-         * @param quoting          Style of quoting to use for expansion.
-         * @param data             Dataset that will provide values for
-         *                         expansion; null means no dataset
-         *                         values available.
-         * @param indexedData      Zero or more objects whose values can be
-         *                         referred to in the template with
-         *                         numerical specifiers such as {@code @1}.
-         *                         Null values may be supplied to indicate
-         *                         "no object with this index".
          */
-        public ParseInfo(CharSequence template, StringBuilder out,
-                SpecialChars quoting, Dataset data, Object[] indexedData) {
-            this.template = template;
-            this.data = data;
-            this.out = out;
-            this.indexedQuoting = this.quoting = quoting;
-            this.indexedData = indexedData;
-            this.ignoreMissing = false;
-            this.missingData = false;
-            this.lastDeletedSpace = -1;
+        public ParseInfo(CharSequence template) {
+            this.template = new StringBuilder(template);
+            this.text = new StringBuilder();
+            this.parse = new ParsedTemplate();
         }
     }
 
     // No constructor: this class only has a static methods.
     private Template() {}
+
+    /**
+     * Adds a value to the ouput, escaping it if necessary
+     * @param info         Information describing the current expansion.
+     *                     info.quoting determines what sort of quoting to do
+     * @param value        String which is quoted and added to output
+     */
+    protected static void addValue(ExpandInfo info, String value) {
+        if (info.quoting == SpecialChars.HTML) {
+            Html.escapeHtmlChars(value, info.out);
+        } else if (info.quoting == SpecialChars.JS) {
+            Html.escapeStringChars(value, info.out);
+        } else if (info.quoting == SpecialChars.URL) {
+            Html.escapeUrlChars(value, info.out);
+        } else if (info.quoting == SpecialChars.NONE) {
+            info.out.append(value);
+        } else if (info.sqlParameters != null) {
+            info.sqlParameters.add(value);
+            info.out.append("?");
+        } else {
+            throw new InternalError("unknown quoting value in " +
+                                    "Template.quoteString");
+        }
+    }
+
+    /**
+     * Expands a template
+     * @param out             Output is appended here. If null, a new StringBuilder
+     *                        is created
+     * @param template        Template to expand
+     * @param quoting         Style of quoting used on substituted values
+     * @param data            Provides data to be substituted into the template.
+     * @param indexedData     One or more objects, whose values can be
+     *                        referred to in the template with
+     *                        numerical specifiers such as {@code @1}.
+     *                        Null values may be supplied to indicate
+     *                        "no object with this index".
+     * @return                The expanded template
+     */
+    protected static StringBuilder expand(StringBuilder out, CharSequence template,
+                     SpecialChars quoting, Dataset data, Object ... indexedData) {
+        return expand(out, template, quoting, null, data, indexedData);
+    }
+
+    /**
+     * Expands a template
+     * Returns a parsed version of the template, creating it if necessary.
+     * @param out             Output is appended here. If null, a new StringBuilder
+     *                        is created
+     * @param template        Template to expand
+     * @param quoting         Style of quoting used on substituted values
+     * @param sqlParameters   If not null, substituted values are appended here
+     * @param data            Provides data to be substituted into the template.
+     * @param indexedData     One or more objects, whose values can be
+     *                        referred to in the template with
+     *                        numerical specifiers such as {@code @1}.
+     *                        Null values may be supplied to indicate
+     *                        "no object with this index".
+     * @return                The expanded template
+     */
+    protected static StringBuilder expand(StringBuilder out, CharSequence template,
+                     SpecialChars quoting, ArrayList<String> sqlParameters,
+                     Dataset data, Object ... indexedData) {
+        ParsedTemplate parsed = parsedTemplates.get(template);
+        if (parsed == null) {
+            ParseInfo info = new ParseInfo(template);
+            parseTo(info, 0);
+            parsed = info.parse;
+            parsedTemplates.put(template, parsed);
+        }
+
+        ExpandInfo info = new ExpandInfo(out, template, quoting, sqlParameters, data, indexedData);
+        parsed.expand(info);
+        return info.out;
+    }
 
     /**
      * Substitute data into a template string, using HTML conventions
@@ -247,19 +600,15 @@ public class Template {
      *                             numerical specifiers such as {@code @1}.
      *                             Null values may be supplied to indicate
      *                             "no object with this index".
-     * @throws MissingValueError   A required data value couldn't be found.
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
      * @return                     A String containing the result of the
      *                             expansion.
      */
     public static String expandHtml(CharSequence template, Dataset data,
-            Object ... indexedData)
-            throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template, new StringBuilder(),
-                SpecialChars.HTML, data, indexedData);
-        expandRange(info, 0, template.length());
-        return info.out.toString();
+            Object ... indexedData) throws SyntaxError {
+        return expand(null, template, SpecialChars.HTML, data,
+                      indexedData).toString();
     }
 
     /**
@@ -281,10 +630,8 @@ public class Template {
      */
     public static String expandHtml(CharSequence template,
             Object ... indexedData) throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template, new StringBuilder(),
-                SpecialChars.HTML, null, indexedData);
-        expandRange(info, 0, template.length());
-        return info.out.toString();
+        return expand(null, template, SpecialChars.HTML, null,
+                      indexedData).toString();
     }
 
     /**
@@ -308,9 +655,7 @@ public class Template {
     public static void appendHtml(StringBuilder out, CharSequence template,
                                   Dataset data, Object... indexedData)
             throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template, out, SpecialChars.HTML,
-                data, indexedData);
-        expandRange(info, 0, template.length());
+        expand(out, template, SpecialChars.HTML, data, indexedData);
     }
 
     /**
@@ -332,9 +677,7 @@ public class Template {
     public static void appendHtml(StringBuilder out, CharSequence template,
                                   Object... indexedData)
             throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template, out, SpecialChars.HTML,
-                null, indexedData);
-        expandRange(info, 0, template.length());
+        expand(out, template, SpecialChars.HTML, null, indexedData);
     }
 
     /**
@@ -359,10 +702,8 @@ public class Template {
     public static String expandJs(CharSequence template, Dataset data,
             Object ... indexedData)
             throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template, new StringBuilder(),
-                SpecialChars.JAVASCRIPT, data, indexedData);
-        expandRange(info, 0, template.length());
-        return info.out.toString();
+        return expand(null, template, SpecialChars.JS, data,
+                      indexedData).toString();
     }
 
     /**
@@ -384,10 +725,8 @@ public class Template {
      */
     public static String expandJs(CharSequence template,
             Object ... indexedData) throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template, new StringBuilder(),
-                SpecialChars.JAVASCRIPT, null, indexedData);
-        expandRange(info, 0, template.length());
-        return info.out.toString();
+        return expand(null, template, SpecialChars.JS, null,
+                                          indexedData).toString();
     }
 
     /**
@@ -411,9 +750,7 @@ public class Template {
     public static void appendJs(StringBuilder out,
             CharSequence template, Dataset data, Object... indexedData)
             throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template, out, SpecialChars.JAVASCRIPT,
-                data, indexedData);
-        expandRange(info, 0, template.length());
+        expand(out, template, SpecialChars.JS, data, indexedData);
     }
 
     /**
@@ -435,9 +772,7 @@ public class Template {
     public static void appendJs(StringBuilder out,
             CharSequence template, Object... indexedData)
             throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template, out, SpecialChars.JAVASCRIPT,
-                null, indexedData);
-        expandRange(info, 0, template.length());
+        expand(out, template, SpecialChars.JS, null, indexedData);
     }
 
     /**
@@ -462,10 +797,8 @@ public class Template {
     public static String expandUrl(CharSequence template, Dataset data,
             Object ... indexedData)
             throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template, new StringBuilder(),
-                SpecialChars.URL, data, indexedData);
-        expandRange(info, 0, template.length());
-        return info.out.toString();
+        return expand(null, template, SpecialChars.URL, data,
+                      indexedData).toString();
     }
 
     /**
@@ -487,10 +820,8 @@ public class Template {
      */
     public static String expandUrl(CharSequence template,
             Object ... indexedData) throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template, new StringBuilder(),
-                SpecialChars.URL, null, indexedData);
-        expandRange(info, 0, template.length());
-        return info.out.toString();
+        return expand(null, template, SpecialChars.URL, null,
+                                          indexedData).toString();
     }
 
     /**
@@ -514,9 +845,7 @@ public class Template {
     public static void appendUrl(StringBuilder out, CharSequence template,
             Dataset data, Object... indexedData)
             throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template, out, SpecialChars.URL,
-                data, indexedData);
-        expandRange(info, 0, template.length());
+        expand(out, template, SpecialChars.URL, data, indexedData);
     }
 
     /**
@@ -537,9 +866,7 @@ public class Template {
      */
     public static void appendUrl(StringBuilder out, CharSequence template,
             Object... indexedData) throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template, out, SpecialChars.URL,
-                null, indexedData);
-        expandRange(info, 0, template.length());
+        expand(out, template, SpecialChars.URL, null, indexedData);
     }
 
     /**
@@ -564,10 +891,8 @@ public class Template {
     public static String expandRaw(CharSequence template, Dataset data,
             Object ... indexedData)
             throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template, new StringBuilder(),
-                SpecialChars.NONE, data, indexedData);
-        expandRange(info, 0, template.length());
-        return info.out.toString();
+        return expand(null, template, SpecialChars.NONE, data,
+                      indexedData).toString();
     }
 
     /**
@@ -589,10 +914,8 @@ public class Template {
      */
     public static String expandRaw(CharSequence template,
             Object ... indexedData) throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template, new StringBuilder(),
-                SpecialChars.NONE, null, indexedData);
-        expandRange(info, 0, template.length());
-        return info.out.toString();
+        return expand(null, template, SpecialChars.NONE, null,
+                      indexedData).toString();
     }
 
     /**
@@ -616,9 +939,7 @@ public class Template {
     public static void appendRaw(StringBuilder out, CharSequence template,
             Dataset data, Object... indexedData)
             throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template, out, SpecialChars.NONE,
-                data, indexedData);
-        expandRange(info, 0, template.length());
+        expand(out, template, SpecialChars.NONE, data, indexedData);
     }
 
     /**
@@ -640,9 +961,7 @@ public class Template {
     public static void appendRaw(StringBuilder out, CharSequence template,
             Object... indexedData)
             throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template, out, SpecialChars.NONE,
-                null, indexedData);
-        expandRange(info, 0, template.length());
+        expand(out, template, SpecialChars.NONE, null, indexedData);
     }
 
     /**
@@ -673,88 +992,95 @@ public class Template {
     public static String expandSql(CharSequence template, Dataset data,
             ArrayList<String> sqlParameters)
             throws MissingValueError, SyntaxError {
-        ParseInfo info = new ParseInfo(template,
-                new StringBuilder(template.length() + 50), null, data, null);
-        info.sqlParameters = sqlParameters;
-        expandRange(info, 0, template.length());
-        return info.out.toString();
+        return expand(null, template, null, sqlParameters, data).toString();
     }
 
     /**
-     * Given a range of characters in a template, expand the characters
-     * in the range.
+     * Parses a template until one of the delimiters is matched
      * @param info                 Contains information about the template
-     *                             being expanded.
-     * @param start                Index of the first character to expand.
-     * @param end                  Index of the character just after the last
-     *                             one to expand.
-     * @throws MissingValueError   Thrown if a data value couldn't be found
-     *                             and info.ignoreMissing is false.
-     * @throws SyntaxError         The template contains an illegal construct.
+     *                             being parsed.  This method appends
+     *                             framents to info.parse. Info.end is set
+     *                             to the index of the first character following
+     *                             the @-specifier (e.g. for {@code @foo+bar}
+     *                             info.end will refer to the {@code +} and for
+     *                             {@code @abc d} info.end will refer to the
+     *                             space.
+     * @param start                Begin parsing at this position
+     * @param delimiters           List of delimiters that marks the end of the
+     *                             template
      */
-    protected static void expandRange(ParseInfo info, int start, int end)
-            throws MissingValueError, SyntaxError {
-        CharSequence template = info.template;
-        int oldTemplateEnd = info.templateEnd;
-        info.templateEnd = end;
+    protected static void parseTo(ParseInfo info, int start, String ... delimiters) {
+        boolean foundEnd = false;
+        int len = info.template.length();
 
-        for (int i = start; i < info.templateEnd; ) {
-            char c = template.charAt(i);
+        int i;
+        for (i = start; !foundEnd && i != len; ) {
+            char c = info.template.charAt(i);
+            char next = 0;
+            if (i + 1 != len) {
+                next = info.template.charAt(i+1);
+            }
+
             if (c == '@') {
-                expandAtSign(info, i+1);
+                parseAtSign(info, i+1);
                 i = info.end;
-            } else if ((c == '{') && ((i+1) < info.templateEnd)
-                    && (template.charAt(i+1) == '{')) {
-                expandBraces(info, i+2);
+            } else if (c == '{' && next == '{') {
+                parseBraces(info, i+2);
                 i = info.end;
+            } else if (foundDelimiter(info.template, i, delimiters)) {
+                foundEnd = true;
             } else {
-                info.out.append(c);
+                info.text.append(c);
                 i++;
             }
         }
-        info.templateEnd = oldTemplateEnd;
+
+        flushText(info);
+        info.end = i;
     }
 
     /**
      * This method is invoked to process the part of a template immediately
      * following an "@".
      * @param info                 Contains information about the template
-     *                             being expanded.  This method modifies
-     *                             info.out, info.missingInfo, and info.end.
-     *                             Info.end is set to the index of the first
-     *                             character following the @-specifier (e.g.
-     *                             for {@code @foo+bar} info.end will refer
-     *                             to the {@code +} and for {@code @abc}
-     *                             info.end will refer to the "a".
+     *                             being parsed.  This method appends
+     *                             framents to info.parse. Info.end is set
+     *                             to the index of the first character following
+     *                             the @-specifier (e.g. for {@code @foo+bar}
+     *                             info.end will refer to the {@code +} and for
+     *                             {@code @abc d} info.end will refer to the "d".
      * @param start                Index of the character immediately after
      *                             the {@code @}.
-     * @throws MissingValueError   Thrown if a data value couldn't be found
-     *                             and info.ignoreMissing is false.
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
      */
-    protected static void expandAtSign(ParseInfo info, int start)
-            throws MissingValueError {
-        if (start >= info.templateEnd) {
+    protected static void parseAtSign(ParseInfo info, int start) {
+        if (start >= info.template.length()) {
             throw new SyntaxError("dangling \"@\" in template \"" +
                     info.template + "\"");
         }
         char c = info.template.charAt(start);
         if (Character.isUnicodeIdentifierStart(c) || Character.isDigit(c)) {
-            info.end = StringUtil.identifierEnd(info.template, start);
+            flushText(info);
+            if (Character.isDigit(c)) {
+                info.end = StringUtil.numberEnd(info.template, start);
+            } else {
+                info.end = StringUtil.identifierEnd(info.template, start);
+            }
             String name = info.template.subSequence(start,
                     info.end).toString();
-            if ((info.end < info.templateEnd)
+            if ((info.end < info.template.length())
                     && (info.template.charAt(info.end) == '?'))  {
-                expandChoice(info, name, info.end+1);
+                parseChoice(info, name, info.end+1);
             } else {
-                appendValue(info, name);
+                info.parse.addFragment(new IdFragment(name));
             }
         } else if (c == '(') {
-            expandParenName(info, start+1);
-        } else if ((c == '@') || (c == '{') || (c == '}')) {
-            info.out.append(c);
-            info.end = start+1;
+            flushText(info);
+            parseParenName(info, start+1);
+        } else if (c == '@' || c == '{' || c == '}') {
+            info.text.append(c);
+            info.end = start + 1;
         } else {
             throw new SyntaxError("invalid sequence \"@" + c
                     + "\" in template \"" + info.template + "\"");
@@ -762,359 +1088,265 @@ public class Template {
     }
 
     /**
-     * This method is invoked to expand substitutions  that start with
+     * This method is invoked to parse substitutions that start with
      * {@code @name?}.
      * @param info                 Overall information about the template
-     *                             expansion.  This method appends text to
-     *                             info.out and sets info.end to the index
+     *                             being parsed. This method appends fragments
+     *                             to info.parse and sets info.end to the index
      *                             of the first character after the end of
-     *                             this substitution.  Info.missingInfo may
-     *                             also get set.
+     *                             this substitution.
      * @param name                 The name of the variable (everything
      *                             between the "@" and the "?").
      * @param start                Index in info.template of the character
      *                             just after the "?".
-     * @throws MissingValueError   Thrown if a data value couldn't be found
-     *                             and info.ignoreMissing is false.
      * @throws SyntaxError         The template contains an illegal construct.
      */
-    protected static void expandChoice(ParseInfo info, String name,
-            int start) throws MissingValueError, SyntaxError {
+    protected static void parseChoice(ParseInfo info, String name,
+            int start) throws SyntaxError {
+
+        flushText(info);
         CharSequence template = info.template;
-        if ((start >= info.templateEnd) || (template.charAt(start) != '{')) {
+        IdFragment nameFragment = new IdFragment(name);
+
+        if ((start >= info.template.length()) || (template.charAt(start) != '{')) {
             throw new SyntaxError("missing \"{\" after \"?\" " +
                     "in template \"" + template + "\"");
         }
-        int first = start + 1;
-        int second = skipTo(info, start, '|', '}');
-        if (second >= info.templateEnd) {
+
+        ParsedTemplate oldCache = info.parse;
+        ParsedTemplate cache1 = new ParsedTemplate();
+        info.parse = cache1;
+        parseTo(info, start + 1, "|", "}");
+        if (info.end >= info.template.length()) {
             throw new SyntaxError("incomplete @...?{...} substitution " +
                     "in template \"" + template + "\"");
         }
-        String value = findValue(info, name, false);
-        if (template.charAt(second) == '}') {
-            // This substitution has the form "@name?{template}".
-            if ((value != null) && (value.length() >0)) {
-                appendValue(info, name);
-            } else {
-                expandRange(info, first, second);
-            }
-            info.end = second+1;
-        } else {
-            // This substitution has the form "@name?{template1|template2}".
-            int third = skipTo(info, start, '}', '}');
-            if (third >= info.templateEnd) {
+
+        if (info.template.charAt(info.end) == '|') {
+            ParsedTemplate cache2 = new ParsedTemplate();
+            info.parse = cache2;
+
+            parseTo(info, info.end + 1, "}");
+
+            if (info.end == info.template.length()) {
                 throw new SyntaxError("incomplete @...?{...} substitution " +
                         "in template \"" + template + "\"");
             }
-            if ((value != null) && (value.length() >0)) {
-                expandRange(info, first, second);
-            } else {
-                expandRange(info, second+1, third);
-            }
-            info.end = third+1;
+            oldCache.addFragment(new ChoiceFragment(nameFragment, cache1, cache2));
+            info.end++;
+        } else {
+            oldCache.addFragment(new DefaultFragment(nameFragment, cache1));
+            info.end++;
         }
+
+
+        info.parse = oldCache;
     }
 
     /**
-     * This method is invoked to expand parenthesized names, such as
+     * This method is invoked to parse parenthesized names, such as
      * {@code @(@first+@second)}.
      * @param info                 Contains information about the template
-     *                             being expanded.  This method modifies
-     *                             info.out, info.missingInfo, and info.end.
-     *                             Info.end will be set to the index of
-     *                             the character just after the closing
-     *                             parenthesis.
+     *                             being parsed.  This method appends a
+     *                             fragment to info.parse. Info.end will
+     *                             be set to the index of the character just
+     *                             after the closing parenthesis.
      * @param start                Index of the character immediately after
      *                             the "@(".
-     * @throws MissingValueError   Thrown if a data value couldn't be found
-     *                             and info.ignoreMissing is false.
      * @throws SyntaxError         The template contains an illegal construct
      *                             such as {@code @+}.
      */
-    protected static void expandParenName(ParseInfo info, int start)
-            throws MissingValueError, SyntaxError {
-        // Note: we use info.out to collect the name of the dataset value,
-        // then erase this from info.out before appending the value.
-        int oldLength = info.out.length();
+    protected static void parseParenName(ParseInfo info, int start)
+            throws SyntaxError {
 
-        // While we are collecting the name, we don't want to do any
-        // special-character handling.  To accomplish this, temporarily
-        // change the encoding (then change it back before processing the
-        // final data value).
-        SpecialChars oldQuoting = info.quoting;
-        info.quoting = SpecialChars.NONE;
 
-        CharSequence template = info.template;
-        for (int i = start; i < info.templateEnd; ) {
-            char c = template.charAt(i);
-            if (c == '@') {
-                expandAtSign(info, i+1);
-                i = info.end;
-            } else if (c == ')') {
-                info.end = i+1;
-                String name = info.out.substring(oldLength);
-                info.out.setLength(oldLength);
-                info.quoting = oldQuoting;
-                appendValue(info, name);
-                return;
-            } else {
-                info.out.append(c);
-                i++;
-            }
+        ParsedTemplate oldCache = info.parse;
+        info.parse = new ParsedTemplate();
+
+        parseTo(info, start, ")");
+
+        if (info.end >= info.template.length()) {
+            throw new SyntaxError("missing \")\" for \"@(\" in template \""
+                                  + info.template + "\"");
         }
-        throw new SyntaxError("missing \")\" for \"@(\" in template \""
-                + info.template + "\"");
+        oldCache.addFragment(new IdFragment(info.parse));
+        info.end++;
+        info.parse = oldCache;
     }
 
     /**
-     * Given the name of a dataset element, this method appends the value
-     * of that element to the output string.
-     * @param info                 Contains information about the template
-     *                             being expanded.  This method modifies
-     *                             info.out and info.missingInfo.
-     * @param name                 Name of the desired dataset element.
-     * @throws MissingValueError   Thrown if the data value couldn't be found
-     *                             and info.ignoreMissing is false.
-     */
-    protected static void appendValue(ParseInfo info, String name)
-            throws MissingValueError {
-        String value;
-        if (info.skip) {
-            return;
-        }
-        if (info.ignoreMissing) {
-            value = findValue(info, name, false);
-            if ((value == null) || (value.length() == 0)) {
-                info.missingData = true;
-                return;
-            }
-        } else {
-            value = findValue(info, name, true);
-        }
-        if (info.currentQuoting == SpecialChars.HTML) {
-            Html.escapeHtmlChars(value, info.out);
-        } else if (info.currentQuoting == SpecialChars.JAVASCRIPT) {
-            Html.escapeStringChars(value, info.out);
-        } else if (info.currentQuoting == SpecialChars.URL) {
-            Html.escapeUrlChars(value, info.out);
-        } else if (info.currentQuoting == SpecialChars.NONE) {
-            info.out.append(value);
-        } else if (info.sqlParameters != null) {
-            // The template being expanded is an SQL query.  Substitute
-            // "?" into the query, and save the variable value so that
-            // the caller can add it to the SQL statement.
-            info.sqlParameters.add(value);
-            info.out.append("?");
-        } else {
-            throw new InternalError("unknown quoting value in " +
-                    "Template.appendValue");
-        }
-    }
-
-    /**
-     * This method is invoked to expand a portion of a template that
+     * This method is invoked to parse a portion of a template that
      * lies between double curly braces.
      * @param info                 Contains information about the template
-     *                             being expanded.  This method modifies
-     *                             info.out, info.missingInfo, and info.end.
-     *                             Info.end will be set to the index of
-     *                             the character just after the closing
-     *                             braces.
+     *                             being parsed.  This method appends a
+     *                             fragment to info.parse. Info.end will be set
+     *                             to the index of the character just after the
+     *                             closing braces.
      * @param start                Index of the character immediately after
      *                             the "{{".
      * @throws SyntaxError         The template is illegal, e.g. it doesn't
      *                             contain closing braces.
      */
-    protected static void expandBraces(ParseInfo info, int start)
+    protected static void parseBraces(ParseInfo info, int start)
             throws SyntaxError {
-        info.ignoreMissing = true;
-        info.missingData = false;
-        int oldEnd = info.out.length();
-        int oldSqlParametersSize = (info.sqlParameters != null) ?
-                info.sqlParameters.size() : 0;
         CharSequence template = info.template;
 
-        for (int i = start; i < info.templateEnd; ) {
-            char c = template.charAt(i);
-            if (c == '@') {
-                expandAtSign(info, i+1);
-                i = info.end;
-            } else if ((c == '}') && ((i+1) < info.templateEnd)
-                    && (template.charAt(i+1) == '}')) {
-                info.end = i+2;
-                if (info.missingData) {
-                    // Some of the required data was not available, so
-                    // undo all of the output we have generated.  Furthermore,
-                    // if omitting the material in braces results in redundant
-                    // spaces, then eliminate the space character on one side
-                    // of the braces.
+        flushText(info);
+        ParsedTemplate oldCache = info.parse;
+        info.parse = new ParsedTemplate();
 
-                    char next;
-                    int indexBeforeBraces = start-3;
+        parseTo(info, start, "}}");
 
-                    // If there is a space before the "{{" that hasn't already
-                    // been deleted and the character after the "}}" is
-                    // either a space, a close-delimiter such as ">", or the
-                    // end of the template, delete the space before the "{{".
-                    if (info.end < info.templateEnd) {
-                        next = template.charAt(info.end);
-                    } else {
-                        // The "}}" is at the end of the template, so pretend
-                        // the character after the "}}" is a close-delimiter.
-                        next = '>';
-                    }
-                    if ((info.lastDeletedSpace < indexBeforeBraces)
-                            && (template.charAt(indexBeforeBraces) == ' ')
-                            && ((next == ' ') || (next == ']')
-                            || (next == '>') || (next == '}')
-                            || (next == ')') || (next == '\"')
-                            || (next == '\''))) {
-                        info.lastDeletedSpace = indexBeforeBraces;
-                        oldEnd--;
-                    } else {
-                        // If there is a space after the "}}" and the
-                        // character before the "{{" is an open-delimiter
-                        // such as "<" or the beginning of the string, then
-                        // skip over the trailing space.
-                        char prev;
-                        if (start >= 3) {
-                            prev = template.charAt(indexBeforeBraces);
-                        } else {
-                            // The "{{" is at the beginning of the template,
-                            // so pretend the previous character is an
-                            // open-delimiter.
-                            prev = '<';
-                        }
-                        if ((next == ' ') && ((prev == '[')
-                                || (prev == '<') || (prev == '{')
-                                || (prev == '(') || (prev == '\"')
-                                || (prev == '\''))) {
-                            info.lastDeletedSpace = info.end;
-                            info.end++;
-                        }
-                    }
-                    info.out.setLength(oldEnd);
-                    if (info.sqlParameters != null) {
-                        for (int size = info.sqlParameters.size();
-                                size > oldSqlParametersSize; ) {
-                            size--;
-                            info.sqlParameters.remove(size);
-                        }
-                    }
-                }
-                info.ignoreMissing = false;
-                return;
-            } else {
-                info.out.append(c);
-                i++;
+        if (info.end >= info.template.length()) {
+            throw new SyntaxError("unmatched \"{{\" in template \""
+                                  + info.template + "\"");
+        }
+
+        oldCache.addFragment(new ConditionalFragment(info.parse));
+        info.end = info.end + 2;
+        info.parse = oldCache;
+        collapseSpaces(info, start);
+    }
+
+
+    /**
+     * Moves spaces and stuff
+     * @param info                 Contains information about the template
+     *                             being parsed.  This method appends a
+     *                             fragment to info.parse. Info.end will be set
+     *                             to the index of the character just after the
+     *                             closing braces.
+     *
+     * @param start                Position of character after last }
+     */
+    protected static void collapseSpaces(ParseInfo info, int start) {
+        char next;
+        int end = info.end;
+        if (end < info.template.length()) {
+            next = info.template.charAt(end);
+        } else {
+            // pretend the next character is a '>'
+            next = '>';
+        }
+
+        int indexBeforeBraces = start - 3;
+        char lastChar = 0;
+        if (indexBeforeBraces >= 0) {
+            lastChar = info.template.charAt(indexBeforeBraces);
+        } else {
+            lastChar = '<';
+        }
+
+        if ((info.lastDeletedSpace < indexBeforeBraces)
+            && (lastChar == ' ')
+            && ((next == ' ') || (next == ']')
+                || (next == '>') || (next == '}')
+                || (next == ')') || (next == '\"')
+                || (next == '\''))) {
+            info.lastDeletedSpace = indexBeforeBraces;
+            movePreceedingSpace(info);
+        } else {
+            // If there is a space after the "}}" and the
+            // character before the "{{" is an open-delimiter
+            // such as "<" or the beginning of the string, then
+            // skip over the trailing space.
+            if ((next == ' ') && ((lastChar == '[')
+                    || (lastChar == '<') || (lastChar == '{')
+                    || (lastChar == '(') || (lastChar == '\"')
+                    || (lastChar == '\''))) {
+                info.lastDeletedSpace = info.end;
+                moveTrailingSpace(info);
             }
         }
-        throw new SyntaxError("unmatched \"{{\" in template \""
-                + info.template + "\"");
     }
 
     /**
-     * This method is used to skip over parts of the template; it is
-     * used to parse parts of the template that may or may not actually
-     * be expanded.  Given a starting position, it scans forward to find
-     * the next unquoted character at this level that matches either of two
-     * input characters (characters that are part of a {@code @} or
-     * {@code {{...}} structure are skipped}.  This method does not
-     * reference any data values or copy any information to the output.
-     * @param info                 Information about the template
-     *                             expansion.
-     * @param start                First character to check for punctuation.
-     * @param c1                   Desired character: stop when this
-     *                             character is found.
-     * @param c2                   Another desired character: stop when this
-     *                             character is found.
-     * @return                     The index of the first unquoted character
-     *                             equal to c1 or c2, or info.templateEnd
-     *                             if no such character is found.
+     * Moves a space preceeding a ConditionalFragment into the Fragment
+     * @param info                 Contains information about the template
+     *                             being parsed.  This method appends a
+     *                             fragment to info.parse. Info.end will be set
+     *                             to the index of the character just after the
+     *                             closing braces.
      */
-    protected static int skipTo(ParseInfo info, int start, char c1,
-            char c2) {
-        CharSequence template = info.template;
+    protected static void movePreceedingSpace(ParseInfo info) {
+        ArrayList<Fragment> frags = info.parse.fragments;
+        ConditionalFragment last = ((ConditionalFragment) frags.get(frags.size()-1));
+        Fragment firstInBraces = null;
+        if (last.contents.fragments.size() > 0) {
+            firstInBraces = last.contents.fragments.get(0);
+        }
+
+        if (firstInBraces instanceof TextFragment) {
+            ((TextFragment) firstInBraces).text = " " + ((TextFragment) firstInBraces).text;
+        } else {
+            last.contents.fragments.add(0, new TextFragment(" "));
+        }
+
+        TextFragment withSpace = ((TextFragment) frags.get(frags.size()-2));
+        withSpace.text = withSpace.text.substring(0, withSpace.text.length() - 1);
+    }
+
+    /**
+     * Moves a space after a ConditionalFragment into the Fragment
+     * @param info                 Contains information about the template
+     *                             being parsed.  This method appends a
+     *                             fragment to info.parse. Info.end will be set
+     *                             to the index of the character just after the
+     *                             closing braces.
+     */
+    protected static void moveTrailingSpace(ParseInfo info) {
+        ArrayList<Fragment> frags = info.parse.fragments;
+        ConditionalFragment last = ((ConditionalFragment) frags.get(frags.size()-1));
+        Fragment lastInBraces = null;
+        if (last.contents.fragments.size() > 0) {
+            last.contents.fragments.get(last.contents.fragments.size()-1);
+        }
+
+        if (lastInBraces instanceof TextFragment) {
+            ((TextFragment) lastInBraces).text += " ";
+        } else {
+            last.contents.fragments.add(new TextFragment(" "));
+        }
+
+        info.end++;
+    }
+
+    /**
+     * Determines whether the current position in a string marks the beginning
+     * one of the delimiters.
+     *
+     * @param template        This string is searched for delimiters
+     * @param start           Current position in the string
+     * @param delimiters      List of delimiters to check for in {@code str}
+     */
+    protected static boolean foundDelimiter(CharSequence template, int start,
+                                            String ... delimiters) {
+        int charsLeft = template.length() - start;
         int i;
-
-        // This method invokes the same procedures that do actual
-        // expansions, except that (a) we set the "skip" flag to avoid
-        // some operations, and (b) we record some of the state of the
-        // expansion and restore it the end to cancel any other side
-        // effects.
-        boolean oldSkip = info.skip;
-        info.skip = true;
-        int oldLength = info.out.length();
-
-        for (i = start; i < info.templateEnd; ) {
-            char c = template.charAt(i);
-            if (c == '@') {
-                expandAtSign(info, i+1);
-                i = info.end;
-            } else if ((c == '{') && ((i+1) < info.templateEnd)
-                    && (template.charAt(i+1) == '{')) {
-                expandBraces(info, i+2);
-                i = info.end;
-            } else if ((c == c1) || (c == c2)) {
-                break;
-            } else {
-                i++;
+        for (String delimiter : delimiters) {
+            int len = delimiter.length();
+            for (i = 0; i < len && i < charsLeft; i++) {
+                if (template.charAt(start + i) != delimiter.charAt(i)) {
+                        break;
+                }
+            }
+            if (i == len) {
+                return true;
             }
         }
-
-        // Discard anything that was appended to the output during this
-        // method and restore the other state that we saved.
-        info.out.setLength(oldLength);
-        info.skip = oldSkip;
-        return i;
+        return false;
     }
 
     /**
-     * Given the name of a value to be substituted, find the value.  In
-     * addition to returning the value, this method sets info.currentQuoting
-     * to indicate the appropriate form of special character handling to use
-     * for this value.
-     * @param info                 Information about the template
-     *                             expansion.
-     * @param name                 Name of the desired value.
-     * @param required             True means throw an error if the value
-     *                             can't be found
-     * @return                     The value corresponding to {@code name}.
-     * @throws MissingValueError   The desired value could not be found
-     *                             and {@code requaired} was true.
+     * Creates and appends a TextFragment to the current list of fragments.
+     * @param info            Contains information about the template being
+     *                        parsed.
      */
-    protected static String findValue(ParseInfo info, String name,
-            boolean required) throws MissingValueError {
-
-        // If there is indexed data in this expansion and the name is an
-        // integer, use an indexed value if there is one corresponding to
-        // the name.
-        if (info.indexedData != null) {
-            try {
-                int index = Integer.parseInt(name);
-                if ((index >= 1) && (index <= info.indexedData.length)) {
-                    info.currentQuoting = info.indexedQuoting;
-                    Object value = info.indexedData[index-1];
-                    if (value != null) {
-                        return value.toString();
-                    }
-                }
-            }
-            catch (NumberFormatException e) {
-                // The name isn't a number, so move on and try the dataset.
-            }
+    protected static void flushText(ParseInfo info) {
+        if (info.text.length() > 0) {
+            info.parse.addFragment(new TextFragment(info.text.toString()));
         }
-
-        String result = null;
-        if (info.data != null) {
-            info.currentQuoting = info.quoting;
-            result = info.data.checkString(name);
-        }
-        if ((result != null) || !required) {
-            return result;
-        }
-        throw new MissingValueError("missing value \"" + name + "\" " +
-                "in template \"" + info.template + "\"");
+        info.text.setLength(0);
     }
+
 }
