@@ -277,11 +277,11 @@ public class Template {
         }
 
         /**
-         * Finds and quotes a value from a dataset or indexed data
+         * Finds a value from a dataset or indexed data
          * @param info         Information describing the current expansion
          * @param required     If true, throws a MissingValueError if the
          *                     request value cannot be found
-         * @return             The quoted valued associated with this fragment
+         * @return             The value from the dataset or indexed data
          */
         public String findValue(ExpandInfo info, boolean required) {
             String tmpName = this.name;
