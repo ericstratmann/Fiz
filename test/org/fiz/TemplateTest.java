@@ -766,6 +766,18 @@ public class TemplateTest extends junit.framework.TestCase {
         assertEquals("don't remove spaces", ") + b> + y",
                 out.toString());
     }
+    /*
+    public void test_collapseSpaces_atExpansionTime() {
+        out.setLength(0);
+        Template.appendHtml(out, "<{{@a}} {{@x}}>", new Dataset("a", "y"));
+        assertEquals("brackets on the left stay", "<y>",
+                out.toString());
+        out.setLength(0);
+        Template.appendHtml(out, "<{{@x}} {{@a}}>", new Dataset("a", "y"));
+        assertEquals("brackets on the right stay", "<y>",
+                out.toString());
+    }
+    */
     public void test_collapseSpaces_trailingSpace() {
         Dataset data = new Dataset();
         StringBuilder out = new StringBuilder();
