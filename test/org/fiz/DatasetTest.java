@@ -38,7 +38,8 @@ public class DatasetTest extends junit.framework.TestCase {
         assertTrue("int constructor", new Dataset.DSArrayList(5)
                    instanceof ArrayList);
         assertTrue("collection constructor",
-                   new Dataset.DSArrayList(new HashSet()) instanceof ArrayList);
+                   new Dataset.DSArrayList<Object>(new HashSet<Object>())
+                   instanceof ArrayList);
     }
 
     public void test_MissingValueError() {
@@ -952,11 +953,12 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("[hi, bye]", ret.toString());
     }
 
+    @SuppressWarnings("unchecked")
     public void test_appendValue_array() {
-        ArrayList array = new Dataset.DSArrayList();
+        ArrayList<Object> array = new Dataset.DSArrayList<Object>();
         array.add("hi");
         array.add("bye");
-        ArrayList ret = (ArrayList) Dataset.appendValue(array, "hello");
+        ArrayList ret = (ArrayList<Object>) Dataset.appendValue(array, "hello");
         assertEquals("[hi, bye, hello]", ret.toString());
     }
 

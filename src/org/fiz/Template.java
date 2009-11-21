@@ -452,7 +452,7 @@ public class Template {
         protected SpecialChars quoting;
         // If we are expanding for a SQL query, values are added here instead
         // of being substituted in the template
-        protected ArrayList sqlParameters;
+        protected ArrayList<String> sqlParameters;
         // Dataset of values to substitute
         protected Dataset data;
         // Indexed data to substitute

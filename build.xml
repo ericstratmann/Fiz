@@ -28,7 +28,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
         <!-- Compile the sources -->
         <mkdir dir="${classdir}" />
         <javac srcdir="src" destdir="${classdir}"
-        classpathref="classpath" debug="on"/>
+        classpathref="classpath" debug="on">
+			<compilerarg value="-Xlint:unchecked"/>
+		</javac>
         <!-- Create the jar file for these tools -->
         <mkdir dir="${genlibdir}" />
         <jar destfile="${genlibdir}/fiz.jar" basedir="${classdir}" />
@@ -38,6 +40,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
         <mkdir dir="${testclassdir}" />
         <javac destdir="${testclassdir}" srcdir="test" debug="on">
             <classpath refid="classpath.test" />
+			<compilerarg value="-Xlint:unchecked"/>
         </javac>
     </target>
 

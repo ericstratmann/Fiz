@@ -79,7 +79,7 @@ public class Dataset implements Cloneable, Serializable {
             super(size);
         }
 
-        protected DSArrayList(Collection c) {
+        protected DSArrayList(Collection<E> c) {
             super(c);
         }
     }
@@ -212,7 +212,7 @@ public class Dataset implements Cloneable, Serializable {
     // HashMap<String,Object>; unfortunately that won't work, because
     // we use JYaml to read YAML datasets directly into the map and JYaml
     // declares its HashMaps without the <String,Object>.
-    protected HashMap map;
+    protected HashMap<String,Object> map;
 
     // If this dataset originated in a file the following variable contains
     // the name of the file; otherwise it is null.  Used for error messages.
@@ -238,7 +238,7 @@ public class Dataset implements Cloneable, Serializable {
      * Construct an empty dataset.
      */
     public Dataset() {
-        map = new HashMap();
+        map = new HashMap<String,Object>();
     }
 
     /**
@@ -252,9 +252,8 @@ public class Dataset implements Cloneable, Serializable {
      *                             same name, use multiple key/value pairs
      *                             with the same key.
      */
-    @SuppressWarnings("unchecked")
     public Dataset(Object... keysAndValues) {
-        map = new HashMap();
+        map = new HashMap<String,Object>();
         int last = keysAndValues.length - 2;
         for (int i = 0; i <= last; i += 2) {
             String key = (String) keysAndValues[i];
@@ -272,7 +271,7 @@ public class Dataset implements Cloneable, Serializable {
      *                             gives the file name (if known); otherwise
      *                             this is null.
      */
-    protected Dataset(HashMap contents, String fileName) {
+    protected Dataset(HashMap<String,Object> contents, String fileName) {
         map = contents;
         this.fileName = fileName;
     }
@@ -602,6 +601,7 @@ public class Dataset implements Cloneable, Serializable {
      * @return           A dataset with the values in the current dataset
      *                   copied into it.
      */
+    @SuppressWarnings("unchecked")
     public Dataset clone(Dataset dest) {
         if (dest == null) {
             dest = new Dataset();
@@ -612,12 +612,11 @@ public class Dataset implements Cloneable, Serializable {
         // Each iteration through the following loop copies one key-value
         // pair from source to dest; it will invoke this method recursively
         // to copy the contents of nested datasets.
-        for (Map.Entry<String,Object> pair :
-                 ((HashMap<String,Object>) map).entrySet()) {
+        for (Map.Entry<String,Object> pair : map.entrySet()) {
             Object value = pair.getValue();
             if (value instanceof DSArrayList) {
-                DSArrayList sourceList = (DSArrayList) value;
-                DSArrayList destList = new DSArrayList(sourceList.size());
+                DSArrayList<Object> sourceList = (DSArrayList<Object>) value;
+                DSArrayList<Object> destList = new DSArrayList<Object>(sourceList.size());
                 for (Object value2 : sourceList) {
                     if (value2 instanceof Dataset) {
                         destList.add(((Dataset) value2).clone());
@@ -845,8 +844,9 @@ public class Dataset implements Cloneable, Serializable {
      * @return                         Array or values associated with
      *                                 {@code keyOrPath}.
      */
+    @SuppressWarnings("unchecked")
     public ArrayList<Object> getList(String keyOrPath) {
-        ArrayList<Object> list = (ArrayList) lookup(keyOrPath, Quantity.ALL);
+        ArrayList<Object> list = (ArrayList<Object>) lookup(keyOrPath, Quantity.ALL);
         return (ArrayList<Object>) list.clone();
     }
 
@@ -860,8 +860,9 @@ public class Dataset implements Cloneable, Serializable {
      * @throws InvalidConversionError  Thrown if any of the values cannot be
      *                                 converted to a bool.
      */
+    @SuppressWarnings("unchecked")
     public ArrayList<Boolean> getBoolList(String keyOrPath) {
-        ArrayList<Object> list = (ArrayList) lookup(keyOrPath, Quantity.ALL);
+        ArrayList<Object> list = (ArrayList<Object>) lookup(keyOrPath, Quantity.ALL);
         ArrayList<Boolean> boolList = new ArrayList<Boolean>();
 
         for (Object item : list) {
@@ -885,8 +886,9 @@ public class Dataset implements Cloneable, Serializable {
      * @throws InvalidConversionError  Thrown if any of the values cannot be
      *                                 converted to a Dataset.
      */
+    @SuppressWarnings("unchecked")
     public ArrayList<Dataset> getDatasetList(String keyOrPath) {
-        ArrayList<Object> list = (ArrayList) lookup(keyOrPath, Quantity.ALL);
+        ArrayList<Object> list = (ArrayList<Object>) lookup(keyOrPath, Quantity.ALL);
         ArrayList<Dataset> datasetList = new ArrayList<Dataset>();
 
         for (Object item : list) {
@@ -910,8 +912,9 @@ public class Dataset implements Cloneable, Serializable {
      * @throws InvalidConversionError  Thrown if any of the values cannot be
      *                                 converted to an int.
      */
+    @SuppressWarnings("unchecked")
     public ArrayList<Integer> getIntList(String keyOrPath) {
-        ArrayList<Object> list = (ArrayList) lookup(keyOrPath, Quantity.ALL);
+        ArrayList<Object> list = (ArrayList<Object>) lookup(keyOrPath, Quantity.ALL);
         ArrayList<Integer> intList = new ArrayList<Integer>(3);
 
         for (Object item : list) {
@@ -935,8 +938,9 @@ public class Dataset implements Cloneable, Serializable {
      * @throws InvalidConversionError  Thrown if any of the values cannot be
      *                                 converted to a double.
      */
+    @SuppressWarnings("unchecked")
     public ArrayList<Double> getDoubleList(String keyOrPath) {
-        ArrayList<Object> list = (ArrayList) lookup(keyOrPath, Quantity.ALL);
+        ArrayList<Object> list = (ArrayList<Object>) lookup(keyOrPath, Quantity.ALL);
         ArrayList<Double> doubleList = new ArrayList<Double>(3);
 
         for (Object item : list) {
@@ -960,8 +964,9 @@ public class Dataset implements Cloneable, Serializable {
      * @throws InvalidConversionError  Thrown if any of the values cannot be
      *                                 converted to a String.
      */
+    @SuppressWarnings("unchecked")
     public ArrayList<String> getStringList(String keyOrPath) {
-        ArrayList<Object> list = (ArrayList) lookup(keyOrPath, Quantity.ALL);
+        ArrayList<Object> list = (ArrayList<Object>) lookup(keyOrPath, Quantity.ALL);
         ArrayList<String> stringList = new ArrayList<String>(3);
 
         for (Object item : list) {
@@ -976,7 +981,6 @@ public class Dataset implements Cloneable, Serializable {
      * @return                     All of the keys at the top level of
      *                             the dataset.
      */
-    @SuppressWarnings("unchecked")
     public Set<String> keySet() {
         return map.keySet();
     }
@@ -990,6 +994,7 @@ public class Dataset implements Cloneable, Serializable {
      * @param out                  A description of the dataset is
      *                             appended here.
      */
+    @SuppressWarnings("unchecked")
     public void serialize(StringBuilder out) {
         // Here is the grammar for the serialized representation of
         // a dataset.  The basic idea is to use run-length encoding,
@@ -1009,7 +1014,7 @@ public class Dataset implements Cloneable, Serializable {
         // 8.children(4.name5.Alice)(4.name3.Bob)(4.name5.Carol))
         out.append('(');
         String prefix = "";
-        Collection keySet = map.keySet();
+        Collection<String> keySet = map.keySet();
         if (sortOutput) {
             keySet = new TreeSet<String>(keySet);
         }
@@ -1094,10 +1099,11 @@ public class Dataset implements Cloneable, Serializable {
      * @param out                  The Javascript is appended to this
      *                             StringBuilder.
      */
+    @SuppressWarnings("unchecked")
     public void toJavascript(StringBuilder out) {
         out.append('{');
         String prefix = "";
-        Collection keySet = keySet();
+        Collection<String> keySet = keySet();
         if (sortOutput) {
             keySet = new TreeSet<String>(keySet);
         }
@@ -1167,13 +1173,14 @@ public class Dataset implements Cloneable, Serializable {
      * @param old        Either null, an object, or a DSArrayList of objects
      * @param value      Appended to old
      */
+    @SuppressWarnings("unchecked")
     protected static Object appendValue(Object old, Object value) {
         if (old != null)  {
-            DSArrayList array;
+            DSArrayList<Object> array;
             if (old instanceof DSArrayList) {
-                array = (DSArrayList) old;
+                array = (DSArrayList<Object>) old;
             } else {
-                array = new DSArrayList(3);
+                array = new DSArrayList<Object>(3);
                 array.add(old);
             }
             array.add(value);
@@ -1317,6 +1324,7 @@ public class Dataset implements Cloneable, Serializable {
      *                             the return value is a DSArrayList, containing
      *                             all matches.
      */
+    @SuppressWarnings("unchecked")
     protected Object lookup(String keyOrPath, Quantity quantity) {
         Object value = map.get(keyOrPath);
 
@@ -1330,7 +1338,7 @@ public class Dataset implements Cloneable, Serializable {
             } else if (value instanceof DSArrayList) {
                 return value;
             } else {
-                DSArrayList array = new DSArrayList();
+                DSArrayList<Object> array = new DSArrayList<Object>();
                 array.add(value);
                 return array;
             }
@@ -1338,7 +1346,7 @@ public class Dataset implements Cloneable, Serializable {
             if (value == null) {
                 return null;
             } else if (value instanceof DSArrayList) {
-                return ((DSArrayList) value).get(0);
+                return ((DSArrayList<Object>) value).get(0);
             } else {
                 return value;
             }
@@ -1363,7 +1371,6 @@ public class Dataset implements Cloneable, Serializable {
      *                             corresponding to {@code path}, or null
      *                             if the parent doesn't exist.
      */
-    @SuppressWarnings("unchecked")
     protected ParentInfo lookupParent(String path, boolean create) {
         int startIndex = 0;
         Dataset parent = this;
@@ -1458,7 +1465,7 @@ public class Dataset implements Cloneable, Serializable {
                 return nextObject;
             } else {
                 if (nextObject instanceof DSArrayList) {
-                    results.addAll((DSArrayList) nextObject);
+                    results.addAll((DSArrayList<ArrayList>) nextObject);
                 } else {
                     results.add(nextObject);
                 }

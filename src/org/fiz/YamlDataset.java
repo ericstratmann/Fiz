@@ -35,7 +35,7 @@ public class  YamlDataset extends Dataset {
      * @param fileName             Name of the file from which this dataset
      *                             was read, or null if none.
      */
-    private YamlDataset(HashMap contents, String fileName) {
+    private YamlDataset(HashMap<String,Object> contents, String fileName) {
         super(contents, fileName);
     }
 
@@ -49,8 +49,7 @@ public class  YamlDataset extends Dataset {
             throws SyntaxError {
         try {
             Object yamlInfo = Yaml.load(s);
-            checkAndConvert(yamlInfo, null);
-            return new YamlDataset((HashMap) yamlInfo, null);
+            return checkAndConvert(yamlInfo, null);
         }
         catch (YamlException e) {
             throw new SyntaxError(null, e.getMessage());
@@ -93,8 +92,8 @@ public class  YamlDataset extends Dataset {
             }
             catch (Exception e) { /* Ignore errors during the close */ }
         }
-        checkAndConvert(yamlInfo, fileName);
-        return new YamlDataset((HashMap) yamlInfo, fileName);
+
+        return checkAndConvert(yamlInfo, fileName);
     }
 
     /**
@@ -346,36 +345,41 @@ public class  YamlDataset extends Dataset {
      */
 
     @SuppressWarnings("unchecked")
-    protected static void checkAndConvert(Object yamlInfo, String fileName) {
-        HashMap dataset;
+    protected static YamlDataset checkAndConvert(Object yamlInfo, String fileName) {
+        HashMap<String,Object> hash;
         if (yamlInfo instanceof HashMap == false) {
-            return;
+            return null;
         } else {
-            dataset = (HashMap) yamlInfo;
+            hash = (HashMap) yamlInfo;
         }
-        for (Map.Entry<String,Object> pair :
-                ((HashMap<String,Object>) dataset).entrySet()) {
+        YamlDataset dest = new YamlDataset(new HashMap<String,Object>(), fileName);
+        for (Map.Entry<String,Object> pair : hash.entrySet()) {
+            String key = pair.getKey();
             Object value = pair.getValue();
             if (value instanceof HashMap) {
-                checkAndConvert(value, fileName);
-                pair.setValue(new Dataset((HashMap) value, fileName));
+                Dataset child = checkAndConvert(value, fileName);
+                dest.set(key, child);
             } else if (value instanceof ArrayList) {
-                ArrayList list = (ArrayList) value;
+                ArrayList<Object> list = (ArrayList<Object>) value;
                 for (Object value2 : list) {
-                   checkAndConvert(value2, fileName);
-                   if (value2 instanceof HashMap) {
-                       list.set(list.indexOf(value2),
-                                new Dataset((HashMap) value2, fileName));
-                   }
+                    if (value2 instanceof HashMap) {
+                        Dataset child = checkAndConvert(value2, fileName);
+                        list.set(list.indexOf(value2), child);
+                    } else {
+                        checkAndConvert(value2, fileName);
+                    }
                 }
-                pair.setValue(new DSArrayList((ArrayList) value));
+                dest.set(key, new DSArrayList<Object>((ArrayList<Object>) value));
             } else if (value == null) {
                 // This seems to happen if a hash is specified with
                 // no members (e.g., " child:" on one line, and no
                 // following lines containing members).  Create an empty
                 // Dataset for this.
-                pair.setValue (new Dataset());
+                dest.set(key, new Dataset());
+            } else {
+                dest.set(key, value);
             }
         }
+        return dest;
     }
 }

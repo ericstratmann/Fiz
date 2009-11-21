@@ -44,7 +44,7 @@ public class XmlDataset extends Dataset {
      * @param fileName             Name of the file from which this dataset
      *                             was read, or null if none.
      */
-    private XmlDataset(HashMap contents, String fileName) {
+    private XmlDataset(HashMap<String,Object> contents, String fileName) {
         super(contents, fileName);
     }
 
@@ -251,7 +251,7 @@ public class XmlDataset extends Dataset {
             } else {
                 parser.reset();
             }
-            XmlDataset dataset = new XmlDataset(new HashMap(), fileName);
+            XmlDataset dataset = new XmlDataset(new HashMap<String, Object>(), fileName);
             XmlDatasetSAXHandler handler = new XmlDatasetSAXHandler(dataset);
             if (fileName != null) {
                 parser.parse(new File(fileName), handler);

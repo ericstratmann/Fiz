@@ -345,6 +345,7 @@ public class CompoundDataset extends Dataset {
      *                             all matches.
      */
     @Override
+    @SuppressWarnings("unchecked")
     protected Object lookup(String keyOrPath, Quantity quantity) {
         Object result;
         DSArrayList<Object> out = null;
@@ -361,7 +362,7 @@ public class CompoundDataset extends Dataset {
                 }
                 foundAny = true;
                 if (result instanceof DSArrayList) {
-                    out.addAll((DSArrayList) result);
+                    out.addAll((DSArrayList<Object>) result);
                 } else {
                     out.add(result);
                 }

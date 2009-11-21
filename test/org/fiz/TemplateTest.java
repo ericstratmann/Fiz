@@ -26,12 +26,12 @@ public class TemplateTest extends junit.framework.TestCase {
     Dataset data;
     Template.ExpandInfo info;
     Template.TextFragment text = new Template.TextFragment("hello");
-    ArrayList list = new ArrayList();
+    ArrayList<Template.Fragment> list;
     Template.ParsedTemplate parsed;
     Template.SpecialChars none = Template.SpecialChars.NONE;
 
     public void setUp() {
-        list = new ArrayList();
+        list = new ArrayList<Template.Fragment>();
         list.add(text);
         parsed  = new Template.ParsedTemplate(list);
         out = new StringBuilder();
@@ -222,7 +222,7 @@ public class TemplateTest extends junit.framework.TestCase {
     }
     public void test_ChoiceFragment() {
         text = new Template.TextFragment("goodbye");
-        ArrayList list2 = new ArrayList();
+        ArrayList<Template.Fragment> list2 = new ArrayList<Template.Fragment>();
         list2.add(text);
         Template.ParsedTemplate cache2 = new Template.ParsedTemplate(list2);
 
@@ -245,7 +245,7 @@ public class TemplateTest extends junit.framework.TestCase {
 
         // make sure it doesn't just wipe out the string builder
         out.setLength(2);
-        list = new ArrayList();
+        list = new ArrayList<Template.Fragment>();
         Template.IdFragment id = new Template.IdFragment("bogus");
         list.add(id);
         parsed = new Template.ParsedTemplate(list);
