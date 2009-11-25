@@ -122,6 +122,26 @@ class PageState implements Serializable {
     }
 
     /**
+     * Rewrites the entire contents of this PageState, as well as all other 
+     * PageState objects, into the session.  This is necessary to make 
+     * PageProperties work in GoogleAppEngine, where the introspection into 
+     * modified session-bound objects is not sufficient to detect all the nested
+     * changes occurring within PageState and any subsidiary objects it may 
+     * contain.
+     * @param cr                   The ClientRequest containing the session to 
+     *                             which all PageState will be rewritten.
+     */
+    public void flushPageState(ClientRequest cr) {
+        HttpSession session = cr.servletRequest.getSession(true);
+        AllPageInfo info = (AllPageInfo)session.getAttribute("fiz.PageState");
+        if (info == null) {
+            info = new AllPageInfo();
+        }
+        info.put(cr.getPageId(), this);
+        session.setAttribute("fiz.PageState", info);
+    }
+
+    /**
      * Returns a page property associated with this page.
      * @param name                 Name of the desired property.
      * @return                     If a property named {@code name} has

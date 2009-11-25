@@ -15,6 +15,8 @@
 
 package org.fiz;
 
+import java.io.Serializable;
+
 /**
  * The Convert class is used to convert objects from one class to another,
  * if such a conversion is appropriate. For instance, converting the string
@@ -29,7 +31,7 @@ public final class Convert {
      * successful. This should be passed in to every method in this class, and
      * the method will modify it appropriately.
      */
-    public static class Success {
+    public static class Success implements Serializable {
         protected boolean success;
 
         public void Success() {}

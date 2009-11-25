@@ -17,6 +17,7 @@ package org.fiz;
 
 import java.io.*;
 import java.util.*;
+
 import javax.crypto.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -138,7 +139,7 @@ public class ClientRequest {
     // provided to this request.  The key for each entry is the name
     // of a form element, and the value is a handle for the uploaded
     // file provided for that form element.
-    protected HashMap<String,FileItem> uploads = null;
+    protected HashMap<String,FileUpload> uploads = null;
 
     // The following table each track of all named DataRequests.  Keys
     // are the names passed to {@code addDataRequest}, and the values
@@ -190,6 +191,18 @@ public class ClientRequest {
     // instead a single fixed signature (so that tests don't have to
     // worry about the signature being different every round).
     protected boolean testMode = false;
+
+    // The following variable is set to true when Google AppEngine is 
+    // running the application.
+    protected boolean googleAppEngine = Config.get("main", 
+            "googleAppEngine").equals("1");
+    
+    // The following variable is set to true when the server running 
+    // the application permits filesystem access - when it does not, 
+    // as is the case with the Google AppEngine server, it should be 
+    // set to false.
+    protected boolean serverFileAccess = !googleAppEngine && Config.get("main", 
+            "serverFileAccess").equals("1");
 
     // The following variable is set to true during most tests; this
     // causes automatic checks of the authentication token to be skipped.
@@ -361,11 +374,15 @@ public class ClientRequest {
      * to complete the transmission of the response back to the client.
      */
     public void finish() {
+        if (pageState != null && googleAppEngine) {
+            pageState.flushPageState(this);
+        }
+        
         // Cleanup any uploaded files (this frees temporary file space
         // allocated for uploads faster than waiting for garbage collection).
-        if (uploads != null) {
-            for (FileItem upload: uploads.values()) {
-                upload.delete();
+        if (uploads != null && serverFileAccess) {
+            for (FileUpload upload: uploads.values()) {
+                upload.getFileItem().delete();
             }
         }
 
@@ -561,23 +578,26 @@ public class ClientRequest {
         // session running concurrently, so synchronization is needed
         // here.
         synchronized(session) {
-            Object o = session.getAttribute("fiz.mac");
-            if (o != null) {
-                return (Mac) o;
-            }
-
-            // This is the first time we have needed a Mac object in this
-            // session, so we have to create a new one.  First generate a
-            // secret key for HMAC-MD5.
             try {
-                KeyGenerator kg = KeyGenerator.getInstance("HmacSHA256");
-                SecretKey sk = kg.generateKey();
-
-                // Create a Mac object implementing HMAC-MD5, and
-                // initialize it with the above secret key.
                 Mac mac = Mac.getInstance("HmacSHA256");
+                SecretKey sk = null;
+                
+                Object o = session.getAttribute("fiz.mac.sk");
+                if (o != null) {
+                    sk = (SecretKey) o;
+                } else {
+                    // This is the first time we have needed a Mac object in 
+                    // this session, so we have to create a new secret key to 
+                    // use.  NOTE: we store a SecretKey in the session instead 
+                    // of a Mac because SecretKey is Serializable, and because 
+                    // GoogleAppEngine only permits Serializable objects to be 
+                    // written to the session.
+                    KeyGenerator kg = KeyGenerator.getInstance("HmacSHA256");
+                    sk = kg.generateKey();
+                    session.setAttribute("fiz.mac.sk", sk);
+                }
+
                 mac.init(sk);
-                session.setAttribute("fiz.mac", mac);
                 return mac;
             } catch (Exception e) {
                 throw new InternalError(
@@ -753,7 +773,7 @@ public class ClientRequest {
      *                             request doesn't include an uploaded file
      *                             corresponding to {@code fieldName}.
      */
-    public FileItem getUploadedFile(String fieldName) {
+    public FileUpload getUploadedFile(String fieldName) {
         if (!requestDataProcessed) {
             readRequestData();
         }
@@ -770,6 +790,15 @@ public class ClientRequest {
      */
     public boolean isAjax() {
         return (requestType == Type.AJAX);
+    }
+
+    /**
+     * Returns true if the server running this application permits 
+     * filesystem access (not the case for Google AppEngine).
+     * @return
+     */
+    public boolean isFileAccessPermitted() {
+        return serverFileAccess;
     }
 
     /**
@@ -852,12 +881,12 @@ public class ClientRequest {
         if (uploads == null) {
             return false;
         }
-        FileItem upload = uploads.get(fieldName);
-        if (upload == null) {
+        FileUpload upload = uploads.get(fieldName);
+        if (upload == null || !serverFileAccess) {
             return false;
         }
         try {
-            upload.write(new File(dest));
+            upload.getFileItem().write(new File(dest));
         }
         catch (Exception e) {
             throw new Error("I/O error saving uploaded file for \"" +
@@ -1133,6 +1162,42 @@ public class ClientRequest {
             }
         }
     }
+    
+    /**
+     * This method is invoked on a single FileUpload item coming from a 
+     * multipart form data submission.  Data for basic form fields is copied to
+     * the main dataset.  For uploaded files, information is saved as 
+     * FileUploads in {@code uploads}, for use by other methods.
+     * @param item
+     */
+    protected void readFileUpload(FileUpload item) {
+        if (item.isFormField()) {
+            // This is a simple string-valued field; add it to
+            // the main dataset.  If there are multiple values
+            // with the same name, store them as a collection
+            // of child datasets, each with a single "value"
+            // element.
+            String name = item.getFieldName();
+            Object existing = mainDataset.check(name);
+            if (existing == null) {
+                mainDataset.set(name, item.getString());
+            } else {
+                if (existing instanceof Dataset == false) {
+                    // Must convert the existing string value to
+                    // a nested dataset.
+                    mainDataset.set(name, new Dataset("value",  existing));
+                }
+                mainDataset.add(name, new Dataset("value", item.getString()));
+            }
+        } else {
+            // This is an uploaded file.  Save information about
+            // the file in {@code uploads}.
+            if (uploads == null) {
+                uploads = new HashMap<String,FileUpload>();
+            }
+            uploads.put(item.getFieldName(), item);
+        }
+    }
 
     /**
      * This method is invoked to parse multipart form data coming
@@ -1141,63 +1206,65 @@ public class ClientRequest {
      * in {@code uploads} for use by other methods.
      */
     protected void readMultipartFormData() {
-        DiskFileItemFactory factory = new DiskFileItemFactory();
-        String tempDir = Config.getDataset("main").checkString("uploadTempDirectory");
-        if (tempDir != null) {
-            factory.setRepository(new File(tempDir));
-        }
-        if (testSizeThreshold != 0) {
-            factory.setSizeThreshold(testSizeThreshold);
-        }
-        ServletFileUpload upload = new ServletFileUpload(factory);
-        String maxSize = Config.getDataset("main").checkString("uploadMaxSize");
-        if (maxSize != null) {
-            try {
-                upload.setFileSizeMax(new Long(maxSize));
-            }
-            catch (NumberFormatException e) {
-                throw new InternalError(String.format(
-                        "uploadMaxSize element in main configuration " +
-                        "dataset has bad value \"%s\": must be an integer",
-                        maxSize));
-            }
-        }
         try {
-            for (Object o: upload.parseRequest(servletRequest)) {
-                FileItem item = (FileItem) o;
-                if (item.isFormField()) {
-                    // This is a simple string-valued field; add it to
-                    // the main dataset.  If there are multiple values
-                    // with the same name, store them as a collection
-                    // of child datasets, each with a single "value"
-                    // element.
-                    String name = item.getFieldName();
-                    Object existing = mainDataset.check(name);
-                    if (existing == null) {
-                        mainDataset.set(name, item.getString());
-                    } else {
-                        if (existing instanceof Dataset == false) {
-                            // Must convert the existing string value to
-                            // a nested dataset.
-                            mainDataset.set(name, new Dataset(
-                                    "value",  existing));
-                        }
-                        mainDataset.add(name, new Dataset(
-                                "value", item.getString()));
+            if (serverFileAccess) {
+                // If the server permits filesystem access, create a series 
+                // of on-disk FileItems (FileItem representations).
+                DiskFileItemFactory factory = new DiskFileItemFactory();
+                String tempDir = Config.getDataset("main").checkString(
+                        "uploadTempDirectory");
+                if (tempDir != null) {
+                    factory.setRepository(new File(tempDir));
+                }
+                if (testSizeThreshold != 0) {
+                    factory.setSizeThreshold(testSizeThreshold);
+                }
+                ServletFileUpload upload = new ServletFileUpload(factory);
+                String maxSize = Config.getDataset("main").checkString(
+                        "uploadMaxSize");
+                if (maxSize != null) {
+                    try {
+                        upload.setFileSizeMax(new Long(maxSize));
                     }
-                } else {
-                    // This is an uploaded file.  Save information about
-                    // the file in {@code uploads}.
-                    if (uploads == null) {
-                        uploads = new HashMap<String,FileItem>();
+                    catch (NumberFormatException e) {
+                        throw new InternalError(String.format("uploadMaxSize " +
+                                "element in main configuration dataset has " +
+                                "bad value \"%s\": must be an integer",
+                                maxSize));
                     }
-                    uploads.put(item.getFieldName(), item);
+                }
+                try {
+                    for (Object o: upload.parseRequest(servletRequest)) {
+                        FileItem item = (FileItem) o;
+                        // Read and process the content of the FileUpload.
+                        readFileUpload(new FileUpload(item));
+                    }
+                }
+                catch (FileUploadBase.FileSizeLimitExceededException e) {
+                    throw new UserError(String.format("uploaded file " +
+                            "exceeded length limit of %d bytes", 
+                            upload.getFileSizeMax()));
+                }
+            } else {
+                // If the server does not permit filesystem access, create a 
+                // series of in-memory FileUploads (FileItemStream 
+                // representations).
+                try {
+                    ServletFileUpload upload = new ServletFileUpload();
+                    FileItemIterator iter = upload.getItemIterator(
+                            servletRequest);
+                    while (iter.hasNext()) {
+                        FileItemStream item = iter.next();
+                        // Read and process the content of the FileUpload.
+                        readFileUpload(new FileUpload(item));
+                    }
+                }
+                catch (IOException e) {
+                    throw new InternalError("error iterating over uploaded " +
+                            "FileItemStreams: " + StringUtil.lcFirst(
+                                    e.getMessage()));
                 }
             }
-        }
-        catch (FileUploadBase.FileSizeLimitExceededException e) {
-            throw new UserError(String.format("uploaded file exceeded " +
-                    "length limit of %d bytes", upload.getFileSizeMax()));
         }
         catch (FileUploadException e) {
             throw new InternalError("error reading multi-part form data: " +

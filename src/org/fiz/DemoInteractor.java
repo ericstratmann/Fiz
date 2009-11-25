@@ -31,8 +31,8 @@ public class DemoInteractor extends Interactor {
 
     // The following beans allow us to collect execution time information
     // from all of the various garbage collectors.
-    List<GarbageCollectorMXBean> beans =
-        ManagementFactory.getGarbageCollectorMXBeans();
+//    List<GarbageCollectorMXBean> beans =
+//        ManagementFactory.getGarbageCollectorMXBeans();
 
     // Total time spent in garbage collection since the last time
     // performance statistics were reset.
@@ -438,10 +438,10 @@ public class DemoInteractor extends Interactor {
         );
         long gcMs = -baseGcMs;
         int gcInvocations = -baseGcInvocations;
-        for (GarbageCollectorMXBean bean: beans) {
-            gcMs += bean.getCollectionTime();
-            gcInvocations += bean.getCollectionCount();
-        }
+//        for (GarbageCollectorMXBean bean: beans) {
+//            gcMs += bean.getCollectionTime();
+//            gcInvocations += bean.getCollectionCount();
+//        }
         StringBuilder body = html.getBody();
         body.append(String.format("<p>\nGarbage collector invocations: %d" +
                 "<br>Garbage collector execution time: %dms</p>",
@@ -537,10 +537,10 @@ public class DemoInteractor extends Interactor {
         Timer.measureNoopTime();
         long gcMs = 0;
         int gcInvocations = 0;
-        for (GarbageCollectorMXBean bean: beans) {
-            gcMs += bean.getCollectionTime();
-            gcInvocations += bean.getCollectionCount();
-        }
+//        for (GarbageCollectorMXBean bean: beans) {
+//            gcMs += bean.getCollectionTime();
+//            gcInvocations += bean.getCollectionCount();
+//        }
         baseGcMs = gcMs;
         baseGcInvocations = gcInvocations;
         cr.redirect("stats");
@@ -549,7 +549,7 @@ public class DemoInteractor extends Interactor {
     public void postSideBySide(ClientRequest cr) {
         Dataset main = cr.getMainDataset();
         logger.info("Posted dataset:\n" + main.toString());
-        FileItem upload = cr.getUploadedFile("upload");
+        FileUpload upload = cr.getUploadedFile("upload");
         if (upload != null) {
             if (upload.getSize() > 200) {
                 logger.info("Contents of uploaded file:\n" +
