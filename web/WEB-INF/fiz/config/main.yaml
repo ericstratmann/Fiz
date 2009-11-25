@@ -49,3 +49,11 @@ maxPageStates: 10
 # If the following value exists then it contains a URL; any reference
 # to the home page "/" is redirected to this location.
 homeRedirectUrl: /home/home
+
+# The following value determines whether or not the server running the 
+# application permits files to be written to its filesystem.
+serverFileAccess: 1
+
+# The following value determines whether or not the server running the 
+# application is Google AppEngine.
+googleAppEngine: 0
