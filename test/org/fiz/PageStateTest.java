@@ -113,6 +113,32 @@ public class PageStateTest extends junit.framework.TestCase {
         PageState state2 = PageState.getPageState(cr, "abc", true);
         assertEquals("defined page ids", "abc, id123", getPageIds(cr));
     }
+    
+    public void test_flushPageState() {
+        PageState state1 = PageState.getPageState(cr, "id123", true);
+        PageState state2 = PageState.getPageState(cr, "abc", true);
+        state1.setPageProperty("first", "123");
+        state1.setPageProperty("second", "456");
+        state2.setPageProperty("third", "789");
+        
+        // Without deleting AllPageState.
+        state1.flushPageState(cr);
+        PageState.AllPageInfo pageInfo1 = 
+            (PageState.AllPageInfo)cr.getServletRequest().getSession()
+                .getAttribute("fiz.PageState");
+        assertEquals("AllPageInfo has state1", state1, pageInfo1.get("id123"));
+        assertEquals("AllPageInfo has state2", state2, pageInfo1.get("abc"));
+        
+        // With AllPageState deleted.
+        cr.getServletRequest().getSession().removeAttribute("fiz.PageState");
+        cr.pageId = "id123";
+        state1.flushPageState(cr);
+        PageState.AllPageInfo pageInfo2 = 
+            (PageState.AllPageInfo)cr.getServletRequest().getSession()
+                .getAttribute("fiz.PageState");
+        assertEquals("AllPageInfo has state1", state1, pageInfo2.get("id123"));
+        assertEquals("AllPageInfo has only one PageState", 1, pageInfo2.size());
+    }
 
     public void test_getPageProperty() {
         PageState state1 = PageState.getPageState(cr, "id123", true);

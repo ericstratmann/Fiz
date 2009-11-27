@@ -191,18 +191,12 @@ public class ClientRequest {
     // instead a single fixed signature (so that tests don't have to
     // worry about the signature being different every round).
     protected boolean testMode = false;
-
-    // The following variable is set to true when Google AppEngine is 
-    // running the application.
-    protected boolean googleAppEngine = Config.get("main", 
-            "googleAppEngine").equals("1");
     
-    // The following variable is set to true when the server running 
-    // the application permits filesystem access - when it does not, 
-    // as is the case with the Google AppEngine server, it should be 
-    // set to false.
-    protected boolean serverFileAccess = !googleAppEngine && Config.get("main", 
-            "serverFileAccess").equals("1");
+    // The following Dataset will contain information about the server 
+    // currently running the application - specifically, whether or not 
+    // the server is Google's AppEngine, and whether or not the server 
+    // permits filesystem access.  
+    protected Dataset serverConfigData = null;
 
     // The following variable is set to true during most tests; this
     // causes automatic checks of the authentication token to be skipped.
@@ -374,13 +368,13 @@ public class ClientRequest {
      * to complete the transmission of the response back to the client.
      */
     public void finish() {
-        if (pageState != null && googleAppEngine) {
+        if (pageState != null && getServerConfig().getBool("googleAppEngine")) {
             pageState.flushPageState(this);
         }
         
         // Cleanup any uploaded files (this frees temporary file space
         // allocated for uploads faster than waiting for garbage collection).
-        if (uploads != null && serverFileAccess) {
+        if (uploads != null && getServerConfig().getBool("serverFileAccess")) {
             for (FileUpload upload: uploads.values()) {
                 upload.getFileItem().delete();
             }
@@ -719,6 +713,27 @@ public class ClientRequest {
     }
 
     /**
+     * Returns a Dataset containing information about the server running the 
+     * application - specifically, whether or not the server is Google's 
+     * AppEngine, and whether or not the server permits filesystem access.
+     * This content is only read from the main configuration file when needed, 
+     * because during testing, it cannot be created at construction time.
+     * @return                     A Dataset containing information about the 
+     *                             server running the application.
+     */
+    protected Dataset getServerConfig() {
+        if (serverConfigData == null) {
+            serverConfigData = new Dataset();
+            serverConfigData.set("googleAppEngine", 
+                    Config.get("main", "googleAppEngine").equals("1"));
+            serverConfigData.set("serverFileAccess", 
+                    !serverConfigData.getBool("googleAppEngine") && 
+                    Config.get("main", "serverFileAccess").equals("1"));
+        }
+        return serverConfigData;
+    }
+
+    /**
      * Returns information about the servlet under which the ClientRequest is
      * being processed.
      * @return                     HttpServlet for this request.
@@ -798,7 +813,7 @@ public class ClientRequest {
      * @return
      */
     public boolean isFileAccessPermitted() {
-        return serverFileAccess;
+        return getServerConfig().getBool("serverFileAccess");
     }
 
     /**
@@ -882,7 +897,7 @@ public class ClientRequest {
             return false;
         }
         FileUpload upload = uploads.get(fieldName);
-        if (upload == null || !serverFileAccess) {
+        if (upload == null || !getServerConfig().getBool("serverFileAccess")) {
             return false;
         }
         try {
@@ -1207,7 +1222,7 @@ public class ClientRequest {
      */
     protected void readMultipartFormData() {
         try {
-            if (serverFileAccess) {
+            if (getServerConfig().getBool("serverFileAccess")) {
                 // If the server permits filesystem access, create a series 
                 // of on-disk FileItems (FileItem representations).
                 DiskFileItemFactory factory = new DiskFileItemFactory();
@@ -1307,7 +1322,7 @@ public class ClientRequest {
             readAjaxData();
         }
     }
-
+    
     /**
      * Creates a unique (to the request) id given a base string. For example,
      * repeated calls will return foo0, foo1, etc.

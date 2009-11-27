@@ -1858,7 +1858,7 @@ public class GaeDataManager {
      */
     protected static void error(String message, Throwable cause) 
             throws DatastoreError {
-        logger.error("DatastoreError: " + message + 
+        logger.error("Datastore Error: " + message + 
                 (cause == null ? "" : cause.getMessage()));
         throw new DatastoreError(message, cause);
     }
@@ -1878,8 +1878,8 @@ public class GaeDataManager {
             throws DatastoreError {
         String typeMsg = "";
         switch (type) {
-            case DS_FAILURE: typeMsg = "Datastore failure: "; break;
-            case TXN_INACTIVE: typeMsg = "Transaction is inactive: "; break;
+            case DS_FAILURE: typeMsg = "Datastore failure. "; break;
+            case TXN_INACTIVE: typeMsg = "Transaction is inactive. "; break;
             case BAD_ARG: typeMsg = "Invalid, incomplete, or malformed " +
             		"argument of type: "; break;
         }

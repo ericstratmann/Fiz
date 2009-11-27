@@ -44,6 +44,8 @@ public class ClientRequestFixture extends ClientRequest {
         // Configure various testing values.
         testSkipTokenCheck = true;
         testMode = true;
+        serverConfigData = new Dataset("googleAppEngine", false, 
+                "serverFileAccess", true);
     }
 
     public void clearData() {
