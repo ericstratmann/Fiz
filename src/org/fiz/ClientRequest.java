@@ -374,9 +374,11 @@ public class ClientRequest {
         
         // Cleanup any uploaded files (this frees temporary file space
         // allocated for uploads faster than waiting for garbage collection).
-        if (uploads != null && getServerConfig().getBool("serverFileAccess")) {
+        if (uploads != null) {
             for (FileUpload upload: uploads.values()) {
-                upload.getFileItem().delete();
+                if (upload.isServerFileAccessPermitted()) {
+                    upload.getFileItem().delete();
+                }
             }
         }
 

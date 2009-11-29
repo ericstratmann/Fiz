@@ -20,6 +20,7 @@ import java.util.*;
 import javax.crypto.*;
 import javax.servlet.http.*;
 
+import org.apache.commons.fileupload.FileItem;
 import org.apache.log4j.*;
 import org.fiz.test.*;
 
@@ -43,6 +44,26 @@ public class ClientRequestTest extends junit.framework.TestCase {
             log.append("data request \"" +
                     ((properties != null) ? properties.get("request")
                     : "none") + "\";");
+        }
+    }
+    
+    // Dummy FileUpload class, used in tests of ClientRequest.readFileUpload().
+    protected static class FileUploadFixture extends FileUpload {
+        public boolean isFormField = false;
+        public String fieldName = null;
+        public FileUploadFixture(boolean isFormField, String fieldName) {
+            super((FileItem)null);
+            this.isFormField = isFormField;
+            this.fieldName = fieldName;
+        }
+        public String getFieldName() {
+            return fieldName;
+        }
+        public boolean isFormField() {
+            return isFormField;
+        }
+        public String getString() {
+            return "FileUploadFixture";
         }
     }
 
@@ -218,6 +239,33 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("ClientRequest.jsCode",
                 "var x = \"<&\\n\\t>\";var y = 44;",
                 cr.jsCode.toString());
+    }
+    
+    public void test_finish_flushPageState() {
+        ServletRequestFixture.session = null;
+        cr.serverConfigData.set("googleAppEngine", true);
+        cr.pageState = new PageState();
+        cr.finish();
+        
+        // Ensure that PageState.flushPageState() was called (session will no 
+        // longer be null).
+        assertTrue("session contains AllPageInfo", 
+                ServletRequestFixture.session.getAttribute("fiz.PageState") 
+                    instanceof PageState.AllPageInfo);
+    }
+    
+    public void test_finish_deleteFileItems() {
+        cr.uploads = new HashMap<String, FileUpload>();
+        cr.uploads.put("upload", new FileUploadFixture(true, ""));
+        // Calling finish() with a FileUploadFixture should yield a 
+        // NullPointerException.
+        boolean exception = false;
+        try {
+            cr.finish();
+        } catch (NullPointerException e) {
+            exception = true;
+        }
+        assertTrue("Attempted to call delete() on a null FileItem", exception);
     }
 
     public void test_finish_returnFile_text() {
@@ -509,6 +557,25 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("names of requests", "getPeople, test1, test2",
                 cr.getRequestNames());
     }
+    
+    public void test_getServerConfig() {
+        cr.serverConfigData = null;
+        Dataset serverConfig1 = cr.getServerConfig();
+        // serverConfig when cached value is initially null.
+        assertTrue("serverConfig has googleAppEngine field", 
+                serverConfig1.get("googleAppEngine") instanceof Boolean);
+        assertTrue("serverConfig has serverFileAccess field", 
+                serverConfig1.get("serverFileAccess") instanceof Boolean);
+        
+        cr.serverConfigData = new Dataset("googleAppEngine", true, 
+                "serverFileAccess", false);
+        Dataset serverConfig2 = cr.getServerConfig();
+        // serverConfig when there is a cached value.
+        assertTrue("serverConfig has correct googleAppEngine value", 
+                serverConfig2.getBool("googleAppEngine"));
+        assertFalse("serverConfig has correct serverFileAccess value", 
+                serverConfig2.getBool("serverFileAccess"));
+    }
 
     public void test_getServletRequest() {
         ServletRequestFixture newRequest = new ServletRequestFixture();
@@ -577,6 +644,14 @@ public class ClientRequestTest extends junit.framework.TestCase {
         cr.setClientRequestType(ClientRequest.Type.POST);
         assertEquals("set to false", false, cr.isAjax());
     }
+    
+    public void test_isFileAccessPermitted() {
+        cr.serverConfigData = new Dataset("googleAppEngine", true, 
+                "serverFileAccess", false);
+        assertFalse("set to false", cr.isFileAccessPermitted());
+        cr.serverConfigData.set("serverFileAccess", true);
+        assertTrue("set to true", cr.isFileAccessPermitted());
+    }
 
     public void test_isPost() {
         assertEquals("initially false", false, cr.isPost());
@@ -619,6 +694,31 @@ public class ClientRequestTest extends junit.framework.TestCase {
     public void test_saveUploadedFile_noMultipartData() {
         assertEquals("fieldName doesn't exist", false,
                 cr.saveUploadedFile("bogus", "a/b/c"));
+    }
+    public void test_saveUploadedFile_fileAccessNotPermitted() {
+        (new File("_test1_")).mkdir();
+        cr.clearData();                 // Discard default info from fixture.
+        cr.mainDataset = new Dataset();
+        servletRequest.setParameters();
+        servletRequest.contentType = "multipart/form-data, boundary=xyzzy";
+        servletRequest.setInput(
+                "--xyzzy\r\n" +
+                "Content-Disposition: form-data; name=\"name\"\r\n" +
+                "\r\n" +
+                "Alice\r\n" +
+                "--xyzzy\r\n" +
+                "Content-Disposition: form-data; name=\"first\"; " +
+                "filename=\"file1.txt\"\n" +
+                "Content-Type: text/plain\r\n" +
+                "\r\n" +
+                "Line 1\n" +
+                "Line 2\r\n" +
+                "--xyzzy--\r\n");
+        cr.serverConfigData = new Dataset("googleAppEngine", false, 
+                "serverFileAccess", false);
+        assertFalse("Cannot save a file if filesystem access is not permitted",
+                cr.saveUploadedFile("first", "_test1_/xyz"));
+        TestUtil.deleteTree("_test1_");
     }
     public void test_saveUploadedFile_noSuchUpload() {
         cr.clearData();                 // Discard default info from fixture.
@@ -928,6 +1028,50 @@ public class ClientRequestTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
+    
+    public void test_readFileUpload_isFormField() {
+        cr.clearData();                 // Discard default info from fixture.
+        cr.mainDataset = new Dataset();
+        FileUploadFixture upload = new FileUploadFixture(true, "fieldName");
+        
+        cr.readFileUpload(upload);
+        // After one call to readFileUpload.
+        assertEquals("main dataset contents (1 call)", "fieldName: " +
+        		"FileUploadFixture\n", cr.getMainDataset().toString());
+        
+        cr.readFileUpload(upload);
+        // After two calls to readFileUpload.
+        assertEquals("main dataset contents (2 calls)", "fieldName:\n  " +
+        		"- value: FileUploadFixture\n  - value: FileUploadFixture\n", 
+        		cr.getMainDataset().toString());
+        
+        cr.readFileUpload(upload);
+        // After three calls to readFileUpload.
+        assertEquals("main dataset contents (3 calls)", "fieldName:\n  " +
+        		"- value: FileUploadFixture\n  - value: FileUploadFixture\n  " +
+        		"- value: FileUploadFixture\n", cr.getMainDataset().toString());
+    }
+    
+    public void test_readFileUpload_notFormField() {
+        cr.clearData();                 // Discard default info from fixture.
+        cr.mainDataset = new Dataset();
+        FileUploadFixture upload = new FileUploadFixture(false, "fieldName");
+        
+        cr.readFileUpload(upload);
+        // After one call to readFileUpload.
+        Object[] keys1 = cr.uploads.keySet().toArray();
+        Arrays.sort(keys1);
+        assertEquals("uploads HashMap", "fieldName",
+                StringUtil.join(keys1, ", "));
+        
+        upload = new FileUploadFixture(false, "fieldName2");
+        cr.readFileUpload(upload);
+        // After two calls to readFileUpload.
+        Object[] keys2 = cr.uploads.keySet().toArray();
+        Arrays.sort(keys2);
+        assertEquals("uploads HashMap", "fieldName, fieldName2",
+                StringUtil.join(keys2, ", "));
+    }
 
     public void test_readMultipartFormData_basics() {
         cr.clearData();                 // Discard default info from fixture.
@@ -1023,7 +1167,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
     }
 
-    public void test_readMultipartFormData_multipleValuesForName() {
+    public void test_readMultipartFormData_fileUploads_withFilesystemAccess() {
         cr.clearData();                 // Discard default info from fixture.
         cr.mainDataset = new Dataset();
         servletRequest.setParameters();
@@ -1034,25 +1178,31 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "\r\n" +
                 "Alice\r\n" +
                 "--xyzzy\r\n" +
-                "Content-Disposition: form-data; name=\"name\"\r\n" +
+                "Content-Disposition: form-data; name=\"first\"; " +
+                "filename=\"file1.txt\"\r\n" +
+                "Content-Type: text/plain\r\n" +
                 "\r\n" +
-                "Bob\r\n" +
+                "Line 1\r\n" +
                 "--xyzzy\r\n" +
-                "Content-Disposition: form-data; name=\"name\"\r\n" +
+                "Content-Disposition: form-data; name=\"second\"; " +
+                "filename=\"file2.txt\"\r\n" +
+                "Content-Type: text/plain\r\n" +
                 "\r\n" +
-                "Carol\r\n" +
+                "Line 2\r\n" +
                 "--xyzzy--\r\n");
         cr.readMultipartFormData();
         assertEquals("main dataset contents",
-                "name:\n" +
-                "  - value: Alice\n" +
-                "  - value: Bob\n" +
-                "  - value: Carol\n", cr.getMainDataset().toString());
+                "name: Alice\n", cr.getMainDataset().toString());
+        Object[] keys = cr.uploads.keySet().toArray();
+        Arrays.sort(keys);
+        assertEquals("uploads HashMap", "first, second",
+                StringUtil.join(keys, ", "));
     }
 
-    public void test_readMultipartFormData_fileUploads() {
+    public void test_readMultipartFormData_fileUploads_noFilesystemAccess() {
         cr.clearData();                 // Discard default info from fixture.
         cr.mainDataset = new Dataset();
+        cr.serverConfigData.set("serverFileAccess", false);
         servletRequest.setParameters();
         servletRequest.contentType = "multipart/form-data, boundary=xyzzy";
         servletRequest.setInput(
@@ -1087,7 +1237,9 @@ public class ClientRequestTest extends junit.framework.TestCase {
         servletRequest.setParameters();
         servletRequest.contentType = "multipart/form-data, boundary=xyzzy";
         servletRequest.setInput("--xyzzy\r\n");
-        boolean gotException = false;
+        
+        // When filesystem access is permitted.
+        boolean gotException1 = false;
         try {
             cr.readMultipartFormData();
         }
@@ -1095,9 +1247,23 @@ public class ClientRequestTest extends junit.framework.TestCase {
             assertEquals("exception message", "error reading multi-part " +
                     "form data: stream ended unexpectedly",
                     e.getMessage());
-            gotException = true;
+            gotException1 = true;
         }
-        assertEquals("exception happened", true, gotException);
+        assertEquals("exception happened", true, gotException1);
+        
+        // When filesystem access isn't permitted.
+        cr.serverConfigData.set("serverFileAccess", false);
+        boolean gotException2 = false;
+        try {
+            cr.readMultipartFormData();
+        }
+        catch (InternalError e) {
+            assertEquals("exception message", "error iterating over uploaded " +
+            		"FileItemStreams: stream ended unexpectedly",
+            		e.getMessage());
+            gotException2 = true;
+        }
+        assertEquals("exception happened", true, gotException2);
     }
 
     public void test_readRequestData_requestDataProcessed() {
