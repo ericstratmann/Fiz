@@ -996,15 +996,13 @@ public class Template {
     }
 
     /**
-     * Parses a template until one of the delimiters is matched
+     * Parses a template until one of the delimiters is matched.
      * @param info                 Contains information about the template
      *                             being parsed.  This method appends
-     *                             framents to info.parse. Info.end is set
-     *                             to the index of the first character following
-     *                             the @-specifier (e.g. for {@code @foo+bar}
-     *                             info.end will refer to the {@code +} and for
-     *                             {@code @abc d} info.end will refer to the
-     *                             space.
+     *                             framents to info.parse. Info.end is set to
+     *                             the index of the first character that matches
+     *                             ones of the delimiters or the length of the
+     *                             template if none are matched.
      * @param start                Begin parsing at this position
      * @param delimiters           List of delimiters that marks the end of the
      *                             template
@@ -1210,14 +1208,14 @@ public class Template {
 
 
     /**
-     * Moves spaces and stuff
+     * Rearranges the template so that extra spaces are not printed when the
+     * template is expanded. This may happen when a conditional fragment
+     * collapses, so this method must be called after every conditional fragment
+     * is added (and before any other fragment is added).
      * @param info                 Contains information about the template
-     *                             being parsed.  This method appends a
-     *                             fragment to info.parse. Info.end will be set
-     *                             to the index of the character just after the
-     *                             closing braces.
-     *
-     * @param start                Position of character after last }
+     *                             being parsed. info.end must point to the
+     *                             character after the second }
+     * @param start                Position of character after second {
      */
     protected static void collapseSpaces(ParseInfo info, int start) {
         char next;
@@ -1225,7 +1223,9 @@ public class Template {
         if (end < info.template.length()) {
             next = info.template.charAt(end);
         } else {
-            // pretend the next character is a '>'
+            // The behavior is the same if we're at the end of the template or
+            // the next character is a '>', so for convenience pretend it's a
+            // '>'
             next = '>';
         }
 
@@ -1261,42 +1261,44 @@ public class Template {
     }
 
     /**
-     * Moves a space preceeding a ConditionalFragment into the Fragment
+     * Moves a space preceeding a ConditionalFragment into the Fragment. This
+     * must be called after a ConditionalFragment is added and before and other
+     * fragment.
      * @param info                 Contains information about the template
-     *                             being parsed.  This method appends a
-     *                             fragment to info.parse. Info.end will be set
-     *                             to the index of the character just after the
-     *                             closing braces.
+     *                             being parsed
      */
     protected static void movePreceedingSpace(ParseInfo info) {
         ArrayList<Fragment> frags = info.parse.fragments;
-        ConditionalFragment last = ((ConditionalFragment) frags.get(frags.size()-1));
+        ConditionalFragment last = ((ConditionalFragment)
+                                    frags.get(frags.size()-1));
         Fragment firstInBraces = null;
         if (last.contents.fragments.size() > 0) {
             firstInBraces = last.contents.fragments.get(0);
         }
 
         if (firstInBraces instanceof TextFragment) {
-            ((TextFragment) firstInBraces).text = " " + ((TextFragment) firstInBraces).text;
+            ((TextFragment) firstInBraces).text = " " +
+                ((TextFragment) firstInBraces).text;
         } else {
             last.contents.fragments.add(0, new TextFragment(" "));
         }
 
         TextFragment withSpace = ((TextFragment) frags.get(frags.size()-2));
-        withSpace.text = withSpace.text.substring(0, withSpace.text.length() - 1);
+        withSpace.text = withSpace.text.substring(0,
+                            withSpace.text.length() - 1);
     }
 
     /**
-     * Moves a space after a ConditionalFragment into the Fragment
+     * Moves a space after a ConditionalFragment into the Fragment. This must
+     * be called after a ConditionalFragment is added and before any other
+     * fragment.
      * @param info                 Contains information about the template
-     *                             being parsed.  This method appends a
-     *                             fragment to info.parse. Info.end will be set
-     *                             to the index of the character just after the
-     *                             closing braces.
+     *                             being parsed
      */
     protected static void moveTrailingSpace(ParseInfo info) {
         ArrayList<Fragment> frags = info.parse.fragments;
-        ConditionalFragment last = ((ConditionalFragment) frags.get(frags.size()-1));
+        ConditionalFragment last = ((ConditionalFragment)
+                                    frags.get(frags.size()-1));
         Fragment lastInBraces = null;
         if (last.contents.fragments.size() > 0) {
             last.contents.fragments.get(last.contents.fragments.size()-1);
@@ -1313,7 +1315,7 @@ public class Template {
 
     /**
      * Determines whether the current position in a string marks the beginning
-     * one of the delimiters.
+     * of one of the delimiters.
      *
      * @param template        This string is searched for delimiters
      * @param start           Current position in the string
