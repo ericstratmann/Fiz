@@ -401,19 +401,63 @@ public class Template {
     }
 
     /**
-     * Represents part of a template in the form {{...}}
+     * Represents part of a template in the form {{...}}.  The only tricky
+     * thing about this fragment is that we try to generate cleaner output
+     * by collapsing spaces around fragments that are skipped. For example,
+     * consider the following cases:
+     * 1.    xyz {{@a}} abc
+     * 2.    {{@a}} {{@b}}{{@c}}{{@d}}
+     * 3.    abc [{{@a}} xyz]
+     * In case 1, if @a doesn't exist then there will only be one space in
+     * the output.  In case 2, there will be a space in the output only if
+     * @a exists and at least one of @b, @c, and @d exists.  In case 3
+     * there will be no spaces between the brackets if @a doesn't exist.
      */
     protected static class ConditionalFragment implements Fragment {
         // Parsed representation of text inside brackets
         ParsedTemplate contents;
 
+        // Copies of constructor arguments; see the constructor for details..
+        boolean borrowedSpace;
+        boolean precedingSpaceCollapsible;
+        boolean tryCollapsingBefore;
+
         /**
-         * Creates a new ConditionalFragment
-         * @param contents    Added to the output if all @ variables in it exist.
-         *                    Otherwise, nothing is added to the output.
+         * Creates a new ConditionalFragment.
+         * @param contents          Added to the output if all @ variables
+         *                          in it exist. Otherwise, nothing is added
+         *                          to the output.
+         * @param borrowedSpace     True means there was a collapsible space
+         *                          character in the template just after this
+         *                          fragment, but we moved it inside the
+         *                          fragment instead.  Thus, if this fragment
+         *                          ends up getting skipped we have
+         *                          automatically collapsed spaces properly
+         *                          without any additional work.
+         * @param precedingSpaceCollapsible
+         *                          True means there was a space character
+         *                          in the template immediately preceding this
+         *                          fragment, which is a candidate for
+         *                          collapsing.  If this character doesn't
+         *                          get collapsed by a preceding fragment
+         *                          (e.g. @a in case 2 above), then it can
+         *                          be collapsed by a subsequent fragment,
+         *                          such as @d in case 2 above (assuming
+         *                          neither @b or @c exist).
+         * @param tryCollapsingBefore   True means that this fragment was at
+         *                          the end of the template, or was followed by
+         *                          something like ']', so it would be
+         *                          appropriate to collapse a space
+         *                          preceding the element, if one is available
+         *                          during template expansion.
          */
-        public ConditionalFragment(ParsedTemplate contents) {
+        public ConditionalFragment(ParsedTemplate contents,
+                boolean borrowedSpace, boolean precedingSpaceCollapsible,
+                boolean tryCollapsingBefore) {
             this.contents = contents;
+            this.borrowedSpace = borrowedSpace;
+            this.precedingSpaceCollapsible = precedingSpaceCollapsible;
+            this.tryCollapsingBefore = tryCollapsingBefore;
         }
 
         /**
@@ -427,10 +471,42 @@ public class Template {
                 sqlLen = info.sqlParameters.size();
             }
 
+            // Figure out what we will do in terms of collapsing spaces
+            // if this fragment ends up getting skipped. It's easy
+            // if we are going to collapse out a space after the fragment;
+            // in this case borrowedSpace is true and there's nothing
+            // else for us to do.  Collapsing a space before the fragment
+            // is trickier; we can do this only if the characters after
+            // the fragment in the template have the right form (indicated
+            // by precedingSpaceCollapsible), and if there is a space
+            // before the fragment that is suitable for collapsing (it
+            // must have come from the template rather than from a prior
+            // substitution; info.lastCollapsibleSpace indicates this).
+            boolean collapseBefore = false;
+            if (outLen > 0) {
+                if ((precedingSpaceCollapsible) &&
+                        (info.out.charAt(outLen-1) == ' ')) {
+                    info.lastCollapsibleSpace = outLen-1;
+                }
+                // If we end up skipping this element, is there a space
+                // preceding the element that we should collapse?  Note:
+                // there could have been several other fragments between
+                // the collapsible space and the current fragment, as long
+                // as all of the intervening fragments were conditionals
+                // that ended up being skipped (e.g. @d in case 2 above).
+                collapseBefore = (!borrowedSpace && tryCollapsingBefore &&
+                        ((outLen-1) == info.lastCollapsibleSpace));
+            }
+
             try {
                 contents.expand(info);
             } catch (MissingValueError e) {
                 info.out.setLength(outLen);
+                if (collapseBefore) {
+                    info.out.setLength(outLen-1);
+                    // We used up the collapsible space.
+                    info.lastCollapsibleSpace = -1;
+                }
                 if (info.sqlParameters != null) {
                     for (int size = info.sqlParameters.size(); size > sqlLen; ) {
                         size--;
@@ -457,6 +533,9 @@ public class Template {
         protected Dataset data;
         // Indexed data to substitute
         protected Object[] indexedData;
+        // Index of the last space character that can be collapsed by
+        // ConditionalFragments.
+        protected int lastCollapsibleSpace = -1;
 
         protected ExpandInfo(StringBuilder out, CharSequence template,
                              SpecialChars quoting, ArrayList<String> sqlParameters,
@@ -475,8 +554,8 @@ public class Template {
 
 
     // The following class is used internally to pass information between
-    // methods.  Among other things, it provides a vehicle for returning
-    // additional results from a method.
+    // methods while parsing templates.  Among other things, it provides a
+    // vehicle for returning multiple results from a method.
     protected static class ParseInfo {
         CharSequence template;     // The template being processed.
         int end;                   // Modified by methods such as
@@ -488,16 +567,8 @@ public class Template {
                                    // of the next character after the ")".
         StringBuilder text;        // When parsing plain text (e.g., not a @),
                                    // text is appended here before being turned
-                                   // into a fragment
-        ParsedTemplate parse;      // Fragments are appended to this cache
-        int lastDeletedSpace;      // Used in collapsing space characters
-                                   // around braces to handle cumulative
-                                   // situations like "<{{@a}} {{@b}} {{@c}}>":
-                                   // if all three sets in braces drop out,
-                                   // we want to eliminate exactly 2 spaces.
-                                   // This field holds the index into the
-                                   // template of the last space character
-                                   // we collapsed out, or -1 if none.
+                                   // into a fragment.
+        ParsedTemplate parse;      // Fragments are appended to this cache.
         /**
          * Construct a ParseInfo object.
          * @param template         Template to be expanded.
@@ -1200,117 +1271,65 @@ public class Template {
                                   + info.template + "\"");
         }
 
-        oldCache.addFragment(new ConditionalFragment(info.parse));
-        info.end = info.end + 2;
-        info.parse = oldCache;
-        collapseSpaces(info, start);
-    }
-
-
-    /**
-     * Rearranges the template so that extra spaces are not printed when the
-     * template is expanded. This may happen when a conditional fragment
-     * collapses, so this method must be called after every conditional fragment
-     * is added (and before any other fragment is added).
-     * @param info                 Contains information about the template
-     *                             being parsed. info.end must point to the
-     *                             character after the second }
-     * @param start                Position of character after second {
-     */
-    protected static void collapseSpaces(ParseInfo info, int start) {
-        char next;
-        int end = info.end;
-        if (end < info.template.length()) {
-            next = info.template.charAt(end);
-        } else {
-            // The behavior is the same if we're at the end of the template or
-            // the next character is a '>', so for convenience pretend it's a
-            // '>'
-            next = '>';
-        }
-
+        // Collect information that can be used to collapse spaces around
+        // the conditional element if the conditional element ends up
+        // being skipped. First, identify the characters on either side
+        // of the {{...}}.
         int indexBeforeBraces = start - 3;
-        char lastChar = 0;
+        char charBefore;
         if (indexBeforeBraces >= 0) {
-            lastChar = info.template.charAt(indexBeforeBraces);
+            charBefore = info.template.charAt(indexBeforeBraces);
         } else {
-            lastChar = '<';
+            // The {{ is at the beginning of the template; pretend
+            // the character before {{ is '<', which behaves the same
+            // as the start of the template.
+            charBefore = '<';
+        }
+        int end = info.end +2;
+        char charAfter;
+        if (end < info.template.length()) {
+            charAfter = info.template.charAt(end);
+        } else {
+            // The }} is at the end of the template; pretend the
+            // character after }} is '>', which behaves the same
+            // as the end of the template.
+            charAfter = '>';
         }
 
-        if ((info.lastDeletedSpace < indexBeforeBraces)
-            && (lastChar == ' ')
-            && ((next == ' ') || (next == ']')
-                || (next == '>') || (next == '}')
-                || (next == ')') || (next == '\"')
-                || (next == '\''))) {
-            info.lastDeletedSpace = indexBeforeBraces;
-            movePreceedingSpace(info);
-        } else {
-            // If there is a space after the "}}" and the
-            // character before the "{{" is an open-delimiter
-            // such as "<" or the beginning of the string, then
-            // skip over the trailing space.
-            if ((next == ' ') && ((lastChar == '[')
-                    || (lastChar == '<') || (lastChar == '{')
-                    || (lastChar == '(') || (lastChar == '\"')
-                    || (lastChar == '\''))) {
-                info.lastDeletedSpace = info.end;
-                moveTrailingSpace(info);
+        // If there is a space after the {{...}} that can be collapsed
+        // then just "move" it inside the {{...}}.  In this case there's
+        // no extra work to be done if the conditional element ends up
+        // being skipped.
+        boolean borrowedSpace = false;
+        boolean tryCollapsingBefore = false;
+        if ((charAfter == ' ') && ((charBefore == ' ') || (charBefore == '[')
+                || (charBefore == '<') || (charBefore == '{')
+                || (charBefore == '(') || (charBefore == '\"')
+                || (charBefore == '\''))) {
+            ArrayList<Fragment> frags = info.parse.fragments;
+            Fragment last = null;
+            if (frags.size() > 0) {
+                last = frags.get(frags.size()-1);
             }
-        }
-    }
 
-    /**
-     * Moves a space preceeding a ConditionalFragment into the Fragment. This
-     * must be called after a ConditionalFragment is added and before and other
-     * fragment.
-     * @param info                 Contains information about the template
-     *                             being parsed
-     */
-    protected static void movePreceedingSpace(ParseInfo info) {
-        ArrayList<Fragment> frags = info.parse.fragments;
-        ConditionalFragment last = ((ConditionalFragment)
-                                    frags.get(frags.size()-1));
-        Fragment firstInBraces = null;
-        if (last.contents.fragments.size() > 0) {
-            firstInBraces = last.contents.fragments.get(0);
-        }
-
-        if (firstInBraces instanceof TextFragment) {
-            ((TextFragment) firstInBraces).text = " " +
-                ((TextFragment) firstInBraces).text;
+            if (last instanceof TextFragment) {
+                ((TextFragment) last).text += " ";
+            } else {
+                frags.add(new TextFragment(" "));
+            }
+            borrowedSpace = true;
+            end++;
         } else {
-            last.contents.fragments.add(0, new TextFragment(" "));
+            tryCollapsingBefore = (charAfter == ']')
+                    || (charAfter == '>') || (charAfter == '}')
+                    || (charAfter == ')') || (charAfter == '\"')
+                    || (charAfter == '\'');
         }
 
-        TextFragment withSpace = ((TextFragment) frags.get(frags.size()-2));
-        withSpace.text = withSpace.text.substring(0,
-                            withSpace.text.length() - 1);
-    }
-
-    /**
-     * Moves a space after a ConditionalFragment into the Fragment. This must
-     * be called after a ConditionalFragment is added and before any other
-     * fragment.
-     * @param info                 Contains information about the template
-     *                             being parsed
-     */
-    protected static void moveTrailingSpace(ParseInfo info) {
-        ArrayList<Fragment> frags = info.parse.fragments;
-        ConditionalFragment last = ((ConditionalFragment)
-                                    frags.get(frags.size()-1));
-        Fragment lastInBraces = null;
-        if (last.contents.fragments.size() > 0) {
-            last.contents.fragments.get(last.contents.fragments.size()-1);
-        }
-
-        if (lastInBraces instanceof TextFragment) {
-            ((TextFragment) lastInBraces).text += " ";
-        } else {
-            last.contents.fragments.add(new TextFragment(" "));
-        }
-
-        info.end++;
+        oldCache.addFragment(new ConditionalFragment(info.parse, borrowedSpace,
+                (charBefore == ' '), tryCollapsingBefore));
+        info.end = end;
+        info.parse = oldCache;
     }
 
     /**

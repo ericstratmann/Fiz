@@ -36,7 +36,8 @@ public class TemplateTest extends junit.framework.TestCase {
         parsed  = new Template.ParsedTemplate(list);
         out = new StringBuilder();
         data = new Dataset("hello", "olleh", "foo", "oof", "bar", "rab");
-        info = new Template.ExpandInfo(out, "mytemplate", none, null, data, "hi", "bye", null);
+        info = new Template.ExpandInfo(out, "mytemplate", none, null,
+                data, "hi", "bye", null);
     }
 
     // The following class definition provides a mechanism for accessing
@@ -44,62 +45,65 @@ public class TemplateTest extends junit.framework.TestCase {
     protected static class TemplateFixture {
         public static int end;
         public static String text;
-        public static int lastDeletedSpace;
+        public static Template.ConditionalFragment conditionalFrag;
+        public static Template.ParseInfo parseInfo;
 
-        public static String expandCache(Template.ParsedTemplate cache, Dataset data) {
+        public static String expandCache(Template.ParsedTemplate cache,
+                Dataset data) {
             StringBuilder out = new StringBuilder();
-            Template.ExpandInfo info = new Template.ExpandInfo(out, "", Template.SpecialChars.NONE,
-                                                               null, data, "hi", "bye");
+            Template.ExpandInfo info = new Template.ExpandInfo(out, "",
+                    Template.SpecialChars.NONE, null, data, "hi", "bye");
             cache.expand(info);
             return info.out.toString();
         }
 
         public static String parseTo(String template, Dataset data,
                 int start, String ... delims) {
-            Template.ParseInfo info = new Template.ParseInfo(template);
-            info.end = -1;
-            Template.parseTo(info, start, delims);
-            TemplateFixture.end = info.end;
-            return TemplateFixture.expandCache(info.parse, data);
+            parseInfo = new Template.ParseInfo(template);
+            parseInfo.end = -1;
+            Template.parseTo(parseInfo, start, delims);
+            TemplateFixture.end = parseInfo.end;
+            return TemplateFixture.expandCache(parseInfo.parse, data);
         }
 
         public static String parseAtSign(String template, Dataset data,
                 boolean conditional, int start) {
-            Template.ParseInfo info = new Template.ParseInfo(template);
-            info.end = -1;
-            Template.parseAtSign(info, start);
-            end = info.end;
-            text = info.text.toString();
-            return TemplateFixture.expandCache(info.parse, data);
+            parseInfo = new Template.ParseInfo(template);
+            parseInfo.end = -1;
+            Template.parseAtSign(parseInfo, start);
+            end = parseInfo.end;
+            text = parseInfo.text.toString();
+            return TemplateFixture.expandCache(parseInfo.parse, data);
         }
 
         public static String parseChoice(String template, Dataset data,
                 String name, int start) {
-            Template.ParseInfo info = new Template.ParseInfo(template);
-            info.end = -1;
-            Template.parseChoice(info, name, start);
-            end = info.end;
-            return TemplateFixture.expandCache(info.parse, data);
+            parseInfo = new Template.ParseInfo(template);
+            parseInfo.end = -1;
+            Template.parseChoice(parseInfo, name, start);
+            end = parseInfo.end;
+            return TemplateFixture.expandCache(parseInfo.parse, data);
         }
 
         public static String parseParenName(String template, Dataset data,
                 boolean conditional, int start,
                 Template.SpecialChars encoding) {
-            Template.ParseInfo info = new Template.ParseInfo(template);
-            info.end = -1;
-            Template.parseParenName(info, start);
-            end = info.end;
-            return TemplateFixture.expandCache(info.parse, data);
+            parseInfo = new Template.ParseInfo(template);
+            parseInfo.end = -1;
+            Template.parseParenName(parseInfo, start);
+            end = parseInfo.end;
+            return TemplateFixture.expandCache(parseInfo.parse, data);
         }
 
         public static String parseBraces(String template, Dataset data,
                                          int start, int lastDeletedSpace) {
-            Template.ParseInfo info = new Template.ParseInfo(template);
-            info.end = -1;
-            Template.parseBraces(info, start);
-            end = info.end;
-            lastDeletedSpace = info.lastDeletedSpace;
-            return TemplateFixture.expandCache(info.parse, data);
+            parseInfo = new Template.ParseInfo(template);
+            parseInfo.end = -1;
+            Template.parseBraces(parseInfo, start);
+            end = parseInfo.end;
+            conditionalFrag = (Template.ConditionalFragment)
+                    parseInfo.parse.fragments.get(0);
+            return TemplateFixture.expandCache(parseInfo.parse, data);
         }
 
         public static String parseBraces(String template, Dataset data,
@@ -238,8 +242,9 @@ public class TemplateTest extends junit.framework.TestCase {
         assertEquals("second choice", "goodbye", out.toString());
     }
 
-    public void test_ConditionalFragment() {
-        Template.ConditionalFragment bracket = new Template.ConditionalFragment(parsed);
+    public void test_ConditionalFragment_basics() {
+        Template.ConditionalFragment bracket =
+                new Template.ConditionalFragment(parsed, false, false, false);
         bracket.expand(new Template.ExpandInfo(out, null, none, null, data));
         assertEquals("add to output", "hello", out.toString());
 
@@ -249,9 +254,100 @@ public class TemplateTest extends junit.framework.TestCase {
         Template.IdFragment id = new Template.IdFragment("bogus");
         list.add(id);
         parsed = new Template.ParsedTemplate(list);
-        bracket = new Template.ConditionalFragment(parsed);
+        bracket = new Template.ConditionalFragment(parsed, false, false, false);
         bracket.expand(new Template.ExpandInfo(out, null, none, null, data));
         assertEquals("do not add to output", "he", out.toString());
+    }
+    public void test_ConditionalFragment_setLastCollapsibleSpace() {
+        Template.ConditionalFragment bracket =
+                new Template.ConditionalFragment(parsed, false, true, false);
+        Template.ExpandInfo info = new Template.ExpandInfo(out, null, none,
+                null, data);
+        out.setLength(0);
+        bracket.expand(info);
+        assertEquals("output empty", -1, info.lastCollapsibleSpace);
+
+        out.setLength(0);
+        out.append("xyz");
+        bracket.expand(info);
+        assertEquals("space no longer present", -1, info.lastCollapsibleSpace);
+
+        out.setLength(0);
+        out.append("xyz ");
+        bracket.expand(info);
+        assertEquals("space available", 3, info.lastCollapsibleSpace);
+    }
+    public void test_ConditionalFragment_collapseBefore() {
+        // Create a ConditionalFragment that always fails.
+        list = new ArrayList<Template.Fragment>();
+        list.add(new Template.IdFragment("bogus"));
+        parsed = new Template.ParsedTemplate(list);
+        Template.ConditionalFragment bracket =
+                new Template.ConditionalFragment(parsed, true, false, true);
+        Template.ExpandInfo info = new Template.ExpandInfo(out, null, none,
+                null, data);
+        out.setLength(0);
+        out.append("xyz ");
+        info.lastCollapsibleSpace = 3;
+        bracket.expand(info);
+        assertEquals("borrowedSpace true", "xyz |", out.toString() + "|");
+
+        bracket = new Template.ConditionalFragment(parsed, false, false, false);
+        out.setLength(0);
+        out.append("xyz ");
+        info.lastCollapsibleSpace = 3;
+        bracket.expand(info);
+        assertEquals("tryCollapsingBefore false", "xyz |",
+                out.toString() + "|");
+
+        bracket = new Template.ConditionalFragment(parsed, false, false, true);
+        out.setLength(0);
+        info.lastCollapsibleSpace = 3;
+        bracket.expand(info);
+        assertEquals("output empty", "|", out.toString() + "|");
+
+        out.setLength(0);
+        out.append("xyz ");
+        info.lastCollapsibleSpace = 2;
+        bracket.expand(info);
+        assertEquals("lastCollapsibleSpace points to wrong place",
+                "xyz |", out.toString() + "|");
+
+        out.setLength(0);
+        out.append("xyz ");
+        info.lastCollapsibleSpace = 3;
+        bracket.expand(info);
+        assertEquals("collapse preceding space",
+                "xyz|", out.toString() + "|");
+        assertEquals("reset lastCollapsibleSpace",
+                -1, info.lastCollapsibleSpace);
+    }
+    public void test_ConditionalFragment_removeSqlParameters() {
+        // First, expand a ConditionalFragment with 2 successful substitutions.
+        list = new ArrayList<Template.Fragment>();
+        list.add(new Template.IdFragment("foo"));
+        list.add(new Template.IdFragment("bar"));
+        parsed = new Template.ParsedTemplate(list);
+        Template.ConditionalFragment bracket =
+                new Template.ConditionalFragment(parsed, false, false, false);
+        Template.ExpandInfo info = new Template.ExpandInfo(out, null, null,
+                new ArrayList<String>(), data);
+        out.setLength(0);
+        bracket.expand(info);
+        assertEquals("successful output", "??", out.toString());
+        assertEquals("sqlParameters after success",
+                "oof, rab", StringUtil.join(info.sqlParameters, ", "));
+
+        // Now expand a fragment with 2 successful substitutions followed
+        // by a failure.
+        list.add(new Template.IdFragment("bogus"));
+        out.setLength(0);
+        bracket.expand(info);
+        info.sqlParameters.clear();
+        info.sqlParameters.add("abc");
+        assertEquals("output after failure", "", out.toString());
+        assertEquals("sqlParameters after failure",
+                "abc", StringUtil.join(info.sqlParameters, ", "));
     }
 
     public void test_addValue() {
@@ -689,6 +785,7 @@ public class TemplateTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
+
     public void test_parseBraces_basics() {
         Dataset data = new Dataset("last_name", "West");
         String s = TemplateFixture.parseBraces("{{abc@last_name@}}x}}y", data, 2);
@@ -714,20 +811,6 @@ public class TemplateTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
-    public void test_parseBraces_missingData() {
-        Dataset data = new Dataset("last_name", "West");
-        String s = TemplateFixture.parseBraces("{{abc@data.47@data2}}x", data, 2);
-        assertEquals("end of specifier", 21, TemplateFixture.end);
-        assertEquals("output string", "", out.toString());
-    }
-    public void test_parseBraces_discardCollectedVariables() {
-        Dataset data = new Dataset("a", "0", "x", "1", "y", "2");
-        ArrayList<String> parameters = new ArrayList<String>();
-        String out = Template.expandSql("a:@a {{x:@x x:@x z:@z}} y:@y", data, parameters);
-        assertEquals("expanded template", "a:? y:?", out);
-        assertEquals("saved variables", "0, 2",
-                StringUtil.join(parameters, ", "));
-    }
     public void test_parseBraces_missingCloseBrace() {
         boolean gotException = false;
         try {
@@ -742,78 +825,65 @@ public class TemplateTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
-    public void test_collapseSpaces_precedingSpace() {
-        Dataset data = new Dataset();
-        StringBuilder out = new StringBuilder();
-        Template.appendHtml(out, "x {{@foo}}", data);
-        assertEquals("braces at end of string", "x", out.toString());
-        out.setLength(0);
-        Template.appendHtml(out, "- {{@foo}} -", data);
-        assertEquals("spaces on both sides", "- -", out.toString());
-        out.setLength(0);
-        Template.appendHtml(out, "x {{@x}}] x {{@x}}> x {{@x}}} x {{@x}}) x "
-                + "{{@x}}\" x {{@x}}\'",
-                data);
-        assertEquals("close-delimiter follows braces", "x] x> x} x) x\" x'",
-                out.toString());
+    public void test_parseBraces_charBefore() {
+        String s = TemplateFixture.parseBraces("{{abc}}", data, 2);
+        assertEquals("beginning of template", false,
+                TemplateFixture.conditionalFrag.precedingSpaceCollapsible);
+        s = TemplateFixture.parseBraces("x{{abc}}", data, 3);
+        assertEquals("charBefore not a space", false,
+                TemplateFixture.conditionalFrag.precedingSpaceCollapsible);
+        s = TemplateFixture.parseBraces(" {{abc}}", data, 3);
+        assertEquals("space character", true,
+                TemplateFixture.conditionalFrag.precedingSpaceCollapsible);
+    }
+    public void test_parseBraces_charAfter() {
+        String s = TemplateFixture.parseBraces("{{abc}}", data, 2);
+        assertEquals("end of template", true,
+                TemplateFixture.conditionalFrag.tryCollapsingBefore);
+        s = TemplateFixture.parseBraces("x{{abc}}x", data, 3);
+        assertEquals("charAfter not special", false,
+                TemplateFixture.conditionalFrag.tryCollapsingBefore);
+        s = TemplateFixture.parseBraces(" {{abc}}]", data, 3);
+        assertEquals("charAfter special", true,
+                TemplateFixture.conditionalFrag.tryCollapsingBefore);
+    }
+    public void test_parseBraces_borrowedSpace() {
+        TemplateFixture.parseBraces("{{abc}}x", data, 2);
+        assertEquals("no space after", false,
+                TemplateFixture.conditionalFrag.borrowedSpace);
+        TemplateFixture.parseBraces("x{{abc}} ", data, 3);
+        assertEquals("charBefore not special", false,
+                TemplateFixture.conditionalFrag.borrowedSpace);
+        TemplateFixture.parseBraces(" {{abc}} ", data, 3);
+        assertEquals("charBefore space", true,
+                TemplateFixture.conditionalFrag.borrowedSpace);
 
-        out.setLength(0);
-        Template.appendHtml(out, "<{{@x}} {{@x}}>", data);
-        assertEquals("don't delete the same space twice", "<>",
-                out.toString());
-        out.setLength(0);
-        Template.appendHtml(out, "{{@x}}) + b{{@x}}> + {{@x}}y", data);
-        assertEquals("don't remove spaces", ") + b> + y",
-                out.toString());
+        // Now make sure that the space is moved into the conditional
+        // fragment properly.
+        TemplateFixture.parseBraces("[{{abc}} ", data, 3);
+        Template.TextFragment t = (Template.TextFragment)
+                TemplateFixture.conditionalFrag.contents.fragments.get(0);
+        assertEquals("space added to existing fragment", "abc ", t.text);
+        assertEquals("skip past space", 9, TemplateFixture.end);
+        TemplateFixture.parseBraces("[{{@a}} ", data, 3);
+        t = (Template.TextFragment)
+                TemplateFixture.conditionalFrag.contents.fragments.get(1);
+        assertEquals("new fragment with space", "[ ]", "[" + t.text + "]");
+        TemplateFixture.parseBraces("[{{}} ", data, 3);
+        t = (Template.TextFragment)
+                TemplateFixture.conditionalFrag.contents.fragments.get(0);
+        assertEquals("no existing frags in conditional", "[ ]",
+                "[" + t.text + "]");
     }
-    /*
-    public void test_collapseSpaces_atExpansionTime() {
-        out.setLength(0);
-        Template.appendHtml(out, "<{{@a}} {{@x}}>", new Dataset("a", "y"));
-        assertEquals("brackets on the left stay", "<y>",
-                out.toString());
-        out.setLength(0);
-        Template.appendHtml(out, "<{{@x}} {{@a}}>", new Dataset("a", "y"));
-        assertEquals("brackets on the right stay", "<y>",
-                out.toString());
+    public void test_parseBraces_tryCollapsingBefore() {
+        String s = TemplateFixture.parseBraces("{{abc}}z", data, 2);
+        assertEquals("charAfter not special", false,
+                TemplateFixture.conditionalFrag.tryCollapsingBefore);
+        s = TemplateFixture.parseBraces("x{{abc}}]", data, 3);
+        assertEquals("charAfter bracket", true,
+                TemplateFixture.conditionalFrag.tryCollapsingBefore);
     }
-    */
-    public void test_collapseSpaces_trailingSpace() {
-        Dataset data = new Dataset();
-        StringBuilder out = new StringBuilder();
-        Template.appendHtml(out, "{{@x}} bcd", data);
-        assertEquals("braces at start of string", "bcd", out.toString());
-        out.setLength(0);
-        Template.appendHtml(out, "[{{@x}} + <{{@x}} + @{{{@x}} + ({{@x}} + "
-                + "\"{{@x}} + \'{{@x}} +",
-                data);
-        assertEquals("open-delimiter precedes braces", "[+ <+ {+ (+ \"+ '+",
-                out.toString());
 
-        out.setLength(0);
-        Template.appendHtml(out, "<{{@x}}abc + y{{@x}}y + <{{@x}}", data);
-        assertEquals("don't remove spaces", "<abc + yy + <",
-                out.toString());
-    }
-    /*
-    public void test_movePreceedingSpace() {
-        Template.ParseInfo pInfo;
-        ArrayList<Template.Fragment> bogusId = new ArrayList<Template.Fragment>();
-        bogusId.add(new Template.IdFragment("bogus"));
-        Template.Fragment emptyConditional = new Template.ConditionalFragment(
-            new Template.ParsedTemplate(bogusId));
-
-        ArrayList<Template.Fragment> list = new ArrayList<Template.Fragment>();
-        list.add(new Template.TextFragment("abc "));
-        list.add(emptyConditional);
-        parsed = new Template.ParsedTemplate(list);
-        pInfo = new Template.ParseInfo("");
-        pInfo.parse = parsed;
-        Template.movePreceedingSpace(pInfo);
-        parsed.expand(info);
-        assertEquals("empty conditional", "abc", info.out.toString());
-    }
-    */
     public void test_foundDelimiter() {
         assertEquals("one delim, not at end", true, Template.foundDelimiter("}|", 0, "}"));
         assertEquals("two delim", true, Template.foundDelimiter("o}", 1, "|", "}"));
@@ -843,6 +913,41 @@ public class TemplateTest extends junit.framework.TestCase {
         Template.appendHtml(out, "first {{name: {{@name}},{{@bogus}} age: @age?{unknown}, " +
                 "weight: @weight}}", new Dataset("name", "Bob"));
         assertEquals("output string", "first", out.toString());
+
+        out.setLength (0);
+        Template.appendHtml(out, "[{{@a}} {{@b}}{{@c}}{{@d}}]",
+                new Dataset());
+        assertEquals("output string", "[]", out.toString());
+
+        out.setLength (0);
+        Template.appendHtml(out, "[{{@a}} {{@b}}{{@c}}{{@d}}]",
+                new Dataset("a", "a"));
+        assertEquals("output string", "[a]", out.toString());
+
+        out.setLength (0);
+        Template.appendHtml(out, "[{{@a}} {{@b}}{{@c}}{{@d}}]",
+                new Dataset("b", "b"));
+        assertEquals("output string", "[b]", out.toString());
+
+        out.setLength (0);
+        Template.appendHtml(out, "[{{@a}} {{@b}}{{@c}}{{@d}}]",
+                new Dataset("c", " "));
+        assertEquals("output string", "[ ]", out.toString());
+
+        out.setLength (0);
+        Template.appendHtml(out, "[{{@a}} {{@b}}{{@c}}{{@d}}]",
+                new Dataset("a", "a", "b", "b"));
+        assertEquals("output string", "[a b]", out.toString());
+
+        out.setLength (0);
+        Template.appendHtml(out, "[{{@a}} {{@b}}{{@c}}{{@d}}]",
+                new Dataset("a", "a", "c", "c"));
+        assertEquals("output string", "[a c]", out.toString());
+
+        out.setLength (0);
+        Template.appendHtml(out, "[{{@a}} {{@b}}{{@c}}{{@d}}]",
+                new Dataset("a", "a", "d", "d"));
+        assertEquals("output string", "[a d]", out.toString());
     }
 
 }
