@@ -15,6 +15,7 @@
 
 package org.fiz;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,10 +38,6 @@ public class FileUpload {
     protected FileItem item = null;
     /* The FileItemStream representing the file upload, if specified. */
     protected FileItemStream itemStream = null;
-    /* Whether or not the server permits filesystem access.  Equivalent to 
-     * whether or not the underlying file upload is represented as a FileItem 
-     * or a FileItemStream. */
-    protected boolean serverFileAccess;
     /* A cached copy of the bytes of a FileItemStream. */
     protected byte[] itemStreamBytes = null;
     
@@ -51,7 +48,6 @@ public class FileUpload {
      */
     public FileUpload(FileItem fileItem) {
         item = fileItem;
-        serverFileAccess = true;
     }
     
     /**
@@ -62,7 +58,6 @@ public class FileUpload {
      */
     public FileUpload(FileItemStream fileItemStream) {
         itemStream = fileItemStream;
-        serverFileAccess = false;
         
         // Cache the bytes from the FileItemStream now - they must be read 
         // before the next FileItemStream is read (otherwise the data is lost), 
@@ -70,7 +65,8 @@ public class FileUpload {
         try {
             itemStreamBytes = streamToBytes(itemStream.openStream());
         } catch (IOException e) {
-            throw new InternalError("FileItemStream could not be read");
+            throw new InternalError("FileUpload: FileItemStream could not " +
+            		"be read. " + e.getMessage());
         }
     }
     
@@ -82,7 +78,7 @@ public class FileUpload {
      * @return                  The byte[] contents of the file.
      */
     public byte[] get() {
-        if (serverFileAccess) {
+        if (itemStream == null) {
             return item.get();
         } else {
             return itemStreamBytes;
@@ -90,10 +86,10 @@ public class FileUpload {
     }
     
     /**
-     * @return                  The file's content type.
+     * Returns the file's content type.
      */
     public String getContentType() {
-        if (serverFileAccess) {
+        if (itemStream == null) {
             return item.getContentType();
         } else {
             return itemStream.getContentType();
@@ -101,11 +97,11 @@ public class FileUpload {
     }
     
     /**
-     * @return                  The name of the field in the multipart form 
-     *                          corresponding to this file.
+     * Returns the name of the field in the multipart form corresponding to 
+     * this file.
      */
     public String getFieldName() {
-        if (serverFileAccess) {
+        if (itemStream == null) {
             return item.getFieldName();
         } else {
             return itemStream.getFieldName();
@@ -113,16 +109,16 @@ public class FileUpload {
     }
     
     /**
-     * @return                  The underlying FileItem representation, or null 
-     *                          if the file is represented as a FileItemStream.
+     * Returns the underlying FileItem representation, or null if the file is 
+     * represented as a FileItemStream.
      */
     public FileItem getFileItem() {
         return item;
     }
     
     /**
-     * @return                  The underlying FileItemStream representation, or
-     *                          null if the file is represented as a FileItem.
+     * Returns the underlying FileItemStream representation, or null if the 
+     * file is represented as a FileItem.
      */
     public FileItemStream getFileItemStream() {
         return itemStream;
@@ -135,18 +131,18 @@ public class FileUpload {
      * @throws IOException
      */
     public InputStream getInputStream() throws IOException {
-        if (serverFileAccess) {
+        if (itemStream == null) {
             return item.getInputStream();
         } else {
-            return itemStream.openStream();
+            return new ByteArrayInputStream(itemStreamBytes);
         }
     }
     
     /**
-     * @return                  The name of the file.
+     * Returns the name of the file.
      */
     public String getName() {
-        if (serverFileAccess) {
+        if (itemStream == null) {
             return item.getName();
         } else {
             return itemStream.getName();
@@ -154,10 +150,10 @@ public class FileUpload {
     }
     
     /**
-     * @return                  The size of the file, in bytes.
+     * Returns the size of the file, in bytes.
      */
     public long getSize() {
-        if (serverFileAccess) {
+        if (itemStream == null) {
             return item.getSize();
         } else {
             return itemStreamBytes.length;
@@ -165,11 +161,10 @@ public class FileUpload {
     }
     
     /**
-     * @return                  A String representation of the file, using the 
-     *                          default encoding.
+     * Returns a String representation of the file, using the default encoding.
      */
     public String getString() {
-        if (serverFileAccess) {
+        if (itemStream == null) {
             return item.getString();
         } else {
             return new String(itemStreamBytes);
@@ -182,11 +177,12 @@ public class FileUpload {
      * 
      * @param encoding          The String encoding to use.
      * @return                  A String representation of the file.
-     * @throws UnsupportedEncodingException
+     * @throws UnsupportedEncodingException if the specified encoding is not 
+     *                                      supported
      */
     public String getString(String encoding) 
             throws UnsupportedEncodingException {
-        if (serverFileAccess) {
+        if (itemStream == null) {
             return item.getString(encoding);
         } else {
             return new String(itemStreamBytes, encoding);
@@ -194,11 +190,10 @@ public class FileUpload {
     }
     
     /**
-     * @return                  Whether the file instance represents a simple 
-     *                          form field.
+     * Returns whether the file instance represents a simple form field.
      */
     public boolean isFormField() {
-        if (serverFileAccess) {
+        if (itemStream == null) {
             return item.isFormField();
         } else {
             return itemStream.isFormField();
@@ -206,11 +201,11 @@ public class FileUpload {
     }
     
     /**
-     * @return                  Whether the file is being read from memory
-     *                          (always true for FileItemStream instances).
+     * Returns whether the file is being read from memory (always true for 
+     * FileItemStream instances).
      */
     public boolean isInMemory() {
-        if (serverFileAccess) {
+        if (itemStream == null) {
             return item.isInMemory();
         } else {
             return true;
@@ -218,12 +213,12 @@ public class FileUpload {
     }
     
     /**
-     * @return                  Whether the server permits file system access.
-     *                          Corresponds to whether the file is represented 
-     *                          internally as a FileItem or a FileItemStream.
+     * Returns whether the server permits file system access.  Corresponds to 
+     * whether the file is represented internally as a FileItem or a 
+     * FileItemStream.
      */
     public boolean isServerFileAccessPermitted() {
-        return serverFileAccess;
+        return (itemStream == null);
     }
     
     

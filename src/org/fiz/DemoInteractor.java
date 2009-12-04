@@ -17,7 +17,6 @@ package org.fiz;
 import java.lang.management.*;
 import java.util.*;
 
-import org.apache.commons.fileupload.*;
 import org.apache.log4j.*;
 
 /**
@@ -28,11 +27,6 @@ import org.apache.log4j.*;
 public class DemoInteractor extends Interactor {
     // The following variable is used for log4j-based logging.
     protected Logger logger = Logger.getLogger("org.fiz.DemoInteractor");
-
-    // The following beans allow us to collect execution time information
-    // from all of the various garbage collectors.
-//    List<GarbageCollectorMXBean> beans =
-//        ManagementFactory.getGarbageCollectorMXBeans();
 
     // Total time spent in garbage collection since the last time
     // performance statistics were reset.
@@ -436,16 +430,21 @@ public class DemoInteractor extends Interactor {
                         new Column("Max (ms)", "@maximum"),
                         new Column("Std Dev. (ms)", "@standardDeviation"))
         );
-        long gcMs = -baseGcMs;
-        int gcInvocations = -baseGcInvocations;
-//        for (GarbageCollectorMXBean bean: beans) {
-//            gcMs += bean.getCollectionTime();
-//            gcInvocations += bean.getCollectionCount();
-//        }
         StringBuilder body = html.getBody();
-        body.append(String.format("<p>\nGarbage collector invocations: %d" +
-                "<br>Garbage collector execution time: %dms</p>",
-                gcInvocations, gcMs));
+        // Only get garbage collection info if not running under Google 
+        // AppEngine - ManagementFactory is not on the AppEngine whitelist.
+        if (!cr.isGoogleAppEngine()) {
+            long gcMs = -baseGcMs;
+            int gcInvocations = -baseGcInvocations;
+            for (GarbageCollectorMXBean bean: 
+                    ManagementFactory.getGarbageCollectorMXBeans()) {
+                gcMs += bean.getCollectionTime();
+                gcInvocations += bean.getCollectionCount();
+            }
+            body.append(String.format("<p>\nGarbage collector invocations: %d" +
+                    "<br>Garbage collector execution time: %dms</p>",
+                    gcInvocations, gcMs));
+        }
         Link link = new Link(new Dataset("text", "Clear statistics",
                 "ajaxUrl", "/fiz/demo/ajaxClearStats"));
         body.append("<p>");
@@ -535,14 +534,19 @@ public class DemoInteractor extends Interactor {
     public void ajaxClearStats(ClientRequest cr) {
         Timer.resetAll();
         Timer.measureNoopTime();
-        long gcMs = 0;
-        int gcInvocations = 0;
-//        for (GarbageCollectorMXBean bean: beans) {
-//            gcMs += bean.getCollectionTime();
-//            gcInvocations += bean.getCollectionCount();
-//        }
-        baseGcMs = gcMs;
-        baseGcInvocations = gcInvocations;
+        // Only get garbage collection info if not running under Google 
+        // AppEngine - ManagementFactory is not on the AppEngine whitelist.
+        if (!cr.isGoogleAppEngine()) {
+            long gcMs = 0;
+            int gcInvocations = 0;
+            for (GarbageCollectorMXBean bean: 
+                    ManagementFactory.getGarbageCollectorMXBeans()) {
+                gcMs += bean.getCollectionTime();
+                gcInvocations += bean.getCollectionCount();
+            }
+            baseGcMs = gcMs;
+            baseGcInvocations = gcInvocations;
+        }
         cr.redirect("stats");
     }
 

@@ -113,6 +113,14 @@ public class ClientRequest {
                     "click on the refresh button");
         }
     }
+    
+    // Main dataset key used to map the boolean indicating whether or not the 
+    // server running the application is Google's AppEngine.
+    public static final String GOOGLE_APPENGINE = "googleAppEngine";
+    
+    // Main dataset key used to map the boolean indicating whether or not the 
+    // server running the application permits filesystem access.
+    public static final String FILE_ACCESS = "serverFileAccess";
 
     // The servlet under which this ClientRequest is being processed.
     protected HttpServlet servlet;
@@ -128,7 +136,10 @@ public class ClientRequest {
     protected Html html = null;
 
     // Top-level dataset containing global information for this request,
-    // such as query values and POST data.
+    // such as query values and POST data.  Also contains information about 
+    // the server running the application, specifically {@code googleAppEngine} 
+    // will be true if the server is Google's AppEngine, and {@code 
+    // serverFileAccess} will be true if the server permits filesystem access.
     protected Dataset mainDataset = null;
 
     // Indicates whether or not we have already attempted to process
@@ -191,12 +202,6 @@ public class ClientRequest {
     // instead a single fixed signature (so that tests don't have to
     // worry about the signature being different every round).
     protected boolean testMode = false;
-    
-    // The following Dataset will contain information about the server 
-    // currently running the application - specifically, whether or not 
-    // the server is Google's AppEngine, and whether or not the server 
-    // permits filesystem access.  
-    protected Dataset serverConfigData = null;
 
     // The following variable is set to true during most tests; this
     // causes automatic checks of the authentication token to be skipped.
@@ -368,7 +373,7 @@ public class ClientRequest {
      * to complete the transmission of the response back to the client.
      */
     public void finish() {
-        if (pageState != null && getServerConfig().getBool("googleAppEngine")) {
+        if (pageState != null && getMainDataset().getBool(GOOGLE_APPENGINE)) {
             pageState.flushPageState(this);
         }
         
@@ -613,13 +618,28 @@ public class ClientRequest {
      * to the initial values, requests may add values to the main dataset
      * in cases where the data needs to be used globally across the request.
      * This dataset will be available in (almost?) all template expansions
-     * used while processing the request.
+     * used while processing the request.  The main dataset will also 
+     * include two fields describing the server running the application: 
+     * GOOGLE_APPENGINE, which will be true if the server is Google's 
+     * AppEngine, and FILE_ACCESS, if the server permits filesystem access.
      * @return                     Global dataset for this request.
      */
     public Dataset getMainDataset() {
         if (mainDataset != null) {
             return mainDataset;
         }
+        
+        // If null, create a new dataset.
+        if (mainDataset == null) {
+            mainDataset = new Dataset();
+        }
+        // Add fields describing the server running the application.
+        mainDataset.set(GOOGLE_APPENGINE, 
+                Config.get("main", GOOGLE_APPENGINE).equals("1"));
+        mainDataset.set(FILE_ACCESS, 
+                !mainDataset.getBool(GOOGLE_APPENGINE) && 
+                Config.get("main", FILE_ACCESS).equals("1"));
+
 
         // This is the first time someone has asked for the dataset, so we
         // need to build it.  First, if this is an Ajax request read in the
@@ -630,9 +650,6 @@ public class ClientRequest {
         }
 
         // Next, load any query data provided to the request.
-        if (mainDataset == null) {
-            mainDataset = new Dataset();
-        }
         Enumeration params = servletRequest.getParameterNames();
         while (params.hasMoreElements()) {
             String name = (String) params.nextElement();
@@ -715,27 +732,6 @@ public class ClientRequest {
     }
 
     /**
-     * Returns a Dataset containing information about the server running the 
-     * application - specifically, whether or not the server is Google's 
-     * AppEngine, and whether or not the server permits filesystem access.
-     * This content is only read from the main configuration file when needed, 
-     * because during testing, it cannot be created at construction time.
-     * @return                     A Dataset containing information about the 
-     *                             server running the application.
-     */
-    protected Dataset getServerConfig() {
-        if (serverConfigData == null) {
-            serverConfigData = new Dataset();
-            serverConfigData.set("googleAppEngine", 
-                    Config.get("main", "googleAppEngine").equals("1"));
-            serverConfigData.set("serverFileAccess", 
-                    !serverConfigData.getBool("googleAppEngine") && 
-                    Config.get("main", "serverFileAccess").equals("1"));
-        }
-        return serverConfigData;
-    }
-
-    /**
      * Returns information about the servlet under which the ClientRequest is
      * being processed.
      * @return                     HttpServlet for this request.
@@ -774,7 +770,7 @@ public class ClientRequest {
     }
 
     /**
-     * Return the FileItem object associated with an uploaded file
+     * Return the FileUpload object associated with an uploaded file
      * that was received with the current request.  Note: see
      * {@code saveUploadedFile} for a simpler mechanism for dealing with
      * uploads.
@@ -785,7 +781,7 @@ public class ClientRequest {
      *                             attribute from the {@code <input>} form
      *                             element that caused the desired file to be
      *                             uploaded).
-     * @return                     The FileItem associated with
+     * @return                     The FileUpload associated with
      *                             {@code fieldName}, or null if the current
      *                             request doesn't include an uploaded file
      *                             corresponding to {@code fieldName}.
@@ -812,10 +808,19 @@ public class ClientRequest {
     /**
      * Returns true if the server running this application permits 
      * filesystem access (not the case for Google AppEngine).
-     * @return
+     * @return                     See above.
      */
     public boolean isFileAccessPermitted() {
-        return getServerConfig().getBool("serverFileAccess");
+        return getMainDataset().getBool(FILE_ACCESS);
+    }
+
+    /**
+     * Returns true if the server running this application is Google's 
+     * AppEngine.
+     * @return                     See above.
+     */
+    public boolean isGoogleAppEngine() {
+        return getMainDataset().getBool(GOOGLE_APPENGINE);
     }
 
     /**
@@ -886,10 +891,11 @@ public class ClientRequest {
      *                             uploaded).
      * @param dest                 Path name on disk where the upload
      *                             should be saved.
-     * @return                    True means the file was successfully
+     * @return                     True means the file was successfully
      *                             saved.  False means that there is no
      *                             uploaded file corresponding to
-     *                             {@code fieldName}.
+     *                             {@code fieldName}, or filesystem access is 
+     *                             not permitted.
      */
     public boolean saveUploadedFile(String fieldName, String dest) {
         if (!requestDataProcessed) {
@@ -899,7 +905,7 @@ public class ClientRequest {
             return false;
         }
         FileUpload upload = uploads.get(fieldName);
-        if (upload == null || !getServerConfig().getBool("serverFileAccess")) {
+        if (upload == null || !getMainDataset().getBool(FILE_ACCESS)) {
             return false;
         }
         try {
@@ -1185,7 +1191,7 @@ public class ClientRequest {
      * multipart form data submission.  Data for basic form fields is copied to
      * the main dataset.  For uploaded files, information is saved as 
      * FileUploads in {@code uploads}, for use by other methods.
-     * @param item
+     * @param item                 The FileUpload to process.
      */
     protected void readFileUpload(FileUpload item) {
         if (item.isFormField()) {
@@ -1220,11 +1226,11 @@ public class ClientRequest {
      * This method is invoked to parse multipart form data coming
      * from the browser.  Data for basic form fields is copied to
      * the main dataset.  For uploaded files, information is saved
-     * in {@code uploads} for use by other methods.
+     * as FileUploads in {@code uploads}, for use by other methods.
      */
     protected void readMultipartFormData() {
         try {
-            if (getServerConfig().getBool("serverFileAccess")) {
+            if (getMainDataset().getBool(FILE_ACCESS)) {
                 // If the server permits filesystem access, create a series 
                 // of on-disk FileItems (FileItem representations).
                 DiskFileItemFactory factory = new DiskFileItemFactory();
@@ -1252,9 +1258,9 @@ public class ClientRequest {
                 }
                 try {
                     for (Object o: upload.parseRequest(servletRequest)) {
-                        FileItem item = (FileItem) o;
+                        FileItem fileItem = (FileItem) o;
                         // Read and process the content of the FileUpload.
-                        readFileUpload(new FileUpload(item));
+                        readFileUpload(new FileUpload(fileItem));
                     }
                 }
                 catch (FileUploadBase.FileSizeLimitExceededException e) {
@@ -1271,9 +1277,9 @@ public class ClientRequest {
                     FileItemIterator iter = upload.getItemIterator(
                             servletRequest);
                     while (iter.hasNext()) {
-                        FileItemStream item = iter.next();
+                        FileItemStream fileItemStream = iter.next();
                         // Read and process the content of the FileUpload.
-                        readFileUpload(new FileUpload(item));
+                        readFileUpload(new FileUpload(fileItemStream));
                     }
                 }
                 catch (IOException e) {

@@ -111,7 +111,8 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
      */
     public void setUp() {
         ApiProxy.setEnvironmentForCurrentThread(new TestEnvironment());
-        ApiProxy.setDelegate(new ApiProxyLocalImpl(new File(".")){});
+        ApiProxy.setDelegate(new ApiProxyLocalImpl(
+                new File("test/testData")){});
         ApiProxyLocalImpl proxy = (ApiProxyLocalImpl) ApiProxy.getDelegate();
         proxy.setProperty(LocalDatastoreService.NO_STORAGE_PROPERTY, 
                 Boolean.TRUE.toString());

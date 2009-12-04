@@ -40,12 +40,14 @@ public class ClientRequestFixture extends ClientRequest {
         main.set("age", "36");
         main.set("height", "66");
         main.set("state", "California");
+        
+        // Overwrite the server information read from configuration files.
+        main.set(GOOGLE_APPENGINE, false);
+        main.set(FILE_ACCESS, true);
 
         // Configure various testing values.
         testSkipTokenCheck = true;
         testMode = true;
-        serverConfigData = new Dataset("googleAppEngine", false, 
-                "serverFileAccess", true);
     }
 
     public void clearData() {

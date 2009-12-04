@@ -56,18 +56,16 @@ public class FileUploadTest extends junit.framework.TestCase {
         // FileItem constructor.
         FileUpload upload = new FileUpload(item);
         assertEquals("FileItem cached", item, upload.item);
-        assertTrue("serverFileAccess permitted", upload.serverFileAccess);
         assertEquals("itemStreamBytes null", null, upload.itemStreamBytes);
     }
     
     public void test_constructor_fileItemStream() {
         // FileItemStream constructor (before another ItemStream is created).
-        FileUpload upload1 = new FileUpload(itemStream);
-        assertEquals("FileItemStream cached", itemStream, upload1.itemStream);
-        assertFalse("serverFileAccess not permitted", upload1.serverFileAccess);
+        FileUpload upload = new FileUpload(itemStream);
+        assertEquals("FileItemStream cached", itemStream, upload.itemStream);
         assertTrue("itemStreamBytes filled", Arrays.equals(
                 "FileItemStreamFixture file contents".getBytes(), 
-                upload1.itemStreamBytes));
+                upload.itemStreamBytes));
         
         // FileItemStream constructor (after another ItemStream is created);
         new FileItemStreamFixture();
