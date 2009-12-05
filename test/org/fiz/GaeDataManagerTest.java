@@ -973,21 +973,11 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
                 new GaeDataManager.QuerySort(ID, "desc"));
         checkOrderedRecordsIntegrity(request7, new Dataset[] {sampleData[43], 
                 sampleData[41]});
-        
-        // TODO: This test affirms a property that holds on the production 
-        // server only.  This is a bug (it should work on the local 
-        // installation too) it it will reportedly be fixed in the next version 
-        // of the AppEngine SDK.  Once fixed, the active test below it should 
-        // fail and it should be replaced with the commented-out test below it.
         Dataset request8 = manager.findByQuery("president2",
                 new GaeDataManager.QuerySort(MI, "desc"),
                 new GaeDataManager.QuerySort(ID));
-        checkOrderedRecordsIntegrity(request8, new Dataset[] {sampleData[43], 
-                sampleData[42], sampleData[41]});
-        /*
         checkOrderedRecordsIntegrity(request8, new Dataset[] {sampleData[41], 
                 sampleData[43], sampleData[42]});
-        */
     }
     
     public void test_findByQuery() {
