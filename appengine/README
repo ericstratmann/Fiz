@@ -1,0 +1,4 @@
+This folder contains those files that are needed for running Fiz on Google's 
+AppEngine.  
+* appengine-web.xml: should be copied into web/WEB-INF.  The value @APPLICATION_NAME@ 
+  should be replaced with the name of your application as registered with Google.
