@@ -146,6 +146,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
             <fileset dir="web/WEB-INF/demo" />
         </copy>
         <copy todir="${demodir}/WEB-INF" file="web/WEB-INF/web.xml" />
+        <copy todir="${demodir}/WEB-INF" file="web/WEB-INF/appengine-web.xml" failonerror="false" />
     </target>
 
     <target name="build-installer" description="Creates the Fiz installer" depends="compile, javadoc">
