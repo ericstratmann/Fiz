@@ -28,15 +28,15 @@ public class ColumnTest extends junit.framework.TestCase {
         assertEquals("template value", "@name", c.template);
     }
 
-    public void test_constructor_labelAndFormatter() {
+    public void test_constructor_labelAndSection() {
         Link link = new Link(new Dataset("text", "click here",
                 "url", "/a/b"));
         Column c = new Column ("label111", link);
         assertEquals("label value", "label111", c.label);
-        assertEquals("formatter value", link, c.formatter);
+        assertEquals("section value", link, c.section);
     }
 
-    public void test_render_formatter() {
+    public void test_render_section() {
         Link link = new Link(new Dataset("text", "click here",
                 "url", "/a/b/@name"));
         Column c = new Column ("<label>", link);

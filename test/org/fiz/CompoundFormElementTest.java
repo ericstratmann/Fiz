@@ -32,11 +32,6 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
             this.template = template;
         }
         @Override
-        public void addDataRequests(ClientRequest cr, boolean empty) {
-            log.append("addDataRequests " + id + " " +
-                    ((empty) ? "empty" : "not empty") + "\n");
-        }
-        @Override
         public void render(ClientRequest cr, Dataset data) {
             Template.appendHtml(cr.getHtml().getBody(), template, data);
         }
@@ -54,23 +49,6 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
         assertEquals("properties dataset", "id:       id11\n" +
                 "template: \"@1xyz@2\"\n", element.properties.toString());
         assertEquals("number of components", 2, element.components.length);
-    }
-
-    public void test_addDataRequests() {
-        // First invocation: no request from the CompoundFormElement; only
-        // its components.
-        CompoundFormElement element = new CompoundFormElement(
-                new Dataset("id", "id11"),
-                new ElementFixture("name", "name @name"),
-                new ElementFixture("age", "age @age"));
-        ClientRequest cr = new ClientRequestFixture();
-        ElementFixture.log.setLength (0);
-        element.addDataRequests(cr, true);
-        assertEquals("request names (components only)", "",
-                cr.getRequestNames());
-        assertEquals("element log", "addDataRequests name empty\n" +
-                "addDataRequests age empty\n",
-                ElementFixture.log.toString());
     }
 
     public void test_collect() throws FormSection.FormDataException {
@@ -95,15 +73,15 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
                 "height", "65"));
         assertEquals("result HTML", "name Alice, age 35", cr.getHtml().getBody().toString());
     }
-    public void test_render_errorInRequest() {
+    public void test_render_errorInData() {
+        Dataset data = new Dataset();
+        data.setError(new Dataset("message", "sample <error>"));
         CompoundFormElement element = new CompoundFormElement(
                 new Dataset("id", "id11", "template", "@1, @2",
-                "request", "error"),
+                "data", data),
                 new ElementFixture("name", "name @name"),
                 new ElementFixture("age", "age @age"));
         ClientRequest cr = new ClientRequestFixture();
-        cr.addDataRequest("error", RawDataManager.newError(new Dataset(
-                "message", "sample <error>", "value", "47")));
         element.render(cr, new Dataset("name", "Alice", "age", "35",
                 "height", "65"));
         assertEquals("result HTML", "name Alice, age 35", cr.getHtml().getBody().toString());
@@ -115,11 +93,10 @@ public class CompoundFormElementTest extends junit.framework.TestCase {
         CompoundFormElement element = new CompoundFormElement(
                 new Dataset("id", "id11", "template",
                 "(for @name from @state) @1, @2",
-                "request", "getPerson"),
+                "data", person),
                 new ElementFixture("name", "name @name"),
                 new ElementFixture("age", "age @age"));
         ClientRequest cr = new ClientRequestFixture();
-        cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         element.render(cr, new Dataset("name", "Alice", "age", "35",
                 "state", "California"));
         assertEquals("result HTML",

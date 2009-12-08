@@ -118,7 +118,7 @@ public class TabSectionTest extends junit.framework.TestCase {
                 "<a href=\"/a/c\"><div>Second",
                 cr.getHtml().getBody().toString());
     }
-    public void test_render_noRequest() {
+    public void test_render_noData() {
         TabSection section = new TabSection(new Dataset("id", "section12"),
                 new Dataset("id", "first", "text", "Name: @name, age: @age",
                 "url", "/a/b"));
@@ -127,12 +127,9 @@ public class TabSectionTest extends junit.framework.TestCase {
         TestUtil.assertSubstring("tab text", "<div>Name: Alice, age: 36</div>",
                 cr.getHtml().getBody().toString());
     }
-    public void test_render_useResultOfRequest() {
-        cr.addDataRequest("data", RawDataManager.newRequest(
-                new Dataset("name", "Alice", "age", "44")));
-        TabSection section = new TabSection(YamlDataset.newStringInstance(
-                "id:      section12\n" +
-                "request: data\n"),
+    public void test_render_useData() {
+        TabSection section = new TabSection(new Dataset("id", "section12",
+                "data", new Dataset("name", "Alice", "age", "44")),
                 new Dataset("id", "first", "text", "Name: @name, age: @age",
                 "url", "/a/b"));
         cr.showSections(section);

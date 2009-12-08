@@ -24,11 +24,10 @@ import org.fiz.test.*;
  */
 public class TreeSectionTest extends junit.framework.TestCase {
     protected ClientRequest cr;
-    protected static class RequestFactory  {
-        public static DataRequest request(String nodeName) {
-            return RawDataManager.newRequest(new Dataset(
-                "parent", nodeName, "record", new Dataset(
-                "name", "child1", "text", "Child #1")));
+    protected static class DataFactory  {
+        public static Dataset data(String nodeName) {
+            return new Dataset("parent", nodeName, "record", new Dataset(
+                       "name", "child1", "text", "Child #1"));
         }
     }
 
@@ -47,7 +46,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
 
     public void test_constructor_defaultProperties() {
         TreeSection tree = new TreeSection(new Dataset("id", "1234",
-                "requestFactory", "getInfo"));
+                "dataFactory", "getInfo"));
         assertEquals("class property", null,
                 tree.pageProperty.className);
         assertEquals("edgeFamily property", "treeSolid.gif",
@@ -58,14 +57,14 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 tree.pageProperty.leafStyle);
         assertEquals("nodeStyle property", "TreeSection.node",
                 tree.pageProperty.nodeStyle);
-        assertEquals("requestFactory property", "getInfo",
-                tree.pageProperty.requestFactory);
+        assertEquals("dataFactory property", "getInfo",
+                tree.pageProperty.dataFactory);
     }
     public void test_constructor_explicitProperties() {
         TreeSection tree = new TreeSection(new Dataset("class", "class10",
                 "edgeFamily", "family44.gif","id", "1234",
                 "leafStyle", "style for leaves", "nodeStyle", "style for nodes",
-                "requestFactory", "getInfo"));
+                "dataFactory", "getInfo"));
         assertEquals("class property", "class10",
                 tree.pageProperty.className);
         assertEquals("edgeFamily property", "family44.gif",
@@ -76,40 +75,14 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 tree.pageProperty.leafStyle);
         assertEquals("nodeStyle property", "style for nodes",
                 tree.pageProperty.nodeStyle);
-        assertEquals("requestFactory property", "getInfo",
-                tree.pageProperty.requestFactory);
+        assertEquals("dataFactory property", "getInfo",
+                tree.pageProperty.dataFactory);
     }
-
-    public void test_addDataRequests_withRootName() {
-        TreeSection tree = new TreeSection(new Dataset("id", "1234",
-                "requestFactory",
-                "org.fiz.TreeSectionTest$RequestFactory.request",
-                "rootName", "test root name"));
-        tree.addDataRequests(cr);
-        assertEquals("properties dataset", "parent: test root name\n" +
-                "record:\n" +
-                "    name: child1\n" +
-                "    text: \"Child #1\"\n",
-                cr.unnamedRequests.get(0).getResponseData().toString());
-    }
-
-    public void test_addDataRequests_defaultRootName() {
-        TreeSection tree = new TreeSection(new Dataset("id", "1234",
-                "requestFactory",
-                "org.fiz.TreeSectionTest$RequestFactory.request"));
-        tree.addDataRequests(cr);
-        assertEquals("properties dataset", "parent: \"\"\n" +
-                "record:\n" +
-                "    name: child1\n" +
-                "    text: \"Child #1\"\n",
-                cr.unnamedRequests.get(0).getResponseData().toString());
-    }
-
     public void test_ajaxExpand() {
         cr.setClientRequestType(ClientRequest.Type.AJAX);
         TreeSection.PageProperty p = new TreeSection.PageProperty("TreeSection",
                 "treeSolid.gif", "tree1", "TreeSection.leaf", "TreeSection.node",
-                "TreeSectionTest$RequestFactory.request");
+                "TreeSectionTest$DataFactory.data");
         p.names.put("tree1_2", "node16");
         cr.setPageProperty("tree1",  p);
         cr.jsCode = null;
@@ -130,8 +103,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
 
     public void test_render_basics() {
         TreeSection tree = new TreeSection(new Dataset("id", "tree14",
-                "requestFactory", "TreeSectionTest$RequestFactory.request"));
-        tree.addDataRequests(cr);
+                "dataFactory", "TreeSectionTest$DataFactory.data"));
         tree.render(cr);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start TreeSection tree14 -->\n" +
@@ -158,10 +130,41 @@ public class TreeSectionTest extends junit.framework.TestCase {
         assertEquals("names of defined page properties", "tree14",
                 StringUtil.join(cr.pageState.properties.keySet(), ", "));
     }
+    public void test_render_withRootName() {
+        TreeSection tree = new TreeSection(new Dataset("id", "1234",
+                "dataFactory",
+                "org.fiz.TreeSectionTest$DataFactory.data",
+                "rootName", "test root name"));
+        tree.render(cr);
+        TestUtil.assertSubstring("output", "<td class=\"right\">leaf: child1</td>",
+                                 cr.getHtml().getBody().toString());
+    }
+    /*
+        assertEquals("properties dataset", "parent: test root name\n" +
+                "record:\n" +
+                "    name: child1\n" +
+                "    text: \"Child #1\"\n",
+    */
+
+    public void test_render_defaultRootName() {
+        TreeSection tree = new TreeSection(new Dataset("id", "1234",
+                "dataFactory",
+                "org.fiz.TreeSectionTest$DataFactory.data"));
+        tree.render(cr);
+        TestUtil.assertSubstring("output", "<td class=\"right\">leaf: child1</td>",
+                                 cr.getHtml().getBody().toString());
+        /*
+        assertEquals("properties dataset", "parent: \"\"\n" +
+                "record:\n" +
+                "    name: child1\n" +
+                "    text: \"Child #1\"\n",
+                cr.unnamedRequests.get(0).getResponseData().toString());
+        */
+    }
+
     public void test_render_defaultId() {
         TreeSection tree = new TreeSection(new Dataset(
-                "requestFactory", "TreeSectionTest$RequestFactory.request"));
-        tree.addDataRequests(cr);
+                "dataFactory", "TreeSectionTest$DataFactory.data"));
         tree.render(cr);
         TestUtil.assertMatchingSubstring("section identifier",
                 "Start TreeSection tree0",
@@ -170,9 +173,8 @@ public class TreeSectionTest extends junit.framework.TestCase {
     }
     public void test_render_explicitClass() {
         TreeSection tree = new TreeSection(new Dataset("id", "tree1",
-                "requestFactory", "TreeSectionTest$RequestFactory.request",
+                "dataFactory", "TreeSectionTest$DataFactory.data",
                 "class", "xyzzy"));
-        tree.addDataRequests(cr);
         tree.render(cr);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start TreeSection tree1 -->\n" +
@@ -198,7 +200,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
         children.add(new Dataset("name", "Bob"));
         TreeSection.PageProperty p = new TreeSection.PageProperty("TreeSection",
                 "treeSolid.gif", "tree1", "TreeSection.leaf", "TreeSection.node",
-                "TreeSectionTest$RequestFactory.request");
+                "TreeSectionTest$DataFactory.data");
         TreeSection.renderChildren(cr, p, children, "tree1_3", out);
         assertEquals("generated HTML", "  <tr id=\"tree1_3_0\">\n" +
                 "    <td class=\"left\" style=\"background-image: url(" +

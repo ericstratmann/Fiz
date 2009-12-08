@@ -129,12 +129,24 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
         ApiProxy.setEnvironmentForCurrentThread(null);
     }
 
+    public void test_InvalidQueryError() {
+        GaeDataManager.InvalidQueryError e =
+            new GaeDataManager.InvalidQueryError("abc");
+        assertEquals("abc", e.getMessage());
+    }
+
+
+    public void test_GaeException() {
+        GaeDataManager.GaeException e = new GaeDataManager.GaeException("hi");
+        assertEquals("hi", e.getMessage());
+    }
+
     public void test_constructor() {
         // Make sure the DatastoreService was created successfully.
         assertFalse("DatastoreService is not null", manager.datastore == null);
     }
 
-    public void test_getTransaction() {
+    public void test_getNewTransaction() {
         // Make sure getNewTransaction returns active, distinct Transactions.
         Transaction txn1 = manager.getNewTransaction();
         Transaction txn2 = manager.getNewTransaction();
@@ -147,7 +159,7 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
     }
 
     public void test_allocateKeys_withParent() {
-        Key parentKey = manager.insert("president", sampleData[0]);
+        Key parentKey = (Key) manager.insert("president", sampleData[0]).get("record");
         Key[] keys = manager.allocateKeys(parentKey, "president",
                 sampleData.length);
         // Verify that the Keys all have the same parent.
@@ -159,13 +171,7 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
         for (int i=0; i<sampleData.length; i++) {
             sampleData[i].add(GaeDataManager.KEY_PROPERTY, keys[i]);
         }
-        boolean error = false;
-        try {
-            manager.insert(sampleData);
-        } catch (DatastoreError e) {
-            error = true;
-        }
-        assertFalse("Allocated Keys yielded no errors", error);
+        manager.insert(sampleData);
     }
 
     public void test_allocateKeys_noParent() {
@@ -179,13 +185,7 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
         for (int i=0; i<sampleData.length; i++) {
             sampleData[i].add(GaeDataManager.KEY_PROPERTY, keys[i]);
         }
-        boolean error = false;
-        try {
-            manager.insert(sampleData);
-        } catch (DatastoreError e) {
-            error = true;
-        }
-        assertFalse("Allocated Keys yielded no errors", error);
+        manager.insert(sampleData);
     }
 
     public void test_convertKeyRange() {
@@ -200,320 +200,6 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
         }
         assertEquals("KeyRange and Key[] contain the same number of Keys",
                 counter, rangeKeys.length);
-    }
-
-    /* TEST DATASTORE REQUESTS */
-    public void test_GetRequest_run() {
-        Key[] keys = manager.insert("president", sampleData);
-        Key[] keysWithParent = manager.insert(keys[0], "president", sampleData);
-
-        // No Transaction, single Key.
-        GaeDataManager.GetRequest request1 =
-            new GaeDataManager.GetRequest(manager, null, false, keys[0]);
-        request1.run();
-        checkRecordIntegrity(request1.getResponseOrAbort(), sampleData[0]);
-
-        // Transaction, single Key.
-        Transaction txn2 = manager.getNewTransaction();
-        GaeDataManager.GetRequest request2 =
-            new GaeDataManager.GetRequest(manager, txn2, false, keys[0]);
-        request2.run();
-        checkRecordIntegrity(request2.getResponseOrAbort(), sampleData[0]);
-        txn2.commit();
-
-        // No Transaction, multiple Keys.
-        GaeDataManager.GetRequest request3 =
-            new GaeDataManager.GetRequest(manager, null, false, keys);
-        request3.run();
-        checkRecordsIntegrity(request3.getResponseOrAbort(), sampleData,
-                sampleDataComp);
-
-        // Transaction, multiple Keys (error - multiple Entity groups).
-        Transaction txn4 = manager.getNewTransaction();
-        boolean error4 = false;
-        try {
-            new GaeDataManager.GetRequest(manager, txn4, false, keys).run();
-        } catch (DatastoreError e) {
-            error4 = true;
-        }
-        txn4.rollback();
-        assertTrue("Get with Transaction across multiple Entity groups " +
-        		"yields an error", error4);
-
-        // Transaction, multiple Keys (no error).
-        Transaction txn5 = manager.getNewTransaction();
-        GaeDataManager.GetRequest request5 =
-            new GaeDataManager.GetRequest(manager, txn5, false, keysWithParent);
-        request5.run();
-        checkRecordsIntegrity(request5.getResponseOrAbort(), sampleData,
-                sampleDataComp);
-        txn5.commit();
-
-        // Multiple Keys with Key mapping.
-        GaeDataManager.GetRequest request6 =
-            new GaeDataManager.GetRequest(manager, null, true, keys);
-        request6.run();
-        checkMappedRecordsIntegrity(request6.getResponseOrAbort(), sampleData,
-                keys);
-
-        // Single Key matching no Entity.
-        Key[] notInserted = manager.allocateKeys("president", 1);
-        GaeDataManager.GetRequest request7 =
-            new GaeDataManager.GetRequest(manager, null, false, notInserted[0]);
-        request7.run();
-        assertTrue("No records returned when no Entity Key matched",
-                isEmptyDataset(request7.getResponseOrAbort()));
-
-        // Inactive Transaction.
-        Transaction txn8 = manager.getNewTransaction();
-        txn8.commit();
-        boolean error8 = false;
-        try {
-            new GaeDataManager.GetRequest(manager, txn8, false, keys[0]).run();
-        } catch (DatastoreError e) {
-            error8 = true;
-        }
-        assertTrue("Get with inactive Transaction yields an error", error8);
-    }
-
-    public void test_InsertRequest_run() {
-        Key parentKey = manager.insert("president", sampleData[0]);
-        Entity[] sampleEntities = new Entity[sampleData.length];
-        for (int i=1; i<20; i++) {
-            // Some Entities with no parent Key.
-            sampleEntities[i] = GaeDataManager.datasetToEntity("president",
-                    sampleData[i]);
-        }
-        for (int i=20; i<sampleData.length; i++) {
-            // Some Entities with a parent Key.
-            sampleEntities[i] = GaeDataManager.datasetToEntity(parentKey,
-                    "president", sampleData[i]);
-        }
-
-        // No Transaction, single Entity.
-        GaeDataManager.InsertRequest request1 =
-            new GaeDataManager.InsertRequest(manager, null, sampleEntities[1]);
-        request1.run();
-        checkRecordIntegrity(manager.findByKey(extractKeys(request1)[0]),
-                sampleData[1]);
-
-        // Transaction (commit), single Entity.
-        Transaction txn2 = manager.getNewTransaction();
-        GaeDataManager.InsertRequest request2 =
-            new GaeDataManager.InsertRequest(manager, txn2, sampleEntities[2]);
-        request2.run();
-        assertTrue("No records returned when Transaction isn't committed",
-                isEmptyDataset(manager.findByKey(extractKeys(request2)[0])));
-        txn2.commit();
-        checkRecordIntegrity(manager.findByKey(extractKeys(request2)[0]),
-                sampleData[2]);
-
-        // Transaction (rollback), single Entity.
-        Transaction txn3 = manager.getNewTransaction();
-        GaeDataManager.InsertRequest request3 =
-            new GaeDataManager.InsertRequest(manager, txn3, sampleEntities[3]);
-        request3.run();
-        assertTrue("No records returned when Transaction isn't committed",
-                isEmptyDataset(manager.findByKey(extractKeys(request3)[0])));
-        txn3.rollback();
-        assertTrue("No records returned when Transaction isn't committed",
-                isEmptyDataset(manager.findByKey(extractKeys(request3)[0])));
-
-        // No Transaction, multiple Entities.
-        GaeDataManager.InsertRequest request4 =
-            new GaeDataManager.InsertRequest(manager, null,
-                    Arrays.copyOfRange(sampleEntities, 4, 12));
-        request4.run();
-        checkRecordsIntegrity(manager.findByKey(extractKeys(request4)),
-                Arrays.copyOfRange(sampleData, 4, 12), sampleDataComp);
-
-        // Transaction, multiple Entities (error - multiple Entity groups).
-        Transaction txn5 = manager.getNewTransaction();
-        boolean error5 = false;
-        try {
-            new GaeDataManager.InsertRequest(manager, txn5,
-                    Arrays.copyOfRange(sampleEntities, 12, 20)).run();
-        } catch (DatastoreError e) {
-            error5 = true;
-        }
-        txn5.rollback();
-        assertTrue("Insert with Transaction across multiple Entity groups " +
-                "yields an error", error5);
-
-        // Transaction, multiple Entities (no error).
-        Transaction txn6 = manager.getNewTransaction();
-        GaeDataManager.InsertRequest request6 =
-            new GaeDataManager.InsertRequest(manager, txn6,
-                    Arrays.copyOfRange(sampleEntities, 20, 42));
-        request6.run();
-        txn6.commit();
-        checkRecordsIntegrity(manager.findByKey(extractKeys(request6)),
-                Arrays.copyOfRange(sampleData, 20, 42), sampleDataComp);
-
-        // Previously inserted Entities - performs an update.
-        sampleEntities[20].setProperty(YEAR, 1234);
-        sampleData[20].set(YEAR, 1234);
-        GaeDataManager.InsertRequest request7 =
-            new GaeDataManager.InsertRequest(manager, null, sampleEntities[20]);
-        request7.run();
-        checkRecordIntegrity(manager.findByKey(extractKeys(request7)),
-                sampleData[20]);
-
-        // Inactive Transaction.
-        Transaction txn8 = manager.getNewTransaction();
-        txn8.commit();
-        boolean error8 = false;
-        try {
-            new GaeDataManager.InsertRequest(manager, txn8,
-                    sampleEntities[44]).run();
-        } catch (DatastoreError e) {
-            error8 = true;
-        }
-        assertTrue("Insert with inactive Transaction Entity yields an error",
-                error8);
-    }
-
-    public void test_DeleteRequest_run() {
-        Key[] rootKeys = manager.insert("president",
-                Arrays.copyOfRange(sampleData, 0, 20));
-        Key[] childKeys = manager.insert(rootKeys[0], "president",
-                Arrays.copyOfRange(sampleData, 20, sampleData.length));
-
-        // No Transaction.
-        GaeDataManager.DeleteRequest request1 =
-            new GaeDataManager.DeleteRequest(manager, null,
-                    Arrays.copyOfRange(rootKeys, 0, 10));
-        request1.run();
-        assertTrue("Records successfully deleted", isEmptyDataset(
-                manager.findByKey(Arrays.copyOfRange(rootKeys, 0, 10))));
-
-        // Transaction (error - multiple Entity groups).
-        Transaction txn2 = manager.getNewTransaction();
-        boolean error2 = false;
-        try {
-            new GaeDataManager.DeleteRequest(manager, txn2,
-                    Arrays.copyOfRange(rootKeys, 10, 20)).run();
-        } catch (DatastoreError e) {
-            error2 = true;
-        }
-        txn2.rollback();
-        assertTrue("Delete across multiple Entity groups yields an error",
-                error2);
-
-        // Transaction (commit).
-        Transaction txn3 = manager.getNewTransaction();
-        GaeDataManager.DeleteRequest request3 =
-            new GaeDataManager.DeleteRequest(manager, txn3, childKeys);
-        request3.run();
-        checkRecordsIntegrity(manager.findByKey(childKeys),
-                Arrays.copyOfRange(sampleData, 20, sampleData.length),
-                sampleDataComp);
-        txn3.commit();
-        assertTrue("Records successfully deleted", isEmptyDataset(
-                manager.findByKey(childKeys)));
-
-        // Transaction (rollback).
-        Transaction txn4 = manager.getNewTransaction();
-        GaeDataManager.DeleteRequest request4 =
-            new GaeDataManager.DeleteRequest(manager, txn4, rootKeys[11]);
-        request4.run();
-        checkRecordIntegrity(manager.findByKey(rootKeys[11]), sampleData[11]);
-        txn4.rollback();
-        checkRecordIntegrity(manager.findByKey(rootKeys[11]), sampleData[11]);
-
-        // Inactive Transaction.
-        Transaction txn5 = manager.getNewTransaction();
-        txn5.rollback();
-        boolean error5 = false;
-        try {
-            new GaeDataManager.DeleteRequest(manager, txn5, rootKeys[12]).run();
-        } catch (DatastoreError e) {
-            error5 = true;
-        }
-        assertTrue("Delete with inactive Transaction Entity yields an error",
-                error5);
-
-        // Previously deleted Entities - no error.
-        try {
-            GaeDataManager.DeleteRequest request6 =
-                new GaeDataManager.DeleteRequest(manager, null,
-                        Arrays.copyOfRange(rootKeys, 0, 10));
-            request6.run();
-            assertTrue("Records successfully deleted", isEmptyDataset(
-                    manager.findByKey(Arrays.copyOfRange(rootKeys, 0, 10))));
-        } catch (DatastoreError e) {
-            assertTrue("Deleting previously deleted Entities yielded an error",
-                    false);
-        }
-    }
-
-    public void test_QueryRequest_run() {
-        Key[] rootKeys = manager.insert("president",
-                Arrays.copyOfRange(sampleData, 0, 20));
-        Key[] childKeys = manager.insert(rootKeys[1], "president",
-                Arrays.copyOfRange(sampleData, 20, sampleData.length));
-
-        // No Transaction.
-        GaeDataManager.QueryRequest request1 =
-            new GaeDataManager.QueryRequest(manager, null, false, false,
-                    new Query("president"));
-        request1.run();
-        checkRecordsIntegrity(request1.getResponseOrAbort(), sampleData,
-                sampleDataComp);
-
-        // Transaction (error - multiple Entity groups).
-        Transaction txn2 = manager.getNewTransaction();
-        boolean error2 = false;
-        try {
-            new GaeDataManager.QueryRequest(manager, txn2, false, false,
-                    new Query("president")).run();
-        } catch (DatastoreError e) {
-            error2 = true;
-        }
-        txn2.rollback();
-        assertTrue("Query across multiple Entity groups yields an error",
-                error2);
-
-        // Transaction (no error).
-        Transaction txn3 = manager.getNewTransaction();
-        GaeDataManager.QueryRequest request3 =
-            new GaeDataManager.QueryRequest(manager, txn3, false, false,
-                    new Query("president", rootKeys[1]).addFilter(
-                            YEAR, Query.FilterOperator.GREATER_THAN, 1800));
-        request3.run();
-        txn3.commit();
-        checkRecordsIntegrity(request3.getResponseOrAbort(), Arrays.copyOfRange(
-                sampleData, 20, sampleData.length), sampleDataComp);
-
-        // Inactive Transaction.
-        Transaction txn4 = manager.getNewTransaction();
-        txn4.commit();
-        boolean error4 = false;
-        try {
-            new GaeDataManager.QueryRequest(manager, txn4, false, false,
-                    new Query("president")).run();
-        } catch (DatastoreError e) {
-            error4 = true;
-        }
-        assertTrue("Query with an inactive Transaction yields an error",
-                error4);
-
-        // Key mapping.
-        GaeDataManager.QueryRequest request5 =
-            new GaeDataManager.QueryRequest(manager, null, true, false,
-                    new Query("president").addFilter(ID,
-                            Query.FilterOperator.LESS_THAN, 20));
-        request5.run();
-        checkMappedRecordsIntegrity(request5.getResponseOrAbort(),
-                Arrays.copyOfRange(sampleData, 0, 20), rootKeys);
-
-        // Keys-only records.
-        GaeDataManager.QueryRequest request6 =
-            new GaeDataManager.QueryRequest(manager, null, false, true,
-                    new Query("president").addFilter(ID,
-                            Query.FilterOperator.LESS_THAN, 20));
-        request6.run();
-        checkKeyRecordsIntegrity(extractKeys(request6), rootKeys);
     }
 
     /* TEST QUERY ATTRIBUTES */
@@ -554,11 +240,11 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
         boolean error6 = false;
         try {
             new GaeDataManager.QueryTerm("f", "!=", "6");
-        } catch (DatastoreError e) {
-            error6 = true;
+            fail("Error not thrown");
+        } catch (GaeDataManager.InvalidQueryError e) {
+            assertEquals("term6 error message", "Operator (!=) must be one of:" +
+                         " {=, <, >, <=, >=}.", e.getMessage());
         }
-        assertTrue("QueryTerm with an unrecognized operator yields an error",
-                error6);
     }
 
     public void test_QueryTerm_addToQuery() {
@@ -607,11 +293,12 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
         boolean error6 = false;
         try {
             new GaeDataManager.QuerySort("f", "increasing");
-        } catch (DatastoreError e) {
-            error6 = true;
+            fail("Error not thrown");
+        } catch (GaeDataManager.InvalidQueryError e) {
+            assertEquals("sort6 error message", "QuerySort Direction (increasing)" +
+                         " must be (case insensitive) one of: {ascending, asc, " +
+                         "descending, desc}.", e.getMessage());
         }
-        assertTrue("QuerySort with an unrecognized direction yields an error",
-                error6);
     }
 
     public void test_QuerySort_addToQuery() {
@@ -626,7 +313,7 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
 
     /* TEST FIND BY KEY */
     public void test_findByKey() {
-        Key[] keys = manager.insert("president", sampleData);
+        Key[] keys =  getKeys(manager.insert("president", sampleData));
 
         // Without Transaction.
         checkRecordsIntegrity(manager.findByKey(keys), sampleData,
@@ -638,8 +325,8 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
     }
 
     public void test_findMappingByKey() {
-        Key parentKey = manager.insert("president", sampleData[0]);
-        Key[] keys = manager.insert(parentKey, "president", sampleData);
+        Key parentKey = getKeys(manager.insert("president", sampleData[0]))[0];
+        Key[] keys = getKeys(manager.insert(parentKey, "president", sampleData));
 
         // Without Transaction.
         checkMappedRecordsIntegrity(manager.findMappingByKey(keys), sampleData,
@@ -652,51 +339,66 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
     }
 
     public void test_handleFindKey() {
-        Key[] keys = manager.insert("president", sampleData);
+        Key[] keys = getKeys(manager.insert("president", sampleData));
+        Key[] keysWithParent = getKeys(manager.insert(keys[0], "president", sampleData));
+
         checkMappedRecordsIntegrity(manager.handleFindKey(null, true, keys),
                 sampleData, keys);
-    }
 
-    public void test_newFindByKeyRequest() {
-        Key[] keys = manager.insert("president", sampleData);
+        // No Transaction, single Key.
+        Dataset request1 = manager.handleFindKey(null, false, keys[0]);
+        checkRecordIntegrity(request1, sampleData[0]);
 
-        // Without Transaction.
-        checkRecordsIntegrity(manager.newFindByKeyRequest(
-                keys).getResponseOrAbort(), sampleData, sampleDataComp);
-        // With Transaction.
-        Transaction txn = manager.getNewTransaction();
-        checkRecordIntegrity(manager.newFindByKeyRequest(txn,
-                keys[44]).getResponseOrAbort(), sampleData[44]);
-        txn.commit();
-    }
+        // Transaction, single Key.
+        Transaction txn2 = manager.getNewTransaction();
+        Dataset request2 = manager.handleFindKey(txn2, false, keys[0]);
+        checkRecordIntegrity(request2, sampleData[0]);
+        txn2.commit();
 
-    public void test_newFindMappingByKeyRequest() {
-        Key parentKey = manager.insert("president", sampleData[0]);
-        Key[] keys = manager.insert(parentKey, "president", sampleData);
+        // No Transaction, multiple Keys.
+        Dataset request3 = manager.handleFindKey(null, false, keys);
+        checkRecordsIntegrity(request3, sampleData, sampleDataComp);
 
-        // Without Transaction.
-        checkMappedRecordsIntegrity(manager.newFindMappingByKeyRequest(
-                keys).getResponseOrAbort(), sampleData, keys);
-        // With Transaction.
-        Transaction txn = manager.getNewTransaction();
-        checkMappedRecordsIntegrity(manager.newFindMappingByKeyRequest(txn,
-                keys).getResponseOrAbort(), sampleData, keys);
-        txn.commit();
-    }
+        // Transaction, multiple Keys (error - multiple Entity groups).
+        Transaction txn4 = manager.getNewTransaction();
+        Dataset data4 = manager.handleFindKey(txn4, false, keys);
+        txn4.rollback();
+        assertEquals("Get with Transaction across multiple Entity groups " +
+                     "yields an error", "Invalid, incomplete, or malformed " +
+                     "argument of type: Key", data4.getErrorMessage());
 
-    public void test_handleNewFindKeyRequest() {
-        Key[] keys = manager.insert("president", sampleData);
-        checkRecordsIntegrity(manager.handleNewFindKeyRequest(null, false,
-                keys).getResponseOrAbort(), sampleData, sampleDataComp);
+        // Transaction, multiple Keys (no error).
+        Transaction txn5 = manager.getNewTransaction();
+        Dataset request5 = manager.handleFindKey(txn5, false, keysWithParent);
+        checkRecordsIntegrity(request5, sampleData, sampleDataComp);
+        txn5.commit();
+
+        // Multiple Keys with Key mapping.
+        Dataset request6 = manager.handleFindKey(null, true, keys);
+        checkMappedRecordsIntegrity(request6, sampleData, keys);
+
+        // Single Key matching no Entity.
+        Key[] notInserted = manager.allocateKeys("president", 1);
+        Dataset request7 = manager.handleFindKey(null, false, notInserted[0]);
+        assertTrue("No records returned when no Entity Key matched",
+                isEmptyDataset(request7));
+
+        // Inactive Transaction.
+        Transaction txn8 = manager.getNewTransaction();
+        txn8.commit();
+        Dataset data8 = manager.handleFindKey(txn8, false, keys[0]);
+        assertEquals("Get with inactive transaction yields error" +
+                     "yields an error", "Transaction is inactive. ",
+                     data8.getErrorMessage());
     }
 
     /* TEST INSERT */
     public void test_insert() {
         // No Transaction, no pre-allocated Keys.
-        Key k1 = manager.insert("president", sampleData[0]);
-        Key[] k2 = manager.insert("president", sampleData);
-        Key k3 = manager.insert(k1, "president", sampleData[0]);
-        Key[] k4 = manager.insert(k1, "president", sampleData);
+        Key k1 = getKeys(manager.insert("president", sampleData[0]))[0];
+        Key[] k2 = getKeys(manager.insert("president", sampleData));
+        Key k3 = getKeys(manager.insert(k1, "president", sampleData[0]))[0];
+        Key[] k4 = getKeys(manager.insert(k1, "president", sampleData));
         checkRecordIntegrity(manager.findByKey(k1), sampleData[0]);
         checkRecordsIntegrity(manager.findByKey(k2),sampleData, sampleDataComp);
         checkRecordIntegrity(manager.findByKey(k3), sampleData[0]);
@@ -704,9 +406,9 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
 
         // Transaction, no pre-allocated Keys.
         Transaction txn1 = manager.getNewTransaction();
-        Key tk1 = manager.insert(txn1, "president", sampleData[0]);
-        Key tk2 = manager.insert(txn1, tk1, "president", sampleData[0]);
-        Key[] tk3 = manager.insert(txn1, tk1, "president", sampleData);
+        Key tk1 = getKeys(manager.insert(txn1, "president", sampleData[0]))[0];
+        Key tk2 = getKeys(manager.insert(txn1, tk1, "president", sampleData[0]))[0];
+        Key[] tk3 = getKeys(manager.insert(txn1, tk1, "president", sampleData));
         txn1.commit();
         checkRecordIntegrity(manager.findByKey(tk1), sampleData[0]);
         checkRecordIntegrity(manager.findByKey(tk2), sampleData[0]);
@@ -717,11 +419,11 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
         for (int i=0; i<sampleData.length; i++) {
             sampleData[i].set(GaeDataManager.KEY_PROPERTY, alloc[i]);
         }
-        Key ak1 = manager.insert(sampleData[0]);
-        Key[] ak2 = manager.insert(sampleData);
+        Key ak1 = getKeys(manager.insert(sampleData[0]))[0];
+        Key[] ak2 = getKeys(manager.insert(sampleData));
         Transaction txn2 = manager.getNewTransaction();
-        Key ak3 = manager.insert(txn2, sampleData[0]);
-        Key[] ak4 = manager.insert(txn2, sampleData);
+        Key ak3 = getKeys(manager.insert(txn2, sampleData[0]))[0];
+        Key[] ak4 = getKeys(manager.insert(txn2, sampleData));
         txn2.commit();
         checkRecordIntegrity(manager.findByKey(ak1), sampleData[0], true);
         checkRecordsIntegrity(manager.findByKey(ak2), sampleData,
@@ -732,77 +434,84 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
     }
 
     public void test_handleInsert() {
-        Entity[] ent = new Entity[sampleData.length];
-        for (int i=0; i<sampleData.length; i++) {
-            ent[i] = GaeDataManager.datasetToEntity("president", sampleData[i]);
+        Key parentKey = getKeys(manager.insert("president", sampleData[0]))[0];
+        Entity[] sampleEntities = new Entity[sampleData.length];
+        for (int i=1; i<20; i++) {
+            // Some Entities with no parent Key.
+            sampleEntities[i] = GaeDataManager.datasetToEntity("president",
+                    sampleData[i]);
         }
-        Key k1 = manager.handleInsert(null, ent[0]);
-        Key[] k2 = manager.handleInsert(null, ent);
-        checkRecordIntegrity(manager.findByKey(k1), sampleData[0]);
-        checkRecordsIntegrity(manager.findByKey(k2),sampleData, sampleDataComp);
-    }
-
-    public void test_newInsertRequest() {
-        // No Transaction, no pre-allocated Keys.
-        Key k1 = extractKeys(manager.newInsertRequest("president",
-                sampleData[0]))[0];
-        Key[] k2 = extractKeys(manager.newInsertRequest("president",
-                sampleData));
-        Key k3 = extractKeys(manager.newInsertRequest(k1, "president",
-                sampleData[0]))[0];
-        Key[] k4 = extractKeys(manager.newInsertRequest(k1, "president",
-                sampleData));
-        checkRecordIntegrity(manager.findByKey(k1), sampleData[0]);
-        checkRecordsIntegrity(manager.findByKey(k2),sampleData, sampleDataComp);
-        checkRecordIntegrity(manager.findByKey(k3), sampleData[0]);
-        checkRecordsIntegrity(manager.findByKey(k4),sampleData, sampleDataComp);
-
-        // Transaction, no pre-allocated Keys.
-        Transaction txn1 = manager.getNewTransaction();
-        Key tk1 = extractKeys(manager.newInsertRequest(txn1, "president",
-                sampleData[0]))[0];
-        Key tk2 = extractKeys(manager.newInsertRequest(txn1, tk1, "president",
-                sampleData[0]))[0];
-        Key[] tk3 = extractKeys(manager.newInsertRequest(txn1, tk1, "president",
-                sampleData));
-        txn1.commit();
-        checkRecordIntegrity(manager.findByKey(tk1), sampleData[0]);
-        checkRecordIntegrity(manager.findByKey(tk2), sampleData[0]);
-        checkRecordsIntegrity(manager.findByKey(tk3),sampleData,sampleDataComp);
-
-        // Pre-allocated Keys.
-        Key[] alloc = manager.allocateKeys(k1, "president", sampleData.length);
-        for (int i=0; i<sampleData.length; i++) {
-            sampleData[i].set(GaeDataManager.KEY_PROPERTY, alloc[i]);
+        for (int i=20; i<sampleData.length; i++) {
+            // Some Entities with a parent Key.
+            sampleEntities[i] = GaeDataManager.datasetToEntity(parentKey,
+                    "president", sampleData[i]);
         }
-        Key ak1 = extractKeys(manager.newInsertRequest(sampleData[0]))[0];
-        Key[] ak2 = extractKeys(manager.newInsertRequest(sampleData));
+
+        // No Transaction, single Entity.
+        Dataset request1 = manager.handleInsert(null, sampleEntities[1]);
+        checkRecordIntegrity(manager.findByKey(extractKeys(request1)[0]),
+                sampleData[1]);
+
+        // Transaction (commit), single Entity.
         Transaction txn2 = manager.getNewTransaction();
-        Key ak3 = extractKeys(manager.newInsertRequest(txn2, sampleData[0]))[0];
-        Key[] ak4 = extractKeys(manager.newInsertRequest(txn2, sampleData));
+        Dataset request2 = manager.handleInsert(txn2, sampleEntities[2]);
+        assertTrue("No records returned when Transaction isn't committed",
+                isEmptyDataset(manager.findByKey(extractKeys(request2)[0])));
         txn2.commit();
-        checkRecordIntegrity(manager.findByKey(ak1), sampleData[0], true);
-        checkRecordsIntegrity(manager.findByKey(ak2), sampleData,
-                sampleDataComp, true);
-        checkRecordIntegrity(manager.findByKey(ak3), sampleData[0], true);
-        checkRecordsIntegrity(manager.findByKey(ak4), sampleData,
-                sampleDataComp, true);
+        checkRecordIntegrity(manager.findByKey(extractKeys(request2)[0]),
+                sampleData[2]);
+
+        // Transaction (rollback), single Entity.
+        Transaction txn3 = manager.getNewTransaction();
+        Dataset request3 = manager.handleInsert(txn3, sampleEntities[3]);
+        assertTrue("No records returned when Transaction isn't committed",
+                isEmptyDataset(manager.findByKey(extractKeys(request3)[0])));
+        txn3.rollback();
+        assertTrue("No records returned when Transaction isn't committed",
+                isEmptyDataset(manager.findByKey(extractKeys(request3)[0])));
+
+        // No Transaction, multiple Entities.
+        Dataset request4 = manager.handleInsert(null,
+                    Arrays.copyOfRange(sampleEntities, 4, 12));
+        checkRecordsIntegrity(manager.findByKey(extractKeys(request4)),
+                Arrays.copyOfRange(sampleData, 4, 12), sampleDataComp);
+
+        // Transaction, multiple Entities (error - multiple Entity groups).
+        Transaction txn5 = manager.getNewTransaction();
+        boolean error5 = false;
+        Dataset data5 = manager.handleInsert(txn5, Arrays.copyOfRange(sampleEntities, 12, 20));
+        txn5.rollback();
+        assertEquals("Insert with Transaction across multiple Entity groups " +
+                     "yields an error", "Invalid, incomplete, or malformed " +
+                     "argument of type: Entity", data5.getErrorMessage());
+
+        // Transaction, multiple Entities (no error).
+        Transaction txn6 = manager.getNewTransaction();
+        Dataset request6 = manager.handleInsert(txn6,
+                    Arrays.copyOfRange(sampleEntities, 20, 42));
+        txn6.commit();
+        checkRecordsIntegrity(manager.findByKey(extractKeys(request6)),
+                Arrays.copyOfRange(sampleData, 20, 42), sampleDataComp);
+
+        // Previously inserted Entities - performs an update.
+        sampleEntities[20].setProperty(YEAR, 1234);
+        sampleData[20].set(YEAR, 1234);
+        Dataset request7 = manager.handleInsert(null, sampleEntities[20]);
+        checkRecordIntegrity(manager.findByKey(extractKeys(request7)),
+                sampleData[20]);
+
+        // Inactive Transaction.
+        Transaction txn8 = manager.getNewTransaction();
+        txn8.commit();
+        Dataset data8 = manager.handleInsert(txn8, sampleEntities[44]);
+        assertEquals("Insert with inactive transaction yields error",
+                     "Transaction is inactive. ", data8.getErrorMessage());
     }
 
-    public void test_handleNewInsertRequest() {
-        Entity[] ent = new Entity[sampleData.length];
-        for (int i=0; i<sampleData.length; i++) {
-            ent[i] = GaeDataManager.datasetToEntity("president", sampleData[i]);
-        }
-        Key k1 = extractKeys(manager.handleNewInsertRequest(null, ent[0]))[0];
-        Key[] k2 = extractKeys(manager.handleNewInsertRequest(null, ent));
-        checkRecordIntegrity(manager.findByKey(k1), sampleData[0]);
-        checkRecordsIntegrity(manager.findByKey(k2),sampleData, sampleDataComp);
-    }
 
     /* TEST DELETE */
     public void test_delete() {
-        Key[] keys = manager.insert("president", sampleData);
+        Key[] keys = getKeys(manager.insert("president", sampleData));
         checkRecordsIntegrity(manager.findByKey(keys), sampleData,
                 sampleDataComp);
         // With Transaction.
@@ -814,25 +523,58 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
         assertTrue("All deleted", isEmptyDataset(manager.findByKey(keys)));
     }
 
-    public void test_newDeleteRequest() {
-        Key[] keys = manager.insert("president", sampleData);
-        checkRecordsIntegrity(manager.findByKey(keys), sampleData,
-                sampleDataComp);
-        // With Transaction.
-        Transaction txn = manager.getNewTransaction();
-        manager.newDeleteRequest(txn, keys[0]);
-        txn.commit();
-        // Without Transaction.
-        manager.newDeleteRequest(Arrays.copyOfRange(keys, 1, keys.length));
-        assertTrue("All deleted", isEmptyDataset(manager.findByKey(keys)));
-    }
-
     public void test_handleDelete() {
-        Key[] keys = manager.insert("president", sampleData);
-        checkRecordsIntegrity(manager.findByKey(keys), sampleData,
+        Key[] rootKeys = getKeys(manager.insert("president",
+                Arrays.copyOfRange(sampleData, 0, 20)));
+        Key[] childKeys = getKeys(manager.insert(rootKeys[0], "president",
+                 Arrays.copyOfRange(sampleData, 20, sampleData.length)));
+
+        // No Transaction.
+        Dataset request1 = manager.handleDelete(null,
+                    Arrays.copyOfRange(rootKeys, 0, 10));
+        assertTrue("Records successfully deleted", isEmptyDataset(
+                manager.findByKey(Arrays.copyOfRange(rootKeys, 0, 10))));
+
+        // Transaction (error - multiple Entity groups).
+        Transaction txn2 = manager.getNewTransaction();
+        boolean error2 = false;
+        Dataset data2 = manager.handleDelete(txn2, Arrays.copyOfRange(rootKeys, 10, 20));
+        txn2.rollback();
+        assertEquals("Delete across multiple Entity groups yields an error",
+                     "Invalid, incomplete, or malformed argument of type: Key",
+                     data2.getErrorMessage());
+
+        // Transaction (commit).
+        Transaction txn3 = manager.getNewTransaction();
+        Dataset request3 = manager.handleDelete(txn3, childKeys);
+        checkRecordsIntegrity(manager.findByKey(childKeys),
+                Arrays.copyOfRange(sampleData, 20, sampleData.length),
                 sampleDataComp);
-        manager.handleDelete(null, keys);
-        assertTrue("All deleted", isEmptyDataset(manager.findByKey(keys)));
+        txn3.commit();
+        assertTrue("Records successfully deleted", isEmptyDataset(
+                manager.findByKey(childKeys)));
+
+        // Transaction (rollback).
+        Transaction txn4 = manager.getNewTransaction();
+        Dataset request4 = manager.handleDelete(txn4, rootKeys[11]);
+        checkRecordIntegrity(manager.findByKey(rootKeys[11]), sampleData[11]);
+        txn4.rollback();
+        checkRecordIntegrity(manager.findByKey(rootKeys[11]), sampleData[11]);
+
+        // Inactive Transaction.
+        Transaction txn5 = manager.getNewTransaction();
+        txn5.rollback();
+        Dataset data5 = manager.handleDelete(txn5, rootKeys[12]);
+        assertEquals("Delete with inactive Transaction yields error",
+                     "Transaction is inactive. ", data5.getErrorMessage());
+
+        // Previously deleted Entities - no error.
+        Dataset data6 = manager.handleDelete(null,
+                        Arrays.copyOfRange(rootKeys, 0, 10));
+        assertTrue("Records successfully deleted", isEmptyDataset(
+                    manager.findByKey(Arrays.copyOfRange(rootKeys, 0, 10))));
+        assertEquals("Deleting previously deleted Entities yielded an error",
+                     null, data6);
     }
 
     /* TEST FIND BY QUERY */
@@ -893,16 +635,12 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
                 sampleData[33]}, sampleDataComp);
 
         // Query with multiple inequalities on different attributes (fails).
-        boolean error5 = false;
-        try {
-            manager.findByQuery("president",
+        Dataset data5 = manager.findByQuery("president",
                     new GaeDataManager.QueryTerm(LASTN, "<", "Rocky"),
                     new GaeDataManager.QueryTerm(FIRSTN, ">", "Bullwinkle"));
-        } catch (DatastoreError e) {
-            error5 = true;
-        }
-        assertTrue("Error when querying with multiple inequalities on same " +
-        		"attribute", error5);
+        assertEquals("Error when querying with multiple inequalities on same " +
+                     "attribute","Invalid, incomplete, or malformed argument " +
+                     "of type: QueryArgument", data5.getErrorMessage());
 
         // Query on an attribute that doesn't exist in some entities.
         Dataset result6 = manager.findByQuery("president",
@@ -938,27 +676,21 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
                 sampleData[41]});
 
         // Query sorted with an inequality filter (badly-ordered sorts).
-        boolean error4 = false;
-        try {
-            manager.findByQuery("president",
+        Dataset data4 = manager.findByQuery("president",
                     new GaeDataManager.QueryTerm(LASTN, "<", "C"),
                     new GaeDataManager.QuerySort(YEAR, "desc"),
                     new GaeDataManager.QuerySort(LASTN));
-        } catch (DatastoreError e) {
-            error4 = true;
-        }
-        assertTrue("Sort on an inequality must come first", error4);
+        assertEquals("Sort on an inequality must come first",
+                     "Invalid, incomplete, or malformed argument of type: " +
+                     "QueryArgument", data4.getErrorMessage());
 
         // Query sorted with an inequality filter (on different attributes).
-        boolean error5 = false;
-        try {
-            manager.findByQuery("president",
+        Dataset data5 = manager.findByQuery("president",
                     new GaeDataManager.QueryTerm(FIRSTN, ">", "X"),
                     new GaeDataManager.QuerySort(LASTN));
-        } catch (DatastoreError e) {
-            error5 = true;
-        }
-        assertTrue("If sorted, must sort on inequality-filtered attrs", error5);
+        assertEquals("If sorted, must sort on inequality-filtered attrs",
+                     "Invalid, incomplete, or malformed argument of type: " +
+                     "QueryArgument", data5.getErrorMessage());
 
         manager.insert("president2", Arrays.copyOfRange(sampleData, 41, 44));
 
@@ -981,8 +713,8 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
     }
 
     public void test_findByQuery() {
-        Key parentKey = manager.insert("parent", sampleData[0]);
-        Key[] keys = manager.insert(parentKey, "president", sampleData);
+        Key parentKey = getKeys(manager.insert("parent", sampleData[0]))[0];
+        Key[] keys = getKeys(manager.insert(parentKey, "president", sampleData));
 
         // Just checking output format - more detailed tests on QueryRequest.
         checkRecordsIntegrity(manager.findByQuery("president"), sampleData,
@@ -996,8 +728,8 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
     }
 
     public void test_findMappingByQuery() {
-        Key parentKey = manager.insert("parent", sampleData[0]);
-        Key[] keys = manager.insert(parentKey, "president", sampleData);
+        Key parentKey = getKeys(manager.insert("parent", sampleData[0]))[0];
+        Key[] keys = getKeys(manager.insert(parentKey, "president", sampleData));
 
         // Just checking output format - more detailed tests on QueryRequest.
         checkMappedRecordsIntegrity(manager.findMappingByQuery("president"),
@@ -1011,8 +743,8 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
     }
 
     public void test_findKeyByQuery() {
-        Key parentKey = manager.insert("parent", sampleData[0]);
-        Key[] keys = manager.insert(parentKey, "president", sampleData);
+        Key parentKey = getKeys(manager.insert("parent", sampleData[0]))[0];
+        Key[] keys = getKeys(manager.insert(parentKey, "president", sampleData));
 
         // Just checking output format - more detailed tests on QueryRequest.
         checkKeyRecordsIntegrity(manager.findKeyByQuery("president"), keys);
@@ -1025,68 +757,13 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
     }
 
     public void test_handleFindByQuery() {
-        Key[] keys = manager.insert("president", sampleData);
+        Key[] keys = getKeys(manager.insert("president", sampleData));
 
         // Just checking output format - more detailed tests on QueryRequest.
         checkRecordsIntegrity(manager.handleFindQuery(null, null, "president",
                 false, false, new GaeDataManager.QueryTerm(ID, ">=", 20)),
                 Arrays.copyOfRange(sampleData, 20, sampleData.length),
                 sampleDataComp);
-    }
-
-    public void test_newFindByQueryRequest() {
-        Key parentKey = manager.insert("parent", sampleData[0]);
-        Key[] keys = manager.insert(parentKey, "president", sampleData);
-
-        // Just checking output format - more detailed tests on QueryRequest.
-        checkRecordsIntegrity(manager.newFindByQueryRequest(
-                "president").getResponseOrAbort(), sampleData, sampleDataComp);
-        checkRecordsIntegrity(manager.newFindByQueryRequest(parentKey,
-                "president").getResponseOrAbort(), sampleData, sampleDataComp);
-        Transaction txn = manager.getNewTransaction();
-        checkRecordsIntegrity(manager.newFindByQueryRequest(txn, parentKey,
-                "president").getResponseOrAbort(), sampleData, sampleDataComp);
-        txn.commit();
-    }
-
-    public void test_newFindMappingByQueryRequest() {
-        Key parentKey = manager.insert("parent", sampleData[0]);
-        Key[] keys = manager.insert(parentKey, "president", sampleData);
-
-        // Just checking output format - more detailed tests on QueryRequest.
-        checkMappedRecordsIntegrity(manager.newFindMappingByQueryRequest(
-                "president").getResponseOrAbort(), sampleData, keys);
-        checkMappedRecordsIntegrity(manager.newFindMappingByQueryRequest(
-                parentKey, "president").getResponseOrAbort(), sampleData, keys);
-        Transaction txn = manager.getNewTransaction();
-        checkMappedRecordsIntegrity(manager.newFindMappingByQueryRequest(txn,
-                parentKey, "president").getResponseOrAbort(), sampleData, keys);
-        txn.commit();
-    }
-
-    public void test_newFindKeyByQueryRequest() {
-        Key parentKey = manager.insert("parent", sampleData[0]);
-        Key[] keys = manager.insert(parentKey, "president", sampleData);
-
-        // Just checking output format - more detailed tests on QueryRequest.
-        checkKeyRecordsIntegrity(extractKeys(manager.newFindKeyByQueryRequest(
-                "president")), keys);
-        checkKeyRecordsIntegrity(extractKeys(manager.newFindKeyByQueryRequest(
-                parentKey, "president")), keys);
-        Transaction txn = manager.getNewTransaction();
-        checkKeyRecordsIntegrity(extractKeys(manager.newFindKeyByQueryRequest(
-                txn, parentKey, "president")), keys);
-        txn.commit();
-    }
-
-    public void test_handleNewFindByQueryRequest() {
-        Key[] keys = manager.insert("president", sampleData);
-
-        // Just checking output format - more detailed tests on QueryRequest.
-        checkKeyRecordsIntegrity(extractKeys(manager.handleNewFindQueryRequest(
-                null, null, "president", false, true,
-                new GaeDataManager.QueryTerm(ID, ">=", 20))),
-                Arrays.copyOfRange(keys, 20, keys.length));
     }
 
     /* TEST FIND BY ANCESTOR */
@@ -1144,65 +821,67 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
                 false, keys[0]), Arrays.copyOfRange(sampleData, 0, 7));
     }
 
-    public void test_newFindByAncestorRequest() {
-        Key [] keys = createKeyAncestryStructure();
-        Dataset[] reducedSampleData = Arrays.copyOfRange(sampleData, 0, 7);
-
-        // Without Transaction.
-        checkOrderedRecordsIntegrity(manager.newFindByAncestorRequest(keys[0])
-                .getResponseOrAbort(), reducedSampleData);
-        // With Transaction.
-        Transaction txn = manager.getNewTransaction();
-        checkOrderedRecordsIntegrity(manager.newFindByAncestorRequest(txn,
-                keys[0]).getResponseOrAbort(), reducedSampleData);
-        txn.commit();
-    }
-
-    public void test_newFindMappingByAncestorRequest() {
-        Key [] keys = createKeyAncestryStructure();
-        Dataset[] reducedSampleData = Arrays.copyOfRange(sampleData, 0, 7);
-
-        // Without Transaction.
-        checkMappedRecordsIntegrity(manager.newFindMappingByAncestorRequest(
-                keys[0]).getResponseOrAbort(), reducedSampleData, keys);
-        // With Transaction.
-        Transaction txn = manager.getNewTransaction();
-        checkMappedRecordsIntegrity(manager.newFindMappingByAncestorRequest(txn,
-                keys[0]).getResponseOrAbort(), reducedSampleData, keys);
-        txn.commit();
-    }
-
-    public void test_newFindKeyByAncestorRequest() {
-        Key[] keys = createKeyAncestryStructure();
-
-        // Without Transaction.
-        checkKeyRecordsIntegrity(extractKeys(
-                manager.newFindKeyByAncestorRequest(keys[0])), keys);
-        // With Transaction.
-        Transaction txn = manager.getNewTransaction();
-        checkKeyRecordsIntegrity(extractKeys(
-                manager.newFindKeyByAncestorRequest(txn, keys[0])), keys);
-        txn.commit();
-    }
-
-    public void test_handleNewFindAncestorRequest() {
-        Key [] keys = createKeyAncestryStructure();
-        checkOrderedRecordsIntegrity(manager.handleNewFindAncestorRequest(null,
-                false, false, keys[0]).getResponseOrAbort(),
-                Arrays.copyOfRange(sampleData, 0, 7));
-    }
-
     protected Key[] createKeyAncestryStructure() {
-        Key k0 = manager.insert("0", sampleData[0]);
-        Key k1 = manager.insert(k0, "1", sampleData[1]);
-        Key k2 = manager.insert(k0, "2", sampleData[2]);
-        Key k3 = manager.insert(k1, "3", sampleData[3]);
-        Key k4 = manager.insert(k1, "4", sampleData[4]);
-        Key k5 = manager.insert(k2, "5", sampleData[5]);
-        Key k6 = manager.insert(k2, "6", sampleData[6]);
+        Key k0 = getKeys(manager.insert("0", sampleData[0]))[0];
+        Key k1 = getKeys(manager.insert(k0, "1", sampleData[1]))[0];
+        Key k2 = getKeys(manager.insert(k0, "2", sampleData[2]))[0];
+        Key k3 = getKeys(manager.insert(k1, "3", sampleData[3]))[0];
+        Key k4 = getKeys(manager.insert(k1, "4", sampleData[4]))[0];
+        Key k5 = getKeys(manager.insert(k2, "5", sampleData[5]))[0];
+        Key k6 = getKeys(manager.insert(k2, "6", sampleData[6]))[0];
         return new Key[] {k0, k1, k2, k3, k4, k5, k6};
     }
     */
+
+    public void test_handleQuery() {
+        Key[] rootKeys = getKeys(manager.insert("president",
+                Arrays.copyOfRange(sampleData, 0, 20)));
+        Key[] childKeys = getKeys(manager.insert(rootKeys[1], "president",
+                Arrays.copyOfRange(sampleData, 20, sampleData.length)));
+
+        // No Transaction.
+        Dataset request1 = manager.handleQuery(null, false, false,
+                    new Query("president"));
+        checkRecordsIntegrity(request1, sampleData, sampleDataComp);
+
+        // Transaction (error - multiple Entity groups).
+        Transaction txn2 = manager.getNewTransaction();
+        Dataset data2 = manager.handleQuery(txn2, false, false, new Query("president"));
+        txn2.rollback();
+        assertEquals("Query across multiple Entity groups yields an error",
+                     "Invalid, incomplete, or malformed argument of type: " +
+                     "QueryArgument", data2.getErrorMessage());
+
+        // Transaction (no error).
+        Transaction txn3 = manager.getNewTransaction();
+        Dataset request3 = manager.handleQuery(txn3, false, false,
+                    new Query("president", rootKeys[1]).addFilter(
+                            YEAR, Query.FilterOperator.GREATER_THAN, 1800));
+        txn3.commit();
+        checkRecordsIntegrity(request3, Arrays.copyOfRange(
+                sampleData, 20, sampleData.length), sampleDataComp);
+
+        // Inactive Transaction.
+        Transaction txn4 = manager.getNewTransaction();
+        txn4.commit();
+        Dataset data4 = manager.handleQuery(txn4, false, false, new Query("president"));
+        assertEquals("Query with an inactive Transaction yields an error",
+                     "Invalid, incomplete, or malformed argument of type: " +
+                     "QueryArgument", data4.getErrorMessage());
+
+        // Key mapping.
+        Dataset request5 = manager.handleQuery(null, true, false,
+                    new Query("president").addFilter(ID,
+                            Query.FilterOperator.LESS_THAN, 20));
+        checkMappedRecordsIntegrity(request5,
+                Arrays.copyOfRange(sampleData, 0, 20), rootKeys);
+
+        // Keys-only records.
+        Dataset request6 = manager.handleQuery(null, false, true,
+                    new Query("president").addFilter(ID,
+                            Query.FilterOperator.LESS_THAN, 20));
+        checkKeyRecordsIntegrity(extractKeys(request6), rootKeys);
+    }
 
     /* TEST ENTITY - DATASET CONVERSION */
     public void test_entityToDataset() {
@@ -1238,50 +917,41 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
         assertEquals("Converted parent Key", key, entity2.getKey().getParent());
     }
 
-    public void test_datasetToEntity_keyInDataset() {
+    public void test_datasetToEntity_keyInDataset() throws Exception {
         Key key = manager.allocateKeys("president", 1)[0];
 
         // Key correctly in Dataset.
         sampleData[1].set(GaeDataManager.KEY_PROPERTY, key);
         boolean error1 = false;
-        try {
-            Entity entity1 = GaeDataManager.datasetToEntity(sampleData[1]);
-            assertEquals("Converted Key", key, entity1.getKey());
-        } catch (DatastoreError e) {
-            error1 = true;
-        }
-        assertFalse("Conversion with a Key value is successful", error1);
+        Entity entity1 = GaeDataManager.datasetToEntity(sampleData[1]);
+        assertEquals("Converted Key", key, entity1.getKey());
 
         // String-ified Key correctly in Dataset.
         sampleData[2].set(GaeDataManager.KEY_PROPERTY,
                 GaeDataManager.keyToString(key));
-        boolean error2 = false;
-        try {
-            Entity entity2 = GaeDataManager.datasetToEntity(sampleData[2]);
-            assertEquals("Converted Key", key, entity2.getKey());
-        } catch (DatastoreError e) {
-            error2 = true;
-        }
-        assertFalse("Conversion with good String value is successful", error2);
+        Entity entity2 = GaeDataManager.datasetToEntity(sampleData[2]);
+        assertEquals("Converted Key", key, entity2.getKey());
 
         // Inappropriate value set as Key.
         sampleData[3].set(GaeDataManager.KEY_PROPERTY, 3);
         boolean error3 = false;
         try {
             GaeDataManager.datasetToEntity(sampleData[3]);
-        } catch (DatastoreError e) {
-            error3 = true;
+            fail("Exception not thrown");
+        } catch (GaeDataManager.GaeException e) {
+            assertEquals("entity3 error message", "Key property (_key_) is not" +
+                         " of type Key or String: java.lang.Integer",
+                         e.getMessage());
         }
-        assertTrue("Conversion with a bad Key value fails", error3);
 
         // No value set as Key.
-        boolean error4 = false;
         try {
             GaeDataManager.datasetToEntity(sampleData[4]);
-        } catch (DatastoreError e) {
-            error4 = true;
+            fail("Exception not thrown");
+        } catch (GaeDataManager.GaeException e) {
+            assertEquals("entity3 error message", "Dataset must contain a Key " +
+                         "attribute _key_", e.getMessage());
         }
-        assertTrue("Conversion with no Key value fails", error4);
     }
 
     public void test_fillEntity() {
@@ -1304,59 +974,52 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
 
         // Convert a good Key.
         boolean error1 = false;
-        try {
-            Key converted = GaeDataManager.stringToKey(goodKey);
-            assertEquals("Correct, lossless conversion", key, converted);
-        } catch (DatastoreError e) {
-            error1 = true;
-        }
-        assertFalse("Conversion with good Key is successful", error1);
+        Key converted = GaeDataManager.stringToKey(goodKey);
+        assertEquals("Correct, lossless conversion", key, converted);
 
         // Convert a bad Key.
-        boolean error2 = false;
-        try {
-            GaeDataManager.stringToKey(badKey);
-        } catch (DatastoreError e) {
-            error2 = true;
-        }
-        assertTrue("Conversion with bad Key is unsuccessful", error2);
+        converted = GaeDataManager.stringToKey(badKey);
+        assertEquals("Bad key is null", null, converted);
     }
 
-    /* TEST ERROR METHODS */
-    public void test_error() {
-        boolean[] errors = new boolean[4];
-        Arrays.fill(errors, false);
-        try {
-            GaeDataManager.error("a", null);
-        } catch (DatastoreError e) {
-            errors[0] = true;
-        }
-        try {
-            GaeDataManager.error(GaeDataManager.ErrType.BAD_ARG, "b", null);
-        } catch (DatastoreError e) {
-            errors[1] = true;
-        }
-        try {
-            GaeDataManager.error(GaeDataManager.ErrType.DS_FAILURE, "c", null);
-        } catch (DatastoreError e) {
-            errors[2] = true;
-        }
-        try {
-            GaeDataManager.error(GaeDataManager.ErrType.TXN_INACTIVE, "", null);
-        } catch (DatastoreError e) {
-            errors[3] = true;
-        }
-        for (boolean error : errors) {
-            assertTrue("Any invocation of error() yields an error", error);
-        }
-    }
+    public void test_addErrorData() {
+        Dataset data0 = GaeDataManager.addErrorData(null,
+                GaeDataManager.ErrType.BAD_ARG, "oops", null);
+        assertEquals("null arguments", "Invalid, incomplete, or malformed " +
+                     "argument of type: oops", data0.getErrorMessage());
 
+        Dataset data1 = new Dataset();
+        GaeDataManager.addErrorData(data1,
+                GaeDataManager.ErrType.BAD_ARG, "oops1", null);
+        assertEquals("null arguments", "Invalid, incomplete, or malformed " +
+                     "argument of type: oops1", data1.getErrorMessage());
+
+        Exception cause = new Exception("oops!");
+        Dataset data2 = GaeDataManager.addErrorData(null,
+                GaeDataManager.ErrType.BAD_ARG, "oops2", cause);
+        assertEquals("with cause", cause, data2.getErrorData()[0].get("cause"));
+
+        Dataset data3 = GaeDataManager.addErrorData(null,
+                GaeDataManager.ErrType.DS_FAILURE, "oops3", null);
+        assertEquals("ds_failure", "Datastore failure. oops3",
+                     data3.getErrorMessage());
+
+        Dataset data4 = GaeDataManager.addErrorData(null,
+                GaeDataManager.ErrType.TXN_INACTIVE, "oops4", null);
+        assertEquals("txn_inactive", "Transaction is inactive. oops4",
+                     data4.getErrorMessage());
+
+        Dataset data5 = GaeDataManager.addErrorData(null,
+                GaeDataManager.ErrType.BAD_ARG, "oops5", null);
+        assertEquals("bad_arg", "Invalid, incomplete, or malformed argument of type: oops5",
+                     data5.getErrorMessage());
+    }
 
     /* HELPER METHODS */
-    // Extract an array of Keys from the provided DataRequest.
-    protected Key[] extractKeys(DataRequest request) {
-        return request.getResponseOrAbort().getList(
-                "record").toArray(new Key[0]);
+
+    // Extract an array of Keys from the provided Dataset
+    protected Key[] extractKeys(Dataset request) {
+        return request.getList("record").toArray(new Key[0]);
     }
 
     // Returns whether or not the provided Dataset is empty.
@@ -1504,5 +1167,9 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
         public Map<String, Object> getAttributes() {
             return new HashMap<String, Object>();
         }
+    }
+
+    protected Key[] getKeys(Dataset data) {
+        return data.getList("record").toArray(new Key[0]);
     }
 }

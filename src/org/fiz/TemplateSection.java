@@ -34,10 +34,7 @@ package org.fiz;
  *                   If this property has specified that it takes precedence
  *                   over {@code template}.  Expanded in the same way as
  *                   {@code request}.
- *   request:        (optional) The name of a data request registered by
- *                   the caller with ClientRequest.addDataRequest.  The
- *                   dataset returned by this request is used when
- *                   expanding the template.
+ *   data:           (optional) Dataset uses to expand template
  *   template:       (optional) Template that will generate HTML for the
  *                   section.  If {@code request} is specified then the
  *                   template is expanded in the context of the response
@@ -72,13 +69,13 @@ public class TemplateSection extends Section {
     /**
      * Construct a TemplateSection given values for the {@code template} and
      * {@code request} properties.
-     * @param request              Value of the {@code request} property for
+     * @param data                 Value of the {@code data} property for
      *                             the section.
      * @param template             Value of the {@code template} property for
      *                             the section.
      */
-    public TemplateSection(String request, String template) {
-        this.properties = new Dataset("request", request);
+    public TemplateSection(Dataset data, String template) {
+        this.properties = new Dataset("data", data);
         this.template = template;
     }
 
@@ -92,30 +89,26 @@ public class TemplateSection extends Section {
      */
     @Override
     public void render(ClientRequest cr) {
-        Dataset data;
-        String requestName;
+        Dataset data = null;
         if (properties != null) {
-            requestName = properties.checkString("request");
-        } else {
-            requestName = null;
+            data = properties.checkDataset("data");
         }
-        if (requestName != null) {
-            DataRequest dataRequest = cr.getDataRequest(requestName);
-            Dataset response = dataRequest.getResponseData();
-            if (response == null) {
+
+        if (data != null) {
+            if (data.getErrorData() != null) {
                 // There was an error fetching our data; display
                 // appropriate error information.
-                Dataset[] errors = dataRequest.getErrorData();
+                Dataset[] errors = data.getErrorData();
                 String errorStyle = (properties == null) ? null :
                         properties.checkString("errorStyle");
                 cr.showErrorInfo(errorStyle, "TemplateSection.error",
                         errors[0]);
                 return;
             }
-            if (response.containsKey("record")) {
-                response = response.getDataset("record");
+            if (data.containsKey("record")) {
+                data = data.getDataset("record");
             }
-            data = new CompoundDataset(response, cr.getMainDataset());
+            data = new CompoundDataset(data, cr.getMainDataset());
         } else {
             data = cr.getMainDataset();
         }

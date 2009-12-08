@@ -60,7 +60,7 @@ package org.fiz;
  *              contains both text and image.
  */
 
-public class Link extends Formatter {
+public class Link extends Section {
     /**
      * Instances of this enum are used to indicate how to display a
      * Link.

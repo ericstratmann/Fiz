@@ -14,22 +14,22 @@ public class DirectoryInteractor extends Interactor {
         html.setTitle("TreeSection Demo");
         String edgeFamily = "treeSolid";
         cr.showSections(
-                new TreeSection(new Dataset("requestFactory",
-                        "DirectoryInteractor.dirRequest",
-                        "rootName", "C:/Documents and Settings/" +
-                        "John Ousterhout/My Documents/Fiz"))
+                new TreeSection(
+                        new Dataset("id", "tree1", "dataFactory",
+                                    "DirectoryInteractor.dirData", "rootName",
+                                    "C:/Documents and Settings/John Ousterhout/My Documents/Fiz",
+                                    "edgeFamily", edgeFamily))
         );
     }
 
     /**
-     * Creates a DataRequest that returns the contents of a directory
+     * Creates a Dataset that returns the contents of a directory
      * @param directory            Name of the directory whose children
      *                             will be displayed.
-     * @return                     DataRequest whose response contains
-     *                             information about all of the children of
-     *                             directory.
+     * @return                     Dataset that contains information about
+     *                             all of the children of directory.
      */
-    public static DataRequest dirRequest(String directory) {
+    public static Dataset dirData(String directory) {
         Dataset data = new Dataset();
         File dir = new File(directory);
 
@@ -48,6 +48,6 @@ public class DirectoryInteractor extends Interactor {
             }
         }
 
-        return RawDataManager.newRequest(data);
+        return data;
     }
 }

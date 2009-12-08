@@ -36,7 +36,7 @@ import java.util.*;
  * "null", and "" (the empty string).
  */
 
-public class CheckboxImage extends Formatter {
+public class CheckboxImage extends Section {
 
     /* Constructor properties */
     protected String id;

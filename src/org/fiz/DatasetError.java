@@ -18,7 +18,7 @@ package org.fiz;
 /**
  * DatasetError is a generic exception class used in situations where
  * the problem is described by a dataset with various fields, such as
- * errors that occur in DataRequests.
+ * errors that occur in data requests.
  */
 public class DatasetError extends Error {
     // The dataset(s) that were supplied to the constructor.

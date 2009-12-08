@@ -21,8 +21,7 @@ import java.util.*;
 /**
  * A ChartSection generates a chart containing one or more plots, such as bar
  * line, and scatter plots. Each plot can have several series resulting in
- * "stacked" plots, such as a stacked bar plot. Data for the chart can be
- * automatically retrieved from a data request.
+ * "stacked" plots, such as a stacked bar plot.
  *
  * A ChartSection supports the following properties:
  * plot:        (Optional) One or more child datasets, each describing one plot
@@ -48,15 +47,11 @@ import java.util.*;
  *             this plot. If not given, it is automatically generated.
  *
  * The following properties are supported by datasets representing a series:
- * request:    (Required) Name of a DataRequest whose result will
- *             supply data for the series.  The request is created
- *             by the caller and registered in the ClientRequest by
- *             calling ClientRequest.addDataRequest.  The response
- *             to this request must contain one {@code record} child
- *             for each data point.
- * xId:        (Required) Name of the column in the DataRequest to use for the
+ * data:       (Required) Dataset of data to use to plot chart. This must
+ *             contain one {@code record} child for each data point.
+ * xId:        (Required) Name of the column in the data to use for the
  *             X values for the plot or series
- * yId:        (Required) Name of the column in the DataRequest to use for the
+ * yId:        (Required) Name of the column in the data to use for the
  *             Y values for the plot or series
  * id:         (Optional) Used to name the Javascript object associated with
  *             this series. If not given, it is automatically generated.
@@ -187,7 +182,7 @@ public class ChartSection extends Section {
     // Reserved keys are keys that are used in Java when creating a chart, but
     // aren't properties that should be set in Javascript.
     protected String[] reserved = {"id", "xId", "yId",
-                                   "type", "plot", "series", "request"};
+                                   "type", "plot", "series", "data"};
 
     // Properties can be set on several "objects", such as the chart, legend
     // and various axes. This is the list of all such prefixes
@@ -275,12 +270,12 @@ public class ChartSection extends Section {
      * @param plot       Dataset describing the plot to add.
      */
     protected void addPlot(Dataset plot) {
-        String request = plot.checkString("request");
+        Dataset data = plot.checkDataset("data");
         String plotId = getId(plot, "plot");
 
-        // If there is a request, then we are not using series. Otherwise, we
-        // assume the requests are in the series.
-        if (request != null) { // no series
+        // If there is a data property, then we are not using series. Otherwise,
+        // we assume the data is in the series.
+        if (data != null) { // no series
             addData(plot);
             Template.appendRaw(js, "@1.@(2) = " +
                             "new Fiz.Chart.@3(@1.@(2)_data);\n",
@@ -294,7 +289,6 @@ public class ChartSection extends Section {
             setProperties(plot, plotId);
             ArrayList<Dataset> series = plot.getDatasetList("series");
             for (Dataset serie : series) { // add each series in turn
-                String seriesRequest = serie.getString("request");
                 String serieId = getId(serie, "series");
                 addData(serie);
                 Template.appendRaw(js, "@1.@2 = new Fiz.Chart.Series(@1.@(2)_data);\n",
@@ -303,6 +297,7 @@ public class ChartSection extends Section {
                 Template.appendRaw(js, "@1.@(2).addSeries(@1.@(3));\n",
                                 chart, plotId, getId(serie, "series"));
             }
+
             Template.appendRaw(js, "@1.chart.addPlot(@1.@(2));\n",
                             chart, plotId);
         }
@@ -323,20 +318,19 @@ public class ChartSection extends Section {
     };
 
     /**
-     * Adds javascript code to create an array with data for a plot. It takes
-     * the request defined in the properties dataset to get the data to add
-     * to the plot, using the xId and yId properties to get the proper data
+     * Adds javascript code to create an array with data for a plot. It uses
+     * the data defined in the properties dataset, using the xId and yId
+     * properties to get the proper data points.
      * from the dataset. Modifies the {@code js} variable.
      *
      * @param properties      Dataset describing the plot or series. Used for
-     *                        the id, request, xId, and yId properties.
+     *                        the id, data, xId, and yId properties.
      */
     protected void addData(Dataset properties) {
-        DataRequest req = cr.getDataRequest(properties.getString("request"));
-        Dataset response = req.getResponseOrAbort();
+        Dataset data = properties.getDataset("data");
 
         Template.appendRaw(js, "@1.@(2)_data = [", chart, properties.getString("id"));
-        ArrayList<Dataset> rows = response.getDatasetList("record");
+        ArrayList<Dataset> rows = data.getDatasetList("record");
 
         if (rows.size() != 0) {
             String xIdVal = properties.getString("xId");
@@ -361,7 +355,7 @@ public class ChartSection extends Section {
      * all properties which are unique to the chart. If a property is in that
      * list, then we assume we set it on the chart. Otherwise on the plot or
      * series. We also make sure to avoid java reserved variables, such as
-     * xId, yId, request, etc. Modifies the {@code js} variable.
+     * xId, yId, data, etc. Modifies the {@code js} variable.
      *
      * @param plot       Dataset describing the plot
      * @param name       Name of the object to set the properties on
@@ -379,8 +373,8 @@ public class ChartSection extends Section {
                 }
                 continue;
             }
-            String value = plot.checkString(key);
-            if (value != null) {
+            Object value = plot.get(key);
+            if (value instanceof String) {
                 if (!hasKey(reserved, key)) {
                     if (!hasKey(chartVars, key) ^ (name == "chart")) {
                         Template.appendRaw(js, "@1.@2.set(\"@3\", \"@4\");\n",

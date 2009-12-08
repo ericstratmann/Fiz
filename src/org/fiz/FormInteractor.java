@@ -4,7 +4,6 @@ import java.util.*;
 
 import org.apache.commons.fileupload.*;
 import org.apache.log4j.*;
-import org.fiz.SqlDataManager.SqlRequest;
 
 /**
  * This Interactor displays a collection of pages that illustrate the
@@ -30,15 +29,18 @@ public class FormInteractor extends Interactor {
 
     // Lazily instantiated: Data manager for connecting to SQL database
     // to authenticate users
+    /*
     SqlDataManager sqlDataManager = new SqlDataManager(new Dataset(
             "serverUrl","jdbc:mysql://localhost",
             "user", "root",
             "password", "",
             "driverClass", "com.mysql.jdbc.Driver"));
-    
+    */
+
     Dataset formData = new Dataset("name", "Bill", "age", "41",
             "height", "73", "weight", "195",
-            "saying", "Line 1\nLine 2\n<Line 3>\n", "fruit", "grape",
+            "saying", "Line 1\nLine 2\n<Line 3>\n", "fruit",
+            new Dataset("name", "Grape", "value", "grape"),
             "notify", "all", "state", "California", "mascot", "Spartans");
 
     Dataset fruitInfo = new Dataset(
@@ -100,7 +102,7 @@ public class FormInteractor extends Interactor {
 
     FormSection testForm = new FormSection(
             new Dataset("id", "form1",
-                    "request", "getFormData",
+                    "data", formData,
                     "postUrl", "postForm"),
             new PasswordFormElement(new Dataset("id", "password",
                     "label", "Password:")),
@@ -124,7 +126,7 @@ public class FormInteractor extends Interactor {
                             "min", "5", "max", "8", "includeMax", "false"))),
             new SelectFormElement(new Dataset("id", "fruit",
                     "label", "Favorite fruits:",
-                    "choiceRequest", "getFruits",
+                    "choiceData", fruitInfo,
                     "multiple", "multiple",
                     "height", "5",
                     "choiceName", "fruit")),
@@ -142,7 +144,7 @@ public class FormInteractor extends Interactor {
             new AutocompleteFormElement(new Dataset("id", "name",
                     "label", "Name:",
                     "help", "Enter customer name here",
-                    "requestFactory", "FormInteractor.autocompleteRequest")),
+                    "dataFactory", "FormInteractor.autocompleteData")),
             new DateFormElement(new Dataset("id", "expiration",
                     "label", "Expiration date:",
                     "attachPosition", "bottom",
@@ -152,7 +154,7 @@ public class FormInteractor extends Interactor {
                             ":6/24/2009, 9/3/2011:"))
             );
 
-    public static DataRequest autocompleteRequest(String query) {
+    public static Dataset autocompleteData(String query) {
         query = query.toLowerCase();
 
         Dataset matches = new Dataset();
@@ -164,13 +166,10 @@ public class FormInteractor extends Interactor {
             }
         }
 
-        return RawDataManager.newRequest(matches);
+        return matches;
     }
 
     public void formSection(ClientRequest cr) {
-        cr.addDataRequest("getFormData", RawDataManager.newRequest(formData));
-        cr.addDataRequest("getFruits", RawDataManager.newRequest(fruitInfo));
-        
         Html html = cr.getHtml();
         html.setTitle("FormSection Demo");
         html.includeCssFile("demo/form.css");
@@ -191,15 +190,15 @@ public class FormInteractor extends Interactor {
     }
 
     public void register(ClientRequest cr) {
-        
+
     }
-        
+
     public void postForm(ClientRequest cr) {
         Dataset formData = testForm.collectFormData(cr);
         cr.redirect("register");
     }
-    
+
     public void coolStuff(ClientRequest cr) {
-        
+
     }
 }

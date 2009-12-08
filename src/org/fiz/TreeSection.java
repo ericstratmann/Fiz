@@ -44,36 +44,36 @@ import java.util.*;
  *   leafStyle:      (optional) Style to use for displaying leaves of the
  *                   tree (which cannot be expanded); overridden by a
  *                   {@code style} value in records returned by
- *                   {@code request}.  Defaults to {@code TreeSection.leaf}.
+ *                   {@code dataFactory}.  Defaults to {@code TreeSection.leaf}.
  *   nodeStyle:      (optional) Style to use for displaying nodes that
  *                   have children and hence can be expanded; overridden
  *                   by a {@code style} value in records returned by
- *                   {@code request}.  Defaults to {@code TreeSection.node}.
- *   requestFactory: (required) Identifies a factory method that takes a
- *                   single String argument and returns a DataRequest whose
- *                   response will describe the contents of a node in the
+ *                   {@code dataFactory}.  Defaults to {@code TreeSection.node}.
+ *   dataFactory:    (required) Identifies a factory method that takes a
+ *                   single String argument and returns a Dataset that
+ *                   describes the contents of a node in the
  *                   tree.  Must have the form {@code class.method}, where
  *                   {@code class} is a Java class name and {@code method}
  *                   is a static method in the class.  The values expected in
- *                   the request's response are described below.  The string
+ *                   the dataset are described below.  The string
  *                   argument to the factory method is the name of the node
  *                   whose contents are desired (the {@code name} value from
- *                   the record for that node, returned by a previous
- *                   request): empty string refers to root of the tree, and
+ *                   the record for that node):
+ *                   empty string refers to root of the tree, and
  *                   is used to fetch the top-level nodes.
  *   rootName:       (optional) Name of the root node of the tree; passed
  *                   to requestFactory to fetch the top-level nodes. Defaults
  *                   to an empty string.
  *
- * The response to a DataRequest generated from {@code requestFactory} consists
- * of a dataset with one {@code record} child for each node at the current
+ * The dataset returned from {@code dataFactory} consists
+ * one {@code record} child for each node at the current
  * level.  The TreeSection will use the following elements, if they are
  * present in a record:
  *   expandable      A value of 1 means this node can be expanded (it has
  *                   children).  If this value is absent, or has any value
  *                   other than 1, then this is a leaf node.
  *   name            Must be provided if the node is expandable; this value
- *                   is passed to the {@code requestFactory} method
+ *                   is passed to the {@code dataFactory} method
  *                   to fetch the node's children.
  *   style           If present, specifies the style(s) to use for displaying
  *                   this node.  See below for more information on styles.
@@ -120,7 +120,7 @@ public class TreeSection extends Section implements DirectAjax {
         protected String id;
         protected String leafStyle;
         protected String nodeStyle;
-        protected String requestFactory;
+        protected String dataFactory;
 
         // For each expandable node that has been displayed in the table
         // so far, there is one entry in the following structure, which maps
@@ -129,13 +129,13 @@ public class TreeSection extends Section implements DirectAjax {
         protected HashMap<String,String> names = new HashMap<String,String>();
 
         public PageProperty(String className, String edgeFamily, String id,
-                String leafStyle, String nodeStyle, String requestFactory) {
+                String leafStyle, String nodeStyle, String dataFactory) {
             this.className = className;
             this.edgeFamily = edgeFamily;
             this.id = id;
             this.leafStyle = leafStyle;
             this.nodeStyle = nodeStyle;
-            this.requestFactory = requestFactory;
+            this.dataFactory = dataFactory;
         }
     }
 
@@ -143,10 +143,6 @@ public class TreeSection extends Section implements DirectAjax {
     // property named {@code TreeSection-id}, where {@code id} is the
     // id attribute for the section..
     protected PageProperty pageProperty;
-
-    // Holds the request that provides information about top-level nodes
-    // in the tree.
-    DataRequest dataRequest;
 
     /**
      * Construct a TreeSection.
@@ -158,7 +154,7 @@ public class TreeSection extends Section implements DirectAjax {
         pageProperty = new PageProperty(properties.checkString("class"),
                 properties.checkString("edgeFamily"), properties.checkString("id"),
                 properties.checkString("leafStyle"), properties.checkString("nodeStyle"),
-                properties.getString("requestFactory"));
+                properties.getString("dataFactory"));
         if (pageProperty.edgeFamily == null) {
             pageProperty.edgeFamily = "treeSolid.gif";
         }
@@ -168,24 +164,6 @@ public class TreeSection extends Section implements DirectAjax {
         if (pageProperty.nodeStyle == null) {
             pageProperty.nodeStyle = "TreeSection.node";
         }
-    }
-
-    /**
-     * This method is invoked during the first phase of rendering a page;
-     * it is used to create a data request that will provide information about
-     * the top level of the tree.
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     */
-    @Override
-    public void addDataRequests(ClientRequest cr) {
-        String rootName = properties.checkString("rootName");
-        if (rootName == null) {
-            rootName = "";
-        }
-        dataRequest = (DataRequest) Util.invokeStaticMethod(
-                pageProperty.requestFactory, rootName);
-        cr.addDataRequest(dataRequest);
     }
 
     /**
@@ -204,19 +182,18 @@ public class TreeSection extends Section implements DirectAjax {
         PageProperty pageProperty = (PageProperty)
                 cr.getPageProperty(main.getString("sectionId"));
 
-        // Invoke a data request to fetch information about the children of
-        // the element being expanded, then generate a <table> that will
-        // display the children.
+        // Fetch information about the children of the element being expanded,
+        // then generate a <table> that will display the children.
         String id = main.getString("nodeId");
-        DataRequest request = (DataRequest) Util.invokeStaticMethod(
-                pageProperty.requestFactory, pageProperty.names.get(id));
+        Dataset data = (Dataset) Util.invokeStaticMethod(
+                pageProperty.dataFactory, pageProperty.names.get(id));
 
         StringBuilder html = new StringBuilder();
         Template.appendHtml(html, "<table cellspacing=\"0\" " +
                 "class=\"@1?{TreeSection}\" " +
                 "id=\"@2\">\n", pageProperty.className, id);
         renderChildren(cr, pageProperty,
-                request.getResponseOrAbort().getDatasetList("record"),
+                data.getDatasetList("record"),
                 id, html);
         html.append("</table>\n");
 
@@ -251,8 +228,13 @@ public class TreeSection extends Section implements DirectAjax {
         Template.appendHtml(out, "\n<!-- Start TreeSection @1 -->\n" +
                 "<table cellspacing=\"0\" class=\"@2?{TreeSection}\" " +
                 "id=\"@1\">\n", pageProperty.id, pageProperty.className);
+        String rootName = properties.checkString("rootName");
+        if (rootName == null) {
+            rootName = "";
+        }
+        Dataset data = (Dataset) Util.invokeStaticMethod(pageProperty.dataFactory, rootName);
         renderChildren(cr, pageProperty,
-                dataRequest.getResponseOrAbort().getDatasetList("record"),
+                data.getDatasetList("record"),
                 pageProperty.id, out);
         Template.appendHtml(out, "</table>\n" +
                 "<!-- End TreeSection @1 -->\n", pageProperty.id);

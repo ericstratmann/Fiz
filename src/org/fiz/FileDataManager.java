@@ -67,18 +67,14 @@ public class FileDataManager {
      * @param path                 Path of the desired dataset within the file.
      * @param values               New contents for the dataset given by
      *                             {@code file} and {@code path}.
-     * @return                     A DataRequest that will carry out the
-     *                             create operation; its response will be an
-     *                             empty dataset.
+     * @return                     Null if the create was successful and a
+     *                             dataset with errors otherwise.
      */
-    public DataRequest newCreateRequest(String file, String path,
-            Dataset values) {
+    public Dataset create(String file, String path, Dataset values) {
         Dataset root = loadDataset(file);
         root.setPath(path, values.clone());
         root.writeFile(root.getFileName(), null);
-        DataRequest request = new DataRequest("file.create");
-        request.setComplete(new Dataset());
-        return request;
+        return null;
     }
 
     /**
@@ -87,12 +83,10 @@ public class FileDataManager {
      * @param path                 Path of the desired dataset within the
      *                             file; null means use the top-level
      *                             dataset in the file.
-     * @return                     A DataRequest that will carry out the
-     *                             delete operation; its response will be an
-     *                             empty dataset.
+     * @return                     Null if the delete was successful and a
+     *                             dataset with errors otherwise.
      */
-    public DataRequest newDeleteRequest(String file, String path) {
-        DataRequest request = new DataRequest("file.delete");
+    public Dataset delete(String file, String path) {
         Dataset d = loadDataset(file);
         if (path != null) {
             d.delete(path);
@@ -100,8 +94,8 @@ public class FileDataManager {
             d.clear();
         }
         d.writeFile(d.getFileName(), null);
-        request.setComplete(new Dataset());
-        return request;
+
+        return null;
     }
 
     /**
@@ -110,22 +104,17 @@ public class FileDataManager {
      * @param path                 Path of the desired dataset within the
      *                             file; null means use the top-level
      *                             dataset in the file.
-     * @return                     A DataRequest whose response will be the
-     *                             desired dataset.
+     * @return                     The dataset associated with {@code path},
+     *                             or null if there is no such dataset.
      */
-    public DataRequest newReadRequest(String file, String path) {
+    public Dataset read(String file, String path) {
         Dataset d = loadDataset(file);
-        DataRequest request = new DataRequest("file.read");
-        Dataset target = findNestedDataset(d, path, request);
-        if (target != null) {
-            request.setComplete(target);
-        }
-        return request;
+        return findNestedDataset(d, path);
     }
 
     /**
      * Replace one or more values within an existing dataset in a file.
-     * This method differs from newCreateRequest in that existing values
+     * This method differs from {@code create} in that existing values
      * in the target dataset are retained unless overwritten by entries
      * in the {@code values} argument.
      * @param file                 Name of the file containing the dataset.
@@ -135,21 +124,19 @@ public class FileDataManager {
      *                             copied to the dataset given by {@code file}
      *                             and {@code path}, replacing any existing
      *                             values by the same names.
-     * @return                     A DataRequest that will carry out the
-     *                             delete operation; its response will be an
-     *                             empty dataset.
+     * @return                     Null if the update was successful and a
+     *                             dataset with errors otherwise.
      */
-    public DataRequest newUpdateRequest(String file, String path,
-            Dataset values) {
-        DataRequest request = new DataRequest("file.update");
+    public Dataset update(String file, String path, Dataset values) {
         Dataset root = loadDataset(file);
-        Dataset target = findNestedDataset(root, path,  request);
-        if (target != null) {
+        Dataset target = findNestedDataset(root, path);
+        if (target.getErrorData() == null) {
             target.copyFrom(values);
             root.writeFile(root.getFileName(), null);
-            request.setComplete(new Dataset());
+            return null;
+        } else {
+            return target;
         }
-        return request;
     }
 
     /**
@@ -172,20 +159,17 @@ public class FileDataManager {
 
     /**
      * Locates a nested dataset within a larger dataset, and generates
-     * an appropriate request error if there is no such nested dataset.
+     * an appropriate error if there is no such nested dataset.
      * @param root                 Top-level dataset.
      * @param path                 Path to a nested dataset within
      *                             {@code root}; null or empty means use
      *                             the top-level dataset.
-     * @param request              The DataRequest we are processing; used
-     *                             to return error information.
      * @return                     Dataset named by {@code path}, or
-     *                             null if no such dataset could be
-     *                             found (in which case an error has
-     *                             already been recorded for {@code request}.
+     *                             an emptry dataset if no such dataset could be
+     *                             found (in which case an error has been
+     *                             set on the dataset)
      */
-    protected Dataset findNestedDataset(Dataset root, String path,
-            DataRequest request) {
+    protected Dataset findNestedDataset(Dataset root, String path) {
         if (path == null) {
             return root;
         }
@@ -193,9 +177,10 @@ public class FileDataManager {
             return root.getDataset(path);
         }
         catch (Dataset.MissingValueError e) {
-            request.setError (new Dataset("message", "nested dataset \"" +
+            Dataset data = new Dataset();
+            data.setError(new Dataset("message", "nested dataset \"" +
                     path + "\" doesn't exist", "culprit", "path"));
-            return null;
+            return data;
         }
     }
 }

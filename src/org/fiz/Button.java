@@ -37,7 +37,7 @@ package org.fiz;
  *                   is specified.
  */
 
-public class Button extends Formatter {
+public class Button extends Section {
     // The following variable is a copy of the constructor argument
     // by the same name.
     protected Dataset properties;

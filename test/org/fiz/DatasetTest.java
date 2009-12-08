@@ -17,6 +17,7 @@ package org.fiz;
 
 import java.io.*;
 import java.util.*;
+import java.lang.reflect.*;
 
 import org.fiz.Dataset;
 import org.fiz.test.*;
@@ -97,6 +98,13 @@ public class DatasetTest extends junit.framework.TestCase {
         assertEquals("dataset contents", "a:\n" +
                 "    x: 1\n", d.toString());
     }
+    // Constructor Dataset(Exception e)
+
+    public void test_constructor_exception() {
+        d = new Dataset(new FileNotFoundException("bar"));
+        assertEquals("bar", d.getErrorMessage());
+    }
+
     // Constructor Dataset(HashMap contents, String fileName)
 
     @SuppressWarnings("unchecked")
@@ -1229,4 +1237,117 @@ public class DatasetTest extends junit.framework.TestCase {
                 Dataset.Quantity.ALL, null));
     }
 
+    public void test_setError() {
+        Dataset error = new Dataset("a", "b");
+        Dataset error2 = new Dataset("b", "a");
+        d.setError(error, error2);
+        assertEquals("first error", error, d.getErrorData()[0]);
+        assertEquals("second error", error2, d.getErrorData()[1]);
+    }
+
+    public void test_setError_ArrayList() {
+        Dataset error = new Dataset("a", "b");
+        Dataset error2 = new Dataset("b", "a");
+        ArrayList<Dataset> errors = new ArrayList<Dataset>();
+        errors.add(error);
+        errors.add(error2);
+        d.setError(errors);
+        assertEquals("first error", error, d.getErrorData()[0]);
+        assertEquals("second error", error2, d.getErrorData()[1]);
+    }
+
+    public void test_setError_Throwable() {
+        Throwable e = new FileNotFoundException("foo");
+        d.setError(e);
+        Dataset errorData = d.getErrorData()[0];
+        assertEquals("message", "foo", errorData.getString("message"));
+        assertEquals("exceptionName", "FileNotFoundException", errorData.getString("exceptionName"));
+        assertEquals("exception", e, errorData.get("exception"));
+    }
+    public void test_getErrorData() {
+        Dataset error = new Dataset("a", "b");
+        Dataset error2 = new Dataset("b", "a");
+        d.setError(error, error2);
+        assertEquals("first error", error, d.getErrorData()[0]);
+        assertEquals("second error", error2, d.getErrorData()[1]);
+    }
+
+    public void test_getErrorMessage() {
+        Dataset error = new Dataset("message", "b");
+        Dataset error2 = new Dataset("message", "a");
+        assertEquals("no errors", null, d.getErrorMessage());
+        d.setError(error, error2);
+        assertEquals("error message", "b\na", d.getErrorMessage());
+    }
+
+    public void test_getDetailedErrorMessage() {
+        Dataset error = new Dataset("message", "b");
+        Dataset error2 = new Dataset();
+        assertEquals("no errors", null, d.getDetailedErrorMessage());
+        d.setError(error, error2);
+        assertEquals("error message", "b\nerror", d.getDetailedErrorMessage());
+    }
+
+    public void throwIfError() {
+        d.throwIfError();
+        d.setError(new Dataset("message", "oops"));
+        try {
+            d.throwIfError();
+            fail("Error not thrown");
+        } catch (InternalError e) {
+            assertEquals("oops", e.getMessage());
+        }
+    }
+
+    public void test_methodsThrowError() throws Throwable {
+        Dataset data = new Dataset();
+        data.setError(new Dataset("message", "oops"));
+
+        String[] whiteList = {"setError", "getErrorData", "getErrorMessage",
+                          "getDetailedErrorMessage"};
+        runPublicMethods(data, whiteList, "oops");
+    }
+
+    protected static void runPublicMethods(Object obj, String[] whiteList,
+                                    String error) throws Throwable {
+        String[] primitives = {"int", "long", "float", "double", "boolean",
+                               "byte", "short", "chart"};
+
+        Method[] methods = obj.getClass().getDeclaredMethods();
+
+        for (int i = 0; i < methods.length; i++) {
+            Method method = methods[i];
+            int modifiers = method.getModifiers();
+            if (Modifier.isPublic(modifiers) && !Modifier.isStatic(modifiers)) {
+                Class[] types = method.getParameterTypes();
+                Object[] args = new Object[types.length];
+                for (int j = 0; j < types.length; j++) {
+                    String type = types[j].getName();
+                    if (Arrays.asList(primitives).contains(type)) {
+                        if (type == "boolean") {
+                            args[j] = false;
+                        } else {
+                            args[j] = 0;
+                        }
+                    } else {
+                        args[j] = null;
+                    }
+                }
+
+                try {
+                    if (Arrays.asList(whiteList).indexOf(method.getName()) == -1) {
+                        method.invoke(obj, args);
+                        fail(method.getName() + " did not throw an error");
+                    }
+                } catch (InvocationTargetException e) {
+                    try {
+                        throw e.getCause();
+                    } catch (DatasetError f) {
+                        assertEquals(error, f.getMessage());
+                    }
+                }
+            }
+        }
+
+    }
 }

@@ -22,14 +22,14 @@ import java.util.*;
  * columns.  TableSections support the following constructor properties:
  *   class:          (optional) Used as the {@code class} attribute for
  *                   the HTML table that displays the TableSection.
- *   emptyTemplate:  (optional) If the table is empty ({@code request} returns
- *                   no data), this template will be expanded (using
+ *   emptyTemplate:  (optional) If the table is empty ({@code data} is an
+ *                   empty dataset), this template will be expanded (using
  *                   the main dataset) and displayed in a single row in the
  *                   table.  If this property is not specified then a default
  *                   value will be supplied; specify this property with an
  *                   empty value if you want an empty table to simply appear
  *                   empty.
- *   errorStyle:     (optional) If {@code request} returns an error then
+ *   errorStyle:     (optional) If {@code data} contains an error then
  *                   this property contains the name of a template in the
  *                   {@code styles} dataset, which is expanded with the
  *                   error data and the main dataset.  The resulting HTML
@@ -45,11 +45,8 @@ import java.util.*;
  *                   if some of the columns offer header information.
  *                   Regardless of this property, the header row will be
  *                   omitted if none of the columns generate header info.
- *   request:        (required) Name of a DataRequest whose result will
- *                   supplied data for the table.  The request is created
- *                   by the caller and registered in the ClientRequest by
- *                   calling ClientRequest.addDataRequest.  The response
- *                   to this request must contain one {@code record} child
+ *   data:           (required) Supplies data for the table; The dataset
+ *                   must contain one {@code record} child
  *                   for each row of the table; when rendering a row, the
  *                   child dataset for that row will be passed to each of the
  *                   Column objects.
@@ -74,7 +71,7 @@ import java.util.*;
 public class TableSection extends Section {
     // The following variables are copies of constructor arguments.  See
     // the constructor documentation for details.
-    protected Formatter[] columns;
+    protected Section[] columns;
 
     /**
      * Construct a TableSection.
@@ -83,7 +80,7 @@ public class TableSection extends Section {
      * @param columns              The remaining arguments describe the
      *                             columns of the table, in order from
      *                             left to right.  For each data record
-     *                             returned by {@code request} one row will
+     *                             in {@code data} one row will
      *                             be generated in the table; each column's
      *                             {@code html} method will be invoked to
      *                             generate the HTML between the {@code <td>}
@@ -95,12 +92,12 @@ public class TableSection extends Section {
      *                             Column then it will also be invoked to
      *                             generate header HTML for the column.
      */
-    public TableSection(Dataset properties, Formatter ... columns) {
+    public TableSection(Dataset properties, Section ... columns) {
         this.properties = properties;
         this.columns = columns;
-        if (!properties.containsKey("request")) {
+        if (!properties.containsKey("data")) {
             throw new InternalError("TableSection constructor invoked " +
-                    "without a \"request\" property");
+                    "without a \"data\" property");
         }
     }
 
@@ -144,7 +141,7 @@ public class TableSection extends Section {
             for (int col = 0; col < columns.length; col++) {
                 printTd(col, out);
                 int headerStart = out.length();
-                Formatter f = columns[col];
+                Section f = columns[col];
                 if (f instanceof Column) {
                     ((Column) f).renderHeader(cr);
                 }
@@ -163,22 +160,20 @@ public class TableSection extends Section {
         }
 
         // Body rows.
-        DataRequest dataRequest = cr.getDataRequest(
-                properties.getString("request"));
-        Dataset response = dataRequest.getResponseData();
-        if (response == null) {
+        Dataset data = properties.getDataset("data");
+        if (data.getErrorData() != null) {
             // The request generated an error.  Display information about
             // the error in a single row.
             out.append("  <tr class=\"error\">\n    <td colspan=\"");
             out.append(columns.length);
             out.append("\">");
-            Dataset[] errors = dataRequest.getErrorData();
+            Dataset[] errors = data.getErrorData();
             errors[0].set("sectionType", "table");
             cr.showErrorInfo(properties.checkString("errorStyle"),
                     "TableSection.error", errors[0]);
             out.append("</td>\n  </tr>\n");
         } else {
-            ArrayList<Dataset> rows = response.getDatasetList("record");
+            ArrayList<Dataset> rows = data.getDatasetList("record");
             if (rows.size() == 0) {
                 // The table is empty.  Display a single row containing
                 // information about that fact.

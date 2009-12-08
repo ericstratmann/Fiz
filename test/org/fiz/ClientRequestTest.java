@@ -34,8 +34,8 @@ public class ClientRequestTest extends junit.framework.TestCase {
         public SectionFixture(String s1) {
             super(s1);
         }
-        public SectionFixture(String s1, String s2) {
-            super(s1, s2);
+        public SectionFixture(Dataset d, String s) {
+            super(d, s);
         }
         public SectionFixture(Dataset d) {
             super(d);
@@ -94,28 +94,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "has discarded its data about the page; if you want to " +
                 "keep using this page please click on the refresh button",
                 e.getMessage());
-    }
-
-    public void test_addDataRequest_withName() {
-        DataRequest r1 = new DataRequest("test1");
-        DataRequest r2 = new DataRequest("test2");
-        cr.addDataRequest("request1", r1);
-        cr.addDataRequest("request2", r2);
-        assertEquals("number of named requests",
-                2, cr.namedRequests.size());
-        assertEquals("first request", r1, cr.getDataRequest("request1"));
-        assertEquals("second request", r2, cr.getDataRequest("request2"));
-    }
-
-    public void test_addDataRequest_noName() {
-        DataRequest r1 = new DataRequest("test1");
-        DataRequest r2 = new DataRequest("test2");
-        cr.addDataRequest(r1);
-        cr.addDataRequest(r2);
-        assertEquals("number of unnamed requests",
-                2, cr.unnamedRequests.size());
-        assertEquals("first request", r1, cr.unnamedRequests.get(0));
-        assertEquals("second request", r2, cr.unnamedRequests.get(1));
     }
 
     public void test_addMessageToBulletin() {
@@ -408,25 +386,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 cr.getClientRequestType());
     }
 
-    public void test_getDataRequest_requestExists() {
-        DataRequest r1 = new DataRequest("test1");
-        cr.addDataRequest("request1", r1);
-        assertEquals("existing request", r1, cr.getDataRequest("request1"));
-    }
-    public void test_getDataRequest_noSuchRequest() {
-        boolean gotException = false;
-        try {
-            cr.getDataRequest("bogus");
-        }
-        catch (InternalError e) {
-            assertEquals("exception message",
-                    "couldn't find data request named \"bogus\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
-    }
-
     public void test_getMac() {
         // Make sure that (a) the Mac object can be used to create
         // signatures and (b) the same Mac object is returned in
@@ -564,17 +523,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 cr.getPageProperty("prop1").toString());
         assertEquals("value of prop2", "999",
                 cr.getPageProperty("prop2").toString());
-    }
-
-    public void test_getRequestNames() {
-        assertEquals("no requests registered yet", "",
-                cr.getRequestNames());
-        DataRequest request = RawDataManager.newRequest(new Dataset());
-        cr.addDataRequest("test1", request);
-        cr.addDataRequest("test2", request);
-        cr.addDataRequest("getPeople", request);
-        assertEquals("names of requests", "getPeople, test1, test2",
-                cr.getRequestNames());
     }
 
     public void test_getServletRequest() {
@@ -879,14 +827,10 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_showSections() {
-        cr.addDataRequest("getState", RawDataManager.newRequest(state));
         cr.showSections(
                 new SectionFixture("first\n"),
-                new SectionFixture("getState", "second: @name\n"),
-                new SectionFixture("getState", "third: @capital\n"));
-        assertEquals("addDataRequests calls", "data request \"none\";" +
-                "data request \"getState\";data request \"getState\";",
-                SectionFixture.log.toString());
+                new SectionFixture(state, "second: @name\n"),
+                new SectionFixture(state, "third: @capital\n"));
         assertEquals("generated HTML", "first\n" +
                 "second: California\n" +
                 "third: Sacramento\n",
@@ -902,20 +846,16 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_updateSections() {
-        cr.addDataRequest("getState", RawDataManager.newRequest(state));
         Section section1 = new SectionFixture(new Dataset(
                 "template", "state: @state",
-                "request", "getState"));
+                "data", state));
         Section section2 = new SectionFixture(new Dataset(
                 "template", "capital: @capital",
-                "request", "getState"));
+                "data", state));
         cr.getHtml().getBody().append("Original text");
         cr.setClientRequestType(ClientRequest.Type.AJAX);
         SectionFixture.log.setLength(0);
         cr.updateSections("id44", section1, "id55", section2);
-        assertEquals("calls to addDataRequests",
-                "data request \"getState\";data request \"getState\";",
-                SectionFixture.log.toString());
         assertEquals("response Javascript",
                 "document.getElementById(\"id44\").innerHTML = " +
                 "\"state: California\";\n" +

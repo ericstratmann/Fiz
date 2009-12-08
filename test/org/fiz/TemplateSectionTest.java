@@ -34,9 +34,8 @@ public class TemplateSectionTest extends junit.framework.TestCase {
     }
 
     public void test_constructor_withDataset() {
-        cr.addDataRequest("getState", RawDataManager.newRequest(state));
         cr.showSections(new TemplateSection(
-                new Dataset("request", "getState",
+                new Dataset("data", state,
                 "template", "@name's capital: @capital")));
         assertEquals("generated HTML", "California's capital: Sacramento",
                 cr.getHtml().getBody().toString());
@@ -55,20 +54,18 @@ public class TemplateSectionTest extends junit.framework.TestCase {
     }
 
     public void test_constructor_withTwoStrings() {
-        cr.addDataRequest("getState", RawDataManager.newRequest(state));
-        cr.showSections(new TemplateSection("getState",
+        cr.showSections(new TemplateSection(state,
                 "capital: @capital, height: @height"));
         assertEquals("generated HTML", "capital: Sacramento, height: 66",
                 cr.getHtml().getBody().toString());
     }
-
     public void test_render_errorInRequest() {
-        cr.addDataRequest("error", RawDataManager.newError(new Dataset(
-                "message", "sample <error>", "value", "47")));
         Config.setDataset("styles", new Dataset("test111",
                 "error for @name: @message"));
+        Dataset data = new Dataset();
+        data.setError(new Dataset("message", "sample <error>"));
         cr.showSections(new TemplateSection(new Dataset(
-                "request", "error",
+                "data", data,
                 "template", "name: @name, height: @height",
                 "errorStyle", "test111")));
         assertEquals("generated HTML",
@@ -76,18 +73,17 @@ public class TemplateSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
     }
     public void test_render_errorInRequest_defaultHandler() {
-        cr.addDataRequest("error", RawDataManager.newError(new Dataset(
-                "message", "sample <error>", "value", "47")));
         Config.setDataset("styles", new Dataset("TemplateSection",
                 new Dataset("error", "error: @message")));
-        cr.showSections(new TemplateSection("error",
+        Dataset data = new Dataset();
+        data.setError(new Dataset("message", "sample <error>"));
+        cr.showSections(new TemplateSection(data,
                 "name: @name, height: @height"));
         assertEquals("generated HTML", "error: sample &lt;error&gt;",
                 cr.getHtml().getBody().toString());
     }
     public void test_render_withRequest() {
-        cr.addDataRequest("getState", RawDataManager.newRequest(state));
-        cr.showSections(new TemplateSection("getState",
+        cr.showSections(new TemplateSection(state,
                 "name: @name, height: @height"));
         assertEquals("generated HTML", "name: California, height: 66",
                 cr.getHtml().getBody().toString());

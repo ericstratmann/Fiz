@@ -37,8 +37,6 @@ public class ChartSectionTest extends junit.framework.TestCase {
         cs.chart = "chart0";
         cs.js = new StringBuilder();
         cr = new ClientRequestFixture();
-        cr.addDataRequest("getCats", RawDataManager.newRequest(cats));
-        cr.addDataRequest("noCats", RawDataManager.newRequest(noCats));
         cs.cr = cr;
     }
 
@@ -80,7 +78,7 @@ public class ChartSectionTest extends junit.framework.TestCase {
     }
 
     public void test_render_topLevelPlot() {
-        cs = new ChartSection(new Dataset("request", "noCats"));
+        cs = new ChartSection(new Dataset("data", noCats));
         cs.render(cr);
         assertEquals("try {\n" +
                      "Fiz.ids.chart0 = {};\n" +
@@ -96,7 +94,7 @@ public class ChartSectionTest extends junit.framework.TestCase {
     }
 
     public void test_render_topLevelSeries() {
-        cs = new ChartSection(new Dataset("series", new Dataset("request", "noCats")));
+        cs = new ChartSection(new Dataset("series", new Dataset("data", noCats)));
         cs.render(cr);
         assertEquals("try {\n" +
                      "Fiz.ids.chart0 = {};\n" +
@@ -114,7 +112,7 @@ public class ChartSectionTest extends junit.framework.TestCase {
     }
 
     public void test_render_withProperties() {
-        cs = new ChartSection(new Dataset("request", "noCats", "foo", "bar"));
+        cs = new ChartSection(new Dataset("data", noCats, "foo", "bar"));
         cs.render(cr);
         assertEquals("try {\n" +
                      "Fiz.ids.chart0 = {};\n" +
@@ -131,9 +129,8 @@ public class ChartSectionTest extends junit.framework.TestCase {
 
 
     public void test_render_multiplePlots() {
-        cs = new ChartSection(new Dataset("plot", new Dataset("request", "noCats"),
-                                          "plot", new Dataset("request", "getMoreCats")));
-        cr.addDataRequest("getMoreCats", RawDataManager.newRequest(noCats));
+        cs = new ChartSection(new Dataset("plot", new Dataset("data", noCats),
+                                          "plot", new Dataset("data", noCats)));
         cs.render(cr);
         assertEquals("try {\n" +
                      "Fiz.ids.chart0 = {};\n" +
@@ -152,28 +149,28 @@ public class ChartSectionTest extends junit.framework.TestCase {
     }
 
     public void test_addPlot_noSeries() {
-        cs.addPlot(new Dataset("request", "noCats"));
+        cs.addPlot(new Dataset("data", noCats));
         assertEquals("chart0.plot0_data = [];\nchart0.plot0 = new " +
                      "Fiz.Chart.Bar(chart0.plot0_data);\nchart0.chart." +
                      "addPlot(chart0.plot0);\n", cs.js.toString());
     }
 
     public void test_addPlot_noSeriesWithId() {
-        cs.addPlot(new Dataset("request", "noCats", "id", "foo"));
+        cs.addPlot(new Dataset("data", noCats, "id", "foo"));
         assertEquals("chart0.foo_data = [];\nchart0.foo = new " +
                      "Fiz.Chart.Bar(chart0.foo_data);\nchart0.chart." +
                      "addPlot(chart0.foo);\n", cs.js.toString());
     }
 
     public void test_addPlot_noSeriesWithType() {
-        cs.addPlot(new Dataset("request", "noCats", "type", "Line"));
+        cs.addPlot(new Dataset("data", noCats, "type", "Line"));
         assertEquals("chart0.plot0_data = [];\nchart0.plot0 = new " +
                      "Fiz.Chart.Line(chart0.plot0_data);\nchart0.chart." +
                      "addPlot(chart0.plot0);\n", cs.js.toString());
     }
 
     public void test_addPlot_noSeries_withProperties() {
-        cs.addPlot(new Dataset("request", "noCats", "foo", "bar"));
+        cs.addPlot(new Dataset("data", noCats, "foo", "bar"));
         assertEquals("chart0.plot0_data = [];\n" +
                      "chart0.plot0 = new Fiz.Chart.Bar(chart0.plot0_data);\n" +
                      "chart0.plot0.set(\"foo\", \"bar\");\n" +
@@ -181,9 +178,8 @@ public class ChartSectionTest extends junit.framework.TestCase {
     }
 
     public void test_addPlot_withSeries() {
-        cr.addDataRequest("getMoreCats", RawDataManager.newRequest(noCats));
-        cs.addPlot(new Dataset("series", new Dataset("request", "noCats"),
-                               "series", new Dataset("request", "getMoreCats")));
+        cs.addPlot(new Dataset("series", new Dataset("data", noCats),
+                               "series", new Dataset("data", noCats)));
         assertEquals("chart0.plot0 = new Fiz.Chart.Bar();\n" +
                      "chart0.series0_data = [];\n" +
                      "chart0.series0 = new Fiz.Chart.Series(chart0.series0_data);\n" +
@@ -196,7 +192,7 @@ public class ChartSectionTest extends junit.framework.TestCase {
     }
 
     public void test_addPlot_withSeriesWithId() {
-        cs.addPlot(new Dataset("series", new Dataset("request", "noCats",
+        cs.addPlot(new Dataset("series", new Dataset("data", noCats,
                                                      "id", "foo")));
         assertEquals("chart0.plot0 = new Fiz.Chart.Bar();\n" +
                      "chart0.foo_data = [];\n" +
@@ -207,7 +203,7 @@ public class ChartSectionTest extends junit.framework.TestCase {
     }
 
     public void test_addPlot_withSeriesWithType() {
-        cs.addPlot(new Dataset("series", new Dataset("request", "noCats"), "type", "Line"));
+        cs.addPlot(new Dataset("series", new Dataset("data", noCats), "type", "Line"));
         assertEquals("chart0.plot0 = new Fiz.Chart.Line();\n" +
                      "chart0.series0_data = [];\n" +
                      "chart0.series0 = new Fiz.Chart.Series(chart0.series0_data);\n" +
@@ -217,7 +213,7 @@ public class ChartSectionTest extends junit.framework.TestCase {
     }
 
     public void test_addPlot_withSeriesWithProperties() {
-        cs.addPlot(new Dataset("series", new Dataset("request", "noCats", "bar", "foo")));
+        cs.addPlot(new Dataset("series", new Dataset("data", noCats, "bar", "foo")));
         assertEquals("chart0.plot0 = new Fiz.Chart.Bar();\n" +
                      "chart0.series0_data = [];\n" +
                      "chart0.series0 = new Fiz.Chart.Series(chart0.series0_data);\n" +
@@ -232,40 +228,9 @@ public class ChartSectionTest extends junit.framework.TestCase {
         assertEquals("given", "Scatter", cs.getTypeOfPlot(new Dataset("type", "Scatter")));
     }
 
-    public void test_addData_noRequest() {
-        try {
-            cs.addData(new Dataset("xId", "day", "yId", "cats"));
-            fail("Dataset.MissingValueError not thrown");
-        } catch (Dataset.MissingValueError e) {
-            assertEquals("couldn't find dataset element \"request\"", e.getMessage());
-            return;
-        }
-    }
-
-    public void test_addData_missingRequest() {
-        try {
-            cs.addData(new Dataset("request", "bogus", "xId", "day", "yId", "cats"));
-            fail("InternalError not thrown");
-        } catch (InternalError e) {
-            assertEquals("couldn't find data request named \"bogus\"", e.getMessage());
-            return;
-        }
-    }
-
-    public void test_addData_nullResponse() {
-        cr.addDataRequest("error", RawDataManager.newError());
-        try {
-            cs.addData(new Dataset("request", "error", "xId", "day", "yId", "cats"));
-            fail("InternalError not thrown");
-        } catch (DataRequest.RequestError e) {
-            assertEquals("error in data request raw.error: ", e.getMessage());
-            return;
-        }
-    }
-
     public void test_addData_badXId() {
         try {
-            cs.addData(new Dataset("request", "getCats", "xId", "bogus",
+            cs.addData(new Dataset("data", cats, "xId", "bogus",
                                    "yId", "cats", "id", ""));
         fail("Dataset.MissingValueError not thrown");
         } catch (Dataset.MissingValueError e) {
@@ -276,7 +241,7 @@ public class ChartSectionTest extends junit.framework.TestCase {
 
     public void test_addData_badYId() {
         try {
-            cs.addData(new Dataset("request", "getCats", "xId", "day",
+            cs.addData(new Dataset("data", cats, "xId", "day",
                                    "yId", "bogus", "id", ""));
             fail("Dataset.MissingValueError not thrown");
         } catch (Dataset.MissingValueError e) {
@@ -286,7 +251,7 @@ public class ChartSectionTest extends junit.framework.TestCase {
     }
 
     public void test_addData() {
-        cs.addData(new Dataset("request", "getCats", "xId", "day", "yId", "cats", "id", "chart0"));
+        cs.addData(new Dataset("data", cats, "xId", "day", "yId", "cats", "id", "chart0"));
         assertEquals("chart0.chart0_data = [[\"Mon\", 2], [\"Tue\", 4]];\n", cs.js.toString());
     }
 
@@ -309,13 +274,18 @@ public class ChartSectionTest extends junit.framework.TestCase {
         cs.setProperties(new Dataset("borderColor", "foo"), "plot");
         assertEquals("", cs.js.toString());
     }
+
+    public void test_setProperties_plotObjDatasetChartVar() {
+        cs.setProperties(new Dataset("legend", new Dataset("foo", "bar")), "plot");
+        assertEquals("", cs.js.toString());
+    }
+
     public void test_setProperties_plotObjPlotVar() {
         cs.setProperties(new Dataset("baz", "foo"), "plot");
         assertEquals("chart0.plot.set(\"baz\", \"foo\");\n", cs.js.toString());
     }
-
     public void test_setProperties_reserved() {
-        cs.setProperties(new Dataset("xId", "", "yId", "", "request", "",
+        cs.setProperties(new Dataset("xId", "", "yId", "", "data", "",
                                      "id", "", "type", "", "plot", "",
                                      "series", ""), "foo");
         assertEquals("", cs.js.toString());

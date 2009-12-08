@@ -24,47 +24,47 @@ import java.util.*;
  */
 public class AutocompleteFormElementTest extends junit.framework.TestCase {
     protected ClientRequest cr;
-    protected static class RequestFactory  {
-        public static DataRequest requestMany(String query) {
-            return RawDataManager.newRequest(new Dataset(
+    protected static class DataFactory  {
+        public static Dataset dataMany(String query) {
+            return new Dataset(
                 "record", new Dataset("choice", "test1"),
                 "record", new Dataset("choice", "test2"),
                 "record", new Dataset("choice", "test3")
-            ));
+            );
         }
 
-        public static DataRequest requestNone(String query) {
-            return RawDataManager.newRequest(new Dataset());
+        public static Dataset dataNone(String query) {
+            return new Dataset();
         }
 
-        public static DataRequest requestCustom(String query) {
-            return RawDataManager.newRequest(new Dataset(
+        public static Dataset dataCustom(String query) {
+            return new Dataset(
                 "record", new Dataset("customChoice", "test1"),
                 "record", new Dataset("customChoice", "test2"),
                 "record", new Dataset("customChoice", "test3")
-            ));
+            );
         }
     }
-    
+
     public void setUp() {
         cr = new ClientRequestFixture();
         ServletRequestFixture.session = null;
     }
-    
+
     public void test_constructor_properties() {
         AutocompleteFormElement element = new AutocompleteFormElement(
-                new Dataset("id", "1234", "requestFactory", "getResults"));
+                new Dataset("id", "1234", "dataFactory", "getResults"));
         assertEquals("id property", "1234",
                 element.pageProperty.id);
-        assertEquals("requestFactory property", "getResults",
-                element.pageProperty.requestFactory);
+        assertEquals("dataFactory property", "getResults",
+                element.pageProperty.dataFactory);
     }
 
     public void test_ajaxQuery_unmatchedQuery() {
         cr.setClientRequestType(ClientRequest.Type.AJAX);
-        AutocompleteFormElement.PageProperty p = 
-                new AutocompleteFormElement.PageProperty("auto", 
-                    "AutocompleteFormElementTest$RequestFactory.requestMany",
+        AutocompleteFormElement.PageProperty p =
+                new AutocompleteFormElement.PageProperty("auto",
+                    "AutocompleteFormElementTest$DataFactory.dataMany",
                     "choice");
         cr.setPageProperty("auto", p);
         cr.jsCode = null;
@@ -88,9 +88,9 @@ public class AutocompleteFormElementTest extends junit.framework.TestCase {
 
     public void test_ajaxQuery_manyResults() {
         cr.setClientRequestType(ClientRequest.Type.AJAX);
-        AutocompleteFormElement.PageProperty p = 
-                new AutocompleteFormElement.PageProperty("auto", 
-                    "AutocompleteFormElementTest$RequestFactory.requestMany",
+        AutocompleteFormElement.PageProperty p =
+                new AutocompleteFormElement.PageProperty("auto",
+                    "AutocompleteFormElementTest$DataFactory.dataMany",
                     "choice");
         cr.setPageProperty("auto", p);
         cr.jsCode = null;
@@ -114,13 +114,13 @@ public class AutocompleteFormElementTest extends junit.framework.TestCase {
 
     public void test_ajaxQuery_noResults() {
         cr.setClientRequestType(ClientRequest.Type.AJAX);
-        AutocompleteFormElement.PageProperty p = 
-            new AutocompleteFormElement.PageProperty("auto", 
-                "AutocompleteFormElementTest$RequestFactory.requestNone",
+        AutocompleteFormElement.PageProperty p =
+            new AutocompleteFormElement.PageProperty("auto",
+                "AutocompleteFormElementTest$DataFactory.dataNone",
                 "choice");
         cr.setPageProperty("auto", p);
         cr.jsCode = null;
-        cr.mainDataset = new Dataset("id", "auto", "userInput", "test");        
+        cr.mainDataset = new Dataset("id", "auto", "userInput", "test");
         AutocompleteFormElement.ajaxQuery(cr);
         assertEquals("Ajax javascript: Dataset size 0",
                 "document.getElementById(\"auto_dropdown\").innerHTML = \"\";\n" +
@@ -130,13 +130,13 @@ public class AutocompleteFormElementTest extends junit.framework.TestCase {
 
     public void test_ajaxQuery_choiceName() {
         cr.setClientRequestType(ClientRequest.Type.AJAX);
-        AutocompleteFormElement.PageProperty p = 
-            new AutocompleteFormElement.PageProperty("auto", 
-                "AutocompleteFormElementTest$RequestFactory.requestCustom",
+        AutocompleteFormElement.PageProperty p =
+            new AutocompleteFormElement.PageProperty("auto",
+                "AutocompleteFormElementTest$DataFactory.dataCustom",
                 "customChoice");
         cr.setPageProperty("auto", p);
         cr.jsCode = null;
-        cr.mainDataset = new Dataset("id", "auto", "userInput", "test");        
+        cr.mainDataset = new Dataset("id", "auto", "userInput", "test");
         AutocompleteFormElement.ajaxQuery(cr);
         assertEquals("Ajax javascript: Dataset size 3",
                 "document.getElementById(\"auto_dropdown\").innerHTML = \"" +
@@ -153,13 +153,13 @@ public class AutocompleteFormElementTest extends junit.framework.TestCase {
                 "Fiz.ids.auto.showDropdown();\n",
                 cr.jsCode.toString());
     }
-    
+
     public void test_render_basics() {
         AutocompleteFormElement element = new AutocompleteFormElement(
                 new Dataset(
                         "id", "auto",
                         "label", "Autocomplete",
-                        "requestFactory", "getQuery"));
+                        "dataFactory", "getQuery"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
         element.render(cr, new Dataset());

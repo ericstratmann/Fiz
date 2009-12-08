@@ -70,20 +70,6 @@ public class CompoundSectionTest extends junit.framework.TestCase {
                 section.extraChildren.get(1));
     }
 
-    public void test_addDataRequests() {
-        CompoundSection section = new CompoundSection(
-                new Dataset("id", "test44", "class", "class22",
-                "background", "#ff0000"),
-                new SectionFixture("first"));
-        section.add(new SectionFixture("second"),
-                new SectionFixture("third"));
-        section.addDataRequests(cr);
-        assertEquals("registered requests", "addDataRequests first\n" +
-                "addDataRequests second\n" +
-                "addDataRequests third\n",
-                SectionFixture.log.toString());
-    }
-
     public void test_render_basics() {
         CompoundSection section = new CompoundSection(
                 new Dataset("borderFamily", "a/b/c.gif"),

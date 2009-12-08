@@ -18,18 +18,18 @@ package org.fiz;
 /**
  * A Column object represents one column in a TableSection.  This class
  * implements a few common forms of columns; subclasses implement additional
- * forms.  A Column implements the Formatter interface, which knows how to
+ * forms.  A Column implements the Section interface, which knows how to
  * generate HTML for a particular column in a particular row, given a
  * dataset containing data for the row.  In addition, a Column object can
  * generate HTML for the column header.
  *
  */
-public class Column extends Formatter {
+public class Column extends Section {
     // The following variables hold copies of constructor arguments;
     // see the constructors for details.
     protected String label;
     protected String template = null;
-    protected Formatter formatter = null;
+    protected Section section = null;
 
     /**
      * Construct a Column that expands a template and displays the
@@ -46,16 +46,16 @@ public class Column extends Formatter {
     }
 
     /**
-     * Construct a Column that uses a given Formatter to display
+     * Construct a Column that uses a given Section to display
      * the information in each row.
      * @param label                Identifying string for this column;
      *                             displayed in the header row.
-     * @param formatter            Invoked to generate the HTML for
+     * @param section            Invoked to generate the HTML for
      *                             this column in each row of the table.
      */
-    public Column(String label, Formatter formatter) {
+    public Column(String label, Section section) {
         this.label = label;
-        this.formatter = formatter;
+        this.section = section;
     }
 
     /**
@@ -70,8 +70,8 @@ public class Column extends Formatter {
      */
     public void render(ClientRequest cr, Dataset rowData) {
         StringBuilder out = cr.getHtml().getBody();
-        if (formatter != null) {
-            formatter.render(cr, rowData);
+        if (section != null) {
+            section.render(cr, rowData);
         } else {
             Template.appendHtml(out, template, rowData);
         }

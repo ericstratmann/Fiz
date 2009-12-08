@@ -152,16 +152,6 @@ public class ClientRequest {
     // file provided for that form element.
     protected HashMap<String,FileUpload> uploads = null;
 
-    // The following table each track of all named DataRequests.  Keys
-    // are the names passed to {@code addDataRequest}, and the values
-    // are the corresponding DataRequests.
-    protected HashMap<String,DataRequest> namedRequests =
-            new HashMap<String,DataRequest>();
-
-    // Keeps track of all unnamed DataRequests.
-    protected ArrayList<DataRequest> unnamedRequests =
-            new ArrayList<DataRequest>();
-
     // The kind of request we are currently servicing:
     protected Type requestType = Type.NORMAL;
 
@@ -230,28 +220,6 @@ public class ClientRequest {
     }
 
     /**
-     * Associate a DataRequest with this ClientRequest and give it a
-     * name that can be used to look up the request later.
-     * @param name                 Name for the DataRequest; typically used
-     *                             by Sections to find requests created for
-     *                             them by the Interactor.
-     * @param request              DataRequest to associate with {@code name}.
-     */
-    public void addDataRequest(String name, DataRequest request) {
-        namedRequests.put(name, request);
-    }
-
-    /**
-     * Associate an unnamed DataRequest with this ClientRequest.  Typically
-     * unnamed requests are created by Sections for their own internal use.
-     * @param request              DataRequest to associate with this
-     *                             ClientRequest.
-     */
-    public void addDataRequest(DataRequest request) {
-        unnamedRequests.add(request);
-    }
-
-    /**
      * Expands a template to generate HTML and adds it to the bulletin.  If
      * this is the first message added to the bulletin for this request,
      * any previous bulletin contents are cleared.  This method can be
@@ -270,15 +238,13 @@ public class ClientRequest {
 
     /**
      * Generate bulletin messages for one or more errors, each described
-     * by a dataset.  Typically the errors are the result of a DataRequest.
+     * by a dataset.  Typically the errors are the result of a data request.
      * A separate bulletin message is generated for each dataset in
      * {@code errors}, using the {@code bulletin} template from the
      * {@code errors} configuration dataset to generate HTML from the
      * dataset.  The messages will appear in divs with class "bulletinError".
      * @param errors               One or more Datasets, each containing
      *                             information about a particular error;
-     *                             typically this is the return value from
-     *                             DataRequest.getErrors().
      */
     public void addErrorsToBulletin(Dataset... errors) {
         for (Dataset error : errors) {
@@ -539,22 +505,6 @@ public class ClientRequest {
     }
 
     /**
-     * Given the name for a DataRequest that was previously added to this
-     * ClientRequest using {@code addDataRequest}, return the DataRequest.
-     * If no such request exists, an InternalError is generated.
-     * @param name                 Name for the desired request.
-     * @return                     DataRequest corresponding to {@code name}.
-     */
-    public DataRequest getDataRequest(String name) {
-        DataRequest request = namedRequests.get(name);
-        if (request == null) {
-            throw new InternalError("couldn't find data request named \"" +
-                    name + "\"");
-        }
-        return request;
-    }
-
-    /**
      * Returns an object used to generate and buffer the request's HTML
      * output.
      * @return                     Html object for this request.
@@ -714,21 +664,6 @@ public class ClientRequest {
             pageState = PageState.getPageState(this, getPageId(), true);
         }
         pageState.setPageProperty(name, value);
-    }
-
-    /**
-     * Generate a string containing the names of all of the DataRequests
-     * registered so far for this ClientRequest.  This method is used
-     * primarily for testing
-     * @return                     A string containing names of all of the
-     *                             named requests registered so far, in
-     *                             alphabetical order.
-     */
-    public String getRequestNames() {
-        ArrayList<String> names = new ArrayList<String>();
-        names.addAll(namedRequests.keySet());
-        Collections.sort(names);
-        return StringUtil.join(names, ", ");
     }
 
     /**
@@ -1005,16 +940,10 @@ public class ClientRequest {
 
     /**
      * Generate HTML for one or more Sections, appending it to the response
-     * from this ClientRequest.  Each Section is first given a chance to
-     * specify the DataRequests needed to supply its data, then the requests
-     * are processed, then each Section uses the request results to
-     * generate its HTML.
+     * from this ClientRequest.
      * @param sections             Contents of the page: any number of Sections.
      */
     public void showSections(Section ... sections) {
-        for (Section section : sections) {
-            section.addDataRequests(this);
-        }
         for (Section section : sections) {
             section.render(this);
         }
@@ -1055,14 +984,6 @@ public class ClientRequest {
         int oldLength = out.length();
         int lastId = idsAndSections.length - 2;
 
-        // This method operates in 2 passes, much like showSections:
-        // the first pass registers data requests, which can then
-        // execute in parallel.  The second pass generates the HTML
-        // and the Ajax actions.
-        for (int i = 0; i <= lastId; i += 2) {
-            Section section = (Section) idsAndSections[i+1];
-            section.addDataRequests(this);
-        }
         for (int i = 0; i <= lastId; i += 2) {
             String id = (String) idsAndSections[i];
             Section section = (Section) idsAndSections[i+1];

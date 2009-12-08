@@ -401,4 +401,13 @@ public class CompoundDatasetTest extends junit.framework.TestCase {
                 StringUtil.join((ArrayList) compound.lookup("child.name",
                 Dataset.Quantity.ALL), ", "));
     }
+
+    public void test_methodsThrowError() throws Throwable {
+        CompoundDataset data = new CompoundDataset(new Dataset("a", "b"),
+                                                   new Dataset("b", "a"));;
+        data.setError(new Dataset("message", "oops"));
+
+        String[] whiteList = {};
+        DatasetTest.runPublicMethods(data, whiteList, "oops");
+    }
 }

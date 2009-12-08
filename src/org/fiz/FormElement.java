@@ -53,7 +53,7 @@ import org.fiz.FormSection.FormDataException;
  *                   for additional usage and implementation information,
  *                   including the calling sequence for validation methods.
  */
-public abstract class FormElement extends Formatter implements DirectAjax {
+public abstract class FormElement extends Section implements DirectAjax {
     // An object of the following class is stored as a page property if this
     // form element contains validation: it holds data that we will need later
     // on to process Ajax requests to validate the value of the form element
@@ -114,24 +114,6 @@ public abstract class FormElement extends Formatter implements DirectAjax {
         for (Dataset validator : properties.getDatasetList("validator")) {
             addValidator(validator);
         }
-    }
-
-    /**
-     * This method is invoked during the first phase of rendering a page,
-     * in case the FormElement needs to create custom requests of its own
-     * (as opposed to requests already provided for it by the Interactor).
-     * If so, this method creates the requests and passes them to
-     * {@code cr.addDataRequest}.  This method provides a default
-     * implementation that does nothing, which is appropriate for most
-     * FormElements.
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     * @param empty                True means no request was provided to
-     *                             the enclosing form, which means that the
-     *                             form should start off empty.
-     */
-    public void addDataRequests(ClientRequest cr, boolean empty) {
-        // By default, do nothing
     }
 
     /**
@@ -354,7 +336,7 @@ public abstract class FormElement extends Formatter implements DirectAjax {
     public void setParentForm(FormSection parent) {
         this.parentForm = parent;
         if (validatorData != null) {
-            validatorData.parentId = parent.checkId();
+            validatorData.parentId = parent.getId();
             validatorData.elementErrorStyle = parent.checkElementErrorStyle();
         }
     }

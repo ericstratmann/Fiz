@@ -141,14 +141,11 @@ public class TabSection extends Section{
         // Collect the data that will be available for templates, including
         // the response to the section's request, if there was one.
 
-        Dataset data;
-        String requestName = properties.checkString("request");
-        if (requestName == null) {
+        Dataset data = properties.checkDataset("data");
+        if (data == null) {
             data = cr.getMainDataset();
         } else {
-            data = new CompoundDataset(
-                    cr.getDataRequest(requestName).getResponseOrAbort(),
-                    cr.getMainDataset());
+            data = new CompoundDataset(data, cr.getMainDataset());
         }
 
         // Use the style information to generate CSS for the tabs.

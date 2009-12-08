@@ -21,10 +21,7 @@ import java.util.*;
  * The SelectFormElement class allows users to select one of more values
  * from a predefined menu of choices.  This class supports several
  * variations on that general theme:
- *   * The choices can be defined either statically in the properties
- *     of the form element or dynamically as the result of a data request.
- *     The {@code choiceRequest} property selects between these two options.
- *     In either case, the choices are defined by a collection of nested
+ *     The choices are defined by a collection of nested
  *     datasets, each containing {@code name} and {@code value} values.
  *     The {@code name} value specifies what to display in the menu, and
  *     the {@code value} value is the internal form used in incoming and
@@ -37,16 +34,11 @@ import java.util.*;
  *  The SelectFormElement class supports the following properties
  *  (additional properties applicable to all form elements may be found in
  *  {@link FormElement}):
- *   choice:         (optional) Default location for the choice datasets, if
- *                   neither the {@code choiceRequest} nor the
- *                   {@code choiceName} property is specified.
- *   choiceRequest:  (optional) Name of a DataRequest whose result will
- *                   contain the choices.  If this property is omitted
- *                   then the choices must be present in the properties.
- *   choiceName:     (optional) The name of the nested datasets (either in
- *                   the properties or in the result of the data request
- *                   specified by {@code choiceRequest}) containing the
- *                   choices; defaults to {@code choice}.
+ *   choiceData:     (required) Dataset containing the list of choices. See
+ *                   above for a description.
+ *   choiceName:     (optional) The name of the nested datasets in
+ *                   {@code choiceData} containing the choices; defaults to
+ *                   {@code choice}.
  *   height:         (optional) If this property is specified with a value
  *                   greater than 1, then the form element will be displayed
  *                   as a scrollable list with this many elements visible at
@@ -130,25 +122,10 @@ public class SelectFormElement extends FormElement {
             }
         }
 
-        String choiceName = properties.checkString("choiceName");
-        ArrayList<Dataset> choices;
-        if (choiceName == null) {
-            choiceName = "choice";
-        }
-        String choiceRequestName = properties.checkString("choiceRequest");
-        if (choiceRequestName != null) {
-            DataRequest request = cr.getDataRequest(choiceRequestName);
-            Dataset responseData = request.getResponseData();
-            if (responseData == null) {
-                // The request to get the choices failed; display an error
-                // message and use an empty list of choices.
-                cr.addErrorsToBulletin(request.getErrorData());
-                choices = new ArrayList<Dataset>();
-            } else {
-                choices = responseData.getDatasetList(choiceName);
-            }
-        } else {
-            choices = properties.getDatasetList(choiceName);
+        Dataset choiceData = properties.getDataset("choiceData");
+        if (choiceData.getErrorData() != null) {
+            cr.addErrorsToBulletin(choiceData.getErrorData());
+            choiceData = new Dataset();;
         }
 
         cr.getHtml().includeCssFile("SelectFormElement.css");
@@ -158,6 +135,11 @@ public class SelectFormElement extends FormElement {
                 "{{size=\"@height\"}} {{multiple=\"@multiple\"}}>\n",
                 properties);
 
+        String choiceName = properties.checkString("choiceName");
+        if (choiceName == null) {
+            choiceName = "choice";
+        }
+        ArrayList<Dataset> choices = choiceData.getDatasetList(choiceName);
         String allChoices = "";
         for (int i = 0; i < choices.size(); i++) {
             Dataset choice = choices.get(i);

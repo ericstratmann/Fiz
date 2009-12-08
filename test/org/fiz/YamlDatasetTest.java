@@ -347,4 +347,12 @@ public class YamlDatasetTest extends junit.framework.TestCase {
         assertEquals("third value", 18.1234567890123, y.get("third"));
         assertEquals("fourth value", true, y.get("fourth"));
     }
+
+    public void test_methodsThrowError() throws Throwable {
+        YamlDataset data = YamlDataset.newStringInstance("a: b");
+        data.setError(new Dataset("message", "oops"));
+
+        String[] whiteList = {};
+        DatasetTest.runPublicMethods(data, whiteList, "oops");
+    }
 }

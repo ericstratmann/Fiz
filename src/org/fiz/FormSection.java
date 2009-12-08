@@ -36,7 +36,7 @@ import java.util.*;
  *                   dataset, which is expanded with the error data and the
  *                   main dataset to produce the HTML to display.  Defaults to
  *                   "FormSection.elementError".
- *   errorStyle:     (optional) If an error occurs in {@code request} then
+ *   errorStyle:     (optional) If {@code data} contains any errors, then
  *                   this property contains the name of a template in the
  *                   {@code styles} dataset, which is expanded with the
  *                   error data and the main dataset.  The resulting HTML
@@ -51,9 +51,9 @@ import java.util.*;
  *                   id's for the page.  Defaults to {@code form}.
  *   initialValues:  (optional) A nested dataset providing initial values
  *                   to display in the form.  This property is used only
- *                   if the {@code request} property is omitted; the values
+ *                   if the {@code data} property is omitted; the values
  *                   in the nested dataset are handled in the same way as the
- *                   values in a response to {@code request}.
+ *                   values in {@code data}.
  *   layout:         (optional) If specified with the value {@code vertical}
  *                   thean the form is laid out in a single column with
  *                   labels above controls.  Otherwise (default) a
@@ -63,11 +63,8 @@ import java.util.*;
  *                   is sent to this URL.  The caller must ensure that
  *                   this URL is implemented by an Interactor.  The name
  *                   must start with "post".  Defaults to {@code post}.
- *   request:        (optional) Name of a DataRequest that will supply
- *                   initial values to display in the FormSection.  The
- *                   request is created by the caller and registered in
- *                   the ClientRequest by calling ClientRequest.addDataRequest.
- *                   If the response to the request contains a {@code record}
+ *   data:           (Optional) Dataset of initial values to display in the
+ *                   FormSection. If the dataset contains a {@code record}
  *                   nested dataset, then the contents of that nested dataset
  *                   will be used to provide the form's initial data.  If
  *                   there is no {@code record} nested dataset then the
@@ -120,7 +117,7 @@ public class FormSection extends Section {
             implements HandledError {
         /**
          * Construct a CollecttError with the error data returned by the failed
-         * DataRequest.
+         * data request.
          * @param errorDatasets    One or more data sets, each describing
          *                         an error.
          */
@@ -205,13 +202,14 @@ public class FormSection extends Section {
     public FormSection(Dataset properties, FormElement ... elements) {
         this.properties = properties;
         this.elements = elements;
-        for (FormElement element : elements) {
-            element.setParentForm(this);
-        }
         id = properties.checkString("id");
         if (id == null) {
             id = "form";
             properties.set("id", "form");
+        }
+
+        for (FormElement element : elements) {
+            element.setParentForm(this);
         }
         buttonStyle = properties.checkString("buttonStyle");
         if (buttonStyle == null) {
@@ -220,22 +218,6 @@ public class FormSection extends Section {
 
         helpConfig = Config.getDataset("help");
         nestedHelp = helpConfig.checkDataset(id);
-    }
-
-    /**
-     * This method is invoked during the first phase of rendering a page to
-     * create any special requests needed for the form;  we don't need any
-     * such requests, but our component form elements might, so we call the
-     * {@code cr.addDataRequests} method in each of the elements.
-     * @param cr                   Overall information about the client
-     *                             request being serviced.
-     */
-    @Override
-    public void addDataRequests(ClientRequest cr) {
-        boolean empty = (properties.checkString("request") == null);
-        for (FormElement element : elements) {
-            element.addDataRequests(cr, empty);
-        }
     }
 
     /**
@@ -409,25 +391,22 @@ public class FormSection extends Section {
 
         // Create a dataset that provides access to the initial values
         // for the form elements.
-        String requestName = properties.checkString("request");
-        Dataset data;
-        if (requestName != null) {
-            DataRequest dataRequest = cr.getDataRequest(requestName);
-            Dataset response = dataRequest.getResponseData();
-            if (response == null) {
-                // An error occurred in the request.
+        Dataset data = properties.checkDataset("data");
+        if (data != null) {
+            if (data.getErrorData() != null) {
+                // An error occurred
                 Template.appendHtml(out, "\n<!-- Start FormSection @id -->\n",
                         properties);
                 cr.showErrorInfo(properties.checkString("errorStyle"),
-                        "FormSection.error", dataRequest.getErrorData());
+                        "FormSection.error", data.getErrorData());
                 Template.appendHtml(out, "\n<!-- End FormSection @id -->\n",
                         properties);
                 return;
             }
-            if (response.containsKey("record")) {
-                response = response.getDataset("record");
+            if (data.containsKey("record")) {
+                data = data.getDataset("record");
             }
-            data = new CompoundDataset(response, mainDataset);
+            data = new CompoundDataset(data, mainDataset);
         } else {
             Dataset initialValues = properties.checkDataset("initialValues");
             if (initialValues != null) {

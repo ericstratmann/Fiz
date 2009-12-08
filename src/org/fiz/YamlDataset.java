@@ -124,6 +124,7 @@ public class  YamlDataset extends Dataset {
      *                             dataset using YAML syntax.
      */
     public String toString() {
+        throwIfError();
         return YamlDataset.writeString(this);
     }
 
@@ -194,6 +195,7 @@ public class  YamlDataset extends Dataset {
      *                             closing the file.
      */
     public void writeFile(String name, String comment) {
+        throwIfError();
         YamlDataset.writeFile(this, name, comment);
     }
 

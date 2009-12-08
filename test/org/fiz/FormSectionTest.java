@@ -24,20 +24,12 @@ public class FormSectionTest extends junit.framework.TestCase {
     // The following class is a simple FormElement that makes its own
     // data request, named after its id.
     private static class FormElementFixture extends FormElement {
-        // The following variable is used to log events such as calls to
-        // addDataRequests.
-        protected static StringBuffer log = new StringBuffer();
-
         String html = "";
         public FormElementFixture(String id) {
             super(new Dataset("id", id));
         }
         public void render(ClientRequest cr, Dataset data) {
             cr.getHtml().getBody().append(html);
-        }
-        public void addDataRequests(ClientRequest cr, boolean empty) {
-            log.append("addDataRequests " + id + " " +
-                    ((empty) ? "empty" : "not empty") + "\n");
         }
     }
 
@@ -118,11 +110,11 @@ public class FormSectionTest extends junit.framework.TestCase {
     }
     public void test_constructor_defaultButtonStyle() {
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson"),
+                new Dataset("id", "form1", "data", "blah"),
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
-        assertEquals("properties", "id:      form1\n" +
-                "request: getPerson\n", form.properties.toString());
+        assertEquals("properties", "data: blah\nid:   form1\n",
+                form.properties.toString());
         assertEquals("number of elements", 2, form.elements.length);
         assertEquals("buttonStyle", "FormSection.button",
                 form.buttonStyle);
@@ -133,28 +125,9 @@ public class FormSectionTest extends junit.framework.TestCase {
         assertEquals("buttonStyle", "explicit", form.buttonStyle);
     }
 
-    public void test_addDataRequests() {
-        Config.setDataset("dataRequests", YamlDataset.newStringInstance(
-                "getPerson:\n" +
-                "  manager: fixture\n" +
-                "getPerson_id1:\n" +
-                "  manager: fixture\n" +
-                "getPerson_id2:\n" +
-                "  manager: fixture\n"));
-        FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson"),
-                new FormElementFixture("id1"),
-                new FormElementFixture("id2"));
-        form.addDataRequests(cr);
-        assertEquals("calls to addDataRequests in components",
-                "addDataRequests id1 not empty\n" +
-                "addDataRequests id2 not empty\n",
-                FormElementFixture.log.toString());
-    }
-
     public void test_collectFormData_noErrors() {
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson"),
+                new Dataset("id", "form1", "data", person),
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
         Dataset main = cr.getMainDataset();
@@ -182,7 +155,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         }
 
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson"),
+                new Dataset("id", "form1", "data", person),
                 new ErrorFormElement("name", "name error"),
                 new ErrorFormElement("age", "age error"));
         cr.setClientRequestType(ClientRequest.Type.POST);
@@ -245,7 +218,7 @@ public class FormSectionTest extends junit.framework.TestCase {
         Config.setDataset("styles", new Dataset("bulletin",
                 new Dataset("error", "bulletin: @message")));
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson"),
+                new Dataset("id", "form1", "data", person),
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
         cr.setClientRequestType(ClientRequest.Type.POST);
@@ -376,12 +349,12 @@ public class FormSectionTest extends junit.framework.TestCase {
     }
 
     public void test_render_requestErrorDefaultStyle() {
-        cr.addDataRequest("error", RawDataManager.newError(new Dataset(
-                "message", "sample <error>", "value", "47")));
+        Dataset data = new Dataset();
+        data.setError(new Dataset("message", "sample <error>"));
         Config.setDataset("styles", new Dataset("FormSection",
                 new Dataset("error", "error from @name: @message")));
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "error"));
+                new Dataset("id", "form1", "data", data));
         form.render(cr);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start FormSection form1 -->\n" +
@@ -390,12 +363,12 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
     }
     public void test_render_requestErrorExplicitStyle() {
-        cr.addDataRequest("error", RawDataManager.newError(new Dataset(
-                "message", "sample <error>", "value", "47")));
+        Dataset data = new Dataset();
+        data.setError(new Dataset("message", "sample <error>"));
         Config.setDataset("styles", new Dataset(
                 "custom", "custom message: @message"));
         FormSection form = new FormSection(new Dataset(
-                "id", "form1", "request", "error", "errorStyle", "custom"));
+                "id", "form1", "data", data, "errorStyle", "custom"));
         form.render(cr);
         assertEquals("generated HTML", "\n" +
                 "<!-- Start FormSection form1 -->\n" +
@@ -404,9 +377,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString());
     }
     public void test_render_lookForNestedData() {
-        cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson",
+                new Dataset("id", "form1", "data", person,
                         "postUrl", "x/y"),
                 new EntryFormElement("name", "Name:"));
         cr.showSections(form);
@@ -416,9 +388,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString(), "<input[^>]*text[^>]*>");
     }
     public void test_render_dataNotNested() {
-        cr.addDataRequest("getState", RawDataManager.newRequest(state));
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getState",
+                new Dataset("id", "form1", "data", state,
                         "postUrl", "x/y"),
                 new EntryFormElement("name", "Name:"));
         cr.showSections(form);
@@ -454,9 +425,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString(), "<input[^>]*text[^>]*>");
     }
     public void test_render_defaultCssFile() {
-        cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson",
+                new Dataset("id", "form1", "data", person,
                         "postUrl", "x/y"),
                 new EntryFormElement("name", "Name:"));
         cr.showSections(form);
@@ -510,9 +480,8 @@ public class FormSectionTest extends junit.framework.TestCase {
                 cr.getHtml().getBody().toString(), ".*<table");
     }
     public void test_render_javascript() {
-        cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson",
+                new Dataset("id", "form1", "data", person,
                 "buttonStyle", "", "postUrl", "x/y"),
                 new EntryFormElement("name", "Name:"));
         cr.showSections(form);
@@ -526,7 +495,7 @@ public class FormSectionTest extends junit.framework.TestCase {
 
     public void test_checkElementErrorStyle() {
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson",
+                new Dataset("id", "form1", "data", person,
                         "elementErrorStyle", "error"));
         assertEquals("element error style", "error", form.checkElementErrorStyle());
     }
@@ -561,9 +530,8 @@ public class FormSectionTest extends junit.framework.TestCase {
     }
 
     public void test_renderInner_noSubmitButton() {
-        cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson",
+                new Dataset("id", "form1", "data", person,
                 "buttonStyle", "", "postUrl", "x/y"), new TemplateFormElement(
                 new Dataset("id", "id11", "template",
                 "<div id=\"id11\">xyz</div>")));
@@ -581,9 +549,8 @@ public class FormSectionTest extends junit.framework.TestCase {
         TestUtil.assertXHTML( cr.getHtml().toString());
     }
     public void test_renderInner_hiddenElements() {
-        cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson",
+                new Dataset("id", "form1", "data", person,
                 "buttonStyle", "", "postUrl", "x/y"),
                 new TemplateFormElement(
                         new Dataset("id", "id2", "template",
@@ -607,9 +574,8 @@ public class FormSectionTest extends junit.framework.TestCase {
         TestUtil.assertXHTML( cr.getHtml().toString());
     }
     public void test_renderInner_submitButton() {
-        cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson",
+                new Dataset("id", "form1", "data", person,
                 "postUrl", "x/y"));
         cr.showSections(form);
         TestUtil.assertMatchingSubstring("form contents",
@@ -626,7 +592,6 @@ public class FormSectionTest extends junit.framework.TestCase {
     }
 
     public void test_sideBySideElement_renderLabelReturnsFalse() {
-        cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         TemplateFormElement element1 = new TemplateFormElement(
                 new Dataset("id", "id1", "template",
                 "<div id=\"id1\">html 1</div>", "span", "true"));
@@ -634,7 +599,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "id2", "template",
                 "<div id=\"id2\">html 2</div>"));
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson",
+                new Dataset("id", "form1", "data", person,
                 "buttonStyle", "", "postUrl", "x/y"), element1, element2);
         cr.showSections(form);
         TestUtil.assertMatchingSubstring("form contents",
@@ -656,7 +621,6 @@ public class FormSectionTest extends junit.framework.TestCase {
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_sideBySideElement_helpText() {
-        cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         TemplateFormElement element1 = new TemplateFormElement(
                 new Dataset("id", "id1", "template",
                 "<div id=\"id1\">html 1</div>", "help", "Sample help text"));
@@ -664,7 +628,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "id2", "template",
                 "<div id=\"id2\">html 2</div>"));
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson",
+                new Dataset("id", "form1", "data", person,
                 "buttonStyle", "", "postUrl", "x/y"), element1, element2);
         cr.showSections(form);
         TestUtil.assertMatchingSubstring("form contents",
@@ -686,9 +650,8 @@ public class FormSectionTest extends junit.framework.TestCase {
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_sideBySideElement_elements() {
-        cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson",
+                new Dataset("id", "form1", "data", person,
                         "buttonStyle", "", "postUrl", "x/y"),
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));
@@ -716,7 +679,6 @@ public class FormSectionTest extends junit.framework.TestCase {
     }
 
     public void test_verticalElement_renderLabelReturnsFalse() {
-        cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         TemplateFormElement element1 = new TemplateFormElement(
                 new Dataset("id", "id1", "template",
                 "<div id=\"id1\">html 1</div>", "span", "true"));
@@ -724,7 +686,7 @@ public class FormSectionTest extends junit.framework.TestCase {
                 new Dataset("id", "id2", "template",
                 "<div id=\"id2\">html 2</div>", "label", "sample"));
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson",
+                new Dataset("id", "form1", "data", person,
                 "buttonStyle", "", "layout", "vertical", "postUrl", "x/y"),
                 element1, element2);
         cr.showSections(form);
@@ -746,14 +708,13 @@ public class FormSectionTest extends junit.framework.TestCase {
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_verticalElement_helpText() {
-        cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         TemplateFormElement element1 = new TemplateFormElement(
                 new Dataset("id", "id1", "template", "element 1 html",
                 "help", "Sample help text"));
         TemplateFormElement element2 = new TemplateFormElement(
                 new Dataset("id", "id2", "template", "element 2 html"));
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson",
+                new Dataset("id", "form1", "data", person,
                 "buttonStyle", "", "layout", "vertical", "postUrl", "x/y"),
                 element1, element2);
         cr.showSections(form);
@@ -774,9 +735,8 @@ public class FormSectionTest extends junit.framework.TestCase {
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
     public void test_verticalElement_elements() {
-        cr.addDataRequest("getPerson", RawDataManager.newRequest(person));
         FormSection form = new FormSection(
-                new Dataset("id", "form1", "request", "getPerson",
+                new Dataset("id", "form1", "data", person,
                 "buttonStyle", "", "layout", "vertical", "postUrl", "x/y"),
                 new EntryFormElement("name", "Name:"),
                 new EntryFormElement("age", "Age:"));

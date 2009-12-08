@@ -41,8 +41,7 @@ public class Demo2Interactor extends Interactor {
         Html html = cr.getHtml();
         html.setTitle("Simple Fiz Demonstration");
         cr.getMainDataset().set("currentTabId", "students");
-        cr.addDataRequest("students",
-                fileDataManager.newReadRequest("demo.yaml", "students"));
+        Dataset students = fileDataManager.read("demo.yaml", "students");
         Section sections[] = {
                 new TemplateSection("<h1>Your University Online</h1>\n"),
                 new TabSection(new Dataset(),
@@ -58,7 +57,7 @@ public class Demo2Interactor extends Interactor {
                                 "url", "other?currentTabId=life")),
                 new TemplateSection("<h2>Current Students</h2>\n"),
                 new TableSection(
-                    new Dataset("request", "students"),
+                    new Dataset("data", students),
                     new Column("Name",
                             new Link("@last, @first", "student?id=@id")),
                     new Column("Student Id", "@id"),

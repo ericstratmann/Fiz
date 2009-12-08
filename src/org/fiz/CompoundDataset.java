@@ -81,6 +81,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public int addSerializedData(CharSequence source, int start) {
+        throwIfError();
         throw new InternalError("addSerializedData invoked on a CompoundDataset");
     }
 
@@ -90,6 +91,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public void addSerializedData(CharSequence source) {
+        throwIfError();
         throw new InternalError("addSerializedData invoked on a CompoundDataset");
     }
 
@@ -100,6 +102,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public void add(String key, Object child) {
+        throwIfError();
         throw new InternalError("add invoked on a CompoundDataset");
     }
 
@@ -110,6 +113,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public void addPath(String path, Object child) {
+        throwIfError();
         throw new InternalError("addPath invoked on a CompoundDataset");
     }
 
@@ -118,6 +122,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public void clear() {
+        throwIfError();
         throw new InternalError("clear invoked on a CompoundDataset");
     }
 
@@ -130,6 +135,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public CompoundDataset clone() {
+        throwIfError();
         Dataset[] clones = new Dataset[components.length];
         for (int i = 0; i < components.length; i++) {
             clones[i] = components[i].clone();
@@ -143,6 +149,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public CompoundDataset clone(Dataset dest) {
+        throwIfError();
         throw new InternalError("clone with argument invoked on a CompoundDataset");
     }
 
@@ -156,6 +163,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public boolean containsKey(String key) {
+        throwIfError();
         for (Dataset component : components) {
             if (component.containsKey(key)) {
                 return true;
@@ -170,6 +178,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public void copyFrom(Dataset source) {
+        throwIfError();
         throw new InternalError("copyFrom invoked on a CompoundDataset");
     }
 
@@ -179,6 +188,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public void delete(String key) {
+        throwIfError();
         throw new InternalError("delete invoked on a CompoundDataset");
     }
 
@@ -193,6 +203,7 @@ public class CompoundDataset extends Dataset {
      *                             {@code index}.
      */
     public Dataset getComponent(int index) {
+        throwIfError();
         return components[index];
     }
 
@@ -201,6 +212,7 @@ public class CompoundDataset extends Dataset {
      * @return                     See above.
      */
     public Dataset[] getComponents() {
+        throwIfError();
         return components;
     }
 
@@ -212,6 +224,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public String getFileName() {
+        throwIfError();
         return null;
     }
 
@@ -223,6 +236,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public Set<String> keySet() {
+        throwIfError();
         HashSet<String> result = new HashSet<String>();
         for (Dataset component : components) {
             result.addAll(component.keySet());
@@ -236,6 +250,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public void serialize(StringBuilder out) {
+        throwIfError();
         throw new InternalError("serialize invoked on a CompoundDataset");
     }
 
@@ -244,6 +259,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public String serialize() {
+        throwIfError();
         throw new InternalError("serialize invoked on a CompoundDataset");
     }
 
@@ -254,6 +270,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public void set(String key, Object value) {
+        throwIfError();
         throw new InternalError("set invoked on a CompoundDataset");
     }
 
@@ -264,6 +281,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public void setPath(String path, Object value) {
+        throwIfError();
         throw new InternalError("setPath invoked on a CompoundDataset");
     }
 
@@ -275,6 +293,7 @@ public class CompoundDataset extends Dataset {
      *                             specified by {@code index}.
      */
     public void setComponent(int index, Dataset dataset) {
+        throwIfError();
         components[index] = dataset;
     }
 
@@ -285,6 +304,7 @@ public class CompoundDataset extends Dataset {
      *                             dataset.
      */
     public int size() {
+        throwIfError();
         return components.length;
     }
 
@@ -294,6 +314,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public void toJavascript(StringBuilder out) {
+        throwIfError();
         throw new InternalError("toJavascript invoked on a CompoundDataset");
     }
 
@@ -304,6 +325,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public String toString() {
+        throwIfError();
         StringBuilder result = new StringBuilder();
         String separator = "";
         for (int i = 0; i < components.length; i++) {
@@ -326,6 +348,7 @@ public class CompoundDataset extends Dataset {
      */
     @Override
     public void writeFile(String name, String comment) {
+        throwIfError();
         throw new InternalError("writeFile invoked on a CompoundDataset");
     }
 
@@ -347,6 +370,7 @@ public class CompoundDataset extends Dataset {
     @Override
     @SuppressWarnings("unchecked")
     protected Object lookup(String keyOrPath, Quantity quantity) {
+        throwIfError();
         Object result;
         DSArrayList<Object> out = null;
         if (quantity == Quantity.ALL) {

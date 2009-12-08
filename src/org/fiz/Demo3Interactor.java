@@ -26,8 +26,8 @@ public class Demo3Interactor extends Interactor {
         new EntryFormElement("street1", "Address:"),
         new EntryFormElement("street2",  ""),
         new EntryFormElement("city", "City:"),
-        new SelectFormElement(new Dataset("id", "state",
-                "label", "State:", "choiceRequest", "getStates")),
+        new SelectFormElement(new Dataset("id", "state", "label", "State:",
+            "choiceData", new FileDataManager().read("demo/states.yaml", "states"))),
         new EntryFormElement("zip", "Zip code:"));
 
     /**
@@ -38,8 +38,6 @@ public class Demo3Interactor extends Interactor {
     public void main(ClientRequest cr) {
         Html html = cr.getHtml();
         html.setTitle("Simple Fiz Form");
-        cr.addDataRequest("getStates", new FileDataManager().newReadRequest(
-                "demo/states.yaml", "states"));
         Section sections[] = {
             new TemplateSection("<h1>Enter your data below</h1>\n"),
             form,

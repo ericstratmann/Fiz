@@ -114,6 +114,7 @@ public class XmlDataset extends Dataset {
      *                             dataset using XML syntax.
      */
     public String toString() {
+        throwIfError();
         return XmlDataset.writeString(this);
     }
 
@@ -187,6 +188,7 @@ public class XmlDataset extends Dataset {
      *                             closing the file.
      */
     public void writeFile(String name, String comment) {
+        throwIfError();
         XmlDataset.writeFile(this, name, comment);
     }
 

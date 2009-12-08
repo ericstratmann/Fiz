@@ -79,11 +79,12 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         SelectFormElement element = new SelectFormElement(
                 YamlDataset.newStringInstance(
                 "id: id11\n" +
-                "choice:\n" +
-                "  - name:  <Apple>\n" +
-                "    value: <apple>\n" +
-                "  - name:  Banana\n" +
-                "    value: banana\n"));
+                "choiceData:\n" +
+                "  choice:\n" +
+                "    - name:  <Apple>\n" +
+                "      value: <apple>\n" +
+                "    - name:  Banana\n" +
+                "      value: banana\n"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
         element.render(cr, new Dataset());
@@ -103,11 +104,12 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         SelectFormElement element = new SelectFormElement(
                 YamlDataset.newStringInstance(
                 "id: id11\n" +
-                "choice:\n" +
-                "  - name:  Apple\n" +
-                "    value: apple\n" +
-                "  - name:  Grape\n" +
-                "    value: grape\n"));
+                "choiceData:\n" +
+                "  choice:\n" +
+                "    - name:  Apple\n" +
+                "      value: apple\n" +
+                "    - name:  Grape\n" +
+                "      value: grape\n"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
         element.render(cr, new Dataset("id11", "grape"));
@@ -129,13 +131,14 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 YamlDataset.newStringInstance(
                 "id: id11\n" +
                 "multiple: multiple\n" +
-                "choice:\n" +
-                "  - name:  Apple\n" +
-                "    value: apple\n" +
-                "  - name:  Banana\n" +
-                "    value: banana\n" +
-                "  - name:  Grape\n" +
-                "    value: grape\n"));
+                "choiceData:\n" +
+                "  choice:\n" +
+                "    - name:  Apple\n" +
+                "      value: apple\n" +
+                "    - name:  Banana\n" +
+                "      value: banana\n" +
+                "    - name:  Grape\n" +
+                "      value: grape\n"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
         element.render(cr, YamlDataset.newStringInstance(
@@ -158,37 +161,12 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         out.append("</p></form>\n");
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_render_choiceNameProperty() {
-        SelectFormElement element = new SelectFormElement(
-                YamlDataset.newStringInstance(
-                "id: id11\n" +
-                "choiceName: alt\n" +
-                "choice:\n" +
-                "  - name:  Apple\n" +
-                "    value: apple\n" +
-                "alt:\n" +
-                "  - name:  Banana\n" +
-                "    value: banana\n"));
-        ClientRequest cr = new ClientRequestFixture();
-        StringBuilder out = cr.getHtml().getBody();
-        element.render(cr, new Dataset());
-        assertEquals("generated HTML", "\n" +
-                "<!-- Start SelectFormElement id11 -->\n" +
-                "<select id=\"id11\" name=\"id11\" class=\"SelectFormElement\">\n" +
-                "  <option value=\"banana\">Banana</option>\n" +
-                "</select>\n" +
-                "<!-- End SelectFormElement @id -->\n",
-                out.toString());
-        out.insert(0, "<form action=\"a/b/c\"><p>\n");
-        out.append("</p></form>\n");
-        TestUtil.assertXHTML(cr.getHtml().toString());
-    }
     public void test_render_choiceRequestError() {
+        Dataset data = new Dataset();
+        data.setError(new Dataset("message", "sample <error>"));
         SelectFormElement element = new SelectFormElement(
-                new Dataset("id", "id11", "choiceRequest", "error"));
+                new Dataset("id", "id11", "choiceData", data));
         ClientRequest cr = new ClientRequestFixture();
-        cr.addDataRequest("error", RawDataManager.newError(new Dataset(
-                "message", "sample <error>", "value", "47")));
         StringBuilder out = cr.getHtml().getBody();
         element.render(cr, new Dataset());
         assertEquals("Javascript for HTML",
@@ -197,10 +175,8 @@ public class SelectFormElementTest extends junit.framework.TestCase {
     }
     public void test_render_choiceRequestSucceeds() {
         SelectFormElement element = new SelectFormElement(
-                new Dataset("id", "id11", "choiceRequest",
-                        "getFruits", "choiceName", "fruit"));
+              new Dataset("id", "id11", "choiceData", fruits, "choiceName", "fruit"));
         ClientRequest cr = new ClientRequestFixture();
-        cr.addDataRequest("getFruits", RawDataManager.newRequest(fruits));
         StringBuilder out = cr.getHtml().getBody();
         element.render(cr, new Dataset());
         assertEquals("generated HTML", "\n" +
@@ -218,9 +194,10 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                 "id: id11\n" +
                 "class: xyzzy\n" +
                 "height: 5\n" +
-                "choice:\n" +
-                "  - name:  Apple\n" +
-                "    value: apple\n"));
+                "choiceData:\n" +
+                "  choice:\n" +
+                "    - name:  Apple\n" +
+                "      value: apple\n"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
         element.render(cr, YamlDataset.newStringInstance(
@@ -242,9 +219,10 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         SelectFormElement element = new SelectFormElement(
                 YamlDataset.newStringInstance(
                 "id: id11\n" +
-                "choice:\n" +
-                "  - value: 2008\n" +
-                "  - value: 2009\n"));
+                "choiceData:\n" +
+                "  choice:\n" +
+                "    - value: 2008\n" +
+                "    - value: 2009\n"));
         ClientRequest cr = new ClientRequestFixture();
         StringBuilder out = cr.getHtml().getBody();
         element.render(cr, new Dataset("id 11", "2008"));
@@ -262,11 +240,9 @@ public class SelectFormElementTest extends junit.framework.TestCase {
     }
     public void test_validateIn_validInput_single() {
         ClientRequest cr = new ClientRequestFixture();
-        cr.addDataRequest("getFruits", RawDataManager.newRequest(fruits));
         SelectFormElement element = new SelectFormElement(
                 new Dataset("id", "select", "class", "xyzzy",
-                        "choiceRequest", "getFruits",
-                        "choiceName", "fruit"));
+                            "choiceData", fruits, "choiceName", "fruit"));
 
         element.render(cr);
         boolean exceptionOccurred = false;
@@ -280,11 +256,9 @@ public class SelectFormElementTest extends junit.framework.TestCase {
 
     public void test_validateIn_invalidInput_single() {
         ClientRequest cr = new ClientRequestFixture();
-        cr.addDataRequest("getFruits", RawDataManager.newRequest(fruits));
         SelectFormElement element = new SelectFormElement(
                 new Dataset("id", "select", "class", "xyzzy",
-                        "choiceRequest", "getFruits",
-                        "choiceName", "fruit"));
+                            "choiceData", fruits, "choiceName", "fruit"));
 
         element.render(cr);
         boolean exceptionOccurred = false;
@@ -297,12 +271,10 @@ public class SelectFormElementTest extends junit.framework.TestCase {
     }
     public void test_validateIn_validInput_multiple() {
         ClientRequest cr = new ClientRequestFixture();
-        cr.addDataRequest("getFruits", RawDataManager.newRequest(fruits));
         SelectFormElement element = new SelectFormElement(
                 new Dataset("id", "select", "class", "xyzzy",
-                        "multiple", "multiple",
-                        "choiceRequest", "getFruits",
-                        "choiceName", "fruit"));
+                        "multiple", "multiple", "choiceName", "fruit",
+                        "choiceData", fruits));
 
         element.render(cr);
         boolean exceptionOccurred = false;
@@ -318,12 +290,10 @@ public class SelectFormElementTest extends junit.framework.TestCase {
 
     public void test_validateIn_invalidInput_multiple() {
         ClientRequest cr = new ClientRequestFixture();
-        cr.addDataRequest("getFruits", RawDataManager.newRequest(fruits));
         SelectFormElement element = new SelectFormElement(
                 new Dataset("id", "select", "class", "xyzzy",
-                        "multiple", "multiple",
-                        "choiceRequest", "getFruits",
-                        "choiceName", "fruit"));
+                        "multiple", "multiple", "choiceName", "fruit",
+                        "choiceData", fruits));
 
         element.render(cr);
         boolean exceptionOccurred = false;

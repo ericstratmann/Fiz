@@ -22,24 +22,24 @@ import java.io.Serializable;
  * suggestions or options for completing what the user has already typed. It
  * supports the following properties (additional properties applicable to all
  * form elements may be found in {@link FormElement}):
- *   requestFactory:    (required) Identifies a factory method that takes a
- *                      single String argument and returns a DataRequest whose
- *                      response will contain possible autocomplete choices.
+ *   dataFactory:       (required) Identifies a factory method that takes a
+ *                      single String argument and returns a dataset that
+ *                      contains possible autocomplete choices.
  *                      Must have the form {@code class.method}, where
  *                      {@code class} is a Java class name and {@code method}
  *                      is a static method in the class.  The values expected in
- *                      the request's response are described below.  The string
+ *                      the dataset are described below.  The string
  *                      argument to the factory method is current user input
  *                      for which we are trying to autocomplete.
  *   choiceName:        (optional) Identifies the field in each record returned
  *                      by the Ajax which contains the value to be used for
  *                      the autocompletion choice. Defaults to "choice."
  *
- * The response to a DataRequest generated from {@code requestFactory} consists
- * of a dataset with one {@code record} child for each autocomplete choice.
- * Each autocomplete choice will be a dataset containing one key-value pair
- * where the key is specified by the {@code choiceName} parameter and the value
- * will be shown in the autocomplete dropdown.
+ * The dataset generated from {@code dataFactory} consists of one {@code record}
+ * child for each autocomplete choice. Each autocomplete choice will be a
+ * dataset containing one key-value pair where the key is specified by the
+ * {@code choiceName} parameter and the value will be shown in the autocomplete
+ * dropdown.
  *
  * AutocompleteFormElement automatically sets the following {@code class}
  * attributes for use in CSS:
@@ -56,13 +56,12 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
         // The following variables are just copies of configuration properties
         // for the section, or null if no such property.
         protected String id;
-        protected String requestFactory;
+        protected String dataFactory;
         protected String choiceName;
 
-        public PageProperty(String id, String requestFactory,
-                String choiceName) {
+        public PageProperty(String id, String dataFactory, String choiceName) {
             this.id = id;
-            this.requestFactory = requestFactory;
+            this.dataFactory = dataFactory;
             this.choiceName = choiceName;
         }
     }
@@ -87,7 +86,7 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
             choiceName = "choice";
         }
         pageProperty = new PageProperty(properties.getString("id"),
-                properties.getString("requestFactory"), choiceName);
+                properties.getString("dataFactory"), choiceName);
     }
 
     /**
@@ -108,10 +107,8 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
 
         String query = main.getString("userInput");
 
-        DataRequest request = (DataRequest) Util.invokeStaticMethod(
-                pageProperty.requestFactory, query);
-
-        Dataset data = request.getResponseOrAbort();
+        Dataset data = (Dataset) Util.invokeStaticMethod(
+                pageProperty.dataFactory, query);
 
         if (data.getDatasetList("record").size() > 0) {
             StringBuilder html = new StringBuilder();

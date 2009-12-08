@@ -33,69 +33,69 @@ public class RatingSectionTest extends junit.framework.TestCase {
     public void setUp() {
         cr = new ClientRequestFixture();
     }
-    
+
     public void test_setRating() {
         cr.setClientRequestType(Type.AJAX);
         RatingSection rs = new RatingSection(new Dataset(
                 "id", "testRS",
                 "numImages", "3"
         ));
-        
-        // Ensure that nothing happens if the RatingSection hasn't been 
+
+        // Ensure that nothing happens if the RatingSection hasn't been
         // rendered.
         rs.setRating(cr, 2);
-        assertEquals("Js code evaluated when RatingSection not rendered", 
+        assertEquals("Js code evaluated when RatingSection not rendered",
                 "", cr.getJsCode(false));
-        
-        // Ensure that the correct Javascript code is executed when the 
+
+        // Ensure that the correct Javascript code is executed when the
         // RatingSection has been rendered.
         rs.render(new ClientRequestFixture());
         rs.setRating(cr, 2);
-        assertEquals("Js code evaluated when RatingSection rendered", 
-        		"Fiz.ids.testRS.setOfficialRating(2.0);", cr.getJsCode(false));
+        assertEquals("Js code evaluated when RatingSection rendered",
+                "Fiz.ids.testRS.setOfficialRating(2.0);", cr.getJsCode(false));
     }
-    
+
     public void test_setReadOnly() {
         cr.setClientRequestType(Type.AJAX);
         RatingSection rs = new RatingSection(new Dataset(
                 "id", "testRS",
                 "numImages", "3"
         ));
-        
-        // Ensure that nothing happens if the RatingSection hasn't been 
+
+        // Ensure that nothing happens if the RatingSection hasn't been
         // rendered.
         rs.setReadOnly(cr, true);
-        assertEquals("Js code evaluated when RatingSection not rendered", 
+        assertEquals("Js code evaluated when RatingSection not rendered",
                 "", cr.getJsCode(false));
-        
-        // Ensure that the correct Javascript code is executed when the 
+
+        // Ensure that the correct Javascript code is executed when the
         // RatingSection has been rendered.
         rs.render(new ClientRequestFixture());
         rs.setReadOnly(cr, true);
-        assertEquals("Js code evaluated when RatingSection rendered", 
+        assertEquals("Js code evaluated when RatingSection rendered",
                 "Fiz.ids.testRS.readOnly = true;", cr.getJsCode(false));
     }
-    
+
     public void test_render_overview_allDefaults() {
         // Set the session token.
         HttpSession session = cr.getServletRequest().getSession(true);
         session.setAttribute("fiz.ClientRequest.sessionToken", "xyzzy");
-        
+
         // Create and render a RatingSection with only the required arguments.
         RatingSection rs = new RatingSection(new Dataset(
                 "numImages", "2"
         ));
         rs.render(cr);
-        
+
         // Ensure that the correct files and tokens were included.
-        assertEquals("Included Javascript", 
+        assertEquals("Included Javascript",
                 "static/fiz/Ajax.js, static/fiz/Fiz.js, " +
                 "static/fiz/FizCommon.js, static/fiz/RatingSection.js",
                 cr.getHtml().getJsFiles());
-        assertEquals("Included CSS", "RatingSection.css", 
+        assertEquals("Included CSS", "RatingSection.css",
                 cr.getHtml().getCssFiles());
         assertTrue("Auth Token Set", cr.isAuthTokenSet());
-        
+
         // Ensure that the generated HTML is correct.
         String generatedHtml = cr.getHtml().getBody().toString();
         assertEquals("Generated HTML",
@@ -121,94 +121,84 @@ public class RatingSectionTest extends junit.framework.TestCase {
                 "</div>\n" +
                 "<!-- End RatingSection rating0 -->\n",
                 generatedHtml);
-        
+
         // Ensure that the generated HTML is valid XHTML.
         TestUtil.assertXHTML(generatedHtml);
-        
+
         // Ensure that the evaluated Javascript is correct.
-        assertEquals("Evaluated Javascript", 
+        assertEquals("Evaluated Javascript",
                 "Fiz.auth = \"xyzzy\";\n" +
                 "Fiz.ids.rating0 = new Fiz.RatingSection(\"rating0\"," +
-                    " 2, 1, -1, false, true, \"\");\n", 
+                    " 2, 1, -1, false, true, \"\");\n",
                 cr.getJsCode(true));
     }
-    
+
     public void test_render_userId() {
         RatingSection rs = new RatingSection(new Dataset(
                 "numImages", "2",
                 "id", "testRS"
         ));
         rs.render(cr);
-        
+
         // Ensure the specified id is correctly substituted throughout the HTML
         // and Javascript.
         String generatedHtml = cr.getHtml().getBody().toString();
-        TestUtil.assertSubstring("id on main RatingSection <div>", 
+        TestUtil.assertSubstring("id on main RatingSection <div>",
                 "id=\"testRS\"", generatedHtml);
-        TestUtil.assertSubstring("id on offRating <div>", 
+        TestUtil.assertSubstring("id on offRating <div>",
                 "id=\"testRS_offRating\"", generatedHtml);
-        TestUtil.assertSubstring("id on onRating <div>", 
+        TestUtil.assertSubstring("id on onRating <div>",
                 "id=\"testRS_onRating\"", generatedHtml);
-        TestUtil.assertSubstring("id on unratedMsg <div>", 
+        TestUtil.assertSubstring("id on unratedMsg <div>",
                 "id=\"testRS_unratedMsg\"", generatedHtml);
-        TestUtil.assertSubstring("id on an 'off' <img>", 
+        TestUtil.assertSubstring("id on an 'off' <img>",
                 "id=\"testRS_offImg", generatedHtml);
-        TestUtil.assertSubstring("id on an 'on' <img>", 
+        TestUtil.assertSubstring("id on an 'on' <img>",
                 "id=\"testRS_onImg", generatedHtml);
-        
+
         TestUtil.assertSubstring("id in evaluated Js", "Fiz.ids.testRS = " +
-        		"new Fiz.RatingSection(\"testRS\"", cr.getJsCode(true));
+                "new Fiz.RatingSection(\"testRS\"", cr.getJsCode(true));
     }
-    
-    public void test_render_dataRequest_noRecord() {
-        cr.addDataRequest("dataRequest", RawDataManager.newRequest(
-                new Dataset("message", "hello!")
-        ));
+
+    public void test_render_data_noRecord() {
         RatingSection rs = new RatingSection(new Dataset(
                 "numImages", "2",
-                "request", "dataRequest",
+                "data", new Dataset("message", "hello!"),
                 "unratedMessage", "Message is: @message"
         ));
         rs.render(cr);
-        
-        // Ensure data from a specified request was correctly retrieved and 
-        // substituted.
-        TestUtil.assertSubstring("Data from request found in HTML", 
+
+        TestUtil.assertSubstring("Data from request found in HTML",
                 "Message is: hello!", cr.getHtml().getBody().toString());
     }
-    
-    public void test_render_dataRequest_withRecord() {
-        cr.addDataRequest("dataRequest", RawDataManager.newRequest(
-                new Dataset("record", new Dataset("message", "hello!"))
-        ));
+
+    public void test_render_data_withRecord() {
         RatingSection rs = new RatingSection(new Dataset(
                 "numImages", "2",
-                "request", "dataRequest",
+                "data", new Dataset("record", new Dataset("message", "hello!")),
                 "unratedMessage", "Message is: @message"
         ));
         rs.render(cr);
-        
-        // Ensure data from a specified request was correctly retrieved and 
-        // substituted.
-        TestUtil.assertSubstring("Data from request found in HTML", 
+
+        TestUtil.assertSubstring("Data from request found in HTML",
                 "Message is: hello!", cr.getHtml().getBody().toString());
     }
-    
+
     public void test_render_userClass() {
         RatingSection rs = new RatingSection(new Dataset(
                 "numImages", "2",
                 "class", "MyClass"
         ));
         rs.render(cr);
-        
+
         // Ensure that the specified class is used in the generated HTML.
-        TestUtil.assertSubstring("class on main RatingSection <div>", 
+        TestUtil.assertSubstring("class on main RatingSection <div>",
                 "class=\"MyClass\"", cr.getHtml().getBody().toString());
-        
+
         // Ensure that specifying a class caused no CSS to be included.
         assertEquals("Included CSS", "", cr.getHtml().getCssFiles());
     }
-    
+
     public void test_render_generatedHtml_noDefaults() {
         cr.getMainDataset().set("message", "howdy!");
         RatingSection rs = new RatingSection(new Dataset(
@@ -218,59 +208,53 @@ public class RatingSectionTest extends junit.framework.TestCase {
                 "unratedMessage", "Message is: @message"
         ));
         rs.render(cr);
-        
+
         // Ensure the specified parameters occur throughout the generated HTML.
         String generatedHtml = cr.getHtml().getBody().toString();
-        TestUtil.assertSubstring("imageFamily -off on <img> tags", 
+        TestUtil.assertSubstring("imageFamily -off on <img> tags",
                 "src=\"/x/y/z-off.jpg\"", generatedHtml);
-        TestUtil.assertSubstring("imageFamily -on on <img> tags", 
+        TestUtil.assertSubstring("imageFamily -on on <img> tags",
                 "src=\"/x/y/z-on.jpg\"", generatedHtml);
-        TestUtil.assertSubstring("unratedMessage in unratedMsg <div>", 
+        TestUtil.assertSubstring("unratedMessage in unratedMsg <div>",
                 "Message is: howdy!", generatedHtml);
     }
-    
+
     public void test_render_evaluatedJs_noDefaults() {
         // Set the session token.
         HttpSession session = cr.getServletRequest().getSession(true);
         session.setAttribute("fiz.ClientRequest.sessionToken", "xyzzy");
-        
-        cr.addDataRequest("dataRequest", RawDataManager.newRequest(
-                new Dataset("requestRating", "1.1")
-        ));
+
         cr.getMainDataset().set("user", "tester");
         RatingSection rs = new RatingSection(new Dataset(
                 "ajaxUrl", "/x/ajaxY?user=@user",
                 "autoSizeText", "false",
                 "granularity", "0.4",
                 "initRating", "0.9",
-                "initRatingKey", "requestRating",
+                "initRatingKey", "rating",
                 "numImages", "2",
                 "readOnly", "true",
-                "request", "dataRequest"
+                "data", new Dataset("rating", "1.1")
         ));
         rs.render(cr);
-        
+
         // Ensure the specified parameters occur in the evaluated Javascript.
-        assertEquals("Evaluated Javascript", 
+        assertEquals("Evaluated Javascript",
                 "Fiz.auth = \"xyzzy\";\n" +
                 "Fiz.ids.rating0 = new Fiz.RatingSection(\"rating0\", 2, " +
-                    "0.4, 0.9, true, false, \"/x/ajaxY?user=tester\");\n", 
+                    "0.4, 0.9, true, false, \"/x/ajaxY?user=tester\");\n",
                 cr.getJsCode(true));
     }
-    
+
     public void test_render_evaluatedJs_initRatingKey() {
-        cr.addDataRequest("dataRequest", RawDataManager.newRequest(
-                new Dataset("requestRating", "1.1")
-        ));
         RatingSection rs = new RatingSection(new Dataset(
-                "initRatingKey", "requestRating",
+                "initRatingKey", "rating",
                 "numImages", "2",
-                "request", "dataRequest"
+                "data", new Dataset("rating", "1.1")
         ));
         rs.render(cr);
-        
+
         // Ensure that initRatingKey is used to retrieve the initial rating.
-        TestUtil.assertSubstring("initRatingKey used to retrieve rating", 
+        TestUtil.assertSubstring("initRatingKey used to retrieve rating",
                 ", 1.1,", cr.getJsCode(true));
     }
 }

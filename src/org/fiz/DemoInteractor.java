@@ -45,7 +45,7 @@ public class DemoInteractor extends Interactor {
     FileDataManager fileDataManager = new FileDataManager(
             Config.get("main", "home") + "/WEB-INF/demo");
 
-    // Datasets that supply results for raw data requests.
+    // Datasets used to fill out forms, tables, etc.
     Dataset formData = new Dataset("name", "Bill", "age", "41",
             "height", "73", "weight", "195",
             "saying", "Line 1\nLine 2\n<Line 3>\n",
@@ -111,7 +111,7 @@ public class DemoInteractor extends Interactor {
             "name", new Dataset("name", "Barack H. Obama", "value", "44"));
 
     FormSection sideBySideForm = new FormSection(
-            new Dataset("id", "form1", "request", "getFormData",
+            new Dataset("id", "form1", "data", formData,
                     "postUrl", "postSideBySide"),
             new EntryFormElement(new Dataset("id", "name",
                     "label", "Name:", "help", "Enter customer name here")),
@@ -144,7 +144,7 @@ public class DemoInteractor extends Interactor {
                     "<div class=\"heading\">Optional Information</div>")),
             new SelectFormElement(new Dataset("id", "fruit",
                     "label", "Favorite fruits:",
-                    "choiceRequest", "getFruits",
+                    "choiceData", fruitInfo,
                     "multiple", "multiple",
                     "height", "5",
                     "choiceName", "fruit")),
@@ -153,7 +153,7 @@ public class DemoInteractor extends Interactor {
                     new HiddenFormElement("mascot")
     );
 
-    public static DataRequest autocompleteRequest(String query) {
+    public static Dataset autocompleteData(String query) {
         query = query.toLowerCase();
 
         Dataset matches = new Dataset();
@@ -164,11 +164,11 @@ public class DemoInteractor extends Interactor {
             }
         }
 
-        return RawDataManager.newRequest(matches);
+        return matches;
     }
 
     FormSection verticalForm = new FormSection(
-            new Dataset("id", "form2", "request", "getFormData",
+            new Dataset("id", "form2", "data", formData,
                     "layout", "vertical", "postUrl", "postVertical"),
                     new EntryFormElement(new Dataset("id", "name",
                             "label", "Name:", "help", "Enter employee name here")),
@@ -180,7 +180,7 @@ public class DemoInteractor extends Interactor {
                             "extra", "U.S. citizen")),
                     new SelectFormElement(new Dataset("id", "fruit",
                             "label", "Favorite fruit:",
-                            "choiceRequest", "getFruits",
+                            "choiceData", fruitInfo,
                             "choiceName", "fruit")),
                     new TextAreaFormElement(new Dataset("id", "saying",
                             "label", "Favorite saying:", "rows", "3"))
@@ -228,8 +228,6 @@ public class DemoInteractor extends Interactor {
         html.setTitle("FormSection Demo");
         html.includeCssFile("demo/form.css");
         cr.setPageProperty("formInfo", "Zip code: 94301");
-        cr.addDataRequest("getFormData", RawDataManager.newRequest(formData));
-        cr.addDataRequest("getFruits", RawDataManager.newRequest(fruitInfo));
 
         cr.showSections(
                 new TemplateSection("<h1>Side-By-Side form</h1>\n"),
@@ -295,19 +293,15 @@ public class DemoInteractor extends Interactor {
     public void chartSection(ClientRequest cr) {
         Html html = cr.getHtml();
         html.setTitle("ChartSection Demos");
-        cr.addDataRequest("someData", fileDataManager.newReadRequest("demo.yaml",
-                "someData"));
-        cr.addDataRequest("someData2", fileDataManager.newReadRequest("demo.yaml",
-                "someData2"));
-        cr.addDataRequest("fizUsers", fileDataManager.newReadRequest("demo.yaml",
-                "fizUsers"));
-        cr.addDataRequest("widgetSales", fileDataManager.newReadRequest("demo.yaml",
-                "widgetSales"));
-        cr.addDataRequest("gadgetSales", fileDataManager.newReadRequest("demo.yaml",
-                "gadgetSales"));
+
+        Dataset someData = fileDataManager.read("demo.yaml", "someData");
+        Dataset someData2 = fileDataManager.read("demo.yaml", "someData2");
+        Dataset fizUsers = fileDataManager.read("demo.yaml", "fizUsers");
+        Dataset widgetSales = fileDataManager.read("demo.yaml", "widgetSales");
+        Dataset gadgetSales = fileDataManager.read("demo.yaml", "gadgetSales");
 
         Dataset chart1 =
-            new Dataset("request", "fizUsers", "xId", "month", "yId", "users",
+            new Dataset("data", fizUsers, "xId", "month", "yId", "users",
                         "xLocation", "right", "yLocation", "bottom",
                         "legend", new Dataset("display", "false"),
                         "rightAxis", new Dataset("title", "Month", "majorGridWidth", "1"),
@@ -323,9 +317,9 @@ public class DemoInteractor extends Interactor {
                                              "majorGridWidth", "0"),
                         "yAxis", new Dataset("majorGridWidth", "1",
                                              "minorTicks", "5"),
-                        "series", new Dataset("request", "widgetSales", "xId", "year", "color", "green",
+                        "series", new Dataset("data", widgetSales, "xId", "year", "color", "green",
                                               "yId", "sales", "name", "Widgets"),
-                        "series", new Dataset("request", "gadgetSales", "xId", "year", "color", "purple",
+                        "series", new Dataset("data", gadgetSales, "xId", "year", "color", "purple",
                                               "yId", "sales", "name", "Gadgets"));
 
         Dataset chart3 =
@@ -333,10 +327,10 @@ public class DemoInteractor extends Interactor {
                                              "majorGridWidth", "1"),
                         "yAxis", new Dataset("title", "Gizmos",
                                              "majorGridWidth", "1"),
-                        "plot", new Dataset("request", "someData", "name", "Substance X",
+                        "plot", new Dataset("data", someData, "name", "Substance X",
                                             "xId", "xVal", "yId", "yVal", "type", "Scatter",
                                             "opacity", "1"),
-                        "plot", new Dataset("request", "someData2", "name", "Substance Y",
+                        "plot", new Dataset("data", someData2, "name", "Substance Y",
                                             "xId", "xVal", "yId", "yVal", "type", "Scatter",
                                             "opacity", "1", "shape", "square"));
 
@@ -355,20 +349,17 @@ public class DemoInteractor extends Interactor {
         Html html = cr.getHtml();
         html.setTitle("TableSection Demos");
         html.includeCssFile("demo/shoppingCart.css");
-        cr.addDataRequest("people", fileDataManager.newReadRequest("demo.yaml",
-                "people"));
-        cr.addDataRequest("noData", fileDataManager.newReadRequest("demo.yaml",
-                "empty"));
-        cr.addDataRequest("error", fileDataManager.newReadRequest("demo.yaml",
-                "bogus.nonexistent"));
-        cr.addDataRequest("cart", fileDataManager.newReadRequest("demo.yaml",
-                "shoppingCart"));
+
+        Dataset people = fileDataManager.read("demo.yaml", "people");
+        Dataset empty = fileDataManager.read("demo.yaml", "empty");
+        Dataset bogus = fileDataManager.read("demo.yaml", "bogus");
+        Dataset cart = fileDataManager.read("demo.yaml", "shoppingCart");
         cr.showSections(
                 new TemplateSection("<h1>TableSection Demos</h1>\n"),
 
                 new TemplateSection("<h2>Basic table:</h2>\n"),
                 new TableSection(
-                        new Dataset("request", "people"),
+                        new Dataset("data", people),
                         new Column("Name", "@name"),
                         new Column("Age", "{{@age}}"),
                         new Column("Height", "{{@height}}"),
@@ -377,7 +368,7 @@ public class DemoInteractor extends Interactor {
 
                 new TemplateSection("<h2>Table with no data:</h2>\n"),
                 new TableSection(
-                        new Dataset("request", "noData"),
+                        new Dataset("data", empty),
                         new Column("Name", "@name"),
                         new Column("Age", "{{@age}}"),
                         new Column("Height", "{{@height}}"),
@@ -386,7 +377,7 @@ public class DemoInteractor extends Interactor {
 
                 new TemplateSection("<h2>Error in data request:</h2>\n"),
                 new TableSection(
-                        new Dataset("request", "error"),
+                        new Dataset("data", bogus),
                         new Column("Name", "@name"),
                         new Column("Age", "{{@age}}"),
                         new Column("Height", "{{@height}}"),
@@ -395,7 +386,7 @@ public class DemoInteractor extends Interactor {
 
                 new TemplateSection("<h2>Simple shopping cart:</h2>\n"),
                 new TableSection(
-                        new Dataset("request", "cart", "noHeader", "true",
+                        new Dataset("data", cart, "noHeader", "true",
                                 "class", "shoppingCart"),
                                 new Column("Item", "@item"),
                                 new Column("Price", "@price"))
@@ -418,11 +409,10 @@ public class DemoInteractor extends Interactor {
         for (Dataset d : stats) {
             statsDataset.add("record", d);
         }
-        cr.addDataRequest("stats", RawDataManager.newRequest(statsDataset));
         cr.showSections(
                 new TemplateSection("<h1>Timer Statistics</h1>\n"),
                 new TableSection(
-                        new Dataset("request", "stats"),
+                        new Dataset("data", statsDataset),
                         new Column("Timer", "@name"),
                         new Column("Count", "@intervals"),
                         new Column("Avg (ms)", "@average"),
@@ -475,22 +465,23 @@ public class DemoInteractor extends Interactor {
                         "edge style to treeDotted</a><br />\n" +
                         "<a href=\"tree?edgeFamily=treeNoLines.gif\">Change " +
                 "edge style to treeNoLines</a></p>\n"),
-                new TreeSection(new Dataset("requestFactory",
-                        "DemoInteractor.treeRequest", "edgeFamily",
-                        edgeFamily))
+                new TreeSection(
+                        new Dataset("id", "tree1", "dataFactory",
+                                "DemoInteractor.treeData", "edgeFamily",
+                                edgeFamily))
         );
     }
 
     /**
-     * Creates a DataRequest that returns the contents of a node in the
+     * Creates a dataset that contains the contents of a node in the
      * TreeSection demonstration.
      * @param name                 Name of the parent node whose children
      *                             are needed.
-     * @return                     DataRequest whose response contains
+     * @return                     Dataset which contains
      *                             information about all of the children of
      *                              by gone for that I the I{@code name}.
      */
-    public static DataRequest treeRequest(String name) {
+    public static Dataset treeData(String name) {
         Dataset data = YamlDataset.newStringInstance(
                 "top:\n" +
                 "    record:\n" +
@@ -525,9 +516,9 @@ public class DemoInteractor extends Interactor {
 
         );
         if (name.length() == 0) {
-            return RawDataManager.newRequest(data.getDataset("top"));
+            return data.getDataset("top");
         }
-        return RawDataManager.newRequest(data.getDataset(name));
+        return data.getDataset(name);
     }
 
     public void ajaxClearStats(ClientRequest cr) {
@@ -608,7 +599,7 @@ public class DemoInteractor extends Interactor {
             new Dataset("numImages", "4",
                     "ajaxUrl", "/demo/ajaxReceiveData?section=ratingStars3",
                     "readOnly", "true",
-                    "request", "initRatingRequest",
+                    "data", new Dataset("initRating", "3.4"),
                     "initRatingKey", "initRating")
     );
     RatingSection ratingStars4 = new RatingSection(
@@ -624,8 +615,6 @@ public class DemoInteractor extends Interactor {
      *                             request being serviced.
      */
     public void ratingSection(ClientRequest cr) {
-        cr.addDataRequest("initRatingRequest", RawDataManager.newRequest(
-                new Dataset("initRating", "3.4")));
         cr.getHtml().setTitle("Rating Sections");
         cr.showSections(
                 new TemplateSection("<h1>Rating Sections</h1>\n<ul>"),
@@ -647,7 +636,7 @@ public class DemoInteractor extends Interactor {
                         "is set as read-only.</p>\n</li>\n"),
                 new TemplateSection("<li><h3>Fixed-rating Stars</h3>"),
                 ratingStars3,
-                new TemplateSection("initRatingRequest", "<p><b>Current " +
+                new TemplateSection(new Dataset("initRating", "3.4"), "<p><b>Current " +
                         "Rating:</b> <span id=\"ratingStars3_rating\">" +
                         "@initRating</span><br/>\nAssigned an initial rating," +
                         " and set as read-only.</p>\n</li>\n"),

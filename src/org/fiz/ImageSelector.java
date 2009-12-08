@@ -32,7 +32,7 @@ package org.fiz;
  * is {@code default}. If that key exists, it is used to find the default
  * image if a particular key is not found.
  */
-public class ImageSelector extends Formatter {
+public class ImageSelector extends Section {
 
     /* Constructor properties */
     protected String id;

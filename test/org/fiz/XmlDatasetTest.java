@@ -278,4 +278,12 @@ public class XmlDatasetTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
+
+    public void test_methodsThrowError() throws Throwable {
+        XmlDataset data = XmlDataset.newStringInstance("<head></head>");
+        data.setError(new Dataset("message", "oops"));
+
+        String[] whiteList = {};
+        DatasetTest.runPublicMethods(data, whiteList, "oops");
+    }
 }
