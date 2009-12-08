@@ -113,12 +113,12 @@ public class ClientRequest {
                     "click on the refresh button");
         }
     }
-    
-    // Main dataset key used to map the boolean indicating whether or not the 
+
+    // Main dataset key used to map the boolean indicating whether or not the
     // server running the application is Google's AppEngine.
     public static final String GOOGLE_APPENGINE = "googleAppEngine";
-    
-    // Main dataset key used to map the boolean indicating whether or not the 
+
+    // Main dataset key used to map the boolean indicating whether or not the
     // server running the application permits filesystem access.
     public static final String FILE_ACCESS = "serverFileAccess";
 
@@ -136,9 +136,9 @@ public class ClientRequest {
     protected Html html = null;
 
     // Top-level dataset containing global information for this request,
-    // such as query values and POST data.  Also contains information about 
-    // the server running the application, specifically {@code googleAppEngine} 
-    // will be true if the server is Google's AppEngine, and {@code 
+    // such as query values and POST data.  Also contains information about
+    // the server running the application, specifically {@code googleAppEngine}
+    // will be true if the server is Google's AppEngine, and {@code
     // serverFileAccess} will be true if the server permits filesystem access.
     protected Dataset mainDataset = null;
 
@@ -376,7 +376,7 @@ public class ClientRequest {
         if (pageState != null && getMainDataset().getBool(GOOGLE_APPENGINE)) {
             pageState.flushPageState(this);
         }
-        
+
         // Cleanup any uploaded files (this frees temporary file space
         // allocated for uploads faster than waiting for garbage collection).
         if (uploads != null) {
@@ -582,16 +582,16 @@ public class ClientRequest {
             try {
                 Mac mac = Mac.getInstance("HmacSHA256");
                 SecretKey sk = null;
-                
+
                 Object o = session.getAttribute("fiz.mac.sk");
                 if (o != null) {
                     sk = (SecretKey) o;
                 } else {
-                    // This is the first time we have needed a Mac object in 
-                    // this session, so we have to create a new secret key to 
-                    // use.  NOTE: we store a SecretKey in the session instead 
-                    // of a Mac because SecretKey is Serializable, and because 
-                    // GoogleAppEngine only permits Serializable objects to be 
+                    // This is the first time we have needed a Mac object in
+                    // this session, so we have to create a new secret key to
+                    // use.  NOTE: we store a SecretKey in the session instead
+                    // of a Mac because SecretKey is Serializable, and because
+                    // GoogleAppEngine only permits Serializable objects to be
                     // written to the session.
                     KeyGenerator kg = KeyGenerator.getInstance("HmacSHA256");
                     sk = kg.generateKey();
@@ -618,9 +618,9 @@ public class ClientRequest {
      * to the initial values, requests may add values to the main dataset
      * in cases where the data needs to be used globally across the request.
      * This dataset will be available in (almost?) all template expansions
-     * used while processing the request.  The main dataset will also 
-     * include two fields describing the server running the application: 
-     * GOOGLE_APPENGINE, which will be true if the server is Google's 
+     * used while processing the request.  The main dataset will also
+     * include two fields describing the server running the application:
+     * GOOGLE_APPENGINE, which will be true if the server is Google's
      * AppEngine, and FILE_ACCESS, if the server permits filesystem access.
      * @return                     Global dataset for this request.
      */
@@ -628,16 +628,16 @@ public class ClientRequest {
         if (mainDataset != null) {
             return mainDataset;
         }
-        
+
         // If null, create a new dataset.
         if (mainDataset == null) {
             mainDataset = new Dataset();
         }
         // Add fields describing the server running the application.
-        mainDataset.set(GOOGLE_APPENGINE, 
+        mainDataset.set(GOOGLE_APPENGINE,
                 Config.get("main", GOOGLE_APPENGINE).equals("1"));
-        mainDataset.set(FILE_ACCESS, 
-                !mainDataset.getBool(GOOGLE_APPENGINE) && 
+        mainDataset.set(FILE_ACCESS,
+                !mainDataset.getBool(GOOGLE_APPENGINE) &&
                 Config.get("main", FILE_ACCESS).equals("1"));
 
 
@@ -806,7 +806,7 @@ public class ClientRequest {
     }
 
     /**
-     * Returns true if the server running this application permits 
+     * Returns true if the server running this application permits
      * filesystem access (not the case for Google AppEngine).
      * @return                     See above.
      */
@@ -815,7 +815,7 @@ public class ClientRequest {
     }
 
     /**
-     * Returns true if the server running this application is Google's 
+     * Returns true if the server running this application is Google's
      * AppEngine.
      * @return                     See above.
      */
@@ -894,7 +894,7 @@ public class ClientRequest {
      * @return                     True means the file was successfully
      *                             saved.  False means that there is no
      *                             uploaded file corresponding to
-     *                             {@code fieldName}, or filesystem access is 
+     *                             {@code fieldName}, or filesystem access is
      *                             not permitted.
      */
     public boolean saveUploadedFile(String fieldName, String dest) {
@@ -1185,33 +1185,21 @@ public class ClientRequest {
             }
         }
     }
-    
+
     /**
-     * This method is invoked on a single FileUpload item coming from a 
+     * This method is invoked on a single FileUpload item coming from a
      * multipart form data submission.  Data for basic form fields is copied to
-     * the main dataset.  For uploaded files, information is saved as 
+     * the main dataset.  For uploaded files, information is saved as
      * FileUploads in {@code uploads}, for use by other methods.
      * @param item                 The FileUpload to process.
      */
     protected void readFileUpload(FileUpload item) {
         if (item.isFormField()) {
             // This is a simple string-valued field; add it to
-            // the main dataset.  If there are multiple values
-            // with the same name, store them as a collection
-            // of child datasets, each with a single "value"
-            // element.
+            // the main dataset (there can be multiple values for the
+            // same name).
             String name = item.getFieldName();
-            Object existing = mainDataset.check(name);
-            if (existing == null) {
-                mainDataset.set(name, item.getString());
-            } else {
-                if (existing instanceof Dataset == false) {
-                    // Must convert the existing string value to
-                    // a nested dataset.
-                    mainDataset.set(name, new Dataset("value",  existing));
-                }
-                mainDataset.add(name, new Dataset("value", item.getString()));
-            }
+            mainDataset.add(name, item.getString());
         } else {
             // This is an uploaded file.  Save information about
             // the file in {@code uploads}.
@@ -1231,7 +1219,7 @@ public class ClientRequest {
     protected void readMultipartFormData() {
         try {
             if (getMainDataset().getBool(FILE_ACCESS)) {
-                // If the server permits filesystem access, create a series 
+                // If the server permits filesystem access, create a series
                 // of on-disk FileItems (FileItem representations).
                 DiskFileItemFactory factory = new DiskFileItemFactory();
                 String tempDir = Config.getDataset("main").checkString(
@@ -1265,12 +1253,12 @@ public class ClientRequest {
                 }
                 catch (FileUploadBase.FileSizeLimitExceededException e) {
                     throw new UserError(String.format("uploaded file " +
-                            "exceeded length limit of %d bytes", 
+                            "exceeded length limit of %d bytes",
                             upload.getFileSizeMax()));
                 }
             } else {
-                // If the server does not permit filesystem access, create a 
-                // series of in-memory FileUploads (FileItemStream 
+                // If the server does not permit filesystem access, create a
+                // series of in-memory FileUploads (FileItemStream
                 // representations).
                 try {
                     ServletFileUpload upload = new ServletFileUpload();
@@ -1330,7 +1318,7 @@ public class ClientRequest {
             readAjaxData();
         }
     }
-    
+
     /**
      * Creates a unique (to the request) id given a base string. For example,
      * repeated calls will return foo0, foo1, etc.

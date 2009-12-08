@@ -48,8 +48,9 @@ public class DemoInteractor extends Interactor {
     // Datasets that supply results for raw data requests.
     Dataset formData = new Dataset("name", "Bill", "age", "41",
             "height", "73", "weight", "195",
-            "saying", "Line 1\nLine 2\n<Line 3>\n", "fruit",
-            new Dataset("value", "grape"), "notify", "all", "state", "California",
+            "saying", "Line 1\nLine 2\n<Line 3>\n",
+            "fruit", "grape", "fruit", "kiwi",
+            "notify", "all", "state", "California",
             "mascot", "Spartans");
 
     Dataset fruitInfo = new Dataset(
@@ -113,8 +114,7 @@ public class DemoInteractor extends Interactor {
             new Dataset("id", "form1", "request", "getFormData",
                     "postUrl", "postSideBySide"),
             new EntryFormElement(new Dataset("id", "name",
-
-                                             "label", "Name:", "help", "Enter customer name here")),
+                    "label", "Name:", "help", "Enter customer name here")),
             new EntryFormElement("age", "Age:"),
             new EntryFormElement("state", "Home state:"),
             new DateFormElement(new Dataset("id", "expiration",
@@ -431,12 +431,12 @@ public class DemoInteractor extends Interactor {
                         new Column("Std Dev. (ms)", "@standardDeviation"))
         );
         StringBuilder body = html.getBody();
-        // Only get garbage collection info if not running under Google 
+        // Only get garbage collection info if not running under Google
         // AppEngine - ManagementFactory is not on the AppEngine whitelist.
         if (!cr.isGoogleAppEngine()) {
             long gcMs = -baseGcMs;
             int gcInvocations = -baseGcInvocations;
-            for (GarbageCollectorMXBean bean: 
+            for (GarbageCollectorMXBean bean:
                     ManagementFactory.getGarbageCollectorMXBeans()) {
                 gcMs += bean.getCollectionTime();
                 gcInvocations += bean.getCollectionCount();
@@ -534,12 +534,12 @@ public class DemoInteractor extends Interactor {
     public void ajaxClearStats(ClientRequest cr) {
         Timer.resetAll();
         Timer.measureNoopTime();
-        // Only get garbage collection info if not running under Google 
+        // Only get garbage collection info if not running under Google
         // AppEngine - ManagementFactory is not on the AppEngine whitelist.
         if (!cr.isGoogleAppEngine()) {
             long gcMs = 0;
             int gcInvocations = 0;
-            for (GarbageCollectorMXBean bean: 
+            for (GarbageCollectorMXBean bean:
                     ManagementFactory.getGarbageCollectorMXBeans()) {
                 gcMs += bean.getCollectionTime();
                 gcInvocations += bean.getCollectionCount();

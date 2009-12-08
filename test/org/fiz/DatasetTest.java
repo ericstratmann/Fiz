@@ -323,6 +323,18 @@ public class DatasetTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
+    public void test_addSerializedData_multipleStringValuesForName() {
+        String source = "(3.age2.24\n" +
+                "3.age3.100\n" +
+                "3.age2.86)";
+        Dataset out = new Dataset();
+        out.addSerializedData(source, 0);
+        assertEquals("contents of dataset",
+                "age:\n" +
+                "  - 24\n" +
+                "  - 100\n" +
+                "  - 86\n", out.toString());
+    }
     public void test_addSerializedData_singleNestedDataset() {
         String source = "(3.age2.24\n" +
                 "5.child(4.name5.Alice\n" +

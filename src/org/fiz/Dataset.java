@@ -1233,7 +1233,7 @@ public class Dataset implements Cloneable, Serializable {
             }
             if (source.charAt(i) != '(') {
                 // String value.
-                set(name, getEncodedString(source, i, end));
+                add(name, getEncodedString(source, i, end));
                 i = end.value;
             } else {
                 // Nested dataset(s).  At the start of each iteration

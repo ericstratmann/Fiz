@@ -46,7 +46,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
                     : "none") + "\";");
         }
     }
-    
+
     // Dummy FileUpload class, used in tests of ClientRequest.readFileUpload().
     protected static class FileUploadFixture extends FileUpload {
         public boolean isFormField = false;
@@ -240,24 +240,24 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "var x = \"<&\\n\\t>\";var y = 44;",
                 cr.jsCode.toString());
     }
-    
+
     public void test_finish_flushPageState() {
         ServletRequestFixture.session = null;
         cr.getMainDataset().set(ClientRequest.GOOGLE_APPENGINE, true);
         cr.pageState = new PageState();
         cr.finish();
-        
-        // Ensure that PageState.flushPageState() was called (session will no 
+
+        // Ensure that PageState.flushPageState() was called (session will no
         // longer be null).
-        assertTrue("session contains AllPageInfo", 
-                ServletRequestFixture.session.getAttribute("fiz.PageState") 
+        assertTrue("session contains AllPageInfo",
+                ServletRequestFixture.session.getAttribute("fiz.PageState")
                     instanceof PageState.AllPageInfo);
     }
-    
+
     public void test_finish_deleteFileItems() {
         cr.uploads = new HashMap<String, FileUpload>();
         cr.uploads.put("upload", new FileUploadFixture(true, ""));
-        // Calling finish() with a FileUploadFixture should yield a 
+        // Calling finish() with a FileUploadFixture should yield a
         // NullPointerException.
         boolean exception = false;
         try {
@@ -454,12 +454,12 @@ public class ClientRequestTest extends junit.framework.TestCase {
         servletRequest.contentType = "text/fiz";
         servletRequest.setInput(
                 "main.(2.p2(1.a3.999\n1.b2.88)\n4.name5.Alice)");
-        
+
         Dataset mainDataset = cr.getMainDataset();
         // Remove GOOGLE_APPENGINE and FILE_ACCESS fields.
         mainDataset.delete(ClientRequest.GOOGLE_APPENGINE);
         mainDataset.delete(ClientRequest.FILE_ACCESS);
-        
+
         assertEquals("main dataset contents", "name: Alice\n" +
                 "p1:   param_value1\n" +
                 "p2:   param_value2\n", mainDataset.toString());
@@ -471,17 +471,17 @@ public class ClientRequestTest extends junit.framework.TestCase {
         servletRequest.parameterMap.put("favorites", "multiple");
         Dataset mainDataset = cr.getMainDataset();
 
-        // Ensure that GOOGLE_APPENGINE and FILE_ACCESS were set, and are of 
+        // Ensure that GOOGLE_APPENGINE and FILE_ACCESS were set, and are of
         // the correct type.
         assertTrue("mainDataset has GOOGLE_APPENGINE field", mainDataset.get(
                 ClientRequest.GOOGLE_APPENGINE) instanceof Boolean);
         assertTrue("mainDataset has FILE_ACCESS field", mainDataset.get(
                 ClientRequest.FILE_ACCESS) instanceof Boolean);
-        
+
         // Remove GOOGLE_APPENGINE and FILE_ACCESS fields.
         mainDataset.delete(ClientRequest.GOOGLE_APPENGINE);
         mainDataset.delete(ClientRequest.FILE_ACCESS);
-        
+
         assertEquals("contents of main dataset",
                 "favorites:\n" +
                 "  - value: value1\n" +
@@ -595,7 +595,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
     public void test_getUploadedFile_noSuchUpload() {
         cr.clearData();                 // Discard default info from fixture.
-        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false, 
+        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false,
                 ClientRequest.FILE_ACCESS, true);
         servletRequest.setParameters();
         servletRequest.contentType = "multipart/form-data, boundary=xyzzy";
@@ -610,7 +610,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
     public void test_getUploadedFile_fileExists() {
         cr.clearData();                 // Discard default info from fixture.
-        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false, 
+        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false,
                 ClientRequest.FILE_ACCESS, true);
         servletRequest.setParameters();
         servletRequest.contentType = "multipart/form-data, boundary=xyzzy";
@@ -646,17 +646,17 @@ public class ClientRequestTest extends junit.framework.TestCase {
         cr.setClientRequestType(ClientRequest.Type.POST);
         assertEquals("set to false", false, cr.isAjax());
     }
-    
+
     public void test_isFileAccessPermitted() {
-        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, true, 
+        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, true,
                 ClientRequest.FILE_ACCESS, false);
         assertFalse("set to false", cr.isFileAccessPermitted());
         cr.mainDataset.set(ClientRequest.FILE_ACCESS, true);
         assertTrue("set to true", cr.isFileAccessPermitted());
     }
-    
+
     public void test_isGoogleAppEngine() {
-        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, true, 
+        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, true,
                 ClientRequest.FILE_ACCESS, false);
         assertTrue("set to true", cr.isGoogleAppEngine());
         cr.mainDataset.set(ClientRequest.GOOGLE_APPENGINE, false);
@@ -724,7 +724,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "Line 1\n" +
                 "Line 2\r\n" +
                 "--xyzzy--\r\n");
-        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false, 
+        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false,
                 ClientRequest.FILE_ACCESS, false);
         assertFalse("Cannot save a file if filesystem access is not permitted",
                 cr.saveUploadedFile("first", "_test1_/xyz"));
@@ -732,7 +732,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
     public void test_saveUploadedFile_noSuchUpload() {
         cr.clearData();                 // Discard default info from fixture.
-        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false, 
+        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false,
                 ClientRequest.FILE_ACCESS, true);
         servletRequest.setParameters();
         servletRequest.contentType = "multipart/form-data, boundary=xyzzy";
@@ -748,7 +748,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
     public void test_saveUploadedFile_saveFile() throws FileNotFoundException {
         (new File("_test1_")).mkdir();
         cr.clearData();                 // Discard default info from fixture.
-        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false, 
+        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false,
                 ClientRequest.FILE_ACCESS, true);
         servletRequest.setParameters();
         servletRequest.contentType = "multipart/form-data, boundary=xyzzy";
@@ -1040,42 +1040,42 @@ public class ClientRequestTest extends junit.framework.TestCase {
         }
         assertEquals("exception happened", true, gotException);
     }
-    
+
     public void test_readFileUpload_isFormField() {
         cr.clearData();                 // Discard default info from fixture.
         cr.mainDataset = new Dataset();
         FileUploadFixture upload = new FileUploadFixture(true, "fieldName");
-        
+
         cr.readFileUpload(upload);
         // After one call to readFileUpload.
         assertEquals("main dataset contents (1 call)", "fieldName: " +
         		"FileUploadFixture\n", cr.getMainDataset().toString());
-        
+
         cr.readFileUpload(upload);
         // After two calls to readFileUpload.
         assertEquals("main dataset contents (2 calls)", "fieldName:\n  " +
-        		"- value: FileUploadFixture\n  - value: FileUploadFixture\n", 
+        		"- FileUploadFixture\n  - FileUploadFixture\n",
         		cr.getMainDataset().toString());
-        
+
         cr.readFileUpload(upload);
         // After three calls to readFileUpload.
         assertEquals("main dataset contents (3 calls)", "fieldName:\n  " +
-        		"- value: FileUploadFixture\n  - value: FileUploadFixture\n  " +
-        		"- value: FileUploadFixture\n", cr.getMainDataset().toString());
+        		"- FileUploadFixture\n  - FileUploadFixture\n  " +
+        		"- FileUploadFixture\n", cr.getMainDataset().toString());
     }
-    
+
     public void test_readFileUpload_notFormField() {
         cr.clearData();                 // Discard default info from fixture.
         cr.mainDataset = new Dataset();
         FileUploadFixture upload = new FileUploadFixture(false, "fieldName");
-        
+
         cr.readFileUpload(upload);
         // After one call to readFileUpload.
         Object[] keys1 = cr.uploads.keySet().toArray();
         Arrays.sort(keys1);
         assertEquals("uploads HashMap", "fieldName",
                 StringUtil.join(keys1, ", "));
-        
+
         upload = new FileUploadFixture(false, "fieldName2");
         cr.readFileUpload(upload);
         // After two calls to readFileUpload.
@@ -1087,7 +1087,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
 
     public void test_readMultipartFormData_basics() {
         cr.clearData();                 // Discard default info from fixture.
-        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false, 
+        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false,
                 ClientRequest.FILE_ACCESS, true);
         servletRequest.setParameters();
         servletRequest.contentType = "multipart/form-data, boundary=xyzzy";
@@ -1102,19 +1102,19 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "field2_value\r\n" +
                 "--xyzzy--\r\n");
         cr.readMultipartFormData();
-        
+
         Dataset mainDataset = cr.getMainDataset();
         // Remove GOOGLE_APPENGINE and FILE_ACCESS fields.
         mainDataset.delete(ClientRequest.GOOGLE_APPENGINE);
         mainDataset.delete(ClientRequest.FILE_ACCESS);
-        
+
         assertEquals("main dataset contents",
                 "field1: field1_value\n" +
                 "field2: field2_value\n", mainDataset.toString());
     }
     public void test_readMultipartFormData_uploadTempDirectory() {
         cr.clearData();                 // Discard default info from fixture.
-        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false, 
+        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false,
                 ClientRequest.FILE_ACCESS, true);
         (new File("_test1_")).mkdir();
         Config.setDataset("main", new Dataset("uploadTempDirectory",
@@ -1137,7 +1137,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
     public void test_readMultipartFormData_bogusUploadMaxSize() {
         cr.clearData();                 // Discard default info from fixture.
-        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false, 
+        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false,
                 ClientRequest.FILE_ACCESS, true);
         Config.setDataset("main", new Dataset("uploadMaxSize", "xyz"));
         servletRequest.setParameters();
@@ -1164,7 +1164,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
     public void test_readMultipartFormData_fileUploadMaxSize() {
         cr.clearData();                 // Discard default info from fixture.
-        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false, 
+        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false,
                 ClientRequest.FILE_ACCESS, true);
         Config.setDataset("main", new Dataset("uploadMaxSize", "5"));
         servletRequest.setParameters();
@@ -1191,7 +1191,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
 
     public void test_readMultipartFormData_fileUploads_withFilesystemAccess() {
         cr.clearData();                 // Discard default info from fixture.
-        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false, 
+        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false,
                 ClientRequest.FILE_ACCESS, true);
         servletRequest.setParameters();
         servletRequest.contentType = "multipart/form-data, boundary=xyzzy";
@@ -1214,13 +1214,13 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "Line 2\r\n" +
                 "--xyzzy--\r\n");
         cr.readMultipartFormData();
-        
+
         Dataset mainDataset = cr.getMainDataset();
         // Remove GOOGLE_APPENGINE and FILE_ACCESS fields.
         mainDataset.delete(ClientRequest.GOOGLE_APPENGINE);
         mainDataset.delete(ClientRequest.FILE_ACCESS);
-        
-        TestUtil.assertSubstring("main dataset contents", "name: Alice\n", 
+
+        TestUtil.assertSubstring("main dataset contents", "name: Alice\n",
                 mainDataset.toString());
         Object[] keys = cr.uploads.keySet().toArray();
         Arrays.sort(keys);
@@ -1230,7 +1230,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
 
     public void test_readMultipartFormData_fileUploads_noFilesystemAccess() {
         cr.clearData();                 // Discard default info from fixture.
-        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false, 
+        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false,
                 ClientRequest.FILE_ACCESS, true);
         cr.mainDataset.set(ClientRequest.FILE_ACCESS, false);
         servletRequest.setParameters();
@@ -1254,13 +1254,13 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "Line 2\r\n" +
                 "--xyzzy--\r\n");
         cr.readMultipartFormData();
-        
+
         Dataset mainDataset = cr.getMainDataset();
         // Remove GOOGLE_APPENGINE and FILE_ACCESS fields.
         mainDataset.delete(ClientRequest.GOOGLE_APPENGINE);
         mainDataset.delete(ClientRequest.FILE_ACCESS);
-        
-        assertEquals("main dataset contents", "name: Alice\n", 
+
+        assertEquals("main dataset contents", "name: Alice\n",
                 mainDataset.toString());
         Object[] keys = cr.uploads.keySet().toArray();
         Arrays.sort(keys);
@@ -1269,12 +1269,12 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
     public void test_readMultipartFormData_exceptionParsingInput() {
         cr.clearData();                 // Discard default info from fixture.
-        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false, 
+        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false,
                 ClientRequest.FILE_ACCESS, true);
         servletRequest.setParameters();
         servletRequest.contentType = "multipart/form-data, boundary=xyzzy";
         servletRequest.setInput("--xyzzy\r\n");
-        
+
         // When filesystem access is permitted.
         boolean gotException1 = false;
         try {
@@ -1287,7 +1287,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
             gotException1 = true;
         }
         assertEquals("exception happened", true, gotException1);
-        
+
         // When filesystem access isn't permitted.
         cr.mainDataset.set(ClientRequest.FILE_ACCESS, false);
         boolean gotException2 = false;
@@ -1335,7 +1335,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
     public void test_readRequestData_formData() {
         cr.clearData();                 // Discard default info from fixture.
-        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false, 
+        cr.mainDataset = new Dataset(ClientRequest.GOOGLE_APPENGINE, false,
                 ClientRequest.FILE_ACCESS, true);
         servletRequest.setParameters();
         servletRequest.contentType = "multipart/form-data, boundary=xyzzy";
@@ -1346,13 +1346,13 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 "Alice\r\n" +
                 "--xyzzy--\r\n");
         cr.readRequestData();
-        
+
         Dataset mainDataset = cr.getMainDataset();
         // Remove GOOGLE_APPENGINE and FILE_ACCESS fields.
         mainDataset.delete(ClientRequest.GOOGLE_APPENGINE);
         mainDataset.delete(ClientRequest.FILE_ACCESS);
-        
-        assertEquals("main dataset contents", "name: Alice\n", 
+
+        assertEquals("main dataset contents", "name: Alice\n",
                 mainDataset.toString());
     }
     public void test_readRequestData_fizData() {

@@ -47,7 +47,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
     }
 
-    public void test_singleSelection() {
+    public void test_collect_singleSelection() {
         SelectFormElement element = new SelectFormElement(
                 new Dataset("id", "id11"));
         Dataset out = new Dataset();
@@ -55,19 +55,19 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         assertEquals("output dataset", "id11: California\n",
                 out.toString());
     }
-    public void test_multipleSelections() {
+    public void test_collect_multipleSelections() {
         SelectFormElement element = new SelectFormElement(
                 new Dataset("id", "id11", "multiple", "multiple"));
         Dataset out = new Dataset();
         Dataset in = YamlDataset.newStringInstance(
                 "a: 111\n" +
                 "id11:\n" +
-                "  - value: 123\n" +
-                "  - value: 345\n");
+                "  - 123\n" +
+                "  - 345\n");
         element.collect(null, in, out);
         assertEquals("output dataset", "id11:\n" +
-                "  - value: 123\n" +
-                "  - value: 345\n",
+                "  - 123\n" +
+                "  - 345\n",
                 out.toString());
          out.clear();
         element.collect(null, new Dataset(), out);
@@ -140,8 +140,8 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         StringBuilder out = cr.getHtml().getBody();
         element.render(cr, YamlDataset.newStringInstance(
                 "id11:\n" +
-                "  - value:  apple\n" +
-                "  - value: grape\n"));
+                "  - apple\n" +
+                "  - grape\n"));
         assertEquals("generated HTML", "\n" +
                 "<!-- Start SelectFormElement id11 -->\n" +
                 "<select id=\"id11\" name=\"id11\" class=\"SelectFormElement\" " +
@@ -260,14 +260,14 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         out.append("</p></form>\n");
         TestUtil.assertXHTML(cr.getHtml().toString());
     }
-    public void test_validate_validInput_single() {
+    public void test_validateIn_validInput_single() {
         ClientRequest cr = new ClientRequestFixture();
         cr.addDataRequest("getFruits", RawDataManager.newRequest(fruits));
         SelectFormElement element = new SelectFormElement(
                 new Dataset("id", "select", "class", "xyzzy",
                         "choiceRequest", "getFruits",
                         "choiceName", "fruit"));
-        
+
         element.render(cr);
         boolean exceptionOccurred = false;
         try {
@@ -277,15 +277,15 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         }
         assertTrue("Input is valid", !exceptionOccurred);
     }
-    
-    public void test_validate_invalidInput_single() {
+
+    public void test_validateIn_invalidInput_single() {
         ClientRequest cr = new ClientRequestFixture();
         cr.addDataRequest("getFruits", RawDataManager.newRequest(fruits));
         SelectFormElement element = new SelectFormElement(
                 new Dataset("id", "select", "class", "xyzzy",
                         "choiceRequest", "getFruits",
                         "choiceName", "fruit"));
-        
+
         element.render(cr);
         boolean exceptionOccurred = false;
         try {
@@ -295,7 +295,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         }
         assertTrue("Input is invalid", exceptionOccurred);
     }
-    public void test_validate_validInput_multiple() {
+    public void test_validateIn_validInput_multiple() {
         ClientRequest cr = new ClientRequestFixture();
         cr.addDataRequest("getFruits", RawDataManager.newRequest(fruits));
         SelectFormElement element = new SelectFormElement(
@@ -303,20 +303,20 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                         "multiple", "multiple",
                         "choiceRequest", "getFruits",
                         "choiceName", "fruit"));
-        
+
         element.render(cr);
         boolean exceptionOccurred = false;
         try {
             element.validate(new Dataset(
-                    "select", new Dataset("value", "pear"),
-                    "select", new Dataset("value", "peach")));
+                    "fruitName", "pear",
+                    "fruitName",  "peach"));
         } catch (FormDataException e) {
             exceptionOccurred = true;
         }
         assertTrue("Input is valid", !exceptionOccurred);
     }
-    
-    public void test_validate_invalidInput_multiple() {
+
+    public void test_validateIn_invalidInput_multiple() {
         ClientRequest cr = new ClientRequestFixture();
         cr.addDataRequest("getFruits", RawDataManager.newRequest(fruits));
         SelectFormElement element = new SelectFormElement(
@@ -324,7 +324,7 @@ public class SelectFormElementTest extends junit.framework.TestCase {
                         "multiple", "multiple",
                         "choiceRequest", "getFruits",
                         "choiceName", "fruit"));
-        
+
         element.render(cr);
         boolean exceptionOccurred = false;
         try {

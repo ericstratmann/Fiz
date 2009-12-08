@@ -56,10 +56,8 @@ import java.util.*;
  *                   value {@code multiple}, which means that multiple
  *                   selections will be permitted.  In this case, the
  *                   value of this form element is specified in data requests
- *                   with one nested dataset for each specified value;
- *                   each dataset will have a name given by the {@code id}
- *                   property, and it will contain a single element named
- *                   {@code value}, which holds that value.
+ *                   using a list of values under the name given by the
+ *                  {@code id} property.
  */
 
 public class SelectFormElement extends FormElement {
@@ -102,8 +100,8 @@ public class SelectFormElement extends FormElement {
             out.set(id, in.getString(id));
         } else {
             // Must return multiple values:
-            for (Dataset d : in.getDatasetList(id)) {
-                out.add(id, d);
+            for (String s : in.getStringList(id)) {
+                out.add(id, s);
             }
         }
     }
@@ -127,9 +125,8 @@ public class SelectFormElement extends FormElement {
                 initialSelections.add(initialValue);
             }
         } else {
-            ArrayList<Dataset> children = data.getDatasetList(id);
-            for (Dataset d : children) {
-                initialSelections.add(d.getString("value"));
+            for (String s: data.getStringList(id)) {
+                initialSelections.add(s);
             }
         }
 
@@ -192,8 +189,8 @@ public class SelectFormElement extends FormElement {
      *
      *   valid                      Comma separated list of valid inputs
      *   multiple                   If "multiple" is set, the validator will
-     *                              run once for each nested dataset in the
-     *                              formData for {@code id}.
+     *                              run once for each value in the formData
+     *                              for {@code id}.
      *
      * @param id                        id of the input element to validate
      * @param properties                Configuration properties for the
@@ -209,10 +206,10 @@ public class SelectFormElement extends FormElement {
         String allValues = properties.getString("valid");
 
         if (properties.getString("multiple").equals("multiple")) {
-            for (Dataset data : formData.getDatasetList(id)) {
+            for (String value : formData.getStringList(id)) {
                 String error = FormValidator.validateIn(id,
                         new Dataset("valid", allValues),
-                        new Dataset(id, data.getString("value")));
+                        new Dataset(id, value));
                 if (error != null) {
                     return error;
                 }
