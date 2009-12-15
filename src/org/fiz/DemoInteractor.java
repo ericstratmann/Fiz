@@ -475,10 +475,9 @@ public class DemoInteractor extends Interactor {
                         "edge style to treeDotted</a><br />\n" +
                         "<a href=\"tree?edgeFamily=treeNoLines.gif\">Change " +
                 "edge style to treeNoLines</a></p>\n"),
-                new TreeSection(
-                        new Dataset("id", "tree1", "requestFactory",
-                                "DemoInteractor.treeRequest", "edgeFamily",
-                                edgeFamily))
+                new TreeSection(new Dataset("requestFactory",
+                        "DemoInteractor.treeRequest", "edgeFamily",
+                        edgeFamily))
         );
     }
 
