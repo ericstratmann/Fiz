@@ -12,15 +12,15 @@ public class DirectoryInteractor extends Interactor {
         Html html = cr.getHtml();
         html.clear();
         html.setTitle("TreeSection Demo");
-        String edgeFamily = "treeDotted";
+        String edgeFamily = "treeSolid";
         cr.showSections(
-                new TreeSection(
-                        new Dataset("id", "tree1", "requestFactory",
-                                "DirectoryInteractor.dirRequest", "edgeFamily",
-                                edgeFamily))
+                new TreeSection(new Dataset("requestFactory",
+                        "DirectoryInteractor.dirRequest",
+                        "rootName", "C:/Documents and Settings/" +
+                        "John Ousterhout/My Documents/Fiz"))
         );
     }
-    
+
     /**
      * Creates a DataRequest that returns the contents of a directory
      * @param directory            Name of the directory whose children
@@ -31,11 +31,8 @@ public class DirectoryInteractor extends Interactor {
      */
     public static DataRequest dirRequest(String directory) {
         Dataset data = new Dataset();
-        if (directory.equals("")) {
-            directory = "/";
-        }
         File dir = new File(directory);
-        
+
         if (dir.isDirectory()) {
             for (String child : dir.list()) {
                 File file = new File(dir, child);
@@ -50,7 +47,7 @@ public class DirectoryInteractor extends Interactor {
                 data.add("record", childData);
             }
         }
-        
+
         return RawDataManager.newRequest(data);
     }
 }

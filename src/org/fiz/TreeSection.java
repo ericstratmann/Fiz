@@ -34,12 +34,13 @@ import java.util.*;
  *                   {@code x-plus.gif}, and {@code x-minus.gif}.  See the
  *                   images themselves and the generated HTML for details
  *                   on how the images are used.  Fiz has built-in support
- *                   for families {@code treeSolid}, {@code treeDotted}, and
- *                   {@code treeNoLines}, but applications can define
- *                   additional families.  Defaults to {@code treeSolid}.
+ *                   for families {@code treeSolid.gif}, {@code treeDotted.gif},
+ *                   and {@code treeNoLines.gif}, but applications can define
+ *                   additional families.  Defaults to {@code treeSolid.gif}.
  *   id:             (required) Used as the {@code id} attribute for the
- *                   HTML element that contains the section.  Must be
- *                   unique among all ids for the page.
+ *                   HTML element that contains the section; must be
+ *                   unique among all ids for the page.  Defaults to "treeN"
+ *                   where N is a uniqifying integer.
  *   leafStyle:      (optional) Style to use for displaying leaves of the
  *                   tree (which cannot be expanded); overridden by a
  *                   {@code style} value in records returned by
@@ -60,6 +61,9 @@ import java.util.*;
  *                   the record for that node, returned by a previous
  *                   request): empty string refers to root of the tree, and
  *                   is used to fetch the top-level nodes.
+ *   rootName:       (optional) Name of the root node of the tree; passed
+ *                   to requestFactory to fetch the top-level nodes. Defaults
+ *                   to an empty string.
  *
  * The response to a DataRequest generated from {@code requestFactory} consists
  * of a dataset with one {@code record} child for each node at the current
@@ -152,7 +156,7 @@ public class TreeSection extends Section implements DirectAjax {
     public TreeSection(Dataset properties) {
         this.properties = properties;
         pageProperty = new PageProperty(properties.checkString("class"),
-                properties.checkString("edgeFamily"), properties.getString("id"),
+                properties.checkString("edgeFamily"), properties.checkString("id"),
                 properties.checkString("leafStyle"), properties.checkString("nodeStyle"),
                 properties.getString("requestFactory"));
         if (pageProperty.edgeFamily == null) {
@@ -175,8 +179,12 @@ public class TreeSection extends Section implements DirectAjax {
      */
     @Override
     public void addDataRequests(ClientRequest cr) {
+        String rootName = properties.checkString("rootName");
+        if (rootName == null) {
+            rootName = "";
+        }
         dataRequest = (DataRequest) Util.invokeStaticMethod(
-                pageProperty.requestFactory, "");
+                pageProperty.requestFactory, rootName);
         cr.addDataRequest(dataRequest);
     }
 
@@ -229,6 +237,10 @@ public class TreeSection extends Section implements DirectAjax {
      */
     @Override
     public void render(ClientRequest cr) {
+        if (pageProperty.id == null) {
+            // Provide a default value for the section identifier.
+            pageProperty.id = cr.uniqueId("tree");
+        }
         cr.setPageProperty(pageProperty.id, pageProperty);
         Html html = cr.getHtml();
         StringBuilder out = html.getBody();

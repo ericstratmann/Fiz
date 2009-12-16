@@ -80,7 +80,20 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 tree.pageProperty.requestFactory);
     }
 
-    public void test_addDataRequests() {
+    public void test_addDataRequests_withRootName() {
+        TreeSection tree = new TreeSection(new Dataset("id", "1234",
+                "requestFactory",
+                "org.fiz.TreeSectionTest$RequestFactory.request",
+                "rootName", "test root name"));
+        tree.addDataRequests(cr);
+        assertEquals("properties dataset", "parent: test root name\n" +
+                "record:\n" +
+                "    name: child1\n" +
+                "    text: \"Child #1\"\n",
+                cr.unnamedRequests.get(0).getResponseData().toString());
+    }
+
+    public void test_addDataRequests_defaultRootName() {
         TreeSection tree = new TreeSection(new Dataset("id", "1234",
                 "requestFactory",
                 "org.fiz.TreeSectionTest$RequestFactory.request"));
@@ -116,15 +129,15 @@ public class TreeSectionTest extends junit.framework.TestCase {
     }
 
     public void test_render_basics() {
-        TreeSection tree = new TreeSection(new Dataset("id", "tree1",
+        TreeSection tree = new TreeSection(new Dataset("id", "tree14",
                 "requestFactory", "TreeSectionTest$RequestFactory.request"));
         tree.addDataRequests(cr);
         tree.render(cr);
         assertEquals("generated HTML", "\n" +
-                "<!-- Start TreeSection tree1 -->\n" +
+                "<!-- Start TreeSection tree14 -->\n" +
                 "<table cellspacing=\"0\" class=\"TreeSection\" " +
-                "id=\"tree1\">\n" +
-                "  <tr id=\"tree1_0\">\n" +
+                "id=\"tree14\">\n" +
+                "  <tr id=\"tree14_0\">\n" +
                 "    <td class=\"left\" style=\"background-image: " +
                 "url(/static/fiz/images/treeSolid-line.gif); background-repeat: " +
                 "no-repeat;\"><img src=\"/static/fiz/images/treeSolid-leaf." +
@@ -132,7 +145,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "    <td class=\"right\">leaf: child1</td>\n" +
                 "  </tr>\n" +
                 "</table>\n" +
-                "<!-- End TreeSection tree1 -->\n",
+                "<!-- End TreeSection tree14 -->\n",
                 cr.getHtml().getBody().toString());
         assertEquals("accumulated Javascript",
                 "Fiz.pageId = \"1\";\n",
@@ -142,8 +155,18 @@ public class TreeSectionTest extends junit.framework.TestCase {
         assertEquals("Javascript file names",
                 "static/fiz/Fiz.js, static/fiz/TreeRow.js",
                 cr.getHtml().getJsFiles());
-        assertEquals("names of defined page properties", "tree1",
+        assertEquals("names of defined page properties", "tree14",
                 StringUtil.join(cr.pageState.properties.keySet(), ", "));
+    }
+    public void test_render_defaultId() {
+        TreeSection tree = new TreeSection(new Dataset(
+                "requestFactory", "TreeSectionTest$RequestFactory.request"));
+        tree.addDataRequests(cr);
+        tree.render(cr);
+        TestUtil.assertMatchingSubstring("section identifier",
+                "Start TreeSection tree0",
+                cr.getHtml().getBody().toString(),
+                "Start TreeSection [^ ]*");
     }
     public void test_render_explicitClass() {
         TreeSection tree = new TreeSection(new Dataset("id", "tree1",
