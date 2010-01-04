@@ -95,7 +95,7 @@ public class ConvertTest extends junit.framework.TestCase {
         assertEquals("dataset", ds, Convert.toDataset(ds, success));
         assertEquals("success", true, success.succeeded());
 
-        Convert.toDataset(new TemplateSection(""), success);
+        Convert.toDataset(new Integer(5), success);
         assertEquals("bad type", false, success.succeeded());
     }
 }

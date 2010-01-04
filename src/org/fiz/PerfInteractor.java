@@ -15,6 +15,8 @@
 
 package org.fiz;
 
+import org.fiz.section.*;
+
 /**
  * This interactor influence a collection of pages used for testing the
  * performance of Fiz.  For details, view the individual pages in a

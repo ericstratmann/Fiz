@@ -223,7 +223,7 @@ public class Dataset implements Cloneable, Serializable {
 
     // If set to true, the dataset is sorted before being output in various
     // formats.  Used in testing to ensure reproducible results.
-    protected static boolean sortOutput = false;
+    public static boolean sortOutput = false;
 
     /**
      * Set to true if the last check (or any of its variants) call was

@@ -18,6 +18,7 @@ package org.fiz;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.fiz.section.*;
 import org.fiz.test.*;
 
 /**

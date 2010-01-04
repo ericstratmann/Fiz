@@ -99,6 +99,12 @@ public class HtmlTest extends junit.framework.TestCase {
 
     // No tests for getBody; too trivial.
 
+    public void test_getCss() {
+        html.includeCss("bar");
+        assertEquals("bar", html.getCss());
+    }
+
+
     public void test_getCssFiles() {
         (new File("_test_")).mkdir();
         TestUtil.writeFile("_test_/first.css", "first.css");
@@ -113,6 +119,11 @@ public class HtmlTest extends junit.framework.TestCase {
                 "first.css, second.css, third.css",
                 html.getCssFiles());
         Util.deleteTree("_test_");
+    }
+
+    public void test_getJs() {
+        html.evalJavascript("foo");
+        assertEquals("foo", html.getJs());
     }
 
     public void test_getJsFiles() {

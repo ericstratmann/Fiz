@@ -38,7 +38,7 @@ import javax.servlet.http.*;
  *
  * Each PageState object holds the properties for a particular page.
  */
-class PageState implements Serializable {
+public class PageState implements Serializable {
     // Maximum number of pages for which we will retain state; this is a
     // copy of the maxPageStates property in the main configuration dataset.
     // -1 means we haven't yet read the value from the main configuration
@@ -83,7 +83,7 @@ class PageState implements Serializable {
     // keys are string identifiers (by convention, these always start with
     // the name of the class on whose behalf the information is being stored),
     // values are arbitrary objects.
-    protected HashMap<String,Object> properties =
+    public HashMap<String,Object> properties =
             new HashMap<String,Object>();
 
     /**
@@ -122,13 +122,13 @@ class PageState implements Serializable {
     }
 
     /**
-     * Rewrites the entire contents of this PageState, as well as all other 
-     * PageState objects, into the session.  This is necessary to make 
-     * PageProperties work in GoogleAppEngine, where the introspection into 
+     * Rewrites the entire contents of this PageState, as well as all other
+     * PageState objects, into the session.  This is necessary to make
+     * PageProperties work in GoogleAppEngine, where the introspection into
      * modified session-bound objects is not sufficient to detect all the nested
-     * changes occurring within PageState and any subsidiary objects it may 
+     * changes occurring within PageState and any subsidiary objects it may
      * contain.
-     * @param cr                   The ClientRequest containing the session to 
+     * @param cr                   The ClientRequest containing the session to
      *                             which all PageState will be rewritten.
      */
     public void flushPageState(ClientRequest cr) {

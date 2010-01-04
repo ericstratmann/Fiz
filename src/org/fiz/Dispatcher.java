@@ -14,6 +14,8 @@
  */
 
 package org.fiz;
+
+import org.fiz.section.TabSection;
 import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;

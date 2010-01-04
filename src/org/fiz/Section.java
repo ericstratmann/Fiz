@@ -26,7 +26,7 @@ public abstract class Section {
     // The following variable contains overall configuration properties
     // for the Section.  It is set by the Section constructor, and may
     // be null.
-    protected Dataset properties = null;
+    public Dataset properties = null;
 
     /**
      * Return the {@code id} property for this section, or null if no

@@ -22,6 +22,8 @@ import javax.servlet.http.*;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.log4j.*;
+import org.fiz.*;
+import org.fiz.section.*;
 import org.fiz.test.*;
 
 /**
@@ -385,6 +387,8 @@ public class ClientRequestTest extends junit.framework.TestCase {
         assertEquals("POST", ClientRequest.Type.POST,
                 cr.getClientRequestType());
     }
+
+    // getHtml and getJs trivial
 
     public void test_getMac() {
         // Make sure that (a) the Mac object can be used to create
@@ -989,19 +993,19 @@ public class ClientRequestTest extends junit.framework.TestCase {
         cr.readFileUpload(upload);
         // After one call to readFileUpload.
         assertEquals("main dataset contents (1 call)", "fieldName: " +
-        		"FileUploadFixture\n", cr.getMainDataset().toString());
+                "FileUploadFixture\n", cr.getMainDataset().toString());
 
         cr.readFileUpload(upload);
         // After two calls to readFileUpload.
         assertEquals("main dataset contents (2 calls)", "fieldName:\n  " +
-        		"- FileUploadFixture\n  - FileUploadFixture\n",
-        		cr.getMainDataset().toString());
+                "- FileUploadFixture\n  - FileUploadFixture\n",
+                cr.getMainDataset().toString());
 
         cr.readFileUpload(upload);
         // After three calls to readFileUpload.
         assertEquals("main dataset contents (3 calls)", "fieldName:\n  " +
-        		"- FileUploadFixture\n  - FileUploadFixture\n  " +
-        		"- FileUploadFixture\n", cr.getMainDataset().toString());
+                "- FileUploadFixture\n  - FileUploadFixture\n  " +
+                "- FileUploadFixture\n", cr.getMainDataset().toString());
     }
 
     public void test_readFileUpload_notFormField() {
@@ -1236,8 +1240,8 @@ public class ClientRequestTest extends junit.framework.TestCase {
         }
         catch (InternalError e) {
             assertEquals("exception message", "error iterating over uploaded " +
-            		"FileItemStreams: stream ended unexpectedly",
-            		e.getMessage());
+                    "FileItemStreams: stream ended unexpectedly",
+                    e.getMessage());
             gotException2 = true;
         }
         assertEquals("exception happened", true, gotException2);

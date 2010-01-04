@@ -134,6 +134,15 @@ public class Html {
     }
 
     /**
+     * Generates a string containing the accumulated css so far. This
+     * method is used primarily for testing.
+     */
+    public String getCss() {
+        return css.toString();
+    }
+
+
+    /**
      * Generate a string containing the names of all of the CSS files
      * that have been requested using includeCssFile.  This method is used
      * primarily for testing.
@@ -145,6 +154,14 @@ public class Html {
         names.addAll(cssFiles);
         Collections.sort(names);
         return StringUtil.join(names, ", ");
+    }
+
+    /**
+     * Generates a string containing the accumulated javascript so far. This
+     * method is used primarily for testing.
+     */
+    public String getJs() {
+        return jsCode.toString();
     }
 
     /**

@@ -257,7 +257,7 @@ public class Timer {
      * measure the elapsed time for a timer start followed immediately
      * by a timer stop).
      */
-    protected static void measureNoopTime() {
+    public static void measureNoopTime() {
         Timer timer = getNamedTimer("noop");
         for (int i = 0; i <10; i++) {
             timer.start(); timer.stop();

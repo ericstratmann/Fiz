@@ -15,6 +15,7 @@
 
 package org.fiz;
 
+import org.fiz.section.FormSection;
 import java.io.*;
 import java.util.*;
 
@@ -157,7 +158,7 @@ public class ClientRequest {
 
     // The following variable accumulates Javascript code passed to the
     // evalJavascript method, if there is any.
-    protected StringBuilder jsCode = null;
+    public StringBuilder jsCode = null;
 
     // If returnFile has been invoked, the following variables record
     // information about the file to be returned at the end of the request.
@@ -176,22 +177,22 @@ public class ClientRequest {
 
     // Page properties for the current page.  Null means no properties have
     // been referenced in the current request.
-    protected PageState pageState = null;
+    public PageState pageState = null;
 
     // Holds the identifier for the current page, which is computed by
     // the getPageId method.  Null means getPageId has not yet been called
     // for this page.
-    protected String pageId = null;
+    public String pageId = null;
 
     // True means that we have already set Fiz.auth in the browser; no need
     // to set it again.
-    protected boolean authTokenSet = false;
+    public boolean authTokenSet = false;
 
     // The following variable is set to true during some tests; this
     // causes cryptographic authentication code to be bypassed, using
     // instead a single fixed signature (so that tests don't have to
     // worry about the signature being different every round).
-    protected boolean testMode = false;
+    public boolean testMode = false;
 
     // The following variable is set to true during most tests; this
     // causes automatic checks of the authentication token to be skipped.
@@ -455,7 +456,7 @@ public class ClientRequest {
      * @return                     A string containing the CSRF
      *                             authenticator.
      */
-    protected String getAuthToken() {
+    public String getAuthToken() {
         // Implementation notes:
         // * We cache the value of the authentication token in the
         //   session so it doesn't need to be recomputed for each form.
@@ -514,6 +515,13 @@ public class ClientRequest {
             html = new Html(this);
         }
         return html;
+    }
+
+    /**
+     * Generates a string containing the accumulated Javascript.
+     */
+    public String getJs() {
+        return jsCode.toString();
     }
 
     /**
