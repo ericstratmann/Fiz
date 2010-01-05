@@ -14,7 +14,7 @@ home: TBD
 # include a package name, Fiz first tries the name with no package.  If
 # that class doesn't exist then Fiz tries prepending each of the package
 # names in the following (comma-separated) list:
-searchPackages: "org.fiz"
+searchPackages: "org.fiz,org.fiz.demo,org.fiz.section"
 
 # If the line below is uncommented it means that Fiz is running in
 # debug mode.  Debug mode has the following impact:
@@ -50,10 +50,10 @@ maxPageStates: 10
 # to the home page "/" is redirected to this location.
 homeRedirectUrl: /home/home
 
-# The following value determines whether or not the server running the 
+# The following value determines whether or not the server running the
 # application permits files to be written to its filesystem.
 serverFileAccess: 1
 
-# The following value determines whether or not the server running the 
+# The following value determines whether or not the server running the
 # application is Google AppEngine.
 googleAppEngine: 0
