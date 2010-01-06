@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  * (if applicable) and a dataset containing form data to validate. Validators
  * support the following properties (with additional ones specified for each
  * validator below):
- * 
+ *
  *   otherFields:               (optional) List of other form elements to
  *                              include in the form data passed to the
  *                              validator
@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  *                              returned if validation fails.
  *
  * Instructions on attaching form validators to form elements can be seen
- * in {@link FormElement}.
+ * in {@link section.FormElement}.
  *
  * <h1>Implementation</h1>
  * Developers may create custom validators by writing their own methods.
@@ -54,8 +54,8 @@ import java.util.regex.Pattern;
  * }
  * }
  * </pre>
- * 
- * Validator methods may be placed anywhere. They can be referenced in the 
+ *
+ * Validator methods may be placed anywhere. They can be referenced in the
  * {@code type} property of the validator dataset by their fully qualified name,
  * such as "MyValidator.validateTrue".
  */
@@ -83,20 +83,20 @@ public class FormValidator {
         if (errorTemplate != null) {
             defaultMessage = errorTemplate;
         }
-            
+
         return Template.expandRaw(defaultMessage,
                 new CompoundDataset(properties, formData));
     }
-    
+
     /**
      * Validates that the value of {@code id} matches the value of all other
      * form elements in {@code otherFields}. The following configuration
      * properties are supported:
-     * 
+     *
      *   otherFields:            Comma separated list of names of form elements
      *                           that must match the primary form element
      *                           identified by {@code id}
-     *   
+     *
      * @param id                        id of the input element to validate
      * @param properties                Configuration properties for the
      *                                  validator: see above for supported
@@ -125,9 +125,9 @@ public class FormValidator {
     /**
      * Validates that the value of {@code id} is contained in the list of valid
      * inputs. The following properties are supported:
-     * 
+     *
      *   valid                      Comma separated list of valid inputs
-     *   
+     *
      * @param id                        id of the input element to validate
      * @param properties                Configuration properties for the
      *                                  validator: see above for supported
@@ -179,16 +179,16 @@ public class FormValidator {
             return errorMessage("Must be an integer", properties, formData);
         }
     }
-    
+
     /**
      * Validates that the length of the value of {@code id} falls within a
      * certain range. The following configuration properties are supported:
-     * 
+     *
      *   min:                        (optional) Minimum length of input
      *                               Defaults to 0.
      *   max:                        (optional) Maximum length of input,
      *                               Defaults to Integer.MAX_VALUE.
-     *   
+     *
      * @param id                        id of the input element to validate
      * @param properties                Configuration properties for the
      *                                  validator: see above for supported
@@ -201,7 +201,7 @@ public class FormValidator {
     public static String validateLength(String id, Dataset properties,
             Dataset formData) {
         int length = formData.getString(id).length();
-        
+
         String minString = properties.checkString("min");
         int min = (minString == null ? 0 : Integer.parseInt(minString));
 
@@ -249,18 +249,18 @@ public class FormValidator {
             return errorMessage("Must be a number", properties, formData);
         }
     }
-    
+
     /**
      * Validates that the value of {@code id} is a number that falls between
      * {@code min} and {@code max}. The following properties are supported:
-     * 
+     *
      *   min:                        (optional) Minimum float value of input
      *   max:                        (optional) Maximum float value of input
      *   includeMin:                 (optional) Whether the minimum value is
      *                               included in the range. Defaults to true.
      *   includeMax:                 (optional) Whether the maximum value is
      *                               included in the range. Defaults to true.
-     *                              
+     *
      * @param id                        id of the input element to validate
      * @param properties                Configuration properties for the
      *                                  validator: see above for supported
@@ -280,7 +280,7 @@ public class FormValidator {
         }
 
         boolean validationFailed = false;
-        
+
         // Setup the parameters for the lower bound on the range check
         boolean includeMin = !("false".equals(properties.checkString("includeMin")));
         String minString = properties.checkString("min");
@@ -300,7 +300,7 @@ public class FormValidator {
                 validationFailed = true;
             }
         }
-        
+
         if (!validationFailed) {
             return null;
         } else {
@@ -323,10 +323,10 @@ public class FormValidator {
     /**
      * Validates that the value of {@code id} matches a regular expression
      * pattern. The following properties are supported:
-     * 
+     *
      *   pattern:                    Regular expression pattern for validating
      *                               the format of the formData
-     *   
+     *
      * @param id                        id of the input element to validate
      * @param properties                Configuration properties for the
      *                                  validator: see above for supported
@@ -345,7 +345,7 @@ public class FormValidator {
                     properties, formData);
         }
     }
-    
+
     /**
      * Validates that the value of {@code id} is non-empty.
      * @param id                        id of the input element to validate
