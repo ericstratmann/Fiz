@@ -237,3 +237,15 @@ Fiz.setText = function(target, text) {
         target.innerText = text;
     }
 }
+
+/**
+ * Change the 'src' attribute of the image element in question. Can be used by
+ * the caller to change an image in response to various events.
+ * @param img_id                   The Id of the image element of interest.
+ * @param image					   The new image file (Assumed to be located in
+ *			    				   the standard image directory).
+ */
+Fiz.changeImage = function(img_id, image) {
+	document.getElementById(img_id).setAttribute('src', 
+		"/static/fiz/images/" + image);
+}

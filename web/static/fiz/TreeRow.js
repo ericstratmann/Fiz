@@ -1,5 +1,5 @@
 /* TreeRow.js --
- *
+ *	
  * This file implements the TreeRow class, which is used to implement
  * TreeSections.
  *
@@ -63,7 +63,7 @@ Fiz.TreeRow.prototype.expand = function(html) {
  * in the "unexpanded" style, and undisplay all the children.
  */
 Fiz.TreeRow.prototype.unexpand = function() {
-    this.replace(this.unexpandedHtml);
+	this.replace(this.unexpandedHtml);
     var childRow = document.getElementById(this.id + "_childRow");
     childRow.style.display = "none";
 }

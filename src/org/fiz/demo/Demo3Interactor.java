@@ -25,7 +25,7 @@ import org.fiz.datamanager.*;
  */
 public class Demo3Interactor extends Interactor {
     FormSection form = new FormSection(
-        new Dataset("postUrl", "post"),
+        new Dataset("postUrl", "post", "initialValues", new Dataset("name", "James Bond")),
         new EntryFormElement("name", "Name:"),
         new EntryFormElement("street1", "Address:"),
         new EntryFormElement("street2",  ""),
