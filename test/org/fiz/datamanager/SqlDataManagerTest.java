@@ -304,12 +304,12 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
     public void test_findWithSql_fatalError() {
         boolean gotException = false;
         try {
-            manager.findWithSql("SELECT * FROM bogusTable;");
+            manager.findWithSql("SELECT * FROM bogus;");
         }
         catch (SqlError e) {
             assertEquals("exception message",
                     "SQL error in SqlDataManager.findWithSql: " +
-                    "table 'test.bogustable' doesn't exist",
+                    "table 'test.bogus' doesn't exist",
                     e.getMessage());
             gotException = true;
         }
@@ -339,13 +339,13 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
     public void test_findWithSql_withTemplate_fatalError() {
         boolean gotException = false;
         try {
-            manager.findWithSql("SELECT @what FROM bogusTable;",
+            manager.findWithSql("SELECT @what FROM bogus;",
                     new Dataset("what", "*"));
         }
         catch (SqlError e) {
             assertEquals("exception message",
                     "SQL error in SqlDataManager.findWithSql: " +
-                    "table 'test.bogustable' doesn't exist",
+                    "table 'test.bogus' doesn't exist",
                     e.getMessage());
             gotException = true;
         }
@@ -383,10 +383,12 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
             manager.insert("people", new Dataset("id", "1"));
         }
         catch (SqlError e) {
+            String msg = e.getMessage();
+            // Needed because of Linux/Windows differences
+            msg = msg.replaceAll("key .*", "key ?");
             assertEquals("exception message",
                     "SQL error in SqlDataManager.insert: " +
-                    "duplicate entry '1' for key 1",
-                    e.getMessage());
+                    "duplicate entry '1' for key ?", msg);
             gotException = true;
         }
         assertEquals("exception happened", true, gotException);
