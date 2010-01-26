@@ -43,11 +43,11 @@ import com.google.appengine.api.datastore.*;
  * returned to the developer and are expected as arguments to many functions.
  *
  * While Datasets support values of arbitrary classes, the Datastore is more
- * restrictive.  See {@link http://code.google.com/appengine/docs/java/datastore
- * /dataclasses.html#Core_Value_Types} for a list of approved Datastore Objects.
- * Datastore also supports collections of these Objects - as in Datasets,
- * Entities support the notion of multiple values associated with a key or
- * property.
+ * restrictive.  See
+ * http://code.google.com/appengine/docs/java/datastore/dataclasses.html#Core_Value_Types
+ * for a list of approved Datastore Objects. Datastore also supports
+ * collections of these Objects - as in Datasets, Entities support the notion
+ * of multiple values associated with a key or property.
  *
  * GaeDataManager exports a number of Datastore operations found below, most
  * of which fall into one of five categories:
@@ -199,7 +199,7 @@ public class GaeDataManager {
      * - When testing on an attribute with more than one value, the test will
      * pass if any one of the values satisfies the constraint.
      * - Collections are not supported as comparison attribute values - only a
-     * single Object of a Datastore-supported type is acceptable.  See {@link
+     * single Object of a Datastore-supported type is acceptable.  See
      * http://code.google.com/appengine/docs/java/datastore/dataclasses.html
      * #Core_Value_Types} for a list of supported types.
      */
