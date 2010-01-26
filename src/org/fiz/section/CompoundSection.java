@@ -83,15 +83,7 @@ public class CompoundSection extends Section implements TableLayoutContainer {
             extraChildren.add(child);
         }
     }
-
-    /**
-     * This method is invoked during the final phase of rendering a page;
-     * it generates HTML for this section and appends it to the Html
-     * object associated with {@code cr}.
-     * @param cr                   Overall information about the client
-     *                             request being serviced; HTML will be
-     *                             appended to {@code cr.getHtml()}.
-     */
+    
     @Override
     public void render(ClientRequest cr) {
         // If there is a border for this section, then the section gets

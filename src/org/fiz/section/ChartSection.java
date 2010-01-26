@@ -211,14 +211,7 @@ public class ChartSection extends Section {
         this.properties = properties.clone();
     }
 
-    /**
-     * This method is invoked during the final phase of rendering a page;
-     * it generates HTML for this section and appends it to the Html
-     * object associated with {@code cr}.
-     * @param cr                   Overall information about the client
-     *                             request being serviced; HTML will be
-     *                             appended to {@code cr.getHtml()}.
-     */
+    @Override
     public void render(ClientRequest cr) {
         this.cr = cr;
         Html html = cr.getHtml();

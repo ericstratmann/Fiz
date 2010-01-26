@@ -155,7 +155,6 @@ public class AutocompleteFormElement extends FormElement implements DirectAjax {
 
     /**
      * This method is invoked to generate HTML for this form element.
-     *
      * @param cr                Overall information about the client
      *                          request being serviced.
      * @param data              Data for the form (a CompoundDataset

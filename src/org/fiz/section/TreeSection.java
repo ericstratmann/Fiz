@@ -32,13 +32,13 @@ import java.util.*;
  *                   children.  The value forms the base name for a family
  *                   of images.  If the value is {@code x.gif}, then there
  *                   must exist images {@code x-line.gif}, {@code x-leaf.gif},
- *                   {@code x-plus.gif}, {@code x-minus.gif}, 
- *                   {@code x-plus-active.gif} and {@code x-minus-active.gif}. 
- *                   See the images themselves and the generated HTML for 
- *                   details on how the images are used. Fiz has built-in 
- *                   support for families {@code treeSolid.gif}, 
- *                   {@code treeDotted.gif}, and {@code treeNoLines.gif}, but 
- *                   applications can define additional families. 
+ *                   {@code x-plus.gif}, {@code x-minus.gif},
+ *                   {@code x-plus-active.gif} and {@code x-minus-active.gif}.
+ *                   See the images themselves and the generated HTML for
+ *                   details on how the images are used. Fiz has built-in
+ *                   support for families {@code treeSolid.gif},
+ *                   {@code treeDotted.gif}, and {@code treeNoLines.gif}, but
+ *                   applications can define additional families.
  *                   Defaults to {@code treeSolid.gif}.
  *   id:             (required) Used as the {@code id} attribute for the
  *                   HTML element that contains the section; must be
@@ -184,7 +184,7 @@ public class TreeSection extends Section implements DirectAjax {
         Dataset main = cr.getMainDataset();
         PageProperty pageProperty = (PageProperty)
                 cr.getPageProperty(main.getString("sectionId"));
-        
+
         // Fetch information about the children of the element being expanded,
         // then generate a <table> that will display the children.
         String id = main.getString("nodeId");
@@ -206,15 +206,7 @@ public class TreeSection extends Section implements DirectAjax {
                 "Fiz.ids[\"@1\"].expand(\"@2\");\n", id, html);
         cr.evalJavascript(javascript);
     }
-    
-    /**
-     * This method is invoked during the final phase of rendering a page;
-     * it generates HTML for this section and appends it to the Html
-     * object associated with {@code cr}.
-     * @param cr                   Overall information about the client
-     *                             request being serviced; HTML will be
-     *                             appended to {@code cr.getHtml()}.
-     */
+
     @Override
     public void render(ClientRequest cr) {
         if (pageProperty.id == null) {
@@ -319,13 +311,13 @@ public class TreeSection extends Section implements DirectAjax {
             // element is expandable, or a horizontal line if this is a
             // leaf node.
             if (expandable) {
-            	
+
                 Template.appendHtml(out, " onclick=\"@1\"" +
                 		" onmouseover=\"Fiz.changeImage('@2_plus', '@3');\"" +
                 		" onmouseout=\"Fiz.changeImage('@2_plus', '@4');\"" +
                 		"><img id=\"@2_plus\" src=\"/static/fiz/images/@4\"></td>\n",
                     Ajax.invoke(cr, "/TreeSection/ajaxExpand?" +
-                    "sectionId=@1&nodeId=@2", pageProperty.id, rowId), 
+                    "sectionId=@1&nodeId=@2", pageProperty.id, rowId),
                     rowId,
                     StringUtil.addSuffix(pageProperty.edgeFamily, "-plus-active"),
                     StringUtil.addSuffix(pageProperty.edgeFamily, "-plus"));
@@ -335,7 +327,7 @@ public class TreeSection extends Section implements DirectAjax {
                          "><img src=\"/static/fiz/images/@1\"></td>\n",
                          StringUtil.addSuffix(pageProperty.edgeFamily, "-leaf"));
             }
-            
+
             // Render the cell on the right, using a template selected by
             // the style.
             out.append("    <td class=\"right\">");
@@ -357,11 +349,11 @@ public class TreeSection extends Section implements DirectAjax {
                 Template.appendHtml(expandedRow,
                         " onclick=\"Fiz.ids['@1'].unexpand();\"" +
                         " onmouseover=\"Fiz.changeImage('@1_minus', '@3');\"" +
-                        " onmouseout=\"Fiz.changeImage('@1_minus', '@2');\">" + 
+                        " onmouseout=\"Fiz.changeImage('@1_minus', '@2');\">" +
                         "<img id=\"@1_minus\" src=\"/static/fiz/images/@2\"></td>\n",
                         rowId,
                         StringUtil.addSuffix(pageProperty.edgeFamily, "-minus"),
-                        StringUtil.addSuffix(pageProperty.edgeFamily, 
+                        StringUtil.addSuffix(pageProperty.edgeFamily,
                         		"-minus-active")
                         );
                 expandedRow.append("    <td class=\"right\">");

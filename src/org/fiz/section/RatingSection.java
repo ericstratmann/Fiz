@@ -166,13 +166,6 @@ public class RatingSection extends Section implements DirectAjax {
         cr.evalJavascript("Fiz.ids.@1.readOnly = @2;", id, "" + readOnly);
     }
 
-    /**
-     * This method is invoked during the final phase of rendering a page; it
-     * generates the necessary HTML and Javascript to make the RatingSection
-     * function in the browser.
-     * @param cr                    Overall information about the client request
-     *                              being serviced.
-     */
     @Override
     public void render(ClientRequest cr) {
         Html html = cr.getHtml();

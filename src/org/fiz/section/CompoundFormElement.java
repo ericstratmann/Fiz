@@ -94,8 +94,9 @@ public class CompoundFormElement extends FormElement {
     }
 
     /**
-     * This method is invoked during the final phase of rendering a page;
-     * it generates HTML for the element, including all its components.
+     * This method is invoked to generate HTML for this section (and all
+     * its components) and append it to the Html object associated with
+     * {@code request}.
      * @param cr                   Overall information about the client
      *                             request being serviced.
      * @param data                 Data for the form (a CompoundDataset
