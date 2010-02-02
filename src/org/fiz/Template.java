@@ -405,12 +405,12 @@ public class Template {
      * thing about this fragment is that we try to generate cleaner output
      * by collapsing spaces around fragments that are skipped. For example,
      * consider the following cases:
-     * 1.    xyz {{@a}} abc
-     * 2.    {{@a}} {{@b}}{{@c}}{{@d}}
-     * 3.    abc [{{@a}} xyz]
-     * In case 1, if @a doesn't exist then there will only be one space in
+     * 1.    xyz {{&#064;a}} abc
+     * 2.    {{&#064;a}} {{&#064;b}}{{&#064;c}}{{&#064;d}}
+     * 3.    abc [{{&#064;a}} xyz]
+     * In case 1, if &#064;a doesn't exist then there will only be one space in
      * the output.  In case 2, there will be a space in the output only if
-     * @a exists and at least one of @b, @c, and @d exists.  In case 3
+     * &#064;a exists and at least one of @b, @c, and @d exists.  In case 3
      * there will be no spaces between the brackets if @a doesn't exist.
      */
     protected static class ConditionalFragment implements Fragment {
