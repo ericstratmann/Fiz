@@ -193,6 +193,25 @@ public class Template {
         protected void addFragment(Fragment fragment) {
             fragments.add(fragment);
         }
+
+        /**
+         * Checks all IdFragments and returns whether they are all defined
+         * in the context of the current expansion (i.e., all @ variables
+         * have a corresponding value passed in).
+         * @param info         Information describing the current expansion
+         * @return             Whether all IdFragments are defined
+         */
+        protected boolean checkAllIdsDefined(ExpandInfo info) {
+            for (Fragment fragment : fragments) {
+                if (fragment instanceof IdFragment) {
+                    IdFragment id = (IdFragment) fragment;
+                    if(id.findValue(info, false) == null) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
     }
 
     /**
@@ -465,12 +484,6 @@ public class Template {
          * @param info         Information describing the current expansion
          */
         public void expand(ExpandInfo info) {
-            int outLen = info.out.length();
-            int sqlLen = 0;
-            if (info.sqlParameters != null) {
-                sqlLen = info.sqlParameters.size();
-            }
-
             // Figure out what we will do in terms of collapsing spaces
             // if this fragment ends up getting skipped. It's easy
             // if we are going to collapse out a space after the fragment;
@@ -483,6 +496,7 @@ public class Template {
             // must have come from the template rather than from a prior
             // substitution; info.lastCollapsibleSpace indicates this).
             boolean collapseBefore = false;
+            int outLen = info.out.length();
             if (outLen > 0) {
                 if ((precedingSpaceCollapsible) &&
                         (info.out.charAt(outLen-1) == ' ')) {
@@ -498,22 +512,16 @@ public class Template {
                         ((outLen-1) == info.lastCollapsibleSpace));
             }
 
-            try {
-                contents.expand(info);
-            } catch (MissingValueError e) {
-                info.out.setLength(outLen);
+            if (contents.checkAllIdsDefined(info) == false) {
                 if (collapseBefore) {
                     info.out.setLength(outLen-1);
                     // We used up the collapsible space.
                     info.lastCollapsibleSpace = -1;
                 }
-                if (info.sqlParameters != null) {
-                    for (int size = info.sqlParameters.size(); size > sqlLen; ) {
-                        size--;
-                        info.sqlParameters.remove(size);
-                    }
-                }
+                return;
             }
+
+            contents.expand(info);
         }
     }
 

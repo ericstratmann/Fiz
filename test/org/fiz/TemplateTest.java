@@ -123,20 +123,23 @@ public class TemplateTest extends junit.framework.TestCase {
         assertEquals("error message", "sample message", e.getMessage());
     }
     public void test_ParsedTemplate() {
-        Template.ParsedTemplate c = new Template.ParsedTemplate();
-        assertEquals("number fragments, empty", 0, c.fragments.size());
+        Template.ParsedTemplate pt = new Template.ParsedTemplate();
+        assertEquals("number fragments, empty", 0, pt.fragments.size());
 
-        list.add(new Template.IdFragment("blah"));
-        c = new Template.ParsedTemplate(list);
-        assertEquals("number fragments with list", 2, c.fragments.size());
+        list.add(new Template.IdFragment("hello"));
+        pt = new Template.ParsedTemplate(list);
+        assertEquals("number fragments with list", 2, pt.fragments.size());
 
-        Template.TextFragment f = new Template.TextFragment("blah2");
-        c.addFragment(f);
-        assertEquals("add fragement", f, c.fragments.get(2));
+        Template.TextFragment f = new Template.TextFragment("bye");
+        pt.addFragment(f);
+        assertEquals("add fragement", f, pt.fragments.get(2));
 
-        c.expand(new Template.ExpandInfo(out, "", none, null, new Dataset("blah", "halb")));
-        assertEquals("expand", "hellohalbblah2", out.toString());
+        pt.expand(info);
+        assertEquals("expand", "helloollehbye", out.toString());
 
+        assertEquals("all ids defined, true", true, pt.checkAllIdsDefined(info));
+        pt.addFragment(new Template.IdFragment("bogus"));
+        assertEquals("all ids defined, false", false, pt.checkAllIdsDefined(info));
     }
     public void test_TextFragment() {
         Template.TextFragment text = new Template.TextFragment("@hi");
