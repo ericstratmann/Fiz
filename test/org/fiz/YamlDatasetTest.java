@@ -39,7 +39,7 @@ public class YamlDatasetTest extends junit.framework.TestCase {
     public void test_newStringInstance_syntaxError() {
         boolean gotException = false;
         try {
-            Dataset d = YamlDataset.newStringInstance("- a\n - b\n");
+            YamlDataset.newStringInstance("- a\n - b\n");
         }
         catch (Dataset.SyntaxError e) {
             assertEquals("exception message",
@@ -61,7 +61,7 @@ public class YamlDatasetTest extends junit.framework.TestCase {
     public void test_newFileinstance_bogusFileName() {
         boolean gotException = false;
         try {
-            Dataset d = YamlDataset.newFileInstance("bogus_44.yml");
+            YamlDataset.newFileInstance("bogus_44.yml");
         }
         catch (FileNotFoundError e) {
             assertEquals("exception message",
@@ -75,7 +75,7 @@ public class YamlDatasetTest extends junit.framework.TestCase {
         boolean gotException = false;
         TestUtil.writeFile("test.yml", "- a\n - b\n");
         try {
-            Dataset d = YamlDataset.newFileInstance("test.yml");
+            YamlDataset.newFileInstance("test.yml");
         }
         catch (Dataset.SyntaxError e) {
             assertEquals("exception message",

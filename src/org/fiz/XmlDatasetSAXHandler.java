@@ -130,7 +130,6 @@ class XmlDatasetSAXHandler extends DefaultHandler {
      * @param qName                The name of the element (the text
      *                             inside <> before attributes).
      */
-    @SuppressWarnings("unchecked")
     public void endElement(String uri, String localName, String qName)
             throws SAXException {
         // Pop the parent container from the ancestor list.

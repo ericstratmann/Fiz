@@ -15,8 +15,6 @@
 
 package org.fiz;
 
-import java.util.*;
-
 /**
  * Junit tests for the DatasetComparator class.
  */

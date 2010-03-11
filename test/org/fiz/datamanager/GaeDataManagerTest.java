@@ -239,7 +239,6 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
                 Query.FilterOperator.GREATER_THAN_OR_EQUAL, term5.operator);
 
         // Inequality (not recognized - error).
-        boolean error6 = false;
         try {
             new GaeDataManager.QueryTerm("f", "!=", "6");
             fail("Error not thrown");
@@ -292,7 +291,6 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
                 sort5.direction);
 
         // "increasing" (not recognized - error).
-        boolean error6 = false;
         try {
             new GaeDataManager.QuerySort("f", "increasing");
             fail("Error not thrown");
@@ -480,7 +478,6 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
 
         // Transaction, multiple Entities (error - multiple Entity groups).
         Transaction txn5 = manager.getNewTransaction();
-        boolean error5 = false;
         Dataset data5 = manager.handleInsert(txn5, Arrays.copyOfRange(sampleEntities, 12, 20));
         txn5.rollback();
         assertEquals("Insert with Transaction across multiple Entity groups " +
@@ -532,14 +529,12 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
                  Arrays.copyOfRange(sampleData, 20, sampleData.length)));
 
         // No Transaction.
-        Dataset request1 = manager.handleDelete(null,
-                    Arrays.copyOfRange(rootKeys, 0, 10));
+        manager.handleDelete(null, Arrays.copyOfRange(rootKeys, 0, 10));
         assertTrue("Records successfully deleted", isEmptyDataset(
                 manager.findByKey(Arrays.copyOfRange(rootKeys, 0, 10))));
 
         // Transaction (error - multiple Entity groups).
         Transaction txn2 = manager.getNewTransaction();
-        boolean error2 = false;
         Dataset data2 = manager.handleDelete(txn2, Arrays.copyOfRange(rootKeys, 10, 20));
         txn2.rollback();
         assertEquals("Delete across multiple Entity groups yields an error",
@@ -548,7 +543,7 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
 
         // Transaction (commit).
         Transaction txn3 = manager.getNewTransaction();
-        Dataset request3 = manager.handleDelete(txn3, childKeys);
+        manager.handleDelete(txn3, childKeys);
         checkRecordsIntegrity(manager.findByKey(childKeys),
                 Arrays.copyOfRange(sampleData, 20, sampleData.length),
                 sampleDataComp);
@@ -558,7 +553,7 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
 
         // Transaction (rollback).
         Transaction txn4 = manager.getNewTransaction();
-        Dataset request4 = manager.handleDelete(txn4, rootKeys[11]);
+        manager.handleDelete(txn4, rootKeys[11]);
         checkRecordIntegrity(manager.findByKey(rootKeys[11]), sampleData[11]);
         txn4.rollback();
         checkRecordIntegrity(manager.findByKey(rootKeys[11]), sampleData[11]);
@@ -716,7 +711,7 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
 
     public void test_findByQuery() {
         Key parentKey = getKeys(manager.insert("parent", sampleData[0]))[0];
-        Key[] keys = getKeys(manager.insert(parentKey, "president", sampleData));
+        manager.insert(parentKey, "president", sampleData);
 
         // Just checking output format - more detailed tests on QueryRequest.
         checkRecordsIntegrity(manager.findByQuery("president"), sampleData,
@@ -759,7 +754,7 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
     }
 
     public void test_handleFindByQuery() {
-        Key[] keys = getKeys(manager.insert("president", sampleData));
+        manager.insert("president", sampleData);
 
         // Just checking output format - more detailed tests on QueryRequest.
         checkRecordsIntegrity(manager.handleFindQuery(null, null, "president",
@@ -838,7 +833,7 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
     public void test_handleQuery() {
         Key[] rootKeys = getKeys(manager.insert("president",
                 Arrays.copyOfRange(sampleData, 0, 20)));
-        Key[] childKeys = getKeys(manager.insert(rootKeys[1], "president",
+        getKeys(manager.insert(rootKeys[1], "president",
                 Arrays.copyOfRange(sampleData, 20, sampleData.length)));
 
         // No Transaction.
@@ -924,7 +919,6 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
 
         // Key correctly in Dataset.
         sampleData[1].set(GaeDataManager.KEY_PROPERTY, key);
-        boolean error1 = false;
         Entity entity1 = GaeDataManager.datasetToEntity(sampleData[1]);
         assertEquals("Converted Key", key, entity1.getKey());
 
@@ -936,7 +930,6 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
 
         // Inappropriate value set as Key.
         sampleData[3].set(GaeDataManager.KEY_PROPERTY, 3);
-        boolean error3 = false;
         try {
             GaeDataManager.datasetToEntity(sampleData[3]);
             fail("Exception not thrown");
@@ -975,7 +968,6 @@ public class GaeDataManagerTest extends junit.framework.TestCase {
         String badKey = key.toString();
 
         // Convert a good Key.
-        boolean error1 = false;
         Key converted = GaeDataManager.stringToKey(goodKey);
         assertEquals("Correct, lossless conversion", key, converted);
 

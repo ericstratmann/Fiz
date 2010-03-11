@@ -16,7 +16,6 @@
 package org.fiz;
 
 import java.io.*;
-import org.xml.sax.*;
 
 import org.fiz.test.*;
 
@@ -251,7 +250,7 @@ public class XmlDatasetTest extends junit.framework.TestCase {
     public void test_parse_syntaxError() {
         boolean gotException = false;
         try {
-            Dataset d = XmlDataset.parse(
+            XmlDataset.parse(
                     "<head> <name>Bill\n</head>\n", null);
         }
         catch (Dataset.SyntaxError e) {
@@ -268,7 +267,7 @@ public class XmlDatasetTest extends junit.framework.TestCase {
     public void test_parse_nonexistentFile() {
         boolean gotException = false;
         try {
-            Dataset d = XmlDataset.parse(null, "_bogus/a/b/c.xml");
+            XmlDataset.parse(null, "_bogus/a/b/c.xml");
         }
         catch (IOError e) {
             assertEquals("exception message",

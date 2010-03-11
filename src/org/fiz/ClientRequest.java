@@ -53,7 +53,6 @@ import org.apache.log4j.*;
  * ServletContext ({@code cr.getServletContext.getAttribute()}).
  */
 
-@SuppressWarnings("deprecation")
 public class ClientRequest {
     /**
      * This enum is used to identify the kind of request being serviced.
@@ -1087,7 +1086,6 @@ public class ClientRequest {
 
         int current = 0;
         int length = postData.length();
-        IntBox end = new IntBox();
         while (current < length) {
             // Extract the next <type> field.
             int start = current;

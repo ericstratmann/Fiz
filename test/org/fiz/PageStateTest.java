@@ -53,7 +53,7 @@ public class PageStateTest extends junit.framework.TestCase {
     public void test_removeEldestEntry_setMaxPageStates() {
         PageState.maxPageStates = -1;
         Config.setDataset("main", new Dataset("maxPageStates", "7"));
-        PageState state1 = PageState.getPageState(cr, "id123", true);
+        PageState.getPageState(cr, "id123", true);
         assertEquals("maxPageStates", 7, PageState.maxPageStates);
     }
     public void test_removeEldestEntry_maxPageStatesNotDefined() {
@@ -110,7 +110,7 @@ public class PageStateTest extends junit.framework.TestCase {
         PageState state = PageState.getPageState(cr, "id123", true);
         assertNotNull("page state not null", state.properties.size());
         assertEquals("defined page ids", "id123", getPageIds(cr));
-        PageState state2 = PageState.getPageState(cr, "abc", true);
+        PageState.getPageState(cr, "abc", true);
         assertEquals("defined page ids", "abc, id123", getPageIds(cr));
     }
     

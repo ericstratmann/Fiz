@@ -113,7 +113,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
     protected void closeConnection() {
         try {
             manager.connection.close();
-            manager.reopens = 0;
+            SqlDataManager.reopens = 0;
         }
         catch (SQLException e) {
             // Ignore exceptions.
@@ -202,7 +202,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         manager.clearTable("states");
         Dataset out = manager.findWithSql("SELECT * FROM states;");
         assertEquals("retrieved rows", "", out.toString());
-        assertEquals("count of reopens", 1, manager.reopens);
+        assertEquals("count of reopens", 1, SqlDataManager.reopens);
     }
     public void test_delete() {
         manager.clearTable("states");
@@ -247,7 +247,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
                 "record:\n" +
                 "    capital: Denver\n" +
                 "    name:    Colorado\n", out.toString());
-        assertEquals("count of reopens", 1, manager.reopens);
+        assertEquals("count of reopens", 1, SqlDataManager.reopens);
     }
     public void test_find() {
         Dataset out = manager.find("people", "state", "California");
@@ -268,7 +268,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
     public void test_find_fatalError() {
         boolean gotException = false;
         try {
-            Dataset out = manager.find("bogus", "first", "Alice");
+            manager.find("bogus", "first", "Alice");
         }
         catch (SqlError e) {
             assertEquals("exception message",
@@ -289,7 +289,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
                 "    last:   Adams\n" +
                 "    state:  California\n" +
                 "    weight: 115\n", out.toString());
-        assertEquals("count of reopens", 1, manager.reopens);
+        assertEquals("count of reopens", 1, SqlDataManager.reopens);
     }
 
     public void test_findWithSql() {
@@ -324,7 +324,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
                 "    last:  Adams\n" +
                 "  - first: Carol\n" +
                 "    last:  Collins\n", out.toString());
-        assertEquals("count of reopens", 1, manager.reopens);
+        assertEquals("count of reopens", 1, SqlDataManager.reopens);
     }
 
     public void test_findWithSql_withTemplate() {
@@ -360,7 +360,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         assertEquals("retrieved rows", "record:\n" +
                 "    first: Alice\n" +
                 "    last:  Adams\n", out.toString());
-        assertEquals("count of reopens", 1, manager.reopens);
+        assertEquals("count of reopens", 1, SqlDataManager.reopens);
     }
 
     public void test_insert() {
@@ -407,7 +407,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
                 "    name:    California\n" +
                 "  - capital: \"\"\n" +
                 "    name:    Colorado\n", out.toString());
-        assertEquals("count of reopens", 1, manager.reopens);
+        assertEquals("count of reopens", 1, SqlDataManager.reopens);
     }
 
     public void test_update() {
@@ -455,7 +455,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         assertEquals("modified rows", "record:\n" +
                 "    capital: Berkeley\n" +
                 "    name:    California\n", out.toString());
-        assertEquals("count of reopens", 1, manager.reopens);
+        assertEquals("count of reopens", 1, SqlDataManager.reopens);
     }
 
     public void test_updateWithSql_multipleUpdates() {
@@ -494,7 +494,7 @@ public class SqlDataManagerTest extends junit.framework.TestCase {
         assertEquals("retrieved row", "record:\n" +
                 "    capital: Lansing\n" +
                 "    name:    Illinois\n", out.toString());
-        assertEquals("count of reopens", 1, manager.reopens);
+        assertEquals("count of reopens", 1, SqlDataManager.reopens);
     }
 
     public void test_updateWithSql_withTemplate() {

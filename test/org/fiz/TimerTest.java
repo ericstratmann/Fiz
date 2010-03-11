@@ -163,16 +163,16 @@ public class TimerTest extends junit.framework.TestCase {
     }
     public void test_getStatistics_ignoreIdleTimers() {
         Timer.forgetNamedTimers();
-        Timer timer1 = Timer.getNamedTimer("first");
-        Timer timer2 = Timer.getNamedTimer("second");
+        Timer.getNamedTimer("first");
+        Timer.getNamedTimer("second");
         ArrayList<Dataset> children = Timer.getStatistics(10.0, "%.2f");
         assertEquals("number of datasets returned", 0, children.size());
     }
 
     public void test_clear() {
         Timer.forgetNamedTimers();
-        Timer timer1 = Timer.getNamedTimer("first");
-        Timer timer2 = Timer.getNamedTimer("second");
+        Timer.getNamedTimer("first");
+        Timer.getNamedTimer("second");
         assertEquals("size of namedTimers", 2, Timer.namedTimers.size());
         Timer.forgetNamedTimers();
         assertEquals("size of namedTimers", 0, Timer.namedTimers.size());

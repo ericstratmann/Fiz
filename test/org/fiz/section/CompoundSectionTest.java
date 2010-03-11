@@ -23,23 +23,6 @@ import org.fiz.test.*;
  */
 
 public class CompoundSectionTest extends junit.framework.TestCase {
-    // The following class is a simple Section that logs calls to
-    // its addDataRequests method.
-    private static class SectionFixture extends Section {
-        // The following variable is used to log events such as calls to
-        // addDataRequests.
-        protected static StringBuffer log = new StringBuffer();
-
-        String id;
-        public SectionFixture(String id) {
-            this.id = id;
-        }
-        public void render(ClientRequest cr) {
-        }
-        public void addDataRequests(ClientRequest cr) {
-            log.append("addDataRequests " + id + "\n");
-        }
-    }
     protected ClientRequest cr;
 
     public void setUp() {

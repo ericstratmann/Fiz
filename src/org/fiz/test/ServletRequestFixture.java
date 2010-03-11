@@ -24,7 +24,6 @@ import javax.servlet.http.*;
  * interface; it is used for testing.
  */
 
-@SuppressWarnings("deprecation")
 public class ServletRequestFixture implements HttpServletRequest {
     // The following class is needed to implement the function
     // {@code getInputStream}.

@@ -118,7 +118,6 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
         assertEquals("value in new dataset", "value 18",
                      top.getDataset("child").getString("key 46"));
     }
-    @SuppressWarnings("unchecked")
     public void test_endElement_newDatasetWithExistingDataset()
             throws SAXException {
         handler.startElement("url", "localName", "qName", null);
@@ -136,7 +135,6 @@ public class XmlDatasetSAXHandlerTest extends junit.framework.TestCase {
         assertEquals("first dataset in list", oldChild, list.get(0));
         assertEquals("second dataset in list", newChild, list.get(1));
     }
-    @SuppressWarnings("unchecked")
     public void test_endElement_newDatasetWithExistingList()
             throws SAXException {
         handler.startElement("url", "localName", "qName", null);

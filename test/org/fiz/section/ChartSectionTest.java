@@ -16,7 +16,6 @@
 package org.fiz.section;
 
 import org.fiz.*;
-import java.util.*;
 import org.fiz.test.*;
 
 /**

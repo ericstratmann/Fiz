@@ -18,8 +18,6 @@ package org.fiz.section;
 import org.fiz.*;
 import org.fiz.test.*;
 
-import java.util.*;
-
 /**
  * Junit tests for the AutocompleteFormElement class.
  */

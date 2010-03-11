@@ -826,24 +826,24 @@ public class TemplateTest extends junit.framework.TestCase {
         assertEquals("exception happened", true, gotException);
     }
     public void test_parseBraces_charBefore() {
-        String s = TemplateFixture.parseBraces("{{abc}}", data, 2);
+        TemplateFixture.parseBraces("{{abc}}", data, 2);
         assertEquals("beginning of template", false,
                 TemplateFixture.conditionalFrag.precedingSpaceCollapsible);
-        s = TemplateFixture.parseBraces("x{{abc}}", data, 3);
+        TemplateFixture.parseBraces("x{{abc}}", data, 3);
         assertEquals("charBefore not a space", false,
                 TemplateFixture.conditionalFrag.precedingSpaceCollapsible);
-        s = TemplateFixture.parseBraces(" {{abc}}", data, 3);
+        TemplateFixture.parseBraces(" {{abc}}", data, 3);
         assertEquals("space character", true,
                 TemplateFixture.conditionalFrag.precedingSpaceCollapsible);
     }
     public void test_parseBraces_charAfter() {
-        String s = TemplateFixture.parseBraces("{{abc}}", data, 2);
+        TemplateFixture.parseBraces("{{abc}}", data, 2);
         assertEquals("end of template", true,
                 TemplateFixture.conditionalFrag.tryCollapsingBefore);
-        s = TemplateFixture.parseBraces("x{{abc}}x", data, 3);
+        TemplateFixture.parseBraces("x{{abc}}x", data, 3);
         assertEquals("charAfter not special", false,
                 TemplateFixture.conditionalFrag.tryCollapsingBefore);
-        s = TemplateFixture.parseBraces(" {{abc}}]", data, 3);
+        TemplateFixture.parseBraces(" {{abc}}]", data, 3);
         assertEquals("charAfter special", true,
                 TemplateFixture.conditionalFrag.tryCollapsingBefore);
     }
@@ -876,10 +876,10 @@ public class TemplateTest extends junit.framework.TestCase {
                 "[" + t.text + "]");
     }
     public void test_parseBraces_tryCollapsingBefore() {
-        String s = TemplateFixture.parseBraces("{{abc}}z", data, 2);
+        TemplateFixture.parseBraces("{{abc}}z", data, 2);
         assertEquals("charAfter not special", false,
                 TemplateFixture.conditionalFrag.tryCollapsingBefore);
-        s = TemplateFixture.parseBraces("x{{abc}}]", data, 3);
+        TemplateFixture.parseBraces("x{{abc}}]", data, 3);
         assertEquals("charAfter bracket", true,
                 TemplateFixture.conditionalFrag.tryCollapsingBefore);
     }

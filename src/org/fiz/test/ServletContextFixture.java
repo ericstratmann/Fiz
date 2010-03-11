@@ -24,7 +24,6 @@ import javax.servlet.*;
  * interface; it is used for testing.
  */
 
-@SuppressWarnings("deprecation")
 public class ServletContextFixture implements ServletContext {
     // Some methods just set the following variable to indicate that they
     // were called.  This is used in situations where the method can't easily

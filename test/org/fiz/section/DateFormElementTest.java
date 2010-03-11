@@ -164,7 +164,6 @@ public class DateFormElementTest extends junit.framework.TestCase {
                         "label", "Calendar",
                         "dateFormat", "m-d-Y"));
         ClientRequest cr = new ClientRequestFixture();
-        StringBuilder out = cr.getHtml().getBody();
         element.render(cr, new Dataset());
         assertEquals("accumulated Javascript",
                 "Fiz.ids.cal1 = new Fiz.DateFormElement('cal1', " +

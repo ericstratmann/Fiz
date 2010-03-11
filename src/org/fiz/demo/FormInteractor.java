@@ -2,11 +2,9 @@ package org.fiz.demo;
 
 import org.fiz.*;
 import org.fiz.section.*;
-import org.fiz.datamanager.*;
 import java.lang.management.*;
 import java.util.*;
 
-import org.apache.commons.fileupload.*;
 import org.apache.log4j.*;
 
 /**
@@ -198,7 +196,7 @@ public class FormInteractor extends Interactor {
     }
 
     public void postForm(ClientRequest cr) {
-        Dataset formData = testForm.collectFormData(cr);
+        testForm.collectFormData(cr);
         cr.redirect("register");
     }
 

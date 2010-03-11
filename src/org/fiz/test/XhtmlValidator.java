@@ -18,7 +18,6 @@ package org.fiz.test;
 import java.io.*;
 import javax.xml.parsers.*;
 
-import org.w3c.dom.Document;
 import org.xml.sax.*;
 
 /**
@@ -60,7 +59,7 @@ public class XhtmlValidator {
             parser.setEntityResolver(new XhtmlEntityResolver());
             parser.setErrorHandler(handler);
             InputStream in = new ByteArrayInputStream(xhtml.getBytes());
-            Document document = parser.parse(in);
+            parser.parse(in);
             return handler.getErrorMessage();
         }
         catch (ParserConfigurationException e) {

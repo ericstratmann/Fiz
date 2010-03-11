@@ -61,7 +61,7 @@ public class UtilTest extends junit.framework.TestCase {
     public void test_clearCache_methodCache() {
         Util.methodCache.clear();
         Util.methodCacheMisses = 0;
-        Method method = Util.findMethod("org.fiz.UtilTest$Dummy.checkDataset",
+        Util.findMethod("org.fiz.UtilTest$Dummy.checkDataset",
                 new Dataset(), "age");
         assertEquals("cache size before clearing", 1, Util.methodCache.size());
         Util.clearCache();

@@ -29,7 +29,6 @@ public class UploadFormElementTest extends junit.framework.TestCase {
     }
 
     public void test_collect() {
-        ClientRequest cr = new ClientRequestFixture();
         UploadFormElement element = new UploadFormElement("age", "Age:");
         Dataset out = new Dataset("name", "Bob");
         element.collect(null, new Dataset("name", "Carol", "age", "36"),

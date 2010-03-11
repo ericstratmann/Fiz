@@ -1258,8 +1258,6 @@ public class Template {
      */
     protected static void parseBraces(ParseInfo info, int start)
             throws SyntaxError {
-        CharSequence template = info.template;
-
         flushText(info);
         ParsedTemplate oldCache = info.parse;
         info.parse = new ParsedTemplate();

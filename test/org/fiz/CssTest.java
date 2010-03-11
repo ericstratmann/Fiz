@@ -51,7 +51,7 @@ public class CssTest extends junit.framework.TestCase {
     }
 
     public void test_clearCache() {
-        String css = Css.getStylesheet("test.css");
+        Css.getStylesheet("test.css");
         assertEquals("size of cache after loading a stylesheet",
                 1, Css.cache.size());
         Css.clearCache();

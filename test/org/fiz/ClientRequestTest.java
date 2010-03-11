@@ -22,7 +22,6 @@ import javax.servlet.http.*;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.log4j.*;
-import org.fiz.*;
 import org.fiz.section.*;
 import org.fiz.test.*;
 
@@ -209,7 +208,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
     public void test_evalJavascript_templateWithIndexedData_ajaxRequest() {
         cr.setClientRequestType(ClientRequest.Type.AJAX);
-        Dataset d = new Dataset("value", "<&\n\t>");
         cr.evalJavascript("var @1 = \"@2\";", "x", "<&\n\t>");
         assertEquals("Javascript in HTML", "",
                 cr.getHtml().jsCode.toString());
@@ -346,7 +344,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
                 response.toString(), "Fiz.FormSection[^\n]*");
     }
     public void test_finish_html() throws IOException {
-        PrintWriter writer = cr.getServletResponse().getWriter();
         ServletResponseFixture response =
                 ((ServletResponseFixture)cr.getServletResponse());
         cr.getHtml().getBody().append("page body");
@@ -397,7 +394,6 @@ public class ClientRequestTest extends junit.framework.TestCase {
         Mac mac = cr.getMac();
         byte[] input = ("123456789a123456789b").getBytes();
         byte[] result = mac.doFinal(input);
-        Mac mac2 = cr.getMac();
         byte[] result2 = mac.doFinal(input);
         assertEquals("size of results", result.length,
                 result2.length);
@@ -497,9 +493,7 @@ public class ClientRequestTest extends junit.framework.TestCase {
     }
 
     public void test_setPageProperty_notSerializable() {
-        class NotSerializable {
-            int a, b;
-        }
+        class NotSerializable {}
         boolean gotException = false;
         try {
             cr.setPageProperty("bogus", new NotSerializable());

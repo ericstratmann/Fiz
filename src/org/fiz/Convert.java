@@ -34,7 +34,7 @@ public final class Convert {
     public static class Success implements Serializable {
         protected boolean success;
 
-        public void Success() {}
+        public Success() {}
 
         /**
          * Sets the success status of the conversion

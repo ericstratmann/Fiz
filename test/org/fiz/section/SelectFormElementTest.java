@@ -168,7 +168,6 @@ public class SelectFormElementTest extends junit.framework.TestCase {
         SelectFormElement element = new SelectFormElement(
                 new Dataset("id", "id11", "choiceData", data));
         ClientRequest cr = new ClientRequestFixture();
-        StringBuilder out = cr.getHtml().getBody();
         element.render(cr, new Dataset());
         assertEquals("Javascript for HTML",
                 "Fiz.addBulletinMessage(\"error: sample &lt;error&gt;\");\n",

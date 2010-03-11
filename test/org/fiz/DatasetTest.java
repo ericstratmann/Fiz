@@ -125,7 +125,7 @@ public class DatasetTest extends junit.framework.TestCase {
     public void test_newFileInstance_cantFindExtension() {
         boolean gotException = false;
         try {
-            Dataset d = Dataset.newFileInstance("a/b/bogus");
+            Dataset.newFileInstance("a/b/bogus");
         }
         catch (FileNotFoundError e) {
             assertEquals("exception message",
@@ -158,7 +158,7 @@ public class DatasetTest extends junit.framework.TestCase {
     public void test_newFileInstance_unknownExtension() {
         boolean gotException = false;
         try {
-            Dataset d = Dataset.newFileInstance("bogus_44.xyz");
+            Dataset.newFileInstance("bogus_44.xyz");
         }
         catch (Dataset.UnsupportedFormatError e) {
             assertEquals("exception message",
@@ -224,7 +224,7 @@ public class DatasetTest extends junit.framework.TestCase {
         (new File("_test1_/child")).mkdir();
         boolean gotException = false;
         try {
-            Dataset d = Dataset.newFileInstanceFromPath("sample",
+            Dataset.newFileInstanceFromPath("sample",
                     new String[] {"_test1_", "_test1_/child"},
                     Dataset.Quantity.FIRST_ONLY);
         }
@@ -1103,7 +1103,6 @@ public class DatasetTest extends junit.framework.TestCase {
                 false);
         assertEquals("return value", null, info);
     }
-    @SuppressWarnings("unchecked")
     public void test_lookupParent_missingAncestors_create() {
         Dataset d = YamlDataset.newStringInstance(
                 "level1:\n" +
@@ -1121,7 +1120,6 @@ public class DatasetTest extends junit.framework.TestCase {
                 "            value: 12345\n" +
                 "    name: Alice\n", d.toString());
     }
-    @SuppressWarnings("unchecked")
     public void test_lookupParent_stringInPath_create() {
         Dataset d = YamlDataset.newStringInstance(
                 "level1:\n" +
@@ -1160,7 +1158,6 @@ public class DatasetTest extends junit.framework.TestCase {
     public void test_lookupPath_lastElementInPath() {
         Dataset d = YamlDataset.newStringInstance(
                 "city: San Francisco\n");
-        Dataset.DSArrayList<Object> results = new Dataset.DSArrayList<Object>();
         Object out = d.lookupPath("a.city", 2,
                 Dataset.Quantity.FIRST_ONLY,
                 null);

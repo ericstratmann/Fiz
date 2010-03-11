@@ -104,7 +104,7 @@ public class CheckboxImage extends Section {
     public void render(ClientRequest cr, Dataset data) {
         StringBuilder out = cr.getHtml().getBody();
         String key = data.getString(id);
-        String src, alt;
+        String alt;
         String checked;
 
         if (falseValues.contains(key)) {

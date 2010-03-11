@@ -51,7 +51,6 @@ public class PerfInteractor extends Interactor {
     }
 
     public void postSubmitPerf(ClientRequest cr) {
-        String name = cr.getMainDataset().getString("name");
         if (submitCount == 0) {
             startTime = System.nanoTime();
         }

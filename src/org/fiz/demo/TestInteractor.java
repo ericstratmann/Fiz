@@ -265,7 +265,7 @@ public class TestInteractor extends Interactor {
         Scriptable scope = cx.initStandardObjects();
         Object result = cx.evaluateString(scope, "print(\"Hi there\");",
                 "<cmd>", 1, null);
-        System.out.printf("result: %s\n", cx.toString(result));
+        System.out.printf("result: %s\n", Context.toString(result));
         Context.exit();
     }
 

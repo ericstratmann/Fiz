@@ -46,7 +46,7 @@ public class TableSectionTest extends junit.framework.TestCase {
     public void test_constructor_noData() {
         boolean gotException = false;
         try {
-            TableSection table = new TableSection(new Dataset());
+            new TableSection(new Dataset());
         }
         catch (org.fiz.InternalError e) {
             assertEquals("exception message",
@@ -102,7 +102,6 @@ public class TableSectionTest extends junit.framework.TestCase {
         TableSection table = new TableSection(
                 new Dataset("data", person, "id", "id.44"));
         cr.showSections(table);
-        String html = cr.getHtml().getBody().toString();
         TestUtil.assertSubstring("CSS files requested",
                 "TableSection.css",
                 cr.getHtml().getCssFiles());
@@ -111,7 +110,6 @@ public class TableSectionTest extends junit.framework.TestCase {
         TableSection table = new TableSection(
                 new Dataset("data", person, "class", "special"));
         cr.showSections(table);
-        String html = cr.getHtml().getBody().toString();
         TestUtil.assertSubstring("CSS files requested",
                 "", cr.getHtml().getCssFiles());
     }
@@ -161,7 +159,6 @@ public class TableSectionTest extends junit.framework.TestCase {
                         "url", "/a/b?name=@name")),
                 new Column("Age", "@age"));
         cr.showSections(table);
-        String html = cr.getHtml().getBody().toString();
         assertEquals("generated HTML", "\n" +
                 "<!-- Start TableSection id.44 -->\n" +
                 "<table id=\"id.44\" class=\"TableSection\" " +
@@ -186,7 +183,6 @@ public class TableSectionTest extends junit.framework.TestCase {
                 new Column("", "@name"),
                 new Column("", "@age"));
         cr.showSections(table);
-        String html = cr.getHtml().getBody().toString();
         assertEquals("generated HTML", "\n" +
                 "<!-- Start TableSection id.44 -->\n" +
                 "<table id=\"id.44\" class=\"TableSection\" " +
@@ -214,7 +210,6 @@ public class TableSectionTest extends junit.framework.TestCase {
                 new Column("Age", "@age"),
                 new Column("Weight", "@weight"));
         table.render(cr);
-        String html = cr.getHtml().getBody().toString();
         TestUtil.assertSubstring("row with empty message",
                "  <tr class=\"error\">\n" +
                "    <td colspan=\"3\">Error in table for Alice: " +
@@ -231,7 +226,6 @@ public class TableSectionTest extends junit.framework.TestCase {
                 new Column("Age", "@age"),
                 new Column("Weight", "@weight"));
         table.render(cr);
-        String html = cr.getHtml().getBody().toString();
         TestUtil.assertSubstring("row with empty message",
                "  <tr class=\"empty\">\n" +
                 "    <td colspan=\"3\">No data for Alice</td>\n" +
@@ -246,7 +240,6 @@ public class TableSectionTest extends junit.framework.TestCase {
                 new Column("Age", "@age"),
                 new Column("Weight", "@weight"));
         table.render(cr);
-        String html = cr.getHtml().getBody().toString();
         TestUtil.assertSubstring("wrote with empty message",
                "  <tr class=\"empty\">\n" +
                 "    <td colspan=\"3\">There are no records to display</td>\n" +
@@ -263,7 +256,6 @@ public class TableSectionTest extends junit.framework.TestCase {
                 new Column("Name", "@name from @state"),
                 new Column("Age", "@age"));
         cr.showSections(table);
-        String html = cr.getHtml().getBody().toString();
         assertEquals("generated HTML", "\n" +
                 "<!-- Start TableSection id.44 -->\n" +
                 "<table id=\"id.44\" class=\"TableSection\" " +

@@ -458,8 +458,7 @@ public class DispatcherTest extends junit.framework.TestCase {
         boolean gotException = false;
         try {
             String name = "DispatcherTest3/bogus";
-            Dispatcher.UrlMethod method = dispatcher.findDirectMethod(
-                    name, name.indexOf("/"),
+            dispatcher.findDirectMethod(name, name.indexOf("/"),
                     new ServletRequestFixture());
             }
         catch (Dispatcher.UnsupportedUrlError e) {
@@ -474,8 +473,7 @@ public class DispatcherTest extends junit.framework.TestCase {
         boolean gotException = false;
         try {
             String name = "Bogus/ajaxRequest";
-            Dispatcher.UrlMethod method = dispatcher.findDirectMethod(
-                    name, name.indexOf("/"),
+            dispatcher.findDirectMethod(name, name.indexOf("/"),
                     new ServletRequestFixture());
             }
         catch (Dispatcher.UnsupportedUrlError e) {
@@ -490,8 +488,7 @@ public class DispatcherTest extends junit.framework.TestCase {
         boolean gotException = false;
         try {
             String name = "IOError/ajaxRequest";
-            Dispatcher.UrlMethod method = dispatcher.findDirectMethod(
-                    name, name.indexOf("/"),
+            dispatcher.findDirectMethod(name, name.indexOf("/"),
                     new ServletRequestFixture());
             }
         catch (Dispatcher.UnsupportedUrlError e) {
@@ -506,8 +503,7 @@ public class DispatcherTest extends junit.framework.TestCase {
         boolean gotException = false;
         try {
             String name = "DispatcherTest3/ajaxBogus";
-            Dispatcher.UrlMethod method = dispatcher.findDirectMethod(
-                    name, name.indexOf("/"),
+            dispatcher.findDirectMethod(name, name.indexOf("/"),
                     new ServletRequestFixture());
             }
         catch (Dispatcher.UnsupportedUrlError e) {
@@ -523,8 +519,7 @@ public class DispatcherTest extends junit.framework.TestCase {
         boolean gotException = false;
         try {
             String name = "DispatcherTest3/ajaxExtraArgument";
-            Dispatcher.UrlMethod method = dispatcher.findDirectMethod(
-                    name, name.indexOf("/"),
+            dispatcher.findDirectMethod(name, name.indexOf("/"),
                     new ServletRequestFixture());
             }
         catch (Dispatcher.UnsupportedUrlError e) {
@@ -540,8 +535,7 @@ public class DispatcherTest extends junit.framework.TestCase {
         boolean gotException = false;
         try {
             String name = "DispatcherTest3/ajaxBadSignature";
-            Dispatcher.UrlMethod method = dispatcher.findDirectMethod(
-                    name, name.indexOf("/"),
+            dispatcher.findDirectMethod(name, name.indexOf("/"),
                     new ServletRequestFixture());
             }
         catch (Dispatcher.UnsupportedUrlError e) {
@@ -557,8 +551,7 @@ public class DispatcherTest extends junit.framework.TestCase {
         boolean gotException = false;
         try {
             String name = "DispatcherTest3/ajaxNotStatic";
-            Dispatcher.UrlMethod method = dispatcher.findDirectMethod(
-                    name, name.indexOf("/"),
+            dispatcher.findDirectMethod(name, name.indexOf("/"),
                     new ServletRequestFixture());
             }
         catch (Dispatcher.UnsupportedUrlError e) {

@@ -16,8 +16,6 @@
 package org.fiz.datamanager;
 
 import java.io.*;
-import java.util.*;
-import org.apache.log4j.Level;
 
 import org.fiz.*;
 import org.fiz.test.*;
@@ -52,7 +50,7 @@ public class FileDataManagerTest extends junit.framework.TestCase {
 
     public void test_clearCache() {
         TestUtil.writeFile("_testData_/test.yml", "value: abc\n");
-        Dataset d = manager.loadDataset("test");
+        manager.loadDataset("test");
         assertEquals("# cached files before clearCache", 1,
                 manager.datasetCache.size());
         manager.clearCache();
@@ -148,11 +146,6 @@ public class FileDataManagerTest extends junit.framework.TestCase {
         TestUtil.writeFile("_testData_/test.yml",
                 "first: abc\n" +
                 "second: def\n");
-        Dataset parameters = YamlDataset.newStringInstance(
-                "file: test\n" +
-                "values:\n" +
-                "  first: 123\n" +
-                "  new: 456\n");
         manager.update("test", null,
                 new Dataset("first", "123", "new", "456"));
         assertEquals("dataset file", "first:  123\n" +
@@ -165,12 +158,6 @@ public class FileDataManagerTest extends junit.framework.TestCase {
                 "child:\n" +
                 "  name: Alice\n" +
                 "  age: 21\n");
-        Dataset parameters = YamlDataset.newStringInstance(
-                "file: test\n" +
-                "name: child\n" +
-                "values:\n" +
-                "  age: 36\n" +
-                "  height: 65\n");
         manager.update("test", "child",
                 new Dataset("age", "36", "height", "65"));
         assertEquals("dataset file", "child:\n" +

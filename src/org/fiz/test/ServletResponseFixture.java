@@ -24,7 +24,6 @@ import javax.servlet.http.*;
  * This class provides a dummy implementation of the HttpServletResponse
  * interface; it is used for testing.
  */
-@SuppressWarnings("deprecation")
 public class ServletResponseFixture implements HttpServletResponse{
     // Some methods just append to the following variable to indicate that they
     // were called.  This is used in situations where the method can't easily

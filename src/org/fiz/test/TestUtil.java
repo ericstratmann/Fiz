@@ -15,11 +15,8 @@
 
 package org.fiz.test;
 import java.io.*;
-import java.lang.*;
 import java.util.regex.*;
-import javax.xml.parsers.*;
 import org.junit.*;
-import org.w3c.dom.*;
 import org.xml.sax.*;
 import org.fiz.*;
 
@@ -200,7 +197,7 @@ public class TestUtil {
      * The following class is used by the XML parser to map from external
      * entity names (for DTD's) to files.
      */
-    private static class XhtmlEntityResolver implements EntityResolver {
+    protected static class XhtmlEntityResolver implements EntityResolver {
         // Directory containing all of the DTD files:
         protected static final String DTD_ROOT = "test/dtd";
 
@@ -231,7 +228,7 @@ public class TestUtil {
      * portion of the document up through any errors, with annotations
      * describing the error(s).
      */
-    private static class XhtmlErrorHandler implements ErrorHandler {
+    protected static class XhtmlErrorHandler implements ErrorHandler {
         protected StringBuilder message = new StringBuilder();
 
         // When an error occurs, we include the entire document in the
