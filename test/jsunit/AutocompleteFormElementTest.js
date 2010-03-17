@@ -1,7 +1,7 @@
 /* AutocompleteFormElementTest.js --
  *
  * Jsunit tests for AutocompleteFormElement.js, organized in the standard fashion.
- * Copyright (c) 2009 Stanford University
+ * Copyright (c) 2009-2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -12,7 +12,7 @@
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
  * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR otherFields TORTIOUS ACTION, ARISING OUT OF
+ * ACTION OF CONTRACT, NEGLIGENCE OR TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
@@ -34,7 +34,7 @@ AutocompleteFormElementTest.setUp = function() {
 AutocompleteFormElementTest.test_constructor = function() {
     this.input.value = "test";
     var formElem = new Fiz.AutocompleteFormElement("auto");
-    
+
     assertEqual("auto", formElem.id, "id");
     assertEqual(false, formElem.isOpen, "isOpen");
     assertEqual(false, formElem.keepOpen, "keepOpen");
@@ -131,18 +131,18 @@ AutocompleteFormElementTest.test_captureKeydown_closedDown = function() {
 
 AutocompleteFormElementTest.test_showDropdown_emptyInput = function() {
     this.input.value = "";
-    
+
     var formElem = new Fiz.AutocompleteFormElement("auto");
     formElem.input.focus = logFunction("focus");
     formElem.showDropdown();
-    
+
     assertEqual(false, formElem.isOpen, "Open?");
 }
 
 AutocompleteFormElementTest.test_showDropdown_validInput = function() {
     var parent = document.addElementWithId("parent",
             {offsetLeft: 0, offsetTop: 0});
-  
+
     this.input.setAttributes({offsetLeft: 10,
             offsetTop: 100,
             offsetWidth: 8,
@@ -150,10 +150,10 @@ AutocompleteFormElementTest.test_showDropdown_validInput = function() {
             offsetParent: parent,
             value: "test"}
     );
-    
+
     var formElem = new Fiz.AutocompleteFormElement("auto");
     formElem.showDropdown();
-    
+
     assertEqual(true, formElem.isOpen, "Open?");
     assertEqual("4px", formElem.dropdown.style.top,
             "Top of dropdown");
@@ -166,7 +166,7 @@ AutocompleteFormElementTest.test_showDropdown_validInput = function() {
 AutocompleteFormElementTest.test_showDropdown_emptyInput = function() {
     var parent = document.addElementWithId("parent",
             {offsetLeft: 0, offsetTop: 0});
-  
+
     this.input.setAttributes({offsetLeft: 10,
             offsetTop: 100,
             offsetWidth: 8,
@@ -174,12 +174,12 @@ AutocompleteFormElementTest.test_showDropdown_emptyInput = function() {
             offsetParent: parent,
             value: ""}
     );
-    
+
     var formElem = new Fiz.AutocompleteFormElement("auto");
     formElem.input.focus = logFunction("focus");
 
     formElem.showDropdown();
-    
+
     assertEqual(false, formElem.isOpen, "Open?");
 }
 
@@ -191,7 +191,7 @@ AutocompleteFormElementTest.test_hideDropdown_force = function() {
     formElem.keepOpen = true;
     formElem.isOpen = true;
     formElem.hideDropdown(true);
-    
+
     assertEqual(false, formElem.keepOpen, "Keep Open?");
     assertEqual(false, formElem.isOpen, "Open?");
     assertEqual("none", formElem.dropdown.style.display,
@@ -201,14 +201,14 @@ AutocompleteFormElementTest.test_hideDropdown_force = function() {
 
 AutocompleteFormElementTest.test_hideDropdown_noForce = function() {
     this.input.focus = logFunction("focus");
- 
+
     var formElem = new Fiz.AutocompleteFormElement("auto");
 
     formElem.keepOpen = true;
     formElem.isOpen = true;
     formElem.dropdown.style.display = "block";
     formElem.hideDropdown();
-    
+
     assertEqual(true, formElem.keepOpen, "Keep Open?");
     assertEqual(true, formElem.isOpen, "Open?");
     assertEqual("block", formElem.dropdown.style.display,
@@ -221,11 +221,11 @@ AutocompleteFormElementTest.test_selectChoice_notDone = function() {
 
     var formElem = new Fiz.AutocompleteFormElement("auto");
     formElem.isOpen = true;
-    
+
     formElem.lastUserInput = "test1";
     formElem.highlightChoice = logFunction("highlightChoice");
     formElem.selectChoice(null);
-    
+
     assertEqual("test1", formElem.input.value, "Input value");
     assertEqual("test1", formElem.lastInputValue, "Last input value");
     assertEqual(null, formElem.selected, "Selected");
@@ -239,12 +239,12 @@ AutocompleteFormElementTest.test_selectChoice_done = function() {
 
     var formElem = new Fiz.AutocompleteFormElement("auto");
     formElem.isOpen = true;
-    
+
     var choice = document.addElementWithId("choice1", {textContent: "test1"});
     formElem.lastUserInput = "test1";
     formElem.highlightChoice = logFunction("highlightChoice");
     formElem.selectChoice(choice, true);
-    
+
     assertEqual("test1", formElem.input.value, "Input value");
     assertEqual("test1", formElem.lastInputValue, "Last input value");
     assertEqual(choice, formElem.selected, "Selected");
@@ -253,10 +253,10 @@ AutocompleteFormElementTest.test_selectChoice_done = function() {
 
 AutocompleteFormElementTest.test_highlightChoice = function() {
     this.input.value = "test1";
-    
+
     var formElem = new Fiz.AutocompleteFormElement("auto");
     formElem.highlighted = null;
-    
+
     var elem1 = document.addElementWithId("elem1", {
             className: "",
             textContent: "test1"
@@ -270,7 +270,7 @@ AutocompleteFormElementTest.test_highlightChoice = function() {
             className: "",
             textContent: "test2"
     });
-    
+
     formElem.highlightChoice(elem2);
 
     assertEqual("", elem1.className, "Clear highlighting: elem1");
@@ -280,18 +280,18 @@ AutocompleteFormElementTest.test_highlightChoice = function() {
 
 AutocompleteFormElementTest.test_prevResult = function() {
     this.input.value= "test_default";
-    
+
     var choices = document.addElementWithId("auto_choices");
     choices.appendChild(document.addElementWithId("choice1",
             {textContent: "test1", className: "undefined"}));
     choices.appendChild(document.addElementWithId("choice2",
             {textContent: "test2", className: "undefined"}));
-    
+
     var formElem = new Fiz.AutocompleteFormElement("auto");
-            
+
     formElem.prevResult();
     assertEqual("test2", formElem.input.value, "1: Input value");
-    
+
     formElem.prevResult();
     assertEqual("test1", formElem.input.value, "2: Input value");
 
@@ -307,12 +307,12 @@ AutocompleteFormElementTest.test_nextResult = function() {
             {textContent: "test1", className: "undefined"}));
     choices.appendChild(document.addElementWithId("choice2",
             {textContent: "test2", className: "undefined"}));
-    
+
     var formElem = new Fiz.AutocompleteFormElement("auto");
-            
+
     formElem.nextResult();
     assertEqual("test1", formElem.input.value, "1: Input value");
-    
+
     formElem.nextResult();
     assertEqual("test2", formElem.input.value, "2: Input value");
 
@@ -326,17 +326,17 @@ AutocompleteFormElementTest.test_refreshMenu_emptyInput = function() {
 
     var formElem = new Fiz.AutocompleteFormElement("auto");
     formElem.isOpen = true;
-    
+
     jsunit.log = "";
     formElem.refreshMenu();
-    
+
     assertEqual(false, formElem.isOpen, "Open?");
     assertEqual("focus()\n", jsunit.log, "Ajax invoked?");
 }
 
 AutocompleteFormElementTest.test_refreshMenu_validNewInput = function() {
     this.input.value = "test";
-    
+
     var formElem = new Fiz.AutocompleteFormElement("auto");
     formElem.lastInputValue = "test1";
 
@@ -354,9 +354,9 @@ AutocompleteFormElementTest.test_refreshMenu_oldInput = function() {
 
     var formElem = new Fiz.AutocompleteFormElement("auto");
     formElem.lastInputValue = "test";
-    
+
     jsunit.log = "";
     formElem.refreshMenu();
-    
+
     assertEqual("", jsunit.log, "Ajax invoked?");
 }

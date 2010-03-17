@@ -2,7 +2,7 @@
  *
  * Jsunit tests for DateFormElement.js, organized in the standard fashion.
  *
- * Copyright (c) 2009 Stanford University
+ * Copyright (c) 2009-2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,7 +13,7 @@
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
  * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR otherFields TORTIOUS ACTION, ARISING OUT OF
+ * ACTION OF CONTRACT, NEGLIGENCE OR TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
@@ -32,7 +32,7 @@ DateFormElementTest.setUp = function() {
 
 DateFormElementTest.test_validateAndUpdate_validInput = function() {
     this.input.value = "12/10/1999";
-    
+
     var formElem = new Fiz.DateFormElement("cal1");
 
     formElem.validateAndUpdate();
@@ -249,15 +249,15 @@ DateFormElementTest.test_redrawNav_twoYearRange = function() {
     var prevMonthLink = document.addElementWithId("cal1_prevMonth");
     var nextMonthLink = document.addElementWithId("cal1_nextMonth");
     var nextYearLink = document.addElementWithId("cal1_nextYear");
-    
+
     var formElem = new Fiz.DateFormElement("cal1");
-    
+
     formElem.startLimit = new Date("June 14, 2007");
     formElem.endLimit = new Date("June 14, 2009");
-    
+
     formElem.redrawNav(new Date("May 23, 2008"),
             new Date("June 15, 2008"), new Date("July 23, 2008"));
-            
+
     assertEqual("visible", prevYearLink.style.visibility,
             "Prev Year Link: startLimit = 6/14/2007, curdate = 6/15/2008");
     assertEqual("visible", prevMonthLink.style.visibility,
@@ -273,15 +273,15 @@ DateFormElementTest.test_redrawNav_oneYearTenMonthRange = function() {
     var prevMonthLink = document.addElementWithId("cal1_prevMonth");
     var nextMonthLink = document.addElementWithId("cal1_nextMonth");
     var nextYearLink = document.addElementWithId("cal1_nextYear");
-    
+
     var formElem = new Fiz.DateFormElement("cal1");
-    
+
     formElem.startLimit = new Date("July 14, 2007");
     formElem.endLimit = new Date("May 14, 2009");
-    
+
     formElem.redrawNav(new Date("May 23, 2008"),
             new Date("June 15, 2008"), new Date("July 23, 2008"));
-            
+
     assertEqual("hidden", prevYearLink.style.visibility,
             "Prev Year Link: startLimit = 7/14/2007, curdate = 6/15/2008");
     assertEqual("visible", prevMonthLink.style.visibility,
@@ -325,7 +325,7 @@ DateFormElementTest.test_setDisplayedDate = function() {
     formElem.setDisplayedDate(new Date("December 3, 2004"));
 
     assertEqual("12/1/2004",
-            (formElem.dDate.getMonth() + 1) + "/" + formElem.dDate.getDate() 
+            (formElem.dDate.getMonth() + 1) + "/" + formElem.dDate.getDate()
                     + "/" + formElem.dDate.getFullYear(), "Displayed Date");
 }
 
@@ -334,7 +334,7 @@ DateFormElementTest.test_setSelectedDate = function() {
     formElem.setSelectedDate(new Date("December 3, 2004"));
 
     assertEqual("12/3/2004",
-            (formElem.sDate.getMonth() + 1) + "/" + formElem.sDate.getDate() 
+            (formElem.sDate.getMonth() + 1) + "/" + formElem.sDate.getDate()
                     + "/" + formElem.sDate.getFullYear(), "Selected Date");
 }
 

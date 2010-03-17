@@ -5,7 +5,7 @@
  * elements, send AJAX requests to perform validation, and retrieve the actual
  * values from form elements.
  *
- * Copyright (c) 2009 Stanford University
+ * Copyright (c) 2009-2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,7 +16,7 @@
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
  * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR otherFields TORTIOUS ACTION, ARISING OUT OF
+ * ACTION OF CONTRACT, NEGLIGENCE OR TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
@@ -49,7 +49,7 @@ Fiz.FormElement.attachValidator = function(triggerId, targetId, otherFields)
         Fiz.addEvent(document.getElementById(triggerId),
                 "blur", Fiz.FormElement.validate);
     }
-    
+
     var binding = {targetId: targetId, otherFields: otherFields.split(',')};
     Fiz.FormElement.validators[triggerId].push(binding);
 }
@@ -99,7 +99,7 @@ Fiz.FormElement.validate = function(trigger)
     if (typeof trigger != 'string') {
         trigger = trigger.target.id;
     }
-    
+
     // Gather data from each of the form elements that contribute to the
     // validation of the form element that launched this request
     var bindings = Fiz.FormElement.validators[trigger];
@@ -109,17 +109,17 @@ Fiz.FormElement.validate = function(trigger)
 
     // ids of form elements that will be validated during this Ajax call
     var elementsToValidate = [];
-    
+
     // Object containing the value for each form element that is used in the
     // validation
     var formData = {};
-    
+
     for (var i in bindings) {
         var target = document.getElementById(bindings[i].targetId);
         var otherFields = bindings[i].otherFields;
 
         elementsToValidate.push(bindings[i].targetId);
-        
+
         // Collect values from all form elements that that will be validated
         // and other values needed to perform the validation
         formData[target.name] = Fiz.FormElement.getValue(target);

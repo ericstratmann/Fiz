@@ -2,7 +2,7 @@
  *
  * Jsunit tests for FormSection.js, organized in the standard fashion.
  *
- * Copyright (c) 2009 Stanford University
+ * Copyright (c) 2009-2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,7 +13,7 @@
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
  * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR otherFields TORTIOUS ACTION, ARISING OUT OF
+ * ACTION OF CONTRACT, NEGLIGENCE OR TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
@@ -32,7 +32,7 @@ Fiz.Ajax = function(properties) {
 FormSectionTest = {};
 
 FormSectionTest.setUp = function() {
-    var form = document.addElementWithId("form1");    
+    var form = document.addElementWithId("form1");
 }
 
 FormSectionTest.test_clearElementError = function() {
@@ -54,7 +54,7 @@ FormSectionTest.test_clearElementError = function() {
             "diag2.style.display after call");
     assertEqual("formError", row2.className, "row2.className after call");
     assertEqual("row2", form.errorElements.join(", "),
-            "form.errorElements after call");    
+            "form.errorElements after call");
 }
 
 FormSectionTest.test_clearElementErrors = function() {

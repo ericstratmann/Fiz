@@ -2,7 +2,7 @@
  *
  * Jsunit tests for FormElement.js, organized in the standard fashion.
  *
- * Copyright (c) 2009 Stanford University
+ * Copyright (c) 2009-2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,7 +13,7 @@
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
  * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR otherFields TORTIOUS ACTION, ARISING OUT OF
+ * ACTION OF CONTRACT, NEGLIGENCE OR TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
@@ -32,20 +32,20 @@ FormElementTest = {};
 
 FormElementTest.test_attachValidator = function() {
     var trigger = document.addElementWithId("trigger");
-    Fiz.FormElement.attachValidator("trigger", "target1", 
+    Fiz.FormElement.attachValidator("trigger", "target1",
             "include1,include2");
-    
-    assertEqual("target1", 
+
+    assertEqual("target1",
             Fiz.FormElement.validators["trigger"][0].targetId,
             "1: target element");
     assertEqual("include1,include2",
             Fiz.FormElement.validators["trigger"][0].otherFields.join(","),
             "1: include elements");
-    
-    Fiz.FormElement.attachValidator("trigger", "target2", 
+
+    Fiz.FormElement.attachValidator("trigger", "target2",
     "include3,include4");
 
-    assertEqual("target2", 
+    assertEqual("target2",
             Fiz.FormElement.validators["trigger"][1].targetId,
             "2: target element");
     assertEqual("include3,include4",
@@ -88,9 +88,9 @@ FormElementTest.test_getValue_selectMultiple = function() {
             "second selected");
 }
 
-FormElementTest.test_validate = function() {    
+FormElementTest.test_validate = function() {
     Fiz.FormElement.validators = [];
-    
+
     var trigger = document.addElementWithId("trigger",
             { type: "text", name: "trigger",  value: "trigger_val" });
     var target1 = document.addElementWithId("target1",
@@ -98,7 +98,7 @@ FormElementTest.test_validate = function() {
     var target2 = document.addElementWithId("target2",
             { type: "select-one", name: "target2", value: "target2_val" });
 
-    Fiz.FormElement.attachValidator("trigger", "target1", 
+    Fiz.FormElement.attachValidator("trigger", "target1",
             "trigger,target1");
 
     jsunit.log = "";
@@ -110,7 +110,7 @@ FormElementTest.test_validate = function() {
             "        trigger: trigger_val\n",
             jsunit.log, "one binding");
 
-    Fiz.FormElement.attachValidator("trigger", "target2", 
+    Fiz.FormElement.attachValidator("trigger", "target2",
             "trigger,target1,target2");
 
     jsunit.log = "";
