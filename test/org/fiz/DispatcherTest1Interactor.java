@@ -72,7 +72,7 @@ public class DispatcherTest1Interactor extends Interactor {
         throw new UserError("test user error");
     }
     @SuppressWarnings("unused")
-	private void privateMethod(ClientRequest cr) {
+    private void privateMethod(ClientRequest cr) {
     }
     public void twoArgs(ClientRequest cr, int count) {
     }

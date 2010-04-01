@@ -2,7 +2,7 @@
  *
  * This file provides Javascript functions needed to implement the
  * AutocompleteFormElement class.  One Fiz.AutocompleteFormElement
- * is created for each AutocompleteFormElement Java object. 
+ * is created for each AutocompleteFormElement Java object.
  * Methods on the object are invoked for functions such as
  * populating the autocomplete list, fetching data from the server,
  * and navigating the list of results.
@@ -43,37 +43,37 @@ Fiz.AutocompleteFormElement = function(id) {
 
     // Indicates whether the dropdown is visible or not
     this.isOpen = false;
-    
-    // Used to disable to onblur event handler. We want to keep the dropdown 
+
+    // Used to disable to onblur event handler. We want to keep the dropdown
     // open if the user is clicking a choice in the dropdown. By default,
     // the input field will lose focus, thus closing the dropdown before the
     // user's click is registered.
     this.keepOpen = false;
-        
+
     // The currently selected choice in the dropdown menu (this value will be
     // shown in the input field)
     this.selected = null;
-    
+
     // The currently highlighted choice in the dropdown menu (this value may not
     // neccessarily be displayed in the input field if the choice is highlighted
     // when the mouse hovers over it)
     this.highlighted = null;
-    
+
     // <input> element for which this autocomplete object is registered
     this.input = document.getElementById(id);
-    
+
     // Stores the last value the user entered into the <input> field so that
     // it can be restored if needed
     this.lastUserInput = this.input.value;
-    
+
     // Stores the last value displayed in the <input> field to prevent
     // refreshMenu from being called if the value has not changed
     this.lastInputValue = this.input.value;
-    
+
     // Disables browser built-in autocomplete, not supported in all browsers and
     // not part of the web standard
     this.input.setAttribute('autocomplete', 'off');
-    
+
     // Dropdown menu of autocomplete choices
     this.dropdown = document.getElementById(id + '_dropdown');
 }
@@ -88,7 +88,7 @@ Fiz.AutocompleteFormElement = function(id) {
  */
 Fiz.AutocompleteFormElement.prototype.captureKeydown = function(e) {
     e = e || window.event;
-    
+
     if (this.isOpen) {
         switch(Fiz.getKeyCode(e)) {
             // Move the user selection up the list of choices
@@ -127,7 +127,7 @@ Fiz.AutocompleteFormElement.prototype.captureKeydown = function(e) {
             e.preventDefault();
             return false;
         }
-    }    
+    }
 }
 
 /**
@@ -139,14 +139,14 @@ Fiz.AutocompleteFormElement.prototype.showDropdown = function() {
         this.hideDropdown();
         return;
     }
-    
+
     // Reset the state of the dropdown menu
     this.isOpen = true;
-    
+
     // Find the location of the input field
     var x = 0;
     var y = this.input.offsetHeight - 1;
-        
+
     // Attach dropdown to the input field
     this.dropdown.style.top = y + 'px';
     this.dropdown.style.left = x + 'px';
@@ -177,21 +177,21 @@ Fiz.AutocompleteFormElement.prototype.hideDropdown = function(forceHide) {
  * @param done                (Boolean) Hides the dropdown after selection
  *                            if true
  */
-Fiz.AutocompleteFormElement.prototype.selectChoice = function(choice, done) {    
+Fiz.AutocompleteFormElement.prototype.selectChoice = function(choice, done) {
     // Select a new option
     if (null == choice) {
         this.input.value = this.lastUserInput;
     } else {
-        this.input.value = Fiz.getText(choice);        
+        this.input.value = Fiz.getText(choice);
     }
-    
+
     this.lastInputValue = this.input.value;
     this.selected = choice;
 
     // Even if done is set to true (the dropdown closes after the selection),
     // we highlight the option in case the dropdown is opened again.
     this.highlightChoice(choice);
-    
+
     if (done) {
         this.hideDropdown(true);
     }
@@ -206,7 +206,7 @@ Fiz.AutocompleteFormElement.prototype.highlightChoice = function(choice) {
     if (null != this.highlighted) {
         Fiz.removeClass(this.highlighted, 'highlight');
     }
-    
+
     // Highlight a new option
     if (null != choice) {
         Fiz.addClass(choice, 'highlight');

@@ -19,14 +19,14 @@ import org.fiz.*;
 
 /**
  * This class provides a dummy implementation of the Html class
- * for use in tests.  Makes some otherwise protected variables 
+ * for use in tests.  Makes some otherwise protected variables
  * publicly available for use in tests.
  */
 public class HtmlFixture extends Html {
     public HtmlFixture(ClientRequest cr) {
         super(cr);
     }
-    
+
     public String getJsCode() {
         return (jsCode == null) ? "" : jsCode.toString();
     }

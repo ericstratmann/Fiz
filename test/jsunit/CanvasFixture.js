@@ -16,7 +16,7 @@
 /**
  * The Canvas object is meant to emulate the canvas DOM element for unit
  * testing. Instead of actually drawning to a canvas, it logs the method called
- * and the arguments to it. In the few cases that return value is expected, a 
+ * and the arguments to it. In the few cases that return value is expected, a
  * bogus value is returned.
  */
 

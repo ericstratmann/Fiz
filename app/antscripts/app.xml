@@ -12,20 +12,20 @@ build.xml file. -->
             depends="compile-extensions">
         <antcall target="compile-classes"/>
     </target>
-    
-    <target name="compile-classes" description="Compiles the application 
+
+    <target name="compile-classes" description="Compiles the application
                 classes without first forcing the extensions to be compiled">
         <mkdir dir="${classdir}"/>
         <javac srcdir="src" destdir="${classdir}" classpathref="classpath" />
     </target>
-    
+
     <target name="compile-test" description="Compile unit tests">
         <mkdir dir="${testclassdir}"/>
         <javac destdir="${testclassdir}" srcdir="test">
             <classpath refid="classpath.test"/>
         </javac>
     </target>
-    
+
     <target name="test" depends="build, compile-test"
                 description="Execute unit tests">
         <copy todir="${testclassdir}" file="${testlogger}"/>
@@ -46,7 +46,7 @@ build.xml file. -->
     <target name="build" description="Build the web application"
             depends="build-extensions, compile-classes">
         <mkdir dir="${builddir}"/>
-        
+
         <!-- Create the static/ directory -->
         <mkdir dir="${builddir}/static"/>
         <copy todir="${builddir}/static">
@@ -54,7 +54,7 @@ build.xml file. -->
                 <exclude name="**/README"/>
             </fileset>
         </copy>
-        
+
         <!-- Create the static/fiz/ directory-->
         <mkdir dir="${builddir}/static/fiz"/>
         <copy todir="${builddir}/static/fiz">
@@ -62,7 +62,7 @@ build.xml file. -->
                 <exclude name="**/README"/>
             </fileset>
         </copy>
-        
+
         <!-- Create the WEB-INF/ directory -->
         <mkdir dir="${builddir}/WEB-INF"/>
         <copy todir="${builddir}/WEB-INF">
@@ -70,14 +70,14 @@ build.xml file. -->
                 <exclude name="**/README"/>
             </fileset>
         </copy>
-        
+
         <!-- Create the WEB-INF/classes/ directory -->
         <mkdir dir="${builddir}/WEB-INF/classes"/>
         <copy todir="${builddir}/WEB-INF/classes">
             <fileset dir="${classdir}"/>
             <fileset file="${srclogger}"/>
         </copy>
-        
+
         <!-- Create the WEB-INF/fiz/ directory -->
         <mkdir dir="${builddir}/WEB-INF/fiz"/>
         <copy todir="${builddir}/WEB-INF/fiz">
@@ -85,8 +85,8 @@ build.xml file. -->
                 <exclude name="**/README"/>
             </fileset>
         </copy>
-        
-        <!-- Create the WEB-INF/lib/ directory, copying over libraries 
+
+        <!-- Create the WEB-INF/lib/ directory, copying over libraries
          from Fiz, extensions, and the application in the correct order -->
         <mkdir dir="${builddir}/WEB-INF/lib"/>
         <copy todir="${builddir}/WEB-INF/lib">
@@ -95,19 +95,19 @@ build.xml file. -->
                 <exclude name="**/README"/>
             </fileset>
            </copy>
-        
-        <!-- We must interject the extensions' files here, so that their 
-         libraries are copied into the deployment directory in the right 
+
+        <!-- We must interject the extensions' files here, so that their
+         libraries are copied into the deployment directory in the right
          order. -->
         <antcall target="copy-extensions-build"/>
-        
+
         <copy todir="${builddir}/WEB-INF/lib">
             <fileset dir="${libdir}">
                 <exclude name="**/README"/>
             </fileset>
         </copy>
-        
-        <!-- Copy web.xml into the deployment directory, either from the 
+
+        <!-- Copy web.xml into the deployment directory, either from the
          referenced Fiz tools or from the application if one exists there -->
         <if>
             <available file="web/WEB-INF/web.xml" />
@@ -122,7 +122,7 @@ build.xml file. -->
             <fileset file="${webxmlloc}/web.xml"/>
         </copy>
     </target>
-    
+
     <target name="war" description="Create WAR file" depends="build">
         <war destfile="${outdir}/${appname}.war">
             <fileset dir="${builddir}"/>
@@ -145,8 +145,8 @@ build.xml file. -->
             password="${tomcat.password}"
             path="${tomcat.application.path}" />
     </target>
-    
-    <target name="compile-extensions" description="Compiles each extension 
+
+    <target name="compile-extensions" description="Compiles each extension
                 installed in this application">
         <!-- Runs the compile target of each extension -->
         <antcall target="foreach-extension">
@@ -154,8 +154,8 @@ build.xml file. -->
             <param name="argument" value="compile"/>
         </antcall>
     </target>
-    
-    <target name="build-extensions" description="Builds each extension 
+
+    <target name="build-extensions" description="Builds each extension
                 installed in this application">
         <!-- Runs the build target of each extension-->
         <antcall target="foreach-extension">
@@ -164,8 +164,8 @@ build.xml file. -->
         </antcall>
     </target>
 
-    <target name="copy-extensions-build" description="Copies the deployment 
-                directories of each extension into the application's 
+    <target name="copy-extensions-build" description="Copies the deployment
+                directories of each extension into the application's
                 deployment directory">
         <!-- Runs ext.copy.build on each extension -->
         <antcall target="foreach-extension">
@@ -173,9 +173,9 @@ build.xml file. -->
             <param name="argument" value=""/>
         </antcall>
     </target>
-    
-    <target name="foreach-extension" description="Iterates over each extension 
-                installed in this application, calling the specified {target} 
+
+    <target name="foreach-extension" description="Iterates over each extension
+                installed in this application, calling the specified {target}
                 with an {argument}">
         <foreach target="${target}" param="ext.dir" inheritall="true">
             <path>
@@ -188,7 +188,7 @@ build.xml file. -->
         </foreach>
     </target>
 
-    <target name="ext.invoke.target" description="Determines if an extension is 
+    <target name="ext.invoke.target" description="Determines if an extension is
                 a source distribution, and if so invokes its {argument} target">
         <if>
             <available file="${ext.dir}/src"/>
@@ -198,12 +198,12 @@ build.xml file. -->
             </then>
         </if>
     </target>
-    
-    <target name="ext.copy.build" description="Determines the deployment directory 
-                for a given extension, and then copies its files into the 
+
+    <target name="ext.copy.build" description="Determines the deployment directory
+                for a given extension, and then copies its files into the
                 application's deployment directory">
         <basename file="${ext.dir}" property="ext.name"/>
-        
+
         <!-- Determine the extension's build directory -->
         <if>
             <available file="${ext.dir}/src"/>
@@ -250,13 +250,13 @@ build.xml file. -->
 
     <!-- The directory in which Java classes are compiled. -->
     <property name="classdir" value="${outdir}/classes" />
-    
+
     <!-- The directory for all generated libriries -->
     <property name="genlibdir" value="${outdir}/lib"/>
 
     <!-- The directory in which Java test classes are compiled. -->
     <property name="testclassdir" value="${outdir}/tests" />
-    
+
     <!-- The name of the web application -->
     <property name="appname" value="${ant.project.name}"/>
 

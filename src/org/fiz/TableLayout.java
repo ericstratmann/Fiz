@@ -498,13 +498,13 @@ public class TableLayout {
                         (b == H) || (b == V) || (b == I) ||
                         !((l == H) || (l == I)) ||
                         !((r == H) || (r == I))) {
-                	if (!(
-                			((b == H) && isInteriorDash(grid, row + 1, col)) ||
-                			((t == H) && isInteriorDash(grid, row - 1, col)) ||
-                			(isInteriorDash(grid, row, col)) 
-                		)){
-                		invalidCharException(grid, row, col);
-                	}
+                    if (!(
+                            ((b == H) && isInteriorDash(grid, row + 1, col)) ||
+                            ((t == H) && isInteriorDash(grid, row - 1, col)) ||
+                            (isInteriorDash(grid, row, col))
+                        )){
+                        invalidCharException(grid, row, col);
+                    }
                 }
                 break;
             case V:
@@ -523,7 +523,7 @@ public class TableLayout {
 
     /**
      * Checks if a '-' character at a given position is in the interior of a
-     * section. {If it is, then the caller can choose not to treat it as a 
+     * section. {If it is, then the caller can choose not to treat it as a
      * special character defining the section boundary.}
      *
      * @param grid          The 2-D char array containing the layout
@@ -531,39 +531,39 @@ public class TableLayout {
      * @param row           The row index of the '-' character in question.
      * @param col           The column index of the '-' character in question.
      * @return              {@code true} if '-' is part of the identifier of a
- 	 *                      cell, {@code false} if it is part of the boundary.
+     *                      cell, {@code false} if it is part of the boundary.
      */
     protected static boolean isInteriorDash(char[][] grid, int row, int col){
-    	int colLeft = col;
-    	int colRight = col;
-    	/*
-    	 * Check if a '|' appears to the left and right of the character in 
-    	 * question before a '+'. If both the above conditions are met, then 
-    	 * classify the character in question as being part of the identifier 
-    	 * of a section.
-    	 *  
-		 * For example:
-    	 *     +----+
-    	 *     |    |
-    	 *     | x  |
-    	 *     +--y-+
-    	 * 
-    	 * This will return true for '-' at location 'x', because it has
-    	 * a '|' on both sides. However, it will return false for a '-' at
-    	 * location 'y', because there is a '+' sign on wither side of it.    
-    	 */
-    	while ((colLeft >= 0) && (grid[row][colLeft] != I) && 
-    			(grid[row][colLeft] != V)){
-    		colLeft--;
-    	}
-    	while ((colRight < grid[0].length) && (grid[row][colRight] != I) && 
-    			(grid[row][colRight] != V)){
-    		colRight++;
-    	}
-    	return ((colLeft >=0) && (grid[row][colLeft] == V) && 
-    			(colRight < grid[0].length) && (grid[row][colRight] == V));    	
+        int colLeft = col;
+        int colRight = col;
+        /*
+         * Check if a '|' appears to the left and right of the character in
+         * question before a '+'. If both the above conditions are met, then
+         * classify the character in question as being part of the identifier
+         * of a section.
+         *
+         * For example:
+         *     +----+
+         *     |    |
+         *     | x  |
+         *     +--y-+
+         *
+         * This will return true for '-' at location 'x', because it has
+         * a '|' on both sides. However, it will return false for a '-' at
+         * location 'y', because there is a '+' sign on wither side of it.
+         */
+        while ((colLeft >= 0) && (grid[row][colLeft] != I) &&
+                (grid[row][colLeft] != V)){
+            colLeft--;
+        }
+        while ((colRight < grid[0].length) && (grid[row][colRight] != I) &&
+                (grid[row][colRight] != V)){
+            colRight++;
+        }
+        return ((colLeft >=0) && (grid[row][colLeft] == V) &&
+                (colRight < grid[0].length) && (grid[row][colRight] == V));
     }
-    
+
     /**
      * Utility method that constructs and throws a ParseError.
      *

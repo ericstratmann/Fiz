@@ -29,8 +29,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
         <mkdir dir="${classdir}" />
         <javac srcdir="src" destdir="${classdir}"
         classpathref="classpath" debug="on">
-			<compilerarg value="-Xlint:unchecked"/>
-		</javac>
+            <compilerarg value="-Xlint:unchecked"/>
+        </javac>
         <!-- Create the jar file for these tools -->
         <mkdir dir="${genlibdir}" />
         <jar destfile="${genlibdir}/fiz.jar" basedir="${classdir}" />
@@ -40,7 +40,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
         <mkdir dir="${testclassdir}" />
         <javac destdir="${testclassdir}" srcdir="test" debug="on">
             <classpath refid="classpath.test" />
-			<compilerarg value="-Xlint:unchecked"/>
+            <compilerarg value="-Xlint:unchecked"/>
         </javac>
     </target>
 
@@ -81,7 +81,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
             <arg value="test/jsunit" />
         </java>
     </target>
-	
+
     <target name="perf" depends="compile" description="Execute javascript unit tests">
         <java classname="org.fiz.PerfString">
             <classpath refid="classpath.test" />
@@ -297,6 +297,35 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
         <replace file="bin/fiz.bat" token="@@SERVER_URL" value="${serverurl}" />
         <replace file="bin/fiz" token="@@FIZ_HOME" value="${basedir}" />
         <replace file="bin/fiz" token="@@SERVER_URL" value="${serverurl}" />
+    </target>
+
+   <target name="check-style">
+       <antcall target="run-style">
+           <param name="action" value="check"/>
+       </antcall>
+   </target>
+
+   <target name="fix-style">
+       <antcall target="run-style">
+           <param name="action" value="fix"/>
+       </antcall>
+   </target>
+
+   <target name="run-style">
+        <apply executable="bash" inputstring="">
+            <arg value="shellscripts/clean.sh"/>
+            <arg value="${action}"/>
+            <fileset dir=".">
+                <patternset>
+                    <include name="**/*.java"/>
+                    <include name="**/*.js"/>
+                    <include name="**/*.yaml"/>
+                    <include name="**/*.css"/>
+                    <include name="**/*.xml"/>
+                    <exclude name="out/**/*"/>
+                </patternset>
+            </fileset>
+        </apply>
     </target>
 
     <!-- The version number for Fiz (embedded in the fiz.jar library file

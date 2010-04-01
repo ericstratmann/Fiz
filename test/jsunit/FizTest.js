@@ -184,8 +184,8 @@ FizTest.test_setText = function() {
 }
 
 FizTest.test_changeImage = function() {
-	var test_img = document.addElementWithId('test_img');
-	test_img.setAttribute('src', '/static/fiz/images/arrow-left.gif');
-	Fiz.changeImage('test_img', 'arrow-right.gif');
-	assertEqual("/static/fiz/images/arrow-right.gif", test_img['src'], "image_changed");
+    var test_img = document.addElementWithId('test_img');
+    test_img.setAttribute('src', '/static/fiz/images/arrow-left.gif');
+    Fiz.changeImage('test_img', 'arrow-right.gif');
+    assertEqual("/static/fiz/images/arrow-right.gif", test_img['src'], "image_changed");
 }

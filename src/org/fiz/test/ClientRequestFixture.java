@@ -27,7 +27,7 @@ public class ClientRequestFixture extends ClientRequest {
                 new ServletContextFixture())),
                 new ServletRequestFixture(),
                 new ServletResponseFixture());
-        Config.init("test/testData/WEB-INF/app/config", 
+        Config.init("test/testData/WEB-INF/app/config",
                 "web/WEB-INF/fiz/config");
         Css.init("web/WEB-INF/fiz/css");
 
@@ -40,7 +40,7 @@ public class ClientRequestFixture extends ClientRequest {
         main.set("age", "36");
         main.set("height", "66");
         main.set("state", "California");
-        
+
         // Overwrite the server information read from configuration files.
         main.set(GOOGLE_APPENGINE, false);
         main.set(FILE_ACCESS, true);
@@ -54,11 +54,11 @@ public class ClientRequestFixture extends ClientRequest {
         mainDataset = null;
         requestDataProcessed = false;
     }
-    
+
     public boolean isAuthTokenSet() {
         return authTokenSet;
     }
-    
+
     public String getJsCode(boolean fromHtml) {
         if (fromHtml) {
             return ((HtmlFixture)html).getJsCode();

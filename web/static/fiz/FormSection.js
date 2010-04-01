@@ -68,7 +68,7 @@ Fiz.FormSection.prototype.clearElementErrors = function() {
         this.clearElementErrorDisplay(id);
         this.errorElements.shift();
     }
-    
+
     // Clear the error elements array
     this.errorElements = [];
 }

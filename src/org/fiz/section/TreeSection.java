@@ -313,9 +313,9 @@ public class TreeSection extends Section implements DirectAjax {
             if (expandable) {
 
                 Template.appendHtml(out, " onclick=\"@1\"" +
-                		" onmouseover=\"Fiz.changeImage('@2_plus', '@3');\"" +
-                		" onmouseout=\"Fiz.changeImage('@2_plus', '@4');\"" +
-                		"><img id=\"@2_plus\" src=\"/static/fiz/images/@4\"></td>\n",
+                        " onmouseover=\"Fiz.changeImage('@2_plus', '@3');\"" +
+                        " onmouseout=\"Fiz.changeImage('@2_plus', '@4');\"" +
+                        "><img id=\"@2_plus\" src=\"/static/fiz/images/@4\"></td>\n",
                     Ajax.invoke(cr, "/TreeSection/ajaxExpand?" +
                     "sectionId=@1&nodeId=@2", pageProperty.id, rowId),
                     rowId,
@@ -323,7 +323,7 @@ public class TreeSection extends Section implements DirectAjax {
                     StringUtil.addSuffix(pageProperty.edgeFamily, "-plus"));
             }
             else {
-            	 Template.appendHtml(out,
+                 Template.appendHtml(out,
                          "><img src=\"/static/fiz/images/@1\"></td>\n",
                          StringUtil.addSuffix(pageProperty.edgeFamily, "-leaf"));
             }
@@ -354,7 +354,7 @@ public class TreeSection extends Section implements DirectAjax {
                         rowId,
                         StringUtil.addSuffix(pageProperty.edgeFamily, "-minus"),
                         StringUtil.addSuffix(pageProperty.edgeFamily,
-                        		"-minus-active")
+                                "-minus-active")
                         );
                 expandedRow.append("    <td class=\"right\">");
                 Template.appendHtml(expandedRow,

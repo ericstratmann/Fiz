@@ -70,24 +70,24 @@ public class TableLayoutTest extends junit.framework.TestCase {
             catch (TableLayout.ParseError e) {
                 gotException = true;
             }
-            assertEquals("Exception happened in this test case: \n" + 
-            		"==============\n" + 
-            			   l + 
-            		"==============\n", true, gotException);
+            assertEquals("Exception happened in this test case: \n" +
+                    "==============\n" +
+                           l +
+                    "==============\n", true, gotException);
         }
     }
-    
+
     private boolean isInteriorDashHelper(String grid_string, int row, int col){
-    	char[][] grid_test = {};
-    	try {
+        char[][] grid_test = {};
+        try {
             grid_test = TableLayout.createGridFromLayout(grid_string);
         }
         catch (TableLayout.ParseError e) {
-        	System.err.println("Invalid Grid");
+            System.err.println("Invalid Grid");
         }
         return TableLayout.isInteriorDash(grid_test, row, col);
     }
-    
+
     public void test_parseError_constructorMessage() {
         String msg = "a message";
         TableLayout.ParseError error =
@@ -172,7 +172,7 @@ public class TableLayoutTest extends junit.framework.TestCase {
     }
 
     public void test_render_withDash() {
-    	String layout = "+-----+\n" +
+        String layout = "+-----+\n" +
                         "| a-b |\n" +
                         "+-----+\n";
         TableLayout.render(new Dataset("layout", layout), container, cr);
@@ -188,9 +188,9 @@ public class TableLayoutTest extends junit.framework.TestCase {
                         "</table>\n",
                 html);
     }
-    
+
     public void test_parse_basic() {
-    	String layout = "+----+\n" +
+        String layout = "+----+\n" +
                         "| 1  |\n" +
                         "+----+\n";
         TableLayout.render(new Dataset("layout", layout), container, cr);
@@ -210,7 +210,7 @@ public class TableLayoutTest extends junit.framework.TestCase {
     /**
      * Tests all paths in parse and preprocessLayout using one complex layout.
      */
-   
+
     public void test_parse_complex() {
         String layout = "+-----+-----+\n" +
                         "|  1  |  2  |\n" +
@@ -442,10 +442,10 @@ public class TableLayoutTest extends junit.framework.TestCase {
             catch (TableLayout.ParseError e) {
                 gotException = true;
             }
-            assertEquals("Exception happened in this test case: \n" + 
-            		"===========\n" + 
-            			  l + 
-            		"===========\n", true, gotException);
+            assertEquals("Exception happened in this test case: \n" +
+                    "===========\n" +
+                          l +
+                    "===========\n", true, gotException);
         }
     }
 
@@ -566,7 +566,7 @@ public class TableLayoutTest extends junit.framework.TestCase {
     public void test_validate_idWithDash() {
         String[] layouts = new String[]{
 
-        		"+---+\n" +
+                "+---+\n" +
                 "| - |\n" +
                 "|   |\n" +
                 "|   |\n" +
@@ -598,10 +598,10 @@ public class TableLayoutTest extends junit.framework.TestCase {
             catch (TableLayout.ParseError e) {
                 gotException = true;
             }
-            assertEquals("Exception happened in this test case: \n" + 
-            		"===========\n" + 
-            			  l + 
-            		"===========\n", false, gotException);
+            assertEquals("Exception happened in this test case: \n" +
+                    "===========\n" +
+                          l +
+                    "===========\n", false, gotException);
         }
     }
 
@@ -672,119 +672,119 @@ public class TableLayoutTest extends junit.framework.TestCase {
     }
 
     public void test_isInteriorDash_leftRunOff() {
-    	String grid_string =
-        		" -----+\n" +
+        String grid_string =
+                " -----+\n" +
                 "|     |\n" +
                 "|     |\n" +
                 "|     |\n" +
                 "+-----+\n";
-    	assertEquals("Test failed at (0,1)", false, 
-    			isInteriorDashHelper(grid_string, 0, 1));
+        assertEquals("Test failed at (0,1)", false,
+                isInteriorDashHelper(grid_string, 0, 1));
     }
-    
+
     public void test_isInteriorDash_rightRunOff() {
-    	String grid_string =
-        		"+----- \n" +
+        String grid_string =
+                "+----- \n" +
                 "|     |\n" +
                 "|     |\n" +
                 "|     |\n" +
                 "+-----+\n";
-    	assertEquals("Test failed at (0,5)", false, 
-    			isInteriorDashHelper(grid_string, 0, 5));
+        assertEquals("Test failed at (0,5)", false,
+                isInteriorDashHelper(grid_string, 0, 5));
     }
-    
+
     public void test_isInteriorDash_leftInsideRunOff() {
-    	String grid_string =
-        		"+-----+\n" +
+        String grid_string =
+                "+-----+\n" +
                 "    - |\n" +
                 "|     |\n" +
                 "|     |\n" +
                 "+-----+\n";
-    	assertEquals("Test failed at (1,4)", false, 
-    			isInteriorDashHelper(grid_string, 1, 4));
+        assertEquals("Test failed at (1,4)", false,
+                isInteriorDashHelper(grid_string, 1, 4));
     }
-    
+
     public void test_isInteriorDash_rightInsideRunOff() {
-    	String grid_string =
-        		"+-----+\n" +
+        String grid_string =
+                "+-----+\n" +
                 "|  -   \n" +
                 "|     |\n" +
                 "|     |\n" +
                 "+-----+\n";
-    	assertEquals("Test failed at (1,3)", false, 
-    			isInteriorDashHelper(grid_string, 1, 3));
+        assertEquals("Test failed at (1,3)", false,
+                isInteriorDashHelper(grid_string, 1, 3));
     }
-    
+
     public void test_isInteriorDash_leftBorderRunOff() {
-    	String grid_string =
-        		"+-----+\n" +
+        String grid_string =
+                "+-----+\n" +
                 "-     |\n" +
                 "|     |\n" +
                 "|     |\n" +
                 "+-----+\n";
-    	assertEquals("Test failed at (1,0)", false, 
-    			isInteriorDashHelper(grid_string, 1, 0));
+        assertEquals("Test failed at (1,0)", false,
+                isInteriorDashHelper(grid_string, 1, 0));
     }
-    
+
     public void test_isInteriorDash_rightBorderRunOff() {
-    	String grid_string =
-        		"+-----+\n" +
+        String grid_string =
+                "+-----+\n" +
                 "|     -\n" +
                 "|     |\n" +
                 "|     |\n" +
                 "+-----+\n";
-    	assertEquals("Test failed at (1,6)", false, 
-    			isInteriorDashHelper(grid_string, 1, 6));
+        assertEquals("Test failed at (1,6)", false,
+                isInteriorDashHelper(grid_string, 1, 6));
     }
-    
+
     public void test_isInteriorDash_bothSideRunOff() {
-    	String grid_string =
-        		"+-----+\n" +
+        String grid_string =
+                "+-----+\n" +
                 "   -   \n" +
                 "|     |\n" +
                 "|     |\n" +
                 "+-----+\n";
-    	assertEquals("Test failed at (0,3)", false, 
-    			isInteriorDashHelper(grid_string, 0, 3));
+        assertEquals("Test failed at (0,3)", false,
+                isInteriorDashHelper(grid_string, 0, 3));
     }
-    
+
     public void test_isInteriorDash_plusBeforeBarRight() {
-    	String grid_string =
-        		"|------+|\n";
-    	assertEquals("Test failed at (0,4)", false, 
-    			isInteriorDashHelper(grid_string, 0, 4));
+        String grid_string =
+                "|------+|\n";
+        assertEquals("Test failed at (0,4)", false,
+                isInteriorDashHelper(grid_string, 0, 4));
     }
-    
+
     public void test_isInteriorDash_plusBeforeBarLeft() {
-    	String grid_string =
-        		"|+------|\n";
-    	assertEquals("Test failed at (0,4)", false, 
-    			isInteriorDashHelper(grid_string, 0, 4));
+        String grid_string =
+                "|+------|\n";
+        assertEquals("Test failed at (0,4)", false,
+                isInteriorDashHelper(grid_string, 0, 4));
     }
-    
+
     //Success Tests...
     public void test_isInteriorDash_leftInside() {
-    	String grid_string =
-        		"+-----+\n" +
+        String grid_string =
+                "+-----+\n" +
                 "|     |\n" +
                 "|-    |\n" +
                 "|     |\n" +
                 "+-----+\n";
-    	assertEquals("Test failed at (2,1)", true, 
-    			isInteriorDashHelper(grid_string, 2, 1));
+        assertEquals("Test failed at (2,1)", true,
+                isInteriorDashHelper(grid_string, 2, 1));
     }
-    
+
     public void test_isInteriorDash_rightInside() {
-    	String grid_string =
-        		"+-----+\n" +
+        String grid_string =
+                "+-----+\n" +
                 "|     |\n" +
                 "|    -|\n" +
                 "|     |\n" +
                 "+-----+\n";
-    	assertEquals("Test failed at (2,5)", true, 
-    			isInteriorDashHelper(grid_string, 2, 5));
+        assertEquals("Test failed at (2,5)", true,
+                isInteriorDashHelper(grid_string, 2, 5));
     }
-    
+
     public void test_invalidCharException_topLeft() {
         String layout = "abcdefg\n" +
                         "hijklmn\n" +
@@ -887,6 +887,6 @@ public class TableLayoutTest extends junit.framework.TestCase {
         String cellName = TableLayout.findCellName(grid, 0, 0, 3, 6);
         assertEquals("cell name", "", cellName);
     }
-    
-    
+
+
 }

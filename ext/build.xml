@@ -14,7 +14,7 @@
         <mkdir dir="${genlibdir}"/>
         <jar destfile="${genlibdir}/${extname}.jar" basedir="${classdir}"/>
     </target>
-    
+
     <target name="test-compile" depends="compile"
             description="Compile unit tests">
         <mkdir dir="${testclassdir}"/>
@@ -22,7 +22,7 @@
             <classpath refid="classpath.test"/>
         </javac>
     </target>
-    
+
     <target name="test" depends="compile,test-compile"
             description="Execute unit tests" >
         <junit fork="yes">
@@ -46,7 +46,7 @@
             <fileset dir="${genlibdir}"/>
             <fileset dir="${libdir}" excludes="README"/>
         </copy>
-        
+
         <!-- Copy the javadoc files -->
         <mkdir dir="${builddir}/javadoc"/>
         <copy todir="${builddir}/javadoc">
@@ -69,7 +69,7 @@
             <fileset dir="css" excludes="README"/>
         </copy>
     </target>
-    
+
     <target name="package" depends="build" description="Packages this extension">
         <!-- Create a manifest file -->
         <manifest file="${outdir}/MANIFEST.MF">
@@ -82,7 +82,7 @@
         <zip destfile="${outdir}/${extname}-doc-${version}.zip">
             <zipfileset dir="${docdir}" prefix="${extname}-doc-${version}"/>
         </zip>
-        
+
         <!-- Create the binary extension zipfile -->
         <zip destfile="${outdir}/${extname}-bin-${version}.zip">
             <zipfileset dir="${builddir}" prefix="${extname}"/>
@@ -106,8 +106,8 @@
             </zipfileset>
         </zip>
     </target>
-    
-    <target name="javadoc" depends="compile" 
+
+    <target name="javadoc" depends="compile"
             description="Creates javadoc for this extension">
         <mkdir dir="${docdir}"/>
         <javadoc destdir="${docdir}"
@@ -142,7 +142,7 @@
 
     <!-- The directory in which Java classes are compiled -->
     <property name="classdir" value="${outdir}/classes"/>
-    
+
     <!-- The directory containing generated libraries -->
     <property name="genlibdir" value="${outdir}/lib"/>
 
@@ -154,18 +154,18 @@
 
     <!-- The directory in which Javadocs are created -->
     <property name="docdir" value="${outdir}/javadoc"/>
-    
-    <!-- Loads into ${fiz.location} the application-relative 
+
+    <!-- Loads into ${fiz.location} the application-relative
      location of the default Fiz tools installation to use -->
     <property file="../../fiz.properties"/>
-    
-    <!-- The directory containing the fiz installation to use.  By 
-     default this is set to ../../${fiz.location}.  If you wish to 
-     specify a different Fiz tools installation to use, change the 
+
+    <!-- The directory containing the fiz installation to use.  By
+     default this is set to ../../${fiz.location}.  If you wish to
+     specify a different Fiz tools installation to use, change the
      value of the property below -->
     <property name="my.fiz.location" value="../../${fiz.location}"/>
-    
-    
+
+
     <path id="classpath">
         <fileset dir="${libdir}">
             <include name="**/*.jar"/>
@@ -183,5 +183,5 @@
         <pathelement location="${testclassdir}"/>
         <path refid="classpath"/>
     </path>
-    
+
 </project>

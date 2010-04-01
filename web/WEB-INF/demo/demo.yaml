@@ -43,7 +43,7 @@ person:
         height: 73
         weight: 195
 
-		
+
 shoppingCart:
     record:
         - item:  Thin spaghetti

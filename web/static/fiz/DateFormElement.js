@@ -46,16 +46,16 @@ Fiz.DateFormElement = function(id, dateFormat, attachPosition)
     // The date filter rules for determining whether a date can be selected
     // or not
     this.filters = [];
-    
+
     // The calendar starts displaying from this month / year
     this.startLimit = null;
-    
+
     // The calendar stops displaying on this month / year
     this.endLimit = null;
-    
+
     // Determines if the picker is open or not
     this.isOpen = false;
-        
+
     // Retrieve the various DOM elements used for this DateFormElement
     this.input = document.getElementById(this.id);
     this.picker = document.getElementById(this.id + '_picker');
@@ -67,17 +67,17 @@ Fiz.DateFormElement = function(id, dateFormat, attachPosition)
     // Displayed date: First day of the month currently displayed in picker
     this.dDate = new Date(this.input.value);
     this.dDate.setDate(1);
-    
+
     // Format the default date into the format specified by dateFormat
     this.input.value = Fiz.DateFormElement.formatDate(
             this.sDate, this.dateFormat);
-    
+
     // Format used for Datejs's parseExact function
     this.internalFormat = this.dateFormat.replace('D', 'dd')
                                          .replace('M', 'MM')
                                          .replace('m', 'M')
                                          .replace('y', 'yy')
-                                         .replace('Y', 'yyyy');                                         
+                                         .replace('Y', 'yyyy');
 }
 
 //Used to set the "current date" to a known value for debugging purposes
@@ -168,11 +168,11 @@ Fiz.DateFormElement.prototype.closePicker = function()
 {
     this.picker.style.display = 'none';
     this.isOpen = false;
-    
+
     this.input.value =
             Fiz.DateFormElement.formatDate(this.sDate, this.dateFormat);
     this.input.focus();
-    
+
     // Validate the newly chosen date
     Fiz.FormElement.validate(this.id);
 }
@@ -195,7 +195,7 @@ Fiz.DateFormElement.prototype.redraw = function()
 
     // Day of the week on whic the month starts
     var curDayOfWeek = this.dDate.getDay();
-    
+
     // Update heading with new month and year displayed
     Fiz.setText(document.getElementById(this.id + '_header'),
             Fiz.DateFormElement.i18n.monthNamesLong[curMonth] + ' ' + curYear);
@@ -211,7 +211,7 @@ Fiz.DateFormElement.prototype.redraw = function()
 
     // Change the navigation depending on the limits set
     this.redrawNav(prevDate, this.dDate, nextDate);
-    
+
     // Number of days in prevMonth
     var prevNumDays = Fiz.DateFormElement.getNumberOfDays(
             prevDate.getMonth(),
@@ -219,10 +219,10 @@ Fiz.DateFormElement.prototype.redraw = function()
     );
 
     var curWeek = 0;
-    
+
     // <tbody> element
     var month = document.getElementById(this.id + '_grid');
-    
+
     // <tr> elements in the <tbody>
     var weeks = month.getElementsByTagName('tr');
 
@@ -236,22 +236,22 @@ Fiz.DateFormElement.prototype.redraw = function()
                 prevNumDays - curDayOfWeek + 1 + i);
         this.dateCell(week[i], date, false);
     }
-    
+
     // We fill in the calendar with the dates for the current month
     for (var i = 1; i <= curNumDays; i++) {
         var date = new Date(curYear, curMonth, i);
         var item = this.dateCell(week[curDayOfWeek], date,
                 !this.isExcluded(date));
-            
+
         // Style the item
         Fiz.addClass(item, 'cur-month');
-        
+
         // If the date of the current cell matches the selected date,
         // we give it a class name so we can style it
         if (Fiz.DateFormElement.compareDate(this.sDate, date) == 0) {
             Fiz.addClass(item, 'cur-day');
         }
-        
+
         curDayOfWeek++;
         curDayOfWeek %= 7;
 
@@ -261,7 +261,7 @@ Fiz.DateFormElement.prototype.redraw = function()
             week = weeks[curWeek].getElementsByTagName('td');
         }
     }
-    
+
     // We fill in the calendar (up to maximum of 6 weeks)
     // with the dates for the next month
     for (var i = 0; curWeek < 6; i++) {
@@ -306,11 +306,11 @@ Fiz.DateFormElement.prototype.redrawNav = function(prevDate, curDate, nextDate)
                 && prevDate.getFullYear() <= this.startLimit.getFullYear()) {
             prevMonthLink.style.visibility = 'hidden';
         }
-        
+
         // We hide the previous year link in two cases:
         // 1) We are already displaying the earliest year for which
         //        we have months to display
-        // 2) We are displaying the year after the earliest year 
+        // 2) We are displaying the year after the earliest year
         //        but an earlier month
         if ((curDate.getFullYear() <= this.startLimit.getFullYear())
                 || (curDate.getFullYear() == this.startLimit.getFullYear() + 1
@@ -330,7 +330,7 @@ Fiz.DateFormElement.prototype.redrawNav = function(prevDate, curDate, nextDate)
         // We hide the next year link in two cases:
         // 1) We are already displaying the latest year for which
         //    we have months to display
-        // 2) We are displaying the year before the latest year 
+        // 2) We are displaying the year before the latest year
         //    but a later month
         if ((curDate.getFullYear() >= this.endLimit.getFullYear())
                 || (curDate.getFullYear() == this.endLimit.getFullYear() - 1
@@ -363,9 +363,9 @@ Fiz.DateFormElement.prototype.dateCell = function(cell, date, selectable)
                 self.closePicker();
             };
         })(date);
-        
+
         // Provides crossbweekser compatible highlighting of table cells
-        cell.onmouseover = function() { 
+        cell.onmouseover = function() {
             Fiz.DateFormElement.highlight(this, true);
         };
         cell.onmouseout = function() {
@@ -378,7 +378,7 @@ Fiz.DateFormElement.prototype.dateCell = function(cell, date, selectable)
         cell.onmouseout = null;
         Fiz.addClass(cell, 'excluded');
     }
-    
+
     Fiz.setText(cell, date.getDate());
 
     return cell;
@@ -498,11 +498,11 @@ Fiz.DateFormElement.prototype.setFilters = function(filters)
                     this.endLimit = startDate;
                 }
             }
-            
+
             filter.startDate = startDate;
             filter.endDate = endDate;
         }
-        
+
         this.filters.push(filter);
     }
 }
@@ -554,7 +554,7 @@ Fiz.DateFormElement.formatDate = function(date, format)
     var month = (date.getMonth() + 1).toString();
     var year = date.getFullYear().toString();
     var day = date.getDate().toString();
-    
+
     var paddedMonth = month;
     while (paddedMonth.length < 2) {
         paddedMonth = '0' + paddedMonth;
@@ -571,7 +571,7 @@ Fiz.DateFormElement.formatDate = function(date, format)
                    .replace("Y", year)
                    .replace("d", day)
                    .replace("D", paddedDay);
-    
+
     return format;
 }
 

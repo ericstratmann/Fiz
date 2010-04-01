@@ -198,11 +198,11 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 "/static/fiz/images/treeSolid-line.gif); background-repeat: " +
                 "repeat-y;\" onclick=\"void new Fiz.Ajax({url: &quot;" +
                 "/TreeSection/ajaxExpand?sectionId=tree1&amp;" +
-                "nodeId=tree1%5f3%5f0&quot;});\" " + 
+                "nodeId=tree1%5f3%5f0&quot;});\" " +
                 "onmouseover=\"Fiz.changeImage('tree1_3_0_plus', " +
-                	"'treeSolid-plus-active.gif');\" " +
+                    "'treeSolid-plus-active.gif');\" " +
                 "onmouseout=\"Fiz.changeImage('tree1_3_0_plus', " +
-                	"'treeSolid-plus.gif');\">" + 
+                    "'treeSolid-plus.gif');\">" +
                 "<img id=\"tree1_3_0_plus\" " +
                 "src=\"/static/fiz/images/treeSolid-plus.gif\"></td>\n" +
                 "    <td class=\"right\">node: Alice</td>\n" +
@@ -266,7 +266,7 @@ public class TreeSectionTest extends junit.framework.TestCase {
                 " onmouseover=\\\"Fiz.changeImage('tree1_3_0_plus', " +
                 "'treeSolid-plus-active.gif');\\\"" +
                 " onmouseout=\\\"Fiz.changeImage('tree1_3_0_plus', " +
-                "'treeSolid-plus.gif');\\\">" + 
+                "'treeSolid-plus.gif');\\\">" +
                 "<img id=\\\"tree1_3_0_plus\\\" " +
                 "src=\\\"/static/fiz/images/treeSolid-plus.gif\\\"></td>\\n" +
                 "    <td class=\\\"right\\\">node: Alice</td>\\n  </tr>\\n\"," +

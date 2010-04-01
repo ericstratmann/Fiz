@@ -21,7 +21,7 @@
 
 /*
  * If a value is present in an array, return its key. Otherwise, return -1.
- * 
+ *
  * @param array     An array
  * @param value     A value that might be in the array
  * @return          The index of the value or -1 if not found
@@ -32,13 +32,13 @@ Fiz.arrayIndexOf = function (array, value) {
             return i;
         }
     }
-    
+
     return -1;
 };
 
-/* 
+/*
  * Returns a random integer 0 <= r < n.
- * 
+ *
  * @param n         Max value of the random integer (non-inclusive)
  * @return          An inter r such that 0 <= r < n
  */
@@ -48,7 +48,7 @@ Fiz.rand = function(n) {
 
 /*
  * Checks if an object is an array
- * 
+ *
  * @param obj       Object to rest
  * @return          Whether the object is an array
  */
@@ -76,7 +76,7 @@ Fiz.deepCopy = function (oldObj) {
         if (Fiz.isArray(oldObj)) {
             var newObj = new Array();
         }
-        for (var i in oldObj) {   
+        for (var i in oldObj) {
             if (typeof(oldObj[i]) === 'object') {
                 if (i !== "ctx") {
                     newObj[i] = Fiz.deepCopy(oldObj[i]);
@@ -96,14 +96,14 @@ Fiz.deepCopy = function (oldObj) {
 /*
  * Given a mouse event, determines the x and y position of the mouse relative to
  * the specified element.  Compatible with Firefox, Safari, Chrome, Opera, IE7,
- * and IE8.  Some code taken from Danny Goodman's "Javascript and DHTML 
+ * and IE8.  Some code taken from Danny Goodman's "Javascript and DHTML
  * Cookbook, 2nd Edition" and www.howtocreate.co.uk.
- * 
+ *
  * @param event         The mouse event from which to get coordinates.
- * @param elem          The element in whose coordinate system the mouse 
+ * @param elem          The element in whose coordinate system the mouse
  *                      location is desired.
- * @return              A javascript object with fields 'x' and 'y', 
- *                      corresponding to location of the mouse relative to the 
+ * @return              A javascript object with fields 'x' and 'y',
+ *                      corresponding to location of the mouse relative to the
  *                      specified element.
  */
 Fiz.getRelativeEventCoords = function(event, elem) {
@@ -118,9 +118,9 @@ Fiz.getRelativeEventCoords = function(event, elem) {
     } else { // IE
         coords.x = event.clientX;
         coords.y = event.clientY;
-        // If the document body has any scrolling offset, it will be the 
-        // scrolling offset for the whole page.  If the document body does not 
-        // have any scrolling offset, the document element may still have 
+        // If the document body has any scrolling offset, it will be the
+        // scrolling offset for the whole page.  If the document body does not
+        // have any scrolling offset, the document element may still have
         // scrolling offset for the whole page.
         if (docBody && (docBody.scrollLeft || docBody.scrollTop)) {
             // Non-Strict Mode
@@ -139,9 +139,9 @@ Fiz.getRelativeEventCoords = function(event, elem) {
     var currElem = elem;
     do {
         var isBody = (currElem == docBody);
-        coords.x -= (isBody ? Math.abs(currElem.offsetLeft) : 
+        coords.x -= (isBody ? Math.abs(currElem.offsetLeft) :
             currElem.offsetLeft) + (hasClientLeftTop ? currElem.clientLeft : 0);
-        coords.y -= (isBody ? Math.abs(currElem.offsetTop) : 
+        coords.y -= (isBody ? Math.abs(currElem.offsetTop) :
             currElem.offsetTop) + (hasClientLeftTop ? currElem.clientTop : 0);
     } while (currElem = currElem.offsetParent);
 

@@ -101,7 +101,7 @@ public class TableSection extends Section {
                     "without a \"data\" property");
         }
     }
-    
+
     @Override
     public void render(ClientRequest cr) {
         Html html = cr.getHtml();

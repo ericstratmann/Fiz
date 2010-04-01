@@ -89,7 +89,7 @@ Fiz.addBulletinMessage = function(html) {
 Fiz.addClass = function(target, className) {
     if (target.className.match(className) == null) {
         target.className += (target.className == '')
-                ? className : ' ' +  className; 
+                ? className : ' ' +  className;
     }
 }
 
@@ -227,7 +227,7 @@ Fiz.removeClass = function(target, className) {
 /**
  * Provides a cross-browser compatible way to set the text value of
  * {@code target}.
- * @param target                    (Element) DOM element 
+ * @param target                    (Element) DOM element
  * @param text                      (String) Text content we want to set
  */
 Fiz.setText = function(target, text) {
@@ -242,10 +242,10 @@ Fiz.setText = function(target, text) {
  * Change the 'src' attribute of the image element in question. Can be used by
  * the caller to change an image in response to various events.
  * @param img_id                   The Id of the image element of interest.
- * @param image					   The new image file (Assumed to be located in
- *			    				   the standard image directory).
+ * @param image                    The new image file (Assumed to be located in
+ *                                 the standard image directory).
  */
 Fiz.changeImage = function(img_id, image) {
-	document.getElementById(img_id).setAttribute('src', 
-		"/static/fiz/images/" + image);
+    document.getElementById(img_id).setAttribute('src',
+        "/static/fiz/images/" + image);
 }

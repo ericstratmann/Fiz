@@ -15,11 +15,11 @@ application -->
     <target name="compile-extensions" description="Compile extensions used by the application">
         <ant antfile="${antscriptsdir}/app.xml" target="compile-extensions"/>
     </target>
-    
+
     <target name="compile-test" description="Compile unit tests">
         <ant antfile="${antscriptsdir}/app.xml" target="compile-test"/>
     </target>
-    
+
     <target name="test" description="Execute unit tests">
         <ant antfile="${antscriptsdir}/app.xml" target="test"/>
     </target>
@@ -43,7 +43,7 @@ application -->
     <target name="undeploy" description="Undeploy the application from a Tomcat server">
         <ant antfile="${antscriptsdir}/app.xml" target="undeploy"/>
     </target>
-    
+
     <!-- The file that specifies which installation of Fiz tools to use. -->
     <property file="fiz.properties"/>
 

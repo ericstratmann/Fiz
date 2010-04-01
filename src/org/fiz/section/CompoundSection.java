@@ -83,7 +83,7 @@ public class CompoundSection extends Section implements TableLayoutContainer {
             extraChildren.add(child);
         }
     }
-    
+
     @Override
     public void render(ClientRequest cr) {
         // If there is a border for this section, then the section gets

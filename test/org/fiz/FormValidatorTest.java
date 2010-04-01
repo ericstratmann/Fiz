@@ -29,7 +29,7 @@ public class FormValidatorTest extends junit.framework.TestCase {
         assertEquals("Custom error message",
                 "Custom error: p_value, d_value",
                 FormValidator.errorMessage("Test error: @property @data",
-                        new Dataset("property", "p_value", 
+                        new Dataset("property", "p_value",
                                 "errorMessage", "Custom error: @property, @data"),
                         new Dataset("data", "d_value")));
     }
@@ -59,18 +59,18 @@ public class FormValidatorTest extends junit.framework.TestCase {
     public void test_validateInteger() {
         assertEquals("value: 5", null,
                 FormValidator.validateInteger("id", new Dataset(),
-                new Dataset("id", "5")));        
+                new Dataset("id", "5")));
         assertEquals("value: abc", "Must be an integer",
                 FormValidator.validateInteger("id", new Dataset(),
-                new Dataset("id", "abc")));        
+                new Dataset("id", "abc")));
         assertEquals("value: 5.5", "Must be an integer",
                 FormValidator.validateInteger("id", new Dataset(),
-                new Dataset("id", "5.5")));        
+                new Dataset("id", "5.5")));
         assertEquals("value: 12f", "Must be an integer",
                 FormValidator.validateInteger("id", new Dataset(),
-                new Dataset("id", "12f")));        
+                new Dataset("id", "12f")));
     }
-    
+
     public void test_validateLength_min() {
         assertEquals("value: abcd, min: 5", "Must be at least 5 characters long",
                 FormValidator.validateLength("id", new Dataset("min", "5"),
@@ -95,7 +95,7 @@ public class FormValidatorTest extends junit.framework.TestCase {
                 new Dataset("id", "abcdef")));
     }
 
-    public void test_validateLength_minAndMax() {        
+    public void test_validateLength_minAndMax() {
         assertEquals("value: abcd, min: 5, max: 7", "Must be between 5 and 7 characters long",
                 FormValidator.validateLength("id", new Dataset("min", "5", "max", "7"),
                 new Dataset("id", "abcd")));
@@ -119,7 +119,7 @@ public class FormValidatorTest extends junit.framework.TestCase {
     public void test_validateNumeric() {
         assertEquals("value: 5", null,
                 FormValidator.validateNumeric("id", new Dataset(),
-                new Dataset("id", "5")));        
+                new Dataset("id", "5")));
         assertEquals("value: 5.4", null,
                 FormValidator.validateNumeric("id", new Dataset(),
                 new Dataset("id", "5.4")));
@@ -134,9 +134,9 @@ public class FormValidatorTest extends junit.framework.TestCase {
     public void test_validateRange_numeric() {
         assertEquals("value: abc", "Must be a number",
                 FormValidator.validateRange("id", new Dataset("min", "10"),
-                new Dataset("id", "abc")));        
+                new Dataset("id", "abc")));
     }
-    
+
     public void test_validateRange_min() {
         assertEquals("value: 9, min: 10", "Must be >= 10",
                 FormValidator.validateRange("id", new Dataset("min", "10"),
@@ -151,7 +151,7 @@ public class FormValidatorTest extends junit.framework.TestCase {
                 FormValidator.validateRange("id", new Dataset("min", "10"),
                 new Dataset("id", "11")));
     }
-    
+
     public void test_validateRange_max() {
         assertEquals("value: 99, max: 98.5", "Must be <= 98.5",
                 FormValidator.validateRange("id", new Dataset("max", "98.5"),
@@ -166,8 +166,8 @@ public class FormValidatorTest extends junit.framework.TestCase {
                 FormValidator.validateRange("id", new Dataset("max", "98.5"),
                 new Dataset("id", "97.5")));
     }
-    
-    public void test_validateRange_minAndMax() {        
+
+    public void test_validateRange_minAndMax() {
         assertEquals("value: 97, min: 98, max: 99.2", "Must be >= 98 and <= 99.2",
                 FormValidator.validateRange("id", new Dataset("min", "98", "max", "99.2"),
                 new Dataset("id", "97")));
@@ -177,16 +177,16 @@ public class FormValidatorTest extends junit.framework.TestCase {
         assertEquals("value: 98.5, min: 98, max: 99.2", null,
                 FormValidator.validateRange("id", new Dataset("min", "98", "max", "99.2"),
                 new Dataset("id", "98.5")));
-        assertEquals("value: 98, min: 98, max: 99.2", 
+        assertEquals("value: 98, min: 98, max: 99.2",
                 "Must be > 98 and < 99.2",
-                FormValidator.validateRange("id", 
-                        new Dataset("min", "98", "includeMin", "false", 
+                FormValidator.validateRange("id",
+                        new Dataset("min", "98", "includeMin", "false",
                                 "max", "99.2", "includeMax", "false"),
                 new Dataset("id", "98")));
-        assertEquals("value: 98, min: 98, max: 99.2", 
+        assertEquals("value: 98, min: 98, max: 99.2",
                 "Must be > 98 and < 99.2",
-                FormValidator.validateRange("id", 
-                        new Dataset("min", "98", "includeMin", "false", 
+                FormValidator.validateRange("id",
+                        new Dataset("min", "98", "includeMin", "false",
                                 "max", "99.2", "includeMax", "false"),
                 new Dataset("id", "99.2")));
         assertEquals("value: 99.2, min: 98, max: 99.2", null,
@@ -197,7 +197,7 @@ public class FormValidatorTest extends junit.framework.TestCase {
                 FormValidator.validateRange("id", new Dataset("min", "98", "max", "99.2"),
                 new Dataset("id", "100")));
     }
-    
+
     public void test_validateRegex() {
         assertEquals("value: abcd, format: ^[a-z]{4}$", null,
                 FormValidator.validateRegex("id", new Dataset("pattern", "^[a-z]{4}$"),
