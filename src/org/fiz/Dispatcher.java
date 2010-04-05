@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 Stanford University
+/* Copyright (c) 2008-2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -327,7 +327,11 @@ public class Dispatcher extends HttpServlet {
             cr.setClientRequestType(requestType);
             dispatcherTimer.start(startTime);
             dispatcherTimer.stop();
+
+            invokeStartMethod(method.interactor, cr);
             method.method.invoke(method.interactor, cr);
+            invokeEndMethod(method.interactor, cr);
+
             finishTimer.start();
 
             // The service method has completed successfully.  Output the
@@ -616,6 +620,60 @@ public class Dispatcher extends HttpServlet {
         String debug = System.getenv("FIZ_DEBUG");
         if (debug != null) {
             main.set("debug", debug);
+        }
+    }
+
+    /**
+     * Invokes the appropriate method in the interactor based on the type of
+     * request. On a normal request, invokes {@code start}, for AJAX, invokes
+     * {@code startAjax}, and for POST, invokes {@code startPost}.
+     * @param interactor     Interactor containing the start method to invoke.
+     *                       This is the same interactor containing the method
+     *                       to be executed for the current request.
+     * @param cr             Overall information about the client
+     *                       request being serviced.
+     */
+    protected static void invokeStartMethod(Interactor interactor, ClientRequest cr) {
+        if (interactor == null) {
+            return;
+        }
+
+        ClientRequest.Type requestType = cr.getClientRequestType();
+        if (requestType == ClientRequest.Type.NORMAL) {
+            interactor.start(cr);
+        } else if (requestType == ClientRequest.Type.AJAX) {
+            interactor.startAjax(cr);
+        } else if (requestType == ClientRequest.Type.POST) {
+            interactor.startPost(cr);
+        } else {
+            throw new InternalError("unknown request type: " + requestType);
+        }
+    }
+
+    /**
+     * Invokes the appropriate method in the interactor based on the type of
+     * request. On a normal request, invokes {@code end}, for AJAX, invokes
+     * {@code endAjax}, and for POST, invokes {@code endPost}.
+     * @param interactor     Interactor containing the start method to invoke.
+     *                       This is the same interactor containing the method
+     *                       to be executed for the current request.
+     * @param cr             Overall information about the client
+     *                       request being serviced.
+     */
+    protected static void invokeEndMethod(Interactor interactor, ClientRequest cr) {
+        if (interactor == null) {
+            return;
+        }
+
+        ClientRequest.Type requestType = cr.getClientRequestType();
+        if (requestType == ClientRequest.Type.NORMAL) {
+            interactor.end(cr);
+        } else if (requestType == ClientRequest.Type.AJAX) {
+            interactor.endAjax(cr);
+        } else if (requestType == ClientRequest.Type.POST) {
+            interactor.endPost(cr);
+        } else {
+            throw new InternalError("unknown request type: " + requestType);
         }
     }
 }

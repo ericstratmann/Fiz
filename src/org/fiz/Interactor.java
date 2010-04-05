@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 Stanford University
+/* Copyright (c) 2008-2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -61,5 +61,72 @@ public class Interactor {
             HttpServletRequest servletRequest,
             HttpServletResponse servletResponse) {
         return new ClientRequest(servlet, servletRequest, servletResponse);
+    }
+
+    /**
+     * Called at the start of every regular (not AJAX or POST) request. This
+     * method is invoked before the entry method corresponding to the URL has
+     * been run. This method does not do anything unless overridden.
+     *
+     * @param cr    ClientRequest object for managing the current request
+     */
+    public void start(ClientRequest cr) {
+
+    }
+
+    /**
+     * Called at the end of every regular (not AJAX or POST) request. This
+     * method is invoked after the entry method corresponding to the URL has been
+     * run, but before the page is finalized. This method does not do anything
+     * unless overridden.
+     *
+     * @param cr    ClientRequest object for managing the current request
+     */
+    public void end(ClientRequest cr) {
+
+    }
+
+    /**
+     * Called at the start of every AJAX request. This method is invoked before
+     * the entry method corresponding to the URL has been run. This method does
+     * not do anything unless overridden.
+     *
+     * @param cr    ClientRequest object for managing the current request
+     */
+    public void startAjax(ClientRequest cr) {
+
+    }
+
+    /**
+     * Called at the end of every AJAX request. This method is invoked after the
+     * entry method corresponding to the URL has been run, but before the page is
+     * finalized. This method does not do anything unless overridden.
+     *
+     * @param cr    ClientRequest object for managing the current request
+     */
+    public void endAjax(ClientRequest cr) {
+
+    }
+
+    /**
+     * Called at the start of every POST request. This method is invoked before
+     * the entry method corresponding to the URL has been run. This method does
+     * not do anything unless overridden.
+     *
+     * @param cr    ClientRequest object for managing the current request
+     */
+    public void startPost(ClientRequest cr) {
+
+    }
+
+    /**
+     * Called at the end of every POST request. This method is invoked after the
+     * entry method corresponding to the URL has been run, but before the page is
+     * finalized. This method does not do anything unless overridden.
+     *
+     * @param cr    ClientRequest object for managing the current request
+     */
+    public void endPost(ClientRequest cr) {
+
     }
 }

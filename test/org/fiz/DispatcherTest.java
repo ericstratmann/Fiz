@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 Stanford University
+/* Copyright (c) 2008-2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -419,12 +419,14 @@ public class DispatcherTest extends junit.framework.TestCase {
         ArrayList<String> names = new ArrayList<String>();
         names.addAll(dispatcher.methodMap.keySet());
         Collections.sort(names);
-        assertEquals("dispatcherTest1/ajaxIncCount, " +
-                "dispatcherTest1/ajaxUserError, dispatcherTest1/error, " +
-                "dispatcherTest1/handledError, dispatcherTest1/incCount, " +
-                "dispatcherTest1/postTest, dispatcherTest1/postUserError, " +
-                "dispatcherTest1/resetCount, dispatcherTest1/userError",
-                StringUtil.join(names, ", "));
+        assertEquals("dispatcherTest1/ajaxIncCount, dispatcherTest1/ajaxUserError, " +
+                    "dispatcherTest1/end, dispatcherTest1/endAjax, " +
+                    "dispatcherTest1/endPost, dispatcherTest1/error, " +
+                    "dispatcherTest1/handledError, dispatcherTest1/incCount, " +
+                    "dispatcherTest1/postTest, dispatcherTest1/postUserError, " +
+                    "dispatcherTest1/resetCount, dispatcherTest1/start, " +
+                    "dispatcherTest1/startAjax, dispatcherTest1/startPost, " +
+                    "dispatcherTest1/userError", StringUtil.join(names, ", "));
     }
     public void test_findMethod_methodNotFound() {
         Class<?> cl = dispatcher.findClass("org.fiz.Interactor", null);
@@ -587,4 +589,63 @@ public class DispatcherTest extends junit.framework.TestCase {
                 "home: /a/b/c\n",
                 Config.getDataset("main").toString());
     }
+
+    // helper method
+    private DispatcherTest1Interactor getTest1Interactor() {
+        return (DispatcherTest1Interactor)  Util.newInstance(
+               "org.fiz.DispatcherTest1Interactor", "DispatcherTest1Interactor");
+    }
+
+    public void test_invokeStartMethod_noInteractor() {
+        ClientRequest cr = new ClientRequestFixture();
+        dispatcher.invokeStartMethod(null, cr);
+        // Make sure we don't throw any exceptions
+    }
+
+    public void test_invokeStartMethod() {
+        ClientRequest cr = new ClientRequestFixture();
+        DispatcherTest1Interactor interactor = getTest1Interactor();
+
+        cr.setClientRequestType(ClientRequest.Type.NORMAL);
+        DispatcherTest1Interactor.startCount = 0;
+        dispatcher.invokeStartMethod(interactor, cr);
+        assertEquals("normal request", 1, interactor.startCount);
+
+        cr.setClientRequestType(ClientRequest.Type.AJAX);
+        DispatcherTest1Interactor.ajaxStartCount = 0;
+        dispatcher.invokeStartMethod(interactor, cr);
+        assertEquals("ajax request", 1, interactor.ajaxStartCount);
+
+        cr.setClientRequestType(ClientRequest.Type.POST);
+        DispatcherTest1Interactor.postStartCount = 0;
+        dispatcher.invokeStartMethod(interactor, cr);
+        assertEquals("post request", 1, interactor.postStartCount);
+    }
+
+    public void test_invokeEndMethod_noInteractor() {
+        ClientRequest cr = new ClientRequestFixture();
+        dispatcher.invokeEndMethod(null, cr);
+        // Make sure we don't throw any exceptions
+    }
+
+    public void test_invokeEndMethod() {
+        ClientRequest cr = new ClientRequestFixture();
+        DispatcherTest1Interactor interactor = getTest1Interactor();
+
+        cr.setClientRequestType(ClientRequest.Type.NORMAL);
+        DispatcherTest1Interactor.endCount = 0;
+        dispatcher.invokeEndMethod(interactor, cr);
+        assertEquals("normal request", 1, interactor.endCount);
+
+        cr.setClientRequestType(ClientRequest.Type.AJAX);
+        DispatcherTest1Interactor.ajaxEndCount = 0;
+        dispatcher.invokeEndMethod(interactor, cr);
+        assertEquals("ajax request", 1, interactor.ajaxEndCount);
+
+        cr.setClientRequestType(ClientRequest.Type.POST);
+        DispatcherTest1Interactor.postEndCount = 0;
+        dispatcher.invokeEndMethod(interactor, cr);
+        assertEquals("post request", 1, interactor.postEndCount);
+    }
+
 }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 Stanford University
+/* Copyright (c) 2008-2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -31,6 +31,13 @@ public class DispatcherTest1Interactor extends Interactor {
     public static int count = 0;
     public static int initCount = 0;
     public static int destroyCount = 0;
+    public static int startCount = 0;
+    public static int endCount = 0;
+    public static int ajaxStartCount = 0;
+    public static int ajaxEndCount = 0;
+    public static int postStartCount = 0;
+    public static int postEndCount = 0;
+
     public static boolean isAjax = false;
     public static ClientRequest.Type requestType =
             ClientRequest.Type.NORMAL;
@@ -40,6 +47,24 @@ public class DispatcherTest1Interactor extends Interactor {
     }
     public void destroy() {
         destroyCount++;
+    }
+    public void start(ClientRequest cr) {
+        startCount++;
+    }
+    public void end(ClientRequest cr) {
+        endCount++;
+    }
+    public void startAjax(ClientRequest cr) {
+        ajaxStartCount++;
+    }
+    public void endAjax(ClientRequest cr) {
+        ajaxEndCount++;
+    }
+    public void startPost(ClientRequest cr) {
+        postStartCount++;
+    }
+    public void endPost(ClientRequest cr) {
+        postEndCount++;
     }
     public void ajaxIncCount(ClientRequest cr) {
         count++;
