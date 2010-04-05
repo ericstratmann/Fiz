@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 Stanford University
+/* Copyright (c) 2008-2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -127,37 +127,41 @@ public class CompoundSectionTest extends junit.framework.TestCase {
                 html);
     }
     public void test_render_layout() {
-        String layout = "+-------+\n" +
+        Layout layout = new TableLayout(new Dataset("format",
+                        "+-------+\n" +
                         "| first |\n" +
-                        "+-------+";
+                        "+-------+"));
         CompoundSection section = new CompoundSection(
-                new Dataset("id", "test44", "layout", layout),
-                new TemplateSection(new Dataset("id", "first",
-                        "template", "<h1>First section</h1>\n")));
+                  new Dataset("id", "test44", "layout", layout));
+        layout.addData(new Dataset("first", "<h1>First section</h1>\n"));
+
         section.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
+        // todo should id be in here???
         assertEquals("generated HTML", "\n" +
                 "<!-- Start CompoundSection test44 -->\n" +
-                "<table id=\"test44\" cellspacing=\"0\" >\n" +
+                "<div id=\"test44\">\n" +
+                "<table cellspacing=\"0\" >\n" +
                 "  <tr>\n" +
                 "    <td colspan=\"1\" rowspan=\"1\">\n" +
                 "<h1>First section</h1>\n" +
                 "    </td>\n" +
                 "  </tr>\n" +
                 "</table>\n" +
+                "</div>\n" +
                 "<!-- End CompoundSection test44 -->\n", html);
     }
     public void test_render_borderFamilyAndLayout() {
-        String layout = "+-------+\n" +
+        Layout layout = new TableLayout(new Dataset("format",
+                        "+-------+\n" +
                         "| first |\n" +
-                        "+-------+";
+                        "+-------+"));
+        layout.addData(new Dataset("first", "<h1>First section</h1>\n"));
         CompoundSection section = new CompoundSection(
                 new Dataset("id", "test44",
                         "borderFamily", "a/b/c.gif",
-                        "layout", layout),
-                new TemplateSection(new Dataset("id", "first",
-                        "template", "<h1>First section</h1>\n")));
+                        "layout", layout));
         section.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);

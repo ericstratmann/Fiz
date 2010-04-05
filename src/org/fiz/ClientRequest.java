@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 Stanford University
+/* Copyright (c) 2008-2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -795,6 +795,24 @@ public class ClientRequest {
         } else {
             jsCode = null;
             evalJavascript("document.location.href = \"@1\";\n", url);
+        }
+    }
+
+    /**
+     * Appropriately adds {@code var} to the end of the current request's body,
+     * depending on its class. If {@code var} is a section, then its render
+     * method is invoked. Otherwise, its string representation is appended to
+     * the output.
+     * @param cr              Overall information about the client
+     *                        request being serviced.
+     * @param var             Object that will be rendered appropriately
+     *                        depending on that class it is.
+     */
+    public void renderVariable(Object var) {
+        if (var instanceof Section) {
+            ((Section) var).render(this);
+        } else {
+            getHtml().getBody().append(var.toString());
         }
     }
 

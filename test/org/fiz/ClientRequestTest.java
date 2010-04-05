@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 Stanford University
+/* Copyright (c) 2008-2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -244,6 +244,17 @@ public class ClientRequestTest extends junit.framework.TestCase {
             exception = true;
         }
         assertTrue("Attempted to call delete() on a null FileItem", exception);
+    }
+
+    public void test_renderVariable() {
+        cr.renderVariable("hello");
+        StringBuilder out = cr.getHtml().getBody();
+        assertEquals("hello", out.toString());
+
+        out.setLength(0);
+        cr.renderVariable(new TemplateSection("bye"));
+        assertEquals("bye", out.toString());
+
     }
 
     public void test_finish_returnFile_text() {

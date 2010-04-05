@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 Stanford University
+/* Copyright (c) 2008-2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,6 +20,8 @@ import java.util.*;
 
 /**
  * A CompoundSection is a Section that contains one or more other Sections.
+ * By default the sections will be output right after each other, but if a
+ * {@code layout} is specified, that is used to arrange the sections.
  * CompoundSections support the following constructor properties:
  *   background:     (optional) Specifies a background color to use for
  *                   the interior of this section (everything inside the
@@ -33,8 +35,10 @@ import java.util.*;
  *                   and {@code x-w.gif}; {@code x-nw.gif} displays the
  *                   upper left corner of the border, {@code x-n.gif} will be
  *                   stretched to cover the top of the border, and so on.
- *   layout:         (optional) Specifies a table layout for laying out child
- *                   sections. See {@link TableLayout} for details.
+ *   layout:         (optional) Specifies a layout for arranging child
+ *                   sections. See {@link Layout} for details. The layout will
+ *                   be passed in a Dataset with id-section pairs, with the id
+ *                   being the id of the section.
  *   class:          (optional) Used as the {@code class} attribute for
  *                   the HTML table or div that contains the CompoundSection.
  *   id:             (optional)  Used as the {@code id} attribute for the
@@ -48,7 +52,7 @@ import java.util.*;
  *   compoundBody:   The {@code <tr>} element containing all of the nested
  *                   child sections.
  */
-public class CompoundSection extends Section implements TableLayoutContainer {
+public class CompoundSection extends Section {
     // The following variables are copies of the constructor arguments by
     // the same names.  See the constructor documentation for details.
     protected Section[] children;
@@ -96,7 +100,10 @@ public class CompoundSection extends Section implements TableLayoutContainer {
         Template.appendHtml(out, "\n<!-- Start CompoundSection {{@id}} -->\n",
                 properties);
         String borderFamily = properties.checkString("borderFamily");
-        String layout = properties.checkString("layout");
+        Layout layout = null;
+        if (properties.check("layout") instanceof Layout) {
+            layout = (Layout) properties.get("layout");
+        }
         if (borderFamily != null) {
             Template.appendHtml(out, "<table {{id=\"@id\"}} {{class=\"@class\"}} " +
                     "cellspacing=\"0\">\n" +
@@ -121,33 +128,24 @@ public class CompoundSection extends Section implements TableLayoutContainer {
                                 StringUtil.addSuffix(borderFamily, "-n"),
                                 StringUtil.addSuffix(borderFamily, "-ne"),
                                 StringUtil.addSuffix(borderFamily, "-w"));
-            if (layout != null) {
-                // If a table layout was specified, expand it using the
-                // TableLayout class.
-
-                // First copy over the configuration properties relevant to the
-                // TableLayout.html() method.
-                Dataset layoutProperties = new Dataset("layout", layout);
-                TableLayout.render(layoutProperties, this, cr);
-            }
-        } else if (layout != null) {
-            // If a table layout was specified, expand it using the
-            // TableLayout class.
-
-            // First copy over the configuration properties relevant to the
-            // TableLayout.html() method.
-            Dataset layoutProperties = new Dataset("layout", layout,
-                    "id", properties.checkString("id"),
-                    "class", properties.checkString("class"));
-            TableLayout.render(layoutProperties, this, cr);
         } else {
             Template.appendHtml(out, "<div {{id=\"@id\"}} {{class=\"@class\"}} " +
                     "{{style=\"background: @background;\"}}>\n",
                     properties);
         }
 
-        if (layout == null) {
-            // Give the children a chance to render themselves.
+        if (layout != null) {
+            Dataset data = new Dataset();
+            for (Section child : children) {
+                data.set(child.getId(), child);
+            }
+            if (extraChildren != null) {
+                for (Section child : extraChildren) {
+                    data.set(child.getId(), child);
+                }
+            }
+            layout.render(cr, data);
+        } else {
             for (Section child: children) {
                 child.render(cr);
             }
@@ -181,7 +179,7 @@ public class CompoundSection extends Section implements TableLayoutContainer {
                     StringUtil.addSuffix(borderFamily, "-sw"),
                     StringUtil.addSuffix(borderFamily, "-s"),
                     StringUtil.addSuffix(borderFamily, "-se"));
-        } else if (layout == null) {
+        } else {
             out.append("</div>\n");
         }
         Template.appendHtml(out, "<!-- End CompoundSection {{@id}} -->\n",

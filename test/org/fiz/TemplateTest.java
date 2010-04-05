@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 Stanford University
+/* Copyright (c) 2008-2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,6 +15,8 @@
 
 package org.fiz;
 
+import org.fiz.test.*;
+import org.fiz.section.TemplateSection;
 import java.util.*;
 
 /**
@@ -35,8 +37,9 @@ public class TemplateTest extends junit.framework.TestCase {
         list.add(text);
         parsed  = new Template.ParsedTemplate(list);
         out = new StringBuilder();
-        data = new Dataset("hello", "olleh", "foo", "oof", "bar", "rab");
-        info = new Template.ExpandInfo(out, "mytemplate", none, null,
+        data = new Dataset("hello", "olleh", "foo", "oof", "bar", "rab",
+                           "section", new TemplateSection("i'm a section"));
+        info = new Template.ExpandInfo(out, "mytemplate", none, null, null,
                 data, "hi", "bye", null);
     }
 
@@ -52,7 +55,7 @@ public class TemplateTest extends junit.framework.TestCase {
                 Dataset data) {
             StringBuilder out = new StringBuilder();
             Template.ExpandInfo info = new Template.ExpandInfo(out, "",
-                    Template.SpecialChars.NONE, null, data, "hi", "bye");
+                    Template.SpecialChars.NONE, null, null, data, "hi", "bye");
             cache.expand(info);
             return info.out.toString();
         }
@@ -159,30 +162,35 @@ public class TemplateTest extends junit.framework.TestCase {
     public void test_IDFragment_parens() {
         Template.ParsedTemplate pt = new Template.ParsedTemplate(list);
         Template.IdFragment text = new Template.IdFragment(pt);
-        text.expand(new Template.ExpandInfo(out, null, none, null, new Dataset("hello", "olleh")));
+        text.expand(new Template.ExpandInfo(out, null, none, null, null, new Dataset("hello", "olleh")));
         assertEquals("olleh", out.toString());
     }
     public void test_IDFragment_findValue_parens() {
         Template.IdFragment idf = new Template.IdFragment(parsed);
-        String val = idf.findValue(info, true);
+        String val = idf.findValue(info, true).toString();
         assertEquals("dataset value", "olleh", val);
 
         list = new ArrayList<Template.Fragment>();
         list.add(new Template.TextFragment("2"));
         parsed = new Template.ParsedTemplate(list);
         idf = new Template.IdFragment(parsed);
-        info = new Template.ExpandInfo(out, null, none, null, data, null, "bye");
-        val = idf.findValue(info, true);
+        info = new Template.ExpandInfo(out, null, none, null, null, data, null, "bye");
+        val = idf.findValue(info, true).toString();
         assertEquals("indexed value", "bye", val);
     }
     public void test_IDFragment_findValue_String() {
         Template.IdFragment idf = new Template.IdFragment("hello");
-        String val = idf.findValue(info, true);
+        String val = idf.findValue(info, true).toString();
         assertEquals("dataset value", "olleh", val);
 
         idf = new Template.IdFragment("2");
-        val = idf.findValue(info, true);
+        val = idf.findValue(info, true).toString();
         assertEquals("index value", "bye", val);
+    }
+    public void test_IDFragment_findValue_Object() {
+        Template.IdFragment idf = new Template.IdFragment("section");
+        Object val = idf.findValue(info, true);
+        assertEquals("TemplateSection", val.getClass().getSimpleName());
     }
     public void test_IDFragment_findValue_throwError() {
         Template.IdFragment idf = new Template.IdFragment("bogus");
@@ -196,7 +204,7 @@ public class TemplateTest extends junit.framework.TestCase {
     }
     public void test_IDFragment_findValue_dontThrowError() {
         Template.IdFragment idf;
-        String val;
+        Object val;
 
         idf = new Template.IdFragment("bogus");
         val = idf.findValue(info, false);
@@ -211,21 +219,28 @@ public class TemplateTest extends junit.framework.TestCase {
         assertEquals("null index", null, val);
 
         idf = new Template.IdFragment("bogus");
-        val = idf.findValue(new Template.ExpandInfo(out, null, none, null, null,
+        val = idf.findValue(new Template.ExpandInfo(out, null, none, null, null, null,
                                                     false), false);
         assertEquals("null dataset", null, val);
     }
-    public void test_DefaultFragment() {
+    public void test_DefaultFragment_exists() {
         Template.IdFragment id = new Template.IdFragment("foo");
         Template.DefaultFragment frag = new Template.DefaultFragment(id, parsed);
-        frag.expand(new Template.ExpandInfo(out, null, none, null, data));
-        assertEquals("use @ variable", "oof", out.toString());
-
-        out.setLength(0);
-        id = new Template.IdFragment("bogus");
-        frag = new Template.DefaultFragment(id, parsed);
-        frag.expand(new Template.ExpandInfo(out, null, none, null, data));
-        assertEquals("use default value", "hello", out.toString());
+        frag.expand(new Template.ExpandInfo(out, null, none, null, null, data));
+        assertEquals("oof", out.toString());
+    }
+    public void test_DefaultFragment_doesntExist() {
+        Template.IdFragment id = new Template.IdFragment("bogus");
+        Template.DefaultFragment frag = new Template.DefaultFragment(id, parsed);
+        frag.expand(new Template.ExpandInfo(out, null, none, null, null, data));
+        assertEquals("hello", out.toString());
+    }
+    public void test_DefaultFragment_section() {
+        Template.IdFragment id = new Template.IdFragment("section");
+        Template.DefaultFragment frag = new Template.DefaultFragment(id, parsed);
+        ClientRequest cr = new ClientRequestFixture();
+        frag.expand(new Template.ExpandInfo(out, null, none, null, cr, data));
+        assertEquals("i'm a section", cr.getHtml().getBody().toString());
     }
     public void test_ChoiceFragment() {
         text = new Template.TextFragment("goodbye");
@@ -235,20 +250,20 @@ public class TemplateTest extends junit.framework.TestCase {
 
         Template.IdFragment id = new Template.IdFragment("foo");
         Template.ChoiceFragment frag = new Template.ChoiceFragment(id, parsed, cache2);
-        frag.expand(new Template.ExpandInfo(out, null, none, null, data));
+        frag.expand(new Template.ExpandInfo(out, null, none, null, null, data));
         assertEquals("first choice", "hello", out.toString());
 
         out.setLength(0);
         id = new Template.IdFragment("bogus");
         frag = new Template.ChoiceFragment(id, parsed, cache2);
-        frag.expand(new Template.ExpandInfo(out, null, none, null, data));
+        frag.expand(new Template.ExpandInfo(out, null, none, null, null, data));
         assertEquals("second choice", "goodbye", out.toString());
     }
 
     public void test_ConditionalFragment_basics() {
         Template.ConditionalFragment bracket =
                 new Template.ConditionalFragment(parsed, false, false, false);
-        bracket.expand(new Template.ExpandInfo(out, null, none, null, data));
+        bracket.expand(new Template.ExpandInfo(out, null, none, null, null, data));
         assertEquals("add to output", "hello", out.toString());
 
         // make sure it doesn't just wipe out the string builder
@@ -258,14 +273,14 @@ public class TemplateTest extends junit.framework.TestCase {
         list.add(id);
         parsed = new Template.ParsedTemplate(list);
         bracket = new Template.ConditionalFragment(parsed, false, false, false);
-        bracket.expand(new Template.ExpandInfo(out, null, none, null, data));
+        bracket.expand(new Template.ExpandInfo(out, null, none, null, null, data));
         assertEquals("do not add to output", "he", out.toString());
     }
     public void test_ConditionalFragment_setLastCollapsibleSpace() {
         Template.ConditionalFragment bracket =
                 new Template.ConditionalFragment(parsed, false, true, false);
         Template.ExpandInfo info = new Template.ExpandInfo(out, null, none,
-                null, data);
+                null, null, data);
         out.setLength(0);
         bracket.expand(info);
         assertEquals("output empty", -1, info.lastCollapsibleSpace);
@@ -288,7 +303,7 @@ public class TemplateTest extends junit.framework.TestCase {
         Template.ConditionalFragment bracket =
                 new Template.ConditionalFragment(parsed, true, false, true);
         Template.ExpandInfo info = new Template.ExpandInfo(out, null, none,
-                null, data);
+                null, null, data);
         out.setLength(0);
         out.append("xyz ");
         info.lastCollapsibleSpace = 3;
@@ -334,7 +349,7 @@ public class TemplateTest extends junit.framework.TestCase {
         Template.ConditionalFragment bracket =
                 new Template.ConditionalFragment(parsed, false, false, false);
         Template.ExpandInfo info = new Template.ExpandInfo(out, null, null,
-                new ArrayList<String>(), data);
+                new ArrayList<String>(), null, data);
         out.setLength(0);
         bracket.expand(info);
         assertEquals("successful output", "??", out.toString());
@@ -353,34 +368,48 @@ public class TemplateTest extends junit.framework.TestCase {
                 "abc", StringUtil.join(info.sqlParameters, ", "));
     }
 
+    public void test_valueExists() {
+        assertEquals("section", true, Template.valueExists(new TemplateSection("")));
+        assertEquals("non-empty string", true, Template.valueExists("test"));
+        assertEquals("empty string", false, Template.valueExists(""));
+        assertEquals("null", false, Template.valueExists(null));
+    }
+
     public void test_addValue() {
+        ClientRequest cr = new ClientRequestFixture();
+
+        info = new Template.ExpandInfo(out, null, Template.SpecialChars.HTML,
+                                       null, cr, data);
+        Template.addValue(info, new TemplateSection("< \" \\"));
+        assertEquals("section", "< \" \\", cr.getHtml().getBody().toString());
+
         String val = "< \"a";
         info = new Template.ExpandInfo(out, null, Template.SpecialChars.HTML,
-                                       null, data);
+                                       null, null, data);
         Template.addValue(info, val);
         assertEquals("html", "&lt; &quot;a", out.toString());
 
         out.setLength(0);
         info = new Template.ExpandInfo(out, null, Template.SpecialChars.JS,
-                                       null, data);
+                                       null, null, data);
         Template.addValue(info, val);
         assertEquals("javascript", "< \\\"a", out.toString());
 
         out.setLength(0);
         info = new Template.ExpandInfo(out, null, Template.SpecialChars.URL,
-                                       null, data);
+                                       null, null, data);
         Template.addValue(info, val);
         assertEquals("url", "%3c+%22a", out.toString());
 
         out.setLength(0);
         info = new Template.ExpandInfo(out, null, Template.SpecialChars.NONE,
-                                       null, data);
+                                       null, null, data);
         Template.addValue(info, val);
         assertEquals("none", "< \"a", out.toString());
 
         out.setLength(0);
         info = new Template.ExpandInfo(out, null, null,
-                                       new ArrayList<String>(), data);
+                                       new ArrayList<String>(), null, data);
         Template.addValue(info, val);
         assertEquals("sql out", "?", out.toString());
         assertEquals("sql add to array", "< \"a", info.sqlParameters.get(0).toString());
@@ -408,6 +437,13 @@ public class TemplateTest extends junit.framework.TestCase {
                 "<Alice>", "25");
         assertEquals("output string", "name: &lt;Alice&gt;, age: 25",
                 result);
+    }
+
+    public void test_appendToClientRequest() {
+        ClientRequest cr = new ClientRequestFixture();
+        Template.appendToClientRequest(cr, "--@a @1--", new Dataset("a", "foo"),
+                                       "bar");
+        assertEquals("--foo bar--", cr.getHtml().getBody().toString());
     }
 
     public void test_appendHtml() {

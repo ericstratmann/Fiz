@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 Stanford University
+/* Copyright (c) 2008-2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,12 +13,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package org.fiz;
+package org.fiz.section;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.fiz.section.*;
+import org.fiz.*;
 import org.fiz.test.*;
 
 /**
@@ -26,38 +26,18 @@ import org.fiz.test.*;
  */
 public class TableLayoutTest extends junit.framework.TestCase {
     protected ClientRequestFixture cr;
-    protected TableLayoutContainer container;
+    protected TableLayout tableLayout;
+    protected Dataset data;
 
     public void setUp() {
         cr = new ClientRequestFixture();
-        container = new CompoundSection(null,
-                new TemplateSection(new Dataset("id", "1",
-                        "template", "<h1>section 1</h1>\n")),
-                new TemplateSection(new Dataset("id", "2",
-                        "template", "<h1>section 2</h1>\n")),
-                new TemplateSection(new Dataset("id", "3",
-                        "template", "<h1>section 3</h1>\n")),
-                new TemplateSection(new Dataset("id", "4",
-                        "template", "<h1>section 4</h1>\n")),
-                new TemplateSection(new Dataset("id", "5",
-                        "template", "<h1>section 5</h1>\n")),
-                new TemplateSection(new Dataset("id", "6",
-                        "template", "<h1>section 6</h1>\n")),
-                new TemplateSection(new Dataset("id", "7",
-                        "template", "<h1>section 7</h1>\n")),
-                new TemplateSection(new Dataset("id", "8",
-                        "template", "<h1>section 8</h1>\n")),
-                new TemplateSection(new Dataset("id", "9",
-                        "template", "<h1>section 9</h1>\n")),
-                new TemplateSection(new Dataset("id", "10",
-                        "template", "<h1>section 10</h1>\n")),
-                new TemplateSection(new Dataset("id", "11",
-                        "template", "<h1>section 11</h1>\n")),
-                new TemplateSection(new Dataset("id", "12",
-                        "template", "<h1>section 12</h1>\n")),
-                new TemplateSection(new Dataset("id", "a-b",
-                        "template", "<h1>section a-b</h1>\n"))
-            );
+
+        data = new Dataset();
+        for (int i = 1; i <= 12; i++) {
+            data.set(Integer.toString(i), "<h1>section " + i + "</h1>\n");
+        }
+        data.set("a-b", "<h1>section a-b</h1>\n");
+
         Config.setDataset("tableLayout", new Dataset("useCache", "false"));
     }
 
@@ -65,7 +45,8 @@ public class TableLayoutTest extends junit.framework.TestCase {
         for (String l : layouts) {
             boolean gotException = false;
             try {
-                TableLayout.render(new Dataset("layout", l), container, cr);
+                tableLayout = new TableLayout(new Dataset("format", l, "data", data));
+                tableLayout.render(cr);
             }
             catch (TableLayout.ParseError e) {
                 gotException = true;
@@ -116,15 +97,10 @@ public class TableLayoutTest extends junit.framework.TestCase {
     public void test_render_noLayout() {
         boolean gotException = false;
         try {
-            TableLayout.render(new Dataset(), container, cr);
+            tableLayout = new TableLayout(new Dataset());
+            tableLayout.render(cr);
         }
-        catch (Dataset.MissingValueError e) {
-            assertEquals("exception message",
-                    "couldn't find dataset element \"layout\"",
-                    e.getMessage());
-            gotException = true;
-        }
-        assertEquals("exception happened", true, gotException);
+        catch (org.fiz.InternalError e) {}
     }
 
     public void test_render_cache() {
@@ -133,7 +109,8 @@ public class TableLayoutTest extends junit.framework.TestCase {
                         "+----+\n";
 
         TableLayout.clearCache();
-        TableLayout.render(new Dataset("layout", layout), container, cr);
+        tableLayout = new TableLayout(new Dataset("format", layout, "data", data));
+        tableLayout.render(cr);
         assertEquals("layoutCache size after html", 1,
                 TableLayout.layoutCache.size());
     }
@@ -143,9 +120,10 @@ public class TableLayoutTest extends junit.framework.TestCase {
                         "| 1  |\n" +
                         "+----+\n";
         TableLayout.clearCache();
-        TableLayout.render(new Dataset("layout", layout), container, cr);
+        tableLayout = new TableLayout(new Dataset("format", layout, "data", data));
+        tableLayout.render(cr);
         int cacheUseCountBefore = TableLayout.cacheUseCount;
-        TableLayout.render(new Dataset("layout", layout), container, cr);
+        tableLayout.render(cr);
         assertEquals("Cache use count", cacheUseCountBefore + 1,
                 TableLayout.cacheUseCount);
     }
@@ -155,9 +133,9 @@ public class TableLayoutTest extends junit.framework.TestCase {
                         "| 1  |\n" +
                         "+----+\n";
         TableLayout.clearCache();
-        TableLayout.render(new Dataset("id", "abc",
-                "class", "someStyle",
-                "layout", layout), container, cr);
+        tableLayout = new TableLayout(new Dataset("id", "abc", "class",
+                              "someStyle", "format", layout, "data", data));
+        tableLayout.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
         assertEquals("generated HTML",
@@ -175,7 +153,8 @@ public class TableLayoutTest extends junit.framework.TestCase {
         String layout = "+-----+\n" +
                         "| a-b |\n" +
                         "+-----+\n";
-        TableLayout.render(new Dataset("layout", layout), container, cr);
+        tableLayout = new TableLayout(new Dataset("format", layout, "data", data));
+        tableLayout.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
         assertEquals("generated HTML",
@@ -193,7 +172,8 @@ public class TableLayoutTest extends junit.framework.TestCase {
         String layout = "+----+\n" +
                         "| 1  |\n" +
                         "+----+\n";
-        TableLayout.render(new Dataset("layout", layout), container, cr);
+        tableLayout = new TableLayout(new Dataset("format", layout, "data", data));
+        tableLayout.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
         assertEquals("generated HTML",
@@ -224,7 +204,9 @@ public class TableLayoutTest extends junit.framework.TestCase {
                         "| 10 |1| 12 |\n" +
                         "|    |1|    |\n" +
                         "+----+-+----+";
-        TableLayout.render(new Dataset("layout", layout), container, cr);
+
+        tableLayout = new TableLayout(new Dataset("format", layout, "data", data));
+        tableLayout.render(cr);
         String html = cr.getHtml().getBody().toString();
         TestUtil.assertXHTML(html);
         assertEquals("generated HTML","<table cellspacing=\"0\" >\n" +
@@ -437,7 +419,8 @@ public class TableLayoutTest extends junit.framework.TestCase {
         for (String l : layouts) {
             boolean gotException = false;
             try {
-                TableLayout.render(new Dataset("layout", l), container, cr);
+                tableLayout = new TableLayout(new Dataset("format", l, "data", data));
+                tableLayout.render(cr);
             }
             catch (TableLayout.ParseError e) {
                 gotException = true;
@@ -593,7 +576,7 @@ public class TableLayoutTest extends junit.framework.TestCase {
         for (String l : layouts) {
             boolean gotException = false;
             try {
-                TableLayout.render(new Dataset("layout", l), container, cr);
+                tableLayout = new TableLayout(new Dataset("format", l, "data", data));
             }
             catch (TableLayout.ParseError e) {
                 gotException = true;

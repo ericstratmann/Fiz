@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 Stanford University
+/* Copyright (c) 2008-2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -302,7 +302,7 @@ public class Template {
          *                     request value cannot be found
          * @return             The value from the dataset or indexed data
          */
-        public String findValue(ExpandInfo info, boolean required) {
+        public Object findValue(ExpandInfo info, boolean required) {
             String tmpName = this.name;
             int tmpIndex = this.index;
 
@@ -323,7 +323,7 @@ public class Template {
                 }
             }
 
-            String value = null;
+            Object value = null;
             // If there is indexed data in this expansion and the name is an
             // integer, use an indexed value if there is one corresponding to
             // the name.
@@ -331,12 +331,12 @@ public class Template {
                 if (tmpIndex <= info.indexedData.length) {
                     Object tmp = info.indexedData[tmpIndex-1];
                     if (tmp != null) {
-                        value = tmp.toString();
+                        value = tmp;
                     }
                 }
             } else {
                 if (info.data != null) {
-                    value = info.data.checkString(tmpName);
+                    value = info.data.check(tmpName);
                 }
             }
 
@@ -373,11 +373,11 @@ public class Template {
          * @param info         Information describing the current expansion
          */
         public void expand(ExpandInfo info) {
-            String value = id.findValue(info, false);
-            if (value == null || value.length() == 0) {
-                defaultOption.expand(info);
-            } else {
+            Object value = id.findValue(info, false);
+            if (valueExists(value)) {
                 addValue(info, value);
+            } else {
+                defaultOption.expand(info);
             }
         }
     }
@@ -410,11 +410,11 @@ public class Template {
          * @param info         Information describing the current expansion
          */
         public void expand(ExpandInfo info) {
-            String value = id.findValue(info, false);
-            if (value == null || value.length() == 0) {
-                second.expand(info);
-            } else {
+            Object value = id.findValue(info, false);
+            if(valueExists(value)) {
                 first.expand(info);
+            } else {
+                second.expand(info);
             }
         }
     }
@@ -539,6 +539,8 @@ public class Template {
         protected ArrayList<String> sqlParameters;
         // Dataset of values to substitute
         protected Dataset data;
+        // Used for sections
+        protected ClientRequest cr;
         // Indexed data to substitute
         protected Object[] indexedData;
         // Index of the last space character that can be collapsed by
@@ -547,7 +549,7 @@ public class Template {
 
         protected ExpandInfo(StringBuilder out, CharSequence template,
                              SpecialChars quoting, ArrayList<String> sqlParameters,
-                             Dataset data, Object ... indexedData) {
+                             ClientRequest cr, Dataset data, Object ... indexedData) {
             if (out == null) {
                 out = new StringBuilder();
             }
@@ -556,6 +558,7 @@ public class Template {
             this.quoting = quoting;
             this.sqlParameters = sqlParameters;
             this.data = data;
+            this.cr = cr;
             this.indexedData = indexedData;
         }
     }
@@ -591,23 +594,46 @@ public class Template {
     // No constructor: this class only has a static methods.
     private Template() {}
 
+
+    /**
+     * Checks whether a value "exists" in the context of expanding a
+     * DefaultFragment or ChoiceFragment, such as in @value?{...}.
+     * See the comments for the class for a more detailed description.
+     * @param value           The "foo" of @foo?{...}
+     * @return                Whether the value exists and is non-empty
+     */
+    protected static boolean valueExists(Object value) {
+        return value instanceof Section || (value != null &&
+                                            value.toString().length() > 0);
+    }
+
     /**
      * Adds a value to the ouput, escaping it if necessary
      * @param info         Information describing the current expansion.
      *                     info.quoting determines what sort of quoting to do
      * @param value        String which is quoted and added to output
      */
-    protected static void addValue(ExpandInfo info, String value) {
+    protected static void addValue(ExpandInfo info, Object value) {
+        if (value instanceof Section) {
+            if (info.cr == null) {
+                throw new InternalError("Cannot expand section without a " +
+                                        "client request");
+            }
+            ((Section) value).render(info.cr);
+            return;
+        }
+
+        String val = value.toString();
         if (info.quoting == SpecialChars.HTML) {
-            Html.escapeHtmlChars(value, info.out);
+            Html.escapeHtmlChars(val, info.out);
         } else if (info.quoting == SpecialChars.JS) {
-            Html.escapeStringChars(value, info.out);
+            Html.escapeStringChars(val, info.out);
         } else if (info.quoting == SpecialChars.URL) {
-            Html.escapeUrlChars(value, info.out);
+            Html.escapeUrlChars(val, info.out);
         } else if (info.quoting == SpecialChars.NONE) {
-            info.out.append(value);
+            info.out.append(val);
         } else if (info.sqlParameters != null) {
-            info.sqlParameters.add(value);
+            info.sqlParameters.add(val);
             info.out.append("?");
         } else {
             throw new InternalError("unknown quoting value in " +
@@ -631,7 +657,7 @@ public class Template {
      */
     protected static StringBuilder expand(StringBuilder out, CharSequence template,
                      SpecialChars quoting, Dataset data, Object ... indexedData) {
-        return expand(out, template, quoting, null, data, indexedData);
+        return expand(out, template, quoting, null, null, data, indexedData);
     }
 
     /**
@@ -652,7 +678,7 @@ public class Template {
      */
     protected static StringBuilder expand(StringBuilder out, CharSequence template,
                      SpecialChars quoting, ArrayList<String> sqlParameters,
-                     Dataset data, Object ... indexedData) {
+                     ClientRequest cr, Dataset data, Object ... indexedData) {
         ParsedTemplate parsed = parsedTemplates.get(template);
         if (parsed == null) {
             ParseInfo info = new ParseInfo(template);
@@ -661,9 +687,34 @@ public class Template {
             parsedTemplates.put(template, parsed);
         }
 
-        ExpandInfo info = new ExpandInfo(out, template, quoting, sqlParameters, data, indexedData);
+        ExpandInfo info = new ExpandInfo(out, template, quoting, sqlParameters, cr, data, indexedData);
         parsed.expand(info);
         return info.out;
+    }
+
+    /**
+     * Substitute data (including sections) into a template string, using HTML
+     * conventions for escaping special characters in substituted values. HTML
+     * is appeneded to the ClientRequest's output.
+     * @param cr                   Output is appended to the client request
+     * @param template             Contains text to be copied to
+     *                             {@code out} plus substitution
+     *                             specifiers such as {@code @foo}.
+     * @param data                 Provides data to be substituted into the
+     *                             template.
+     * @param indexedData          One or more objects, whose values can be
+     *                             referred to in the template with
+     *                             numerical specifiers such as {@code @1}.
+     *                             Null values may be supplied to indicate
+     *                             "no object with this index".
+     * @throws MissingValueError   A required data value couldn't be found.
+     * @throws SyntaxError         The template contains an illegal construct
+     *                             such as {@code @+}.
+     */
+    public static void appendToClientRequest(ClientRequest cr, CharSequence template,
+                                  Dataset data, Object ... indexedData) {
+        expand(cr.getHtml().getBody(), template, SpecialChars.HTML, null, cr,
+               data, indexedData);
     }
 
     /**
@@ -1071,7 +1122,7 @@ public class Template {
     public static String expandSql(CharSequence template, Dataset data,
             ArrayList<String> sqlParameters)
             throws MissingValueError, SyntaxError {
-        return expand(null, template, null, sqlParameters, data).toString();
+        return expand(null, template, null, sqlParameters, null, data).toString();
     }
 
     /**
