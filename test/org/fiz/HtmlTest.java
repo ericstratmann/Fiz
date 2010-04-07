@@ -98,12 +98,24 @@ public class HtmlTest extends junit.framework.TestCase {
     }
 
     // No tests for getBody; too trivial.
+    
+    public void test_appendToHead() {
+        html.appendToHead("bar");
+        assertEquals("bar", html.getHeadExtraInformation());
+        html.appendToHead("foo");
+        assertEquals("barfoo", html.getHeadExtraInformation());
+    }
+
+    public void test_getHeadExtraInformation() {
+        assertEquals("", html.getHeadExtraInformation());
+        html.appendToHead("foo");
+        assertEquals("foo", html.getHeadExtraInformation());       
+    }
 
     public void test_getCss() {
         html.includeCss("bar");
         assertEquals("bar", html.getCss());
     }
-
 
     public void test_getCssFiles() {
         (new File("_test_")).mkdir();
@@ -370,6 +382,27 @@ public class HtmlTest extends junit.framework.TestCase {
                 "</head>\n",
                 html.toString());
         Util.deleteTree("_test_");
+    }
+    public void test_print_appendToHead() {
+        html.getBody().append("first line\n");
+        html.setTitle("sample title");
+        StringWriter out = new StringWriter();
+        html.appendToHead("<p>foo</p>");
+        html.print(out);
+        assertEquals("**Prologue**\n" +
+                "<head>\n" +
+                "<title>sample title</title>\n" +
+                "<style type=\"text/css\">\n" +
+                "/* Dummy version of main.css for tests */\n" +
+                "body {color: #000000}\n" +
+                "</style>\n" +
+                "<p>foo</p>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "first line\n" +
+                "</body>\n" +
+                "</html>\n",
+                out.toString());
     }
     public void test_print_javascriptIncludes() {
         (new File("_test_")).mkdir();

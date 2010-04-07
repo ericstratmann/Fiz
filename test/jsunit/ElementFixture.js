@@ -104,6 +104,24 @@ Element.prototype.getElementsByTagName = function(tag) {
 }
 
 /**
+ * Generates a list of children of the current element that have the class
+ * specified. IMPORTANT: Element must include a "class" property for this
+ * function to find it.
+ * @param class_name                      The class attribute of element we 
+ *                                        are looking for
+ */
+Element.prototype.getElementsByClassName = function(class_name) {
+    var children = [];
+    for (var child = this.firstChild; child != null;
+    child = child.nextSibling) {
+        if (class_name == child["class"]) {
+            children.push(child);
+        }
+    }
+    return children;
+}
+
+/**
  * Generates a string describing all of the children of a particular element.
  * @return                         See above.
  */
@@ -122,6 +140,13 @@ Element.prototype.printChildren = function() {
 // The functions below may attempt to replicate part or all of the
 // functionality of the official DOM versions, or they may just log
 // information about their parameters.
+
+Element.prototype.addEventListener = function(event, callbackFunction, capture){
+    if(!this.listeners[event]){
+        this.listeners[event] = new Array();
+    }
+    this.listeners[event].push(callbackFunction);
+}
 
 Element.prototype.appendChild = function(element) {
     element.parentNode = this;
@@ -207,6 +232,10 @@ Element.prototype.scrollIntoView = function() {
 
 Element.prototype.setAttribute = function(name, value) {
     this[name] = value;
+}
+
+Element.prototype.getAttribute = function(name){
+    return this[name];
 }
 
 Element.prototype.setAttributes = function(attributes) {

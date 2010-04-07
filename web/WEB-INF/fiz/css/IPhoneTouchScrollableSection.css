@@ -1,0 +1,14 @@
+div.touchScrollableSectionContainer {
+    height: 324px;
+}
+
+div.touchScrollableSection {
+    position: relative;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+/*
+p{
+    -webkit-user-select: text;
+}
+*/

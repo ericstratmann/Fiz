@@ -29,6 +29,9 @@ public class Html {
     // Contents of the document; see getBody for details.
     protected StringBuilder body = new StringBuilder();
 
+    // Extra HTML to be added to the head.
+    protected StringBuilder headExtra = null;
+
     // Title for the document; see setTitle for details.
     protected String title = null;
 
@@ -117,6 +120,36 @@ public class Html {
      */
     public synchronized static void clearJsDependencyCache() {
         jsDependencyCache.clear();
+    }
+
+    /**
+     * Adds the string passed as a parameter to the head of the HTML document.
+     * The headExtra object is initialized 'on demand', ie. when this method is
+     * called for the first time. Subsequent calls to this method only append 
+     * a string to it.
+     * @param extra                   String to be appended to the head of the
+     *                                HTML document.
+     */
+    public void appendToHead(String extra) {
+        if (headExtra == null){
+            headExtra = new StringBuilder();
+        }
+        headExtra.append(extra);
+    }
+    
+    /**
+     * Returns the extra information added to the head of the HTML document.
+     * @return                        Returns the extra information added to 
+     *                                the head of the HTML document. If nothing
+     *                                has been added, it returns null.
+     */
+    public String getHeadExtraInformation(){
+        if (headExtra != null){
+            return headExtra.toString();
+        }
+        else{
+            return ""; 
+        }
     }
 
     /**
@@ -354,6 +387,10 @@ public class Html {
                     writer.write('\n');
                 }
                 writer.write("</style>\n");
+            }
+            
+            if (headExtra != null){
+                writer.write(headExtra.toString() + "\n");
             }
 
             // Output body.

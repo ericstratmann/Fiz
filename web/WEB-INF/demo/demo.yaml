@@ -36,6 +36,30 @@ people:
           weight: 220
           height: 71
 
+phone:
+    record:
+        - label: BM
+          image: bookmarks
+          url: newMethod1
+        - label: Like
+          image: favorite
+          javascript: alert("Hello World");
+        - label: Chat
+          image: chat
+          url: http://www.google.com/
+          ajaxUrl: newMethod3
+        - label: Add
+          image: plus
+          ajaxUrl: newMethod4
+        - label: Mail
+          image: mail
+          url: newMethod5
+          javascript: alert("I never get displayed");
+        - label: New
+          image: new
+          ajaxUrl: newMethod5
+          javascript: alert("I never get displayed");
+
 person:
     record:
         name: Bill

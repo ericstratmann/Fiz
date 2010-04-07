@@ -1,0 +1,78 @@
+/* Set our fixed elements above everything else. Since the height
+   of this element is expressed as a percentage, it must be a direct
+   child of the HTML body element for the desired effect to take place.
+*/
+div.toolbarSection {	
+    position: absolute; 
+    bottom: -61px;
+    left: 0px;
+    height: 49px;
+    display: block;
+    width: 100%;
+    background: url("/static/fiz/images/bg.png") repeat-x center top;
+    z-index: 200;
+    background-position: center bottom;
+    font-family: Helvetica;
+}
+
+/*
+div.toolbarSection.landscape {	
+  bottom: 0px;
+}
+
+div.toolbarSection.portrait {	
+  bottom: 0px;
+}
+
+
+div.toolbarSection.scrolled {	
+  bottom: 0px;
+}
+
+*/
+
+div.toolbarSection table {
+    width: 100%;
+}
+
+div.toolbarSection table tr {
+    width: 100%;
+}
+
+div.toolbarSection tr {
+    margin: 0 auto;
+    padding: 3px 0 0;
+    height: 93.9%;
+    text-align: center;
+    overflow: hidden;
+}
+
+/* Styling for a button */
+div.toolbarSection td {
+    margin: 0 2px;
+    border: 1px solid;
+    border-color: transparent;
+    border-width: 0 1px;
+}
+
+div.toolbarSection td span {
+    padding: 0px 3px 3px;
+    float: center;
+    text-align: center;
+    color: #bbb;
+    font-weight: bold;
+    font-size: 10px;
+    text-decoration: none;
+}
+
+/* Styling for the active button */
+div.toolbarSection td.active {
+    margin: 0 2px;
+    border: 1px solid;
+    border-width: 0 1px;
+    -webkit-border-image: url("/static/fiz/images/footer-hover.png") 0 3;
+}
+
+div.toolbarSection td.active span {
+    color: #fff;
+}

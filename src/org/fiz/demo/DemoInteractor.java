@@ -398,6 +398,225 @@ public class DemoInteractor extends Interactor {
     }
 
     /**
+     * Displays a page with a demonstration of the PhoneToolbarSection
+     * class, for an iPhone.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    public void iPhonePhoneToolbarSection(ClientRequest cr) {
+        MobilePhoneLayout layout = new MobilePhoneLayout();
+        layout.setup(cr, "IPhone");
+        Html html = cr.getHtml();
+        html.setTitle("IPhoneToolbarSection Demo");
+        
+        Dataset iphoneButtons = fileDataManager.read("demo.yaml", "phone");
+        cr.showSections(
+                new PhoneToolbarSection(
+                        new Dataset("buttons", iphoneButtons))
+        );
+    }
+    
+    /**
+     * Displays a page with a demonstration of the PhoneToolbarSection
+     * class, for an Android phone.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    public void androidPhoneToolbarSection(ClientRequest cr) {
+        MobilePhoneLayout layout = new MobilePhoneLayout();
+        layout.setup(cr, "Android");
+        Html html = cr.getHtml();
+        html.setTitle("AndroidPhoneToolbarSection Demo");
+        
+        Dataset androidPhoneButtons = fileDataManager.read("demo.yaml", "phone");
+        cr.showSections(
+                new PhoneToolbarSection(
+                        new Dataset("buttons", androidPhoneButtons))
+        );        
+    }
+
+    /**
+     * Displays a page with a demonstration of the TouchScrollableSection
+     * class, for an iPhone. It has been made intentionally long to 
+     * demonstrate the scrollability.
+     * @param cr                   Overall information about the client
+     *                             request being serviced.
+     */
+    public void iPhoneTouchScrollableSection(ClientRequest cr) {
+        MobilePhoneLayout layout = new MobilePhoneLayout();
+        layout.setup(cr, "IPhone");
+        Html html = cr.getHtml();
+        html.setTitle("TouchScrollableSection Demo");
+
+        Dataset iphoneButtons = fileDataManager.read("demo.yaml", "phone");
+        TouchScrollableSection section = new TouchScrollableSection (
+                new Dataset(),
+                        new TemplateSection ("<p>This<p>\n"),
+                        new TemplateSection ("<p>is</p>\n"),
+                        new TemplateSection ("<p>some</p>\n"),
+                        new TemplateSection ("<p>random</p>\n"),
+                        new TemplateSection ("<p>stuff</p>\n"),
+                        new TemplateSection ("<p>to fill</p>\n"),
+                        new TemplateSection ("<p>this</p>\n"),
+                        new TemplateSection ("<p>section</p>\n"),
+                        
+                        new TemplateSection ("<p>Here is some sample text " +
+                        "to fill the body of this section.</p>\n"),
+                        new TemplateSection ("<p>This<p>\n"),
+                        new TemplateSection ("<p>is</p>\n"),
+                        new TemplateSection ("<p>some</p>\n"),
+                        new TemplateSection ("<p>random</p>\n"),
+                        new TemplateSection ("<p>stuff</p>\n"),
+                        new TemplateSection ("<p>to fill</p>\n"),
+                        new TemplateSection ("<p>this</p>\n"),
+                        new TemplateSection ("<p>section</p>\n"),
+                        
+                        new TemplateSection ("<p>Here is some sample text " +
+                        "to fill the body of this section.</p>\n"),
+                        new TemplateSection ("<p>This<p>\n"),
+                        new TemplateSection ("<p>is</p>\n"),
+                        new TemplateSection ("<p>some</p>\n"),
+                        new TemplateSection ("<p>random</p>\n"),
+                        new TemplateSection ("<p>stuff</p>\n"),
+                        new TemplateSection ("<p>to fill</p>\n"),
+                        new TemplateSection ("<p>this</p>\n"),
+                        new TemplateSection ("<p>section</p>\n"),
+                        
+                        new TemplateSection ("<p>Here is some sample text " +
+                        "to fill the body of this section.</p>\n"),
+                        new TemplateSection ("<p>This<p>\n"),
+                        new TemplateSection ("<p>is</p>\n"),
+                        new TemplateSection ("<p>some</p>\n"),
+                        new TemplateSection ("<p>random</p>\n"),
+                        new TemplateSection ("<p>stuff</p>\n"),
+                        new TemplateSection ("<p>to fill</p>\n"),
+                        new TemplateSection ("<p>this</p>\n"),
+                        new TemplateSection ("<p>section</p>\n"),
+                        
+                        new TemplateSection ("<p>Here is some sample text " +
+                        "to fill the body of this section.</p>\n"),
+                        new TemplateSection ("<p>This<p>\n"),
+                        new TemplateSection ("<p>is</p>\n"),
+                        new TemplateSection ("<p>some</p>\n"),
+                        new TemplateSection ("<p>random</p>\n"),
+                        new TemplateSection ("<p>stuff</p>\n"),
+                        new TemplateSection ("<p>to fill</p>\n"),
+                        new TemplateSection ("<p>this</p>\n"),
+                        new TemplateSection ("<p>section</p>\n"),
+                        
+                        new TemplateSection ("<p>Here is some sample text " +
+                        "to fill the body of this section.</p>\n"),
+                        new TemplateSection ("<p>This<p>\n"),
+                        new TemplateSection ("<p>is</p>\n"),
+                        new TemplateSection ("<p>some</p>\n"),
+                        new TemplateSection ("<p>random</p>\n"),
+                        new TemplateSection ("<p>stuff</p>\n"),
+                        new TemplateSection ("<p>to fill</p>\n"),
+                        new TemplateSection ("<p>this</p>\n"),
+                        new TemplateSection ("<p>section</p>\n"),
+                        
+                        new TemplateSection ("<p>Here is some sample text " +
+                        "to fill the body of this section.</p>\n"),
+                        new TemplateSection ("<p>This<p>\n"),
+                        new TemplateSection ("<p>is</p>\n"),
+                        new TemplateSection ("<p>some</p>\n"),
+                        new TemplateSection ("<p>random</p>\n"),
+                        new TemplateSection ("<p>stuff</p>\n"),
+                        new TemplateSection ("<p>to fill</p>\n"),
+                        new TemplateSection ("<p>this</p>\n"),
+                        new TemplateSection ("<p>section</p>\n"),
+                        
+                        new TemplateSection ("<p>Here is some sample text " +
+                        "to fill the body of this section.</p>\n"),
+                        new TemplateSection ("<p>This<p>\n"),
+                        new TemplateSection ("<p>is</p>\n"),
+                        new TemplateSection ("<p>some</p>\n"),
+                        new TemplateSection ("<p>random</p>\n"),
+                        new TemplateSection ("<p>stuff</p>\n"),
+                        new TemplateSection ("<p>to fill</p>\n"),
+                        new TemplateSection ("<p>this</p>\n"),
+                        new TemplateSection ("<p>section</p>\n"),
+                        
+                        new TemplateSection ("<p>Here is some sample text " +
+                        "to fill the body of this section.</p>\n"),
+                        new TemplateSection ("<p>This<p>\n"),
+                        new TemplateSection ("<p>is</p>\n"),
+                        new TemplateSection ("<p>some</p>\n"),
+                        new TemplateSection ("<p>random</p>\n"),
+                        new TemplateSection ("<p>stuff</p>\n"),
+                        new TemplateSection ("<p>to fill</p>\n"),
+                        new TemplateSection ("<p>this</p>\n"),
+                        new TemplateSection ("<p>section</p>\n"),
+                        
+                        new TemplateSection ("<p>Here is some sample text " +
+                        "to fill the body of this section.</p>\n"),
+                        new TemplateSection ("<p>Here is some sample text " +
+                        "to fill the body of this section.</p>\n"),
+                        
+                
+                        new TemplateSection ("<p>Here is some sample text " +
+                        "to fill the body of this section.</p>\n"),
+                        new TemplateSection ("<p>This <a id=\"link_one\" href = " +
+                        "\"#\">is a second</a> paragraph, " +
+                        "which follows the first.</p>\n"),
+                        new TemplateSection ("<p>This is a third paragraph, " +
+                        "which follows the second.</p>\n"),
+                        new TemplateSection ("<p>This is a fourth paragraph, " +
+                        "which follows the third.</p>\n"),
+                        new TemplateSection ("<p>This is a fifth paragraph, " +
+                        "which follows the fourth.</p>\n"),
+                        new TemplateSection ("<p><a id=\"link_two\" href = " +
+                        "\"#\">This is a second paragraph</a>, " +
+                        "which follows the first.</p>\n"),
+                        new TemplateSection ("<p>This is a <a id=\"link_three\" " +
+                        "href=\"#\">second</a> paragraph, " +
+                        "which follows the first.</p>\n"),
+                        new TemplateSection ("<p>This is <a id=\"link_four\" " +
+                        "href = \"#\" onclick=\"alert(&quot;hello world&quot;)\"" +
+                        ">a second paragraph</a>, " +
+                        "which follows the first.</p>\n"),
+                        new TemplateSection (
+                                "<img src=\"http://pulverblog.pulver.com/archives/miami08/sunrise-apr26.jpg\" " +
+                                "/>\n"),
+                        new TemplateSection ("<p>This is a third paragraph, " +
+                        "which follows the first.</p>\n"),
+                        new TemplateSection (
+                                "<img src=\"http://pulverblog.pulver.com/archives/miami08/sunrise-apr26.jpg\" " +
+                                "/>\n"),
+                        new TemplateSection ("<p>This is a third paragraph, " +
+                        "which follows the first.</p>\n"),
+                        new TemplateSection (
+                                "<img src=\"http://pulverblog.pulver.com/archives/miami08/sunrise-apr26.jpg\" " +
+                                "/>\n"),
+                        new TemplateSection ("<p>This is a third paragraph, " +
+                        "which follows the first.</p>\n"),
+                        new TemplateSection (
+                                "<img src=\"http://pulverblog.pulver.com/archives/miami08/sunrise-apr26.jpg\" " +
+                                "/>\n"),
+                        new TemplateSection ("<p>This is a third paragraph, " +
+                        "which follows the first.</p>\n"),
+                        new TemplateSection (
+                                "<img src=\"http://pulverblog.pulver.com/archives/miami08/sunrise-apr26.jpg\" " +
+                                "/>\n"),
+                        new TemplateSection ("<p>This is a third paragraph, " +
+                        "which follows the first.</p>\n"),
+                        new TemplateSection (
+                                "<img src=\"http://pulverblog.pulver.com/archives/miami08/sunrise-apr26.jpg\" " +
+                                "/>\n"),
+                        new TemplateSection ("<p>This is a third paragraph, " +
+                        "which follows the first.</p>\n"),
+                        new TemplateSection (
+                                "<img src=\"http://pulverblog.pulver.com/archives/miami08/sunrise-apr26.jpg\" " +
+                                "/>\n")
+        );
+        cr.showSections(section);
+        cr.showSections(
+                new PhoneToolbarSection(
+                        new Dataset("buttons", iphoneButtons))
+        );
+    }
+
+    /**
      * Displays a page containing statistics from all the performance timers.
      * @param cr                   Overall information about the client
      *                             request being serviced.

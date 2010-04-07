@@ -416,6 +416,29 @@ function setTimeout(firstArg, interval) {
 }
 
 /**
+ * This method is a stand-in for the browser method of the same name.
+ * It just logs information about the call to {@code jsunit.log}.
+ * @param firstArg                 First argument to setInterval: either a
+ *                                 function or a script.
+ * @param interval                 Second argument to setInterval.
+ */
+function setInterval(firstArg, interval){
+    jsunit.log += "setInterval(" + firstArg.toString() + ", " +
+        interval + ")\n";
+    return firstArg.toString() + ", " + interval;
+}
+
+/**
+ * This method is a stand-in for the browser method of the same name.
+ * It just logs information about the call to {@code jsunit.log}.
+ * @param firstArg                 Argument to clearInterval
+ */
+function clearInterval(firstArg){
+    jsunit.log += "clearInterval(" + firstArg.toString() + ")\n";
+    delete firstArg;
+}
+
+/**
  * Generate a string representation of a dataset-like Javascript object.
  * @param data                     Object containing hierarchical collection
  *                                 of the string values, Objects, and arrays
