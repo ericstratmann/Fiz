@@ -101,7 +101,7 @@ public class CompoundSection extends Section {
                 properties);
         String borderFamily = properties.checkString("borderFamily");
         Layout layout = null;
-        if (properties.check("layout") instanceof Layout) {
+        if (properties.check("layout") != null) {
             layout = (Layout) properties.get("layout");
         }
         if (borderFamily != null) {
