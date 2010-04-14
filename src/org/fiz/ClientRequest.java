@@ -803,8 +803,6 @@ public class ClientRequest {
      * depending on its class. If {@code var} is a section, then its render
      * method is invoked. Otherwise, its string representation is appended to
      * the output.
-     * @param cr              Overall information about the client
-     *                        request being serviced.
      * @param var             Object that will be rendered appropriately
      *                        depending on that class it is.
      */

@@ -26,7 +26,7 @@ import ys.wikiparser.WikiParser;
  * based on the Creole wiki standard. See <a href="link http://wikicreole.org/">
  * the official creole website</a> for a full specification. Template
  * substitution is used to substitute values into the layout, using the same
- * @ convention. See {@link Template} for more information.
+ * &#064; convention. See {@link Template} for more information.
  *
  * This class supports the same properties as the Layout class, though the
  * {@code format} is interpreted as markup rather than HTML.
