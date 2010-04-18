@@ -328,9 +328,14 @@ public class Dispatcher extends HttpServlet {
             dispatcherTimer.start(startTime);
             dispatcherTimer.stop();
 
+            Interactor globalRequestWrapper = getGlobalRequestWrapper();
+            invokeStartMethod(globalRequestWrapper, cr);
             invokeStartMethod(method.interactor, cr);
+
             method.method.invoke(method.interactor, cr);
+
             invokeEndMethod(method.interactor, cr);
+            invokeEndMethod(globalRequestWrapper, cr);
 
             finishTimer.start();
 
@@ -624,6 +629,32 @@ public class Dispatcher extends HttpServlet {
     }
 
     /**
+     * Returns the interactor which contains start and end methods to be
+     * executed before and after every request. The name of this class must
+     * be defined in main configuration dataset with the name
+     * "globalRequestWrapper". See the {@code invokeStartMethod} and
+     * {@code invokeEndMethod} methods for more details.
+     * @return               Interactor with start and end methods to invoke,
+     *                       or null if there is no entry named
+     *                       globalRequestWrapper.
+     */
+    protected Interactor getGlobalRequestWrapper() {
+        Dataset main = Config.getDataset("main");
+        String wrapper = main.checkString("globalRequestWrapper");
+        if (wrapper == null) {
+            return null;
+        }
+
+        Interactor interactor = interactorMap.get(wrapper);
+        if (interactor == null) {
+            return (Interactor) Util.newInstance(wrapper,
+                    "org.fiz.Interactor");
+        } else {
+            return interactor;
+        }
+    }
+
+    /**
      * Invokes the appropriate method in the interactor based on the type of
      * request. On a normal request, invokes {@code start}, for AJAX, invokes
      * {@code startAjax}, and for POST, invokes {@code startPost}.
@@ -633,7 +664,7 @@ public class Dispatcher extends HttpServlet {
      * @param cr             Overall information about the client
      *                       request being serviced.
      */
-    protected static void invokeStartMethod(Interactor interactor, ClientRequest cr) {
+    protected void invokeStartMethod(Interactor interactor, ClientRequest cr) {
         if (interactor == null) {
             return;
         }
@@ -660,7 +691,7 @@ public class Dispatcher extends HttpServlet {
      * @param cr             Overall information about the client
      *                       request being serviced.
      */
-    protected static void invokeEndMethod(Interactor interactor, ClientRequest cr) {
+    protected void invokeEndMethod(Interactor interactor, ClientRequest cr) {
         if (interactor == null) {
             return;
         }

@@ -205,6 +205,22 @@ public class DispatcherTest extends junit.framework.TestCase {
         assertEquals("Ajax request", true, DispatcherTest1Interactor.isAjax);
         assertEquals("count variable", 2, DispatcherTest1Interactor.count);
     }
+    public void test_service_StartMethodsCalled() {
+        Config.setDataset("main", new Dataset("globalRequestWrapper",
+                                              "DispatcherTest1Interactor"));
+        DispatcherTest1Interactor.startCount = 0;
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest1/incCount"), new ServletResponseFixture());
+        assertEquals(2, DispatcherTest1Interactor.startCount);
+    }
+    public void test_service_EndMethodsCalled() {
+        Config.setDataset("main", new Dataset("globalRequestWrapper",
+                                              "DispatcherTest1Interactor"));
+        DispatcherTest1Interactor.endCount = 0;
+        dispatcher.service(new ServletRequestFixture(
+                "/dispatcherTest1/incCount"), new ServletResponseFixture());
+        assertEquals(2, DispatcherTest1Interactor.endCount);
+    }
     public void test_service_setPostType() {
         DispatcherTest1Interactor.count = 0;
         dispatcher.service(new ServletRequestFixture(
@@ -595,6 +611,31 @@ public class DispatcherTest extends junit.framework.TestCase {
         return (DispatcherTest1Interactor)  Util.newInstance(
                "org.fiz.DispatcherTest1Interactor", "DispatcherTest1Interactor");
     }
+
+
+    public void test_getGlobalRequestWrapper_noWrapper() {
+        Config.setDataset("main", new Dataset());
+        assertEquals(null, dispatcher.getGlobalRequestWrapper());
+    }
+
+    public void test_getGlobalRequestWrapper_notInMap() {
+        Config.setDataset("main", new Dataset("globalRequestWrapper",
+                                              "DispatcherTest1Interactor"));
+        assertTrue(dispatcher.getGlobalRequestWrapper() instanceof
+                   org.fiz.DispatcherTest1Interactor);
+    }
+
+    public void test_getGlobalRequestWrapper_inMap() {
+        Config.setDataset("main", new Dataset("globalRequestWrapper",
+                                              "DispatcherTest1Interactor"));
+        Interactor interactor =
+            (Interactor) Util.newInstance("DispatcherTest2Interactor",
+                    "org.fiz.Interactor");
+        dispatcher.interactorMap.put("DispatcherTest1Interactor", interactor);
+        assertTrue(dispatcher.getGlobalRequestWrapper() instanceof
+                   org.fiz.DispatcherTest2Interactor);
+    }
+
 
     public void test_invokeStartMethod_noInteractor() {
         ClientRequest cr = new ClientRequestFixture();
