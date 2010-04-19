@@ -37,6 +37,11 @@ public class LayoutTest extends junit.framework.TestCase {
         assertEquals("b", layout.getData(cr).getString("a"));
     }
 
+    public void test_constructor_string() {
+        layout = new Layout("foo");
+        assertEquals("foo", layout.properties.getString("format"));
+    }
+
     public void test_addData() {
         layout = new Layout(new Dataset());
         layout.addData(new Dataset("a", "b", "c", "d"));

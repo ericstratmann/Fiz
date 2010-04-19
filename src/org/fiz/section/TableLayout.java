@@ -142,6 +142,14 @@ public class TableLayout extends Layout {
     }
 
     /**
+     * Construct a TableLayout with the given {@code format} string.
+     * @param format          Describes the layout. See above for a description.
+     */
+    public TableLayout(String format) {
+        this(new Dataset("format", format));
+    }
+
+    /**
      * Discard all cached information (such as previously parsed layout
      * descriptions).
      * Typically invoked during debugging sessions to flush caches on every

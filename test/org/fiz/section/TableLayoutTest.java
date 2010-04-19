@@ -83,6 +83,12 @@ public class TableLayoutTest extends junit.framework.TestCase {
         assertEquals("exception cause", cause, error.getCause());
     }
 
+    public void test_constructor_string() {
+        tableLayout = new TableLayout("foo");
+        assertEquals("foo", tableLayout.properties.getString("format"));
+    }
+
+
     public void test_clearCache() {
         TableLayout.layoutCache.clear();
         TableLayout.layoutCache.put("123",

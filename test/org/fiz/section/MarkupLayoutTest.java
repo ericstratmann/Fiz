@@ -32,6 +32,11 @@ public class MarkupLayoutTest extends junit.framework.TestCase {
         cr = new ClientRequestFixture();
     }
 
+    public void test_constructor_string() {
+        markup = new MarkupLayout("foo");
+        assertEquals("foo", markup.properties.getString("format"));
+    }
+
     public void test_render_markupTransformation() {
         markup = new MarkupLayout(new Dataset("format", "** blah **"));
         markup.render(cr);

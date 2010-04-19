@@ -43,6 +43,14 @@ public class MarkupLayout extends Layout{
     }
 
     /**
+     * Construct a MarkupLayout with the given {@code format} string.
+     * @param format          Describes the layout. See above for a description.
+     */
+    public MarkupLayout(String format) {
+        this(new Dataset("format", format));
+    }
+
+    /**
      * Generates HTML for the the MarkupLayout, using properties passed to the
      * constructor.
      * @param cr             Overall information about the client

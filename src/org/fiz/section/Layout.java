@@ -71,6 +71,14 @@ public class Layout extends Section {
     }
 
     /**
+     * Construct a Layout with the given {@code format} string.
+     * @param format          Describes the layout. See above for a description.
+     */
+    public Layout(String format) {
+        this(new Dataset("format", format));
+    }
+
+    /**
      * Values in the dataset passed to this method will be used to substitute
      * into the layout. For example, if a layout contains "@foo", it may check
      * the data passed in to look for a value with key "foo". Any values in
