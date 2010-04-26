@@ -52,6 +52,7 @@ public class TouchScrollableSectionTest extends junit.framework.TestCase {
     }
 
     public void test_render_dontIncludeCss() {
+        cr.getMainDataset().set("device", "IPhone");
         TouchScrollableSection scroller = new TouchScrollableSection(
                    new Dataset("class", "special"));
         cr.showSections(scroller);
@@ -83,6 +84,7 @@ public class TouchScrollableSectionTest extends junit.framework.TestCase {
     }
 
     public void test_render_basics() {
+        cr.getMainDataset().set("device", "IPhone");
         TouchScrollableSection scroller = new TouchScrollableSection(
                    new Dataset(),
                    new TemplateSection ("<p>Here is some sample text " +

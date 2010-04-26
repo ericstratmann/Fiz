@@ -116,6 +116,7 @@ public class PhoneToolbarSectionTest extends junit.framework.TestCase {
     }
     
     public void test_render_dontIncludeCss() {
+        cr.getMainDataset().set("device", "IPhone");
     	PhoneToolbarSection toolbar = new PhoneToolbarSection(
                 new Dataset("buttons", data4, "class", "special"));
         cr.showSections(toolbar);
@@ -124,6 +125,7 @@ public class PhoneToolbarSectionTest extends junit.framework.TestCase {
     }
 
     public void test_render_basics() {
+        cr.getMainDataset().set("device", "IPhone");
     	PhoneToolbarSection toolbar = new PhoneToolbarSection(
                 new Dataset("buttons", data4));
         cr.showSections(toolbar);
