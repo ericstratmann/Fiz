@@ -76,20 +76,22 @@ public class PhoneToolbarSectionTest extends junit.framework.TestCase {
     }
     
     public void test_render_includeCss() {
+        cr.getMainDataset().set("device", "IPhone");
         PhoneToolbarSection toolbar = new PhoneToolbarSection(
                 new Dataset("buttons", data4));
         cr.showSections(toolbar);
         TestUtil.assertSubstring("CSS files requested",
-                "DefaultPhoneToolbarSection.css",
+                "IPhonePhoneToolbarSection.css",
                 cr.getHtml().getCssFiles());
     }
 
     public void test_render_includeJs() {
+        cr.getMainDataset().set("device", "IPhone");
         PhoneToolbarSection toolbar = new PhoneToolbarSection(
                 new Dataset("buttons", data4));
         cr.showSections(toolbar);
         TestUtil.assertSubstring("JS files requested",
-                "DefaultPhoneToolbarSection.js",
+                "IPhonePhoneToolbarSection.js",
                 cr.getHtml().getJsFiles());
     }
 

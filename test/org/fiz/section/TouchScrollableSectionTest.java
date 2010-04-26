@@ -31,24 +31,6 @@ public class TouchScrollableSectionTest extends junit.framework.TestCase {
         cr = new ClientRequestFixture();
     }
     
-    public void test_render_includeDefaultCss() {
-        TouchScrollableSection scroller = new TouchScrollableSection(
-                new Dataset());
-        cr.showSections(scroller);
-        TestUtil.assertSubstring("CSS files requested",
-                "DefaultTouchScrollableSection.css",
-                cr.getHtml().getCssFiles());
-    }
-
-    public void test_render_includeDefaultJs() {
-        TouchScrollableSection scroller = new TouchScrollableSection(
-                new Dataset());
-        cr.showSections(scroller);
-        TestUtil.assertSubstring("JS files requested",
-                "DefaultTouchScrollableSection.js",
-                cr.getHtml().getJsFiles());
-    }
-
     public void test_render_includeDeviceJs() {
         cr.getMainDataset().set("device", "IPhone");
         TouchScrollableSection scroller = new TouchScrollableSection(
