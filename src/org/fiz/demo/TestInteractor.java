@@ -22,6 +22,7 @@ import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.mozilla.javascript.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This Interactor is used for temporary tests and has no long-term
@@ -34,8 +35,36 @@ public class TestInteractor extends Interactor {
 
     // The following fields are used for measuring Ajax latency.
     int ajaxCount = 0;
+    int ajaxCount1 = 0;
+    int ajaxCount2 = 0;
     long startTime;
+    
+    // This is used for a measurement of client to client RTT.
+    class SyncInt {
+        private int messageState;
+        
+        public SyncInt(){
+            messageState = 0;
+        }
+        
+        public synchronized void increment (int i, ClientRequest cr) {
+            while (messageState != i) {
+                try {
+                    wait();
+                } catch (InterruptedException e) {}
+            }
+         //   cr.evalJavascript("console.log(\"Present value: " + messageState + "\");");
+            messageState = (messageState + 1) % 4;
+            notifyAll();
+        }
+        
+        public int get() {
+            return messageState;
+        }
+    }
 
+    SyncInt syncInt = new SyncInt();
+    
     public void path(ClientRequest cr) {
         logger.info("getRealPath(\"a/b/c\"): "
                 + cr.getServletContext().getRealPath("a/b/c"));
@@ -126,6 +155,7 @@ public class TestInteractor extends Interactor {
         }
 
         // Compute statistics and display them on the page.
+        ajaxCount = 0;
         long endTime = System.nanoTime();
         cr.updateElement("perf",
                 String.format("<br>Time per round-trip: %.2fms",
@@ -217,6 +247,66 @@ public class TestInteractor extends Interactor {
         body.append("  Or, ");
         Button.render(cr, new Dataset("text", "Click", "ajaxUrl", "ajaxPerf"),
                 new Dataset());
+        body.append("<span id=\"perf\"></span>\n");
+    }
+    
+    public void ajaxRtt1(ClientRequest cr) {
+        if (ajaxCount1 == 0){
+            startTime = System.nanoTime();
+        //    cr.evalJavascript("console.log(\"Start time: " + startTime + "\");");
+        }
+        ajaxCount1++;
+        if (ajaxCount1 < 100) {
+            syncInt.increment(0, cr);
+            syncInt.increment(3, cr);
+            cr.evalJavascript("new Fiz.Ajax(\"ajaxRtt1\");");
+            return;
+        }
+        ajaxCount1 = 0;
+        long endTime = System.nanoTime();
+        cr.updateElement("perf",
+                String.format("<br>Time per round-trip: %.2fms",
+                (endTime - startTime)/(100*1000000.0)));
+    }
+    
+    public void ajaxRtt2(ClientRequest cr) {
+        ajaxCount2++;
+        if (ajaxCount2 < 100) {
+            syncInt.increment(1, cr);
+            cr.evalJavascript("new Fiz.Ajax(\"ajaxRtt21\");");
+            return;
+        }
+        ajaxCount2 = 0;
+    }
+
+    public void ajaxRtt21(ClientRequest cr) {
+        syncInt.increment(2, cr);
+        cr.evalJavascript("new Fiz.Ajax(\"ajaxRtt2\");");
+    }
+    
+    public void rtt1(ClientRequest cr) {
+        Html html = cr.getHtml();
+        html.setTitle("RTT Test Page 1");
+        html.includeJsFile("static/fiz/Ajax.js");
+        StringBuilder body = html.getBody();
+        Template.appendHtml(body, "<p>Ajax round trip (client to client) " +
+                "test page 1</p>\n");
+        Link link4 = new Link(new Dataset("text", "Click here.",
+                "ajaxUrl", "ajaxRtt1"));
+        link4.render(cr);
+        body.append("<span id=\"perf\"></span>\n");
+    }
+
+    public void rtt2(ClientRequest cr) {
+        Html html = cr.getHtml();
+        html.setTitle("RTT Test Page 2");
+        html.includeJsFile("static/fiz/Ajax.js");
+        StringBuilder body = html.getBody();
+        Template.appendHtml(body, "<p>Ajax round trip (client to client) " +
+                "test page 2</p>\n");
+        Link link4 = new Link(new Dataset("text", "Click here.",
+                "ajaxUrl", "ajaxRtt2"));
+        link4.render(cr);
         body.append("<span id=\"perf\"></span>\n");
     }
 

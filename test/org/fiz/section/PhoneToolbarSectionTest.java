@@ -56,22 +56,22 @@ public class PhoneToolbarSectionTest extends junit.framework.TestCase {
     }
 
     public void test_render_includeDeviceCss() {
-        cr.getMainDataset().set("device", "Android");
+        cr.getMainDataset().set("device", "IPhone");
         PhoneToolbarSection toolbar = new PhoneToolbarSection(
                 new Dataset("buttons", data4));
         cr.showSections(toolbar);
         TestUtil.assertSubstring("CSS files requested",
-                "AndroidPhoneToolbarSection.css",
+                "IPhonePhoneToolbarSection.css",
                 cr.getHtml().getCssFiles());
     }
     
     public void test_render_includeDeviceJs() {
-        cr.getMainDataset().set("device", "Android");
+        cr.getMainDataset().set("device", "IPhone");
         PhoneToolbarSection toolbar = new PhoneToolbarSection(
                 new Dataset("buttons", data4));
         cr.showSections(toolbar);
         TestUtil.assertSubstring("JS files requested",
-                "AndroidPhoneToolbarSection.js",
+                "IPhonePhoneToolbarSection.js",
                 cr.getHtml().getJsFiles());
     }
     
@@ -94,22 +94,22 @@ public class PhoneToolbarSectionTest extends junit.framework.TestCase {
     }
 
     public void test_render_accumulatedJs() {
-        cr.getMainDataset().set("device", "Android");
+        cr.getMainDataset().set("device", "IPhone");
         PhoneToolbarSection toolbar = new PhoneToolbarSection(
                 new Dataset("buttons", data4));
         cr.showSections(toolbar);
         TestUtil.assertSubstring("Accumulated Js",
-                "new Fiz.AndroidPhoneToolbarSection(\"footer\")",
+                "new Fiz.IPhonePhoneToolbarSection(\"footer\")",
                 cr.getHtml().getJs());
     }
     
     public void test_render_accumulatedJsCustomId() {
-        cr.getMainDataset().set("device", "Android");
+        cr.getMainDataset().set("device", "IPhone");
         PhoneToolbarSection toolbar = new PhoneToolbarSection(
                 new Dataset("buttons", data4, "id", "myToolbar"));
         cr.showSections(toolbar);
         TestUtil.assertSubstring("Accumulated Js",
-                "new Fiz.AndroidPhoneToolbarSection(\"myToolbar\")",
+                "new Fiz.IPhonePhoneToolbarSection(\"myToolbar\")",
                 cr.getHtml().getJs());
     }
     

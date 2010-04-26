@@ -13,7 +13,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package org.fiz.section;
+package org.fiz;
 
 import org.fiz.*;
 import org.fiz.test.*;

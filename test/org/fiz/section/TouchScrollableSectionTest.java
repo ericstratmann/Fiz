@@ -50,22 +50,22 @@ public class TouchScrollableSectionTest extends junit.framework.TestCase {
     }
 
     public void test_render_includeDeviceJs() {
-        cr.getMainDataset().set("device", "Android");
+        cr.getMainDataset().set("device", "IPhone");
         TouchScrollableSection scroller = new TouchScrollableSection(
                 new Dataset());
         cr.showSections(scroller);
         TestUtil.assertSubstring("JS files requested",
-                "AndroidTouchScrollableSection.js",
+                "IPhoneTouchScrollableSection.js",
                 cr.getHtml().getJsFiles());
     }
 
     public void test_render_includeDeviceCss() {
-        cr.getMainDataset().set("device", "Android");
+        cr.getMainDataset().set("device", "IPhone");
         TouchScrollableSection scroller = new TouchScrollableSection(
                 new Dataset());
         cr.showSections(scroller);
         TestUtil.assertSubstring("CSS files requested",
-                "AndroidTouchScrollableSection.css",
+                "IPhoneTouchScrollableSection.css",
                 cr.getHtml().getCssFiles());
     }
 
