@@ -107,7 +107,7 @@ Element.prototype.getElementsByTagName = function(tag) {
  * Generates a list of children of the current element that have the class
  * specified. IMPORTANT: Element must include a "class" property for this
  * function to find it.
- * @param class_name                      The class attribute of element we 
+ * @param class_name                      The class attribute of element we
  *                                        are looking for
  */
 Element.prototype.getElementsByClassName = function(class_name) {

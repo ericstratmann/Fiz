@@ -39,7 +39,7 @@ public class PhoneToolbarSectionTest extends junit.framework.TestCase {
     public void setUp() {
         cr = new ClientRequestFixture();
     }
-    
+
     public void test_constructor_noData() {
         boolean gotException = false;
         try {
@@ -64,7 +64,7 @@ public class PhoneToolbarSectionTest extends junit.framework.TestCase {
                 "IPhonePhoneToolbarSection.css",
                 cr.getHtml().getCssFiles());
     }
-    
+
     public void test_render_includeDeviceJs() {
         cr.getMainDataset().set("device", "IPhone");
         PhoneToolbarSection toolbar = new PhoneToolbarSection(
@@ -74,7 +74,7 @@ public class PhoneToolbarSectionTest extends junit.framework.TestCase {
                 "IPhonePhoneToolbarSection.js",
                 cr.getHtml().getJsFiles());
     }
-    
+
     public void test_render_includeCss() {
         cr.getMainDataset().set("device", "IPhone");
         PhoneToolbarSection toolbar = new PhoneToolbarSection(
@@ -104,7 +104,7 @@ public class PhoneToolbarSectionTest extends junit.framework.TestCase {
                 "new Fiz.IPhonePhoneToolbarSection(\"footer\")",
                 cr.getHtml().getJs());
     }
-    
+
     public void test_render_accumulatedJsCustomId() {
         cr.getMainDataset().set("device", "IPhone");
         PhoneToolbarSection toolbar = new PhoneToolbarSection(
@@ -114,10 +114,10 @@ public class PhoneToolbarSectionTest extends junit.framework.TestCase {
                 "new Fiz.IPhonePhoneToolbarSection(\"myToolbar\")",
                 cr.getHtml().getJs());
     }
-    
+
     public void test_render_dontIncludeCss() {
         cr.getMainDataset().set("device", "IPhone");
-    	PhoneToolbarSection toolbar = new PhoneToolbarSection(
+        PhoneToolbarSection toolbar = new PhoneToolbarSection(
                 new Dataset("buttons", data4, "class", "special"));
         cr.showSections(toolbar);
         TestUtil.assertSubstring("CSS files requested",
@@ -126,47 +126,47 @@ public class PhoneToolbarSectionTest extends junit.framework.TestCase {
 
     public void test_render_basics() {
         cr.getMainDataset().set("device", "IPhone");
-    	PhoneToolbarSection toolbar = new PhoneToolbarSection(
+        PhoneToolbarSection toolbar = new PhoneToolbarSection(
                 new Dataset("buttons", data4));
         cr.showSections(toolbar);
         assertEquals("generated HTML",
-                "\n<!-- Start PhoneToolbarSection -->\n" + 
+                "\n<!-- Start PhoneToolbarSection -->\n" +
                 "<div id=\"footer\" class=\"toolbarSection\">\n" +
-                "   <table><tr>\n" + 
-                
+                "   <table><tr>\n" +
+
                 "  <td id=\"tdBookmarksBM\"><a href=\"#\" " +
                 "onclick=\"void new Fiz.Ajax({url: &quot;newMethod1&quot;});" +
                 " return false;\">" +
-                "<div class=\"toolbarButton\" " + 
+                "<div class=\"toolbarButton\" " +
                     "id=\"BM-toolbarButton-Bookmarks\">" +
                 "<div><img id=\"BookmarksBM\" alt=\"BM\" " +
-                    "src=\"/static/fiz/images/Bookmarks.png\"/>" + 
+                    "src=\"/static/fiz/images/Bookmarks.png\"/>" +
                 "</div><span>BM</span></div></a></td>\n" +
-                
+
                 "  <td id=\"tdFavoriteLike\"><a href=\"http://www.google.com/\">" +
-                "<div class=\"toolbarButton\" " + 
+                "<div class=\"toolbarButton\" " +
                     "id=\"Like-toolbarButton-Favorite\">" +
                 "<div><img id=\"FavoriteLike\" alt=\"Like\" " +
-                    "src=\"/static/fiz/images/Favorite.png\"/>" + 
+                    "src=\"/static/fiz/images/Favorite.png\"/>" +
                 "</div><span>Like</span></div></a></td>\n" +
-                    
+
                 "  <td id=\"tdChatChat\"><a href=\"#\" " +
                 "onclick=\"alert(&quot;Hello World&quot;); return false;\">" +
-                "<div class=\"toolbarButton\" " + 
+                "<div class=\"toolbarButton\" " +
                     "id=\"Chat-toolbarButton-Chat\">" +
                 "<div><img id=\"ChatChat\" alt=\"Chat\" " +
-                    "src=\"/static/fiz/images/Chat.png\"/>" + 
+                    "src=\"/static/fiz/images/Chat.png\"/>" +
                 "</div><span>Chat</span></div></a></td>\n" +
-                
+
                 "  <td id=\"tdPlusAdd\"><a href=\"newMethod4\">" +
-                "<div class=\"toolbarButton\" " + 
+                "<div class=\"toolbarButton\" " +
                     "id=\"Add-toolbarButton-Plus\">" +
                 "<div><img id=\"PlusAdd\" alt=\"Add\" " +
-                    "src=\"/static/fiz/images/Plus.png\"/>" + 
+                    "src=\"/static/fiz/images/Plus.png\"/>" +
                 "</div><span>Add</span></div></a></td>\n" +
-                
+
                 "   </tr></table>\n" +
-                "</div>\n" + 
+                "</div>\n" +
                 "<!-- End PhoneToolbarSection -->\n",
                 cr.getHtml().getBody().toString());
         TestUtil.assertXHTML(cr.getHtml().toString());

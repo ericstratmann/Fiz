@@ -35,21 +35,21 @@ IPhoneLayoutTest.test_constructor = function(){
     document.body.listeners = new Array();
     window.listeners = new Array();
     new Fiz.IPhoneLayout();
-    
-    assertEqual("\nfunction (e) {\n" + 
+
+    assertEqual("\nfunction (e) {\n" +
         "    e.preventDefault();\n" +
     "}\n", document.body.listeners["touchmove"][0].toString(), "Touch Move Handler");
-    
+
     assertEqual("\nfunction () {\n" +
             "    setTimeout(function () {\n" +
             "        window.scrollTo(0, 1);\n" +
             "    }, 0);\n" +
             "}\n", window.listeners["load"][0].toString(), "Window onLoad Handler");
-    
+
     assertEqual("\nfunction () {\n" +
             "    setTimeout(function () {\n" +
             "        window.scrollTo(0, 1);\n" +
             "    }, 0);\n" +
-            "}\n", window.listeners["orientationchange"][0].toString(), 
+            "}\n", window.listeners["orientationchange"][0].toString(),
                 "Window orientationChange Handler");
 }

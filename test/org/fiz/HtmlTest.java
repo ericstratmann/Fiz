@@ -98,7 +98,7 @@ public class HtmlTest extends junit.framework.TestCase {
     }
 
     // No tests for getBody; too trivial.
-    
+
     public void test_appendToHead() {
         html.appendToHead("bar");
         assertEquals("bar", html.getHeadExtraInformation());
@@ -109,7 +109,7 @@ public class HtmlTest extends junit.framework.TestCase {
     public void test_getHeadExtraInformation() {
         assertEquals("", html.getHeadExtraInformation());
         html.appendToHead("foo");
-        assertEquals("foo", html.getHeadExtraInformation());       
+        assertEquals("foo", html.getHeadExtraInformation());
     }
 
     public void test_getCss() {

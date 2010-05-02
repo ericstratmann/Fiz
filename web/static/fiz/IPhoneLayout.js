@@ -28,7 +28,7 @@ Fiz.IPhoneLayout = function(){
     var $i = this;
     this.disableScrollOnBody();
     window.addEventListener("load", $i.hideURLBar, false);
-    window.addEventListener("orientationchange", $i.hideURLBar, false);   
+    window.addEventListener("orientationchange", $i.hideURLBar, false);
 }
 
 /**

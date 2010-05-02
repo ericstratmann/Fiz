@@ -408,14 +408,14 @@ public class DemoInteractor extends Interactor {
         layout.setup(cr, "IPhone");
         Html html = cr.getHtml();
         html.setTitle("IPhoneToolbarSection Demo");
-        
+
         Dataset iphoneButtons = fileDataManager.read("demo.yaml", "phone");
         cr.showSections(
                 new PhoneToolbarSection(
                         new Dataset("buttons", iphoneButtons))
         );
     }
-    
+
     /**
      * Displays a page with a demonstration of the PhoneToolbarSection
      * class, for an Android phone.
@@ -427,17 +427,17 @@ public class DemoInteractor extends Interactor {
         layout.setup(cr, "Android");
         Html html = cr.getHtml();
         html.setTitle("AndroidPhoneToolbarSection Demo");
-        
+
         Dataset androidPhoneButtons = fileDataManager.read("demo.yaml", "phone");
         cr.showSections(
                 new PhoneToolbarSection(
                         new Dataset("buttons", androidPhoneButtons))
-        );        
+        );
     }
 
     /**
      * Displays a page with a demonstration of the TouchScrollableSection
-     * class, for an iPhone. It has been made intentionally long to 
+     * class, for an iPhone. It has been made intentionally long to
      * demonstrate the scrollability.
      * @param cr                   Overall information about the client
      *                             request being serviced.
@@ -459,7 +459,7 @@ public class DemoInteractor extends Interactor {
                         new TemplateSection ("<p>to fill</p>\n"),
                         new TemplateSection ("<p>this</p>\n"),
                         new TemplateSection ("<p>section</p>\n"),
-                        
+
                         new TemplateSection ("<p>Here is some sample text " +
                         "to fill the body of this section.</p>\n"),
                         new TemplateSection ("<p>This<p>\n"),
@@ -470,7 +470,7 @@ public class DemoInteractor extends Interactor {
                         new TemplateSection ("<p>to fill</p>\n"),
                         new TemplateSection ("<p>this</p>\n"),
                         new TemplateSection ("<p>section</p>\n"),
-                        
+
                         new TemplateSection ("<p>Here is some sample text " +
                         "to fill the body of this section.</p>\n"),
                         new TemplateSection ("<p>This<p>\n"),
@@ -481,7 +481,7 @@ public class DemoInteractor extends Interactor {
                         new TemplateSection ("<p>to fill</p>\n"),
                         new TemplateSection ("<p>this</p>\n"),
                         new TemplateSection ("<p>section</p>\n"),
-                        
+
                         new TemplateSection ("<p>Here is some sample text " +
                         "to fill the body of this section.</p>\n"),
                         new TemplateSection ("<p>This<p>\n"),
@@ -492,7 +492,7 @@ public class DemoInteractor extends Interactor {
                         new TemplateSection ("<p>to fill</p>\n"),
                         new TemplateSection ("<p>this</p>\n"),
                         new TemplateSection ("<p>section</p>\n"),
-                        
+
                         new TemplateSection ("<p>Here is some sample text " +
                         "to fill the body of this section.</p>\n"),
                         new TemplateSection ("<p>This<p>\n"),
@@ -503,7 +503,7 @@ public class DemoInteractor extends Interactor {
                         new TemplateSection ("<p>to fill</p>\n"),
                         new TemplateSection ("<p>this</p>\n"),
                         new TemplateSection ("<p>section</p>\n"),
-                        
+
                         new TemplateSection ("<p>Here is some sample text " +
                         "to fill the body of this section.</p>\n"),
                         new TemplateSection ("<p>This<p>\n"),
@@ -514,7 +514,7 @@ public class DemoInteractor extends Interactor {
                         new TemplateSection ("<p>to fill</p>\n"),
                         new TemplateSection ("<p>this</p>\n"),
                         new TemplateSection ("<p>section</p>\n"),
-                        
+
                         new TemplateSection ("<p>Here is some sample text " +
                         "to fill the body of this section.</p>\n"),
                         new TemplateSection ("<p>This<p>\n"),
@@ -525,7 +525,7 @@ public class DemoInteractor extends Interactor {
                         new TemplateSection ("<p>to fill</p>\n"),
                         new TemplateSection ("<p>this</p>\n"),
                         new TemplateSection ("<p>section</p>\n"),
-                        
+
                         new TemplateSection ("<p>Here is some sample text " +
                         "to fill the body of this section.</p>\n"),
                         new TemplateSection ("<p>This<p>\n"),
@@ -536,7 +536,7 @@ public class DemoInteractor extends Interactor {
                         new TemplateSection ("<p>to fill</p>\n"),
                         new TemplateSection ("<p>this</p>\n"),
                         new TemplateSection ("<p>section</p>\n"),
-                        
+
                         new TemplateSection ("<p>Here is some sample text " +
                         "to fill the body of this section.</p>\n"),
                         new TemplateSection ("<p>This<p>\n"),
@@ -547,13 +547,13 @@ public class DemoInteractor extends Interactor {
                         new TemplateSection ("<p>to fill</p>\n"),
                         new TemplateSection ("<p>this</p>\n"),
                         new TemplateSection ("<p>section</p>\n"),
-                        
+
                         new TemplateSection ("<p>Here is some sample text " +
                         "to fill the body of this section.</p>\n"),
                         new TemplateSection ("<p>Here is some sample text " +
                         "to fill the body of this section.</p>\n"),
-                        
-                
+
+
                         new TemplateSection ("<p>Here is some sample text " +
                         "to fill the body of this section.</p>\n"),
                         new TemplateSection ("<p>This <a id=\"link_one\" href = " +

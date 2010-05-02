@@ -1,7 +1,7 @@
 // DateFixture.js --
 //
 // This file provides a dummy partial implementation of the Date
-// DOM class, for use in tests.  There's just enough functionality 
+// DOM class, for use in tests.  There's just enough functionality
 // here to test existing Javascript code.
 //
 // Copyright (c) 2010 Stanford University

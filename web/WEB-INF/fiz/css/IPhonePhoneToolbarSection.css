@@ -2,8 +2,8 @@
    of this element is expressed as a percentage, it must be a direct
    child of the HTML body element for the desired effect to take place.
 */
-div.toolbarSection {	
-    position: absolute; 
+div.toolbarSection {
+    position: absolute;
     bottom: -61px;
     left: 0px;
     height: 49px;
@@ -16,16 +16,16 @@ div.toolbarSection {
 }
 
 /*
-div.toolbarSection.landscape {	
+div.toolbarSection.landscape {
   bottom: 0px;
 }
 
-div.toolbarSection.portrait {	
+div.toolbarSection.portrait {
   bottom: 0px;
 }
 
 
-div.toolbarSection.scrolled {	
+div.toolbarSection.scrolled {
   bottom: 0px;
 }
 

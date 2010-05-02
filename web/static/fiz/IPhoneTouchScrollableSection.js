@@ -2,11 +2,11 @@
  *
  * This file provides Javascript functions needed to implement the
  * TouchScrollableSection class for an iPhone.
- * One Fiz.IPhoneTouchScrollableSection Javascript object gets created for each 
- * TouchScrollableSection Java object created on an iPhone.  
+ * One Fiz.IPhoneTouchScrollableSection Javascript object gets created for each
+ * TouchScrollableSection Java object created on an iPhone.
  * Methods on the Javascript object are invoked for handling the scrolling of
  * of the section in order to mimic a scrollable list of a native application.
- * 
+ *
  * Copyright (c) 2010 Stanford University
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -55,7 +55,7 @@ Fiz.IPhoneTouchScrollableSection = function(idOut, idIn) {
     this.speed = 0;             // Current speed of the scroll
                                 // Units: pixels/ms
     this.acceleration = null;   // Current acceleration of the scroll
-                                // Units: pixels/ms (This is interpreted as a 
+                                // Units: pixels/ms (This is interpreted as a
                                 // value added or subtracted from the speed
                                 // in a given time interval.)
                                 // 'null' value means it is uninitialized
@@ -74,7 +74,7 @@ Fiz.IPhoneTouchScrollableSection = function(idOut, idIn) {
 }
 
 /**
- * Handler for the {@code touchstart} event on an IPhoneTouchScrollableSection 
+ * Handler for the {@code touchstart} event on an IPhoneTouchScrollableSection
  * object. The handler records the starting position and time of the touch.
  */
 Fiz.IPhoneTouchScrollableSection.prototype.touchStartHandler = function(event){
@@ -94,8 +94,8 @@ Fiz.IPhoneTouchScrollableSection.prototype.touchStartHandler = function(event){
 }
 
 /**
- * Handler for the {@code touchmove} event on an IPhoneTouchScrollableSection 
- * object. The {@code top} attribute of the scrollable section is adjusted 
+ * Handler for the {@code touchmove} event on an IPhoneTouchScrollableSection
+ * object. The {@code top} attribute of the scrollable section is adjusted
  * based on finger movement to produce an effect of scrolling with finger drag.
  */
 Fiz.IPhoneTouchScrollableSection.prototype.touchMoveHandler = function(event){
@@ -109,12 +109,12 @@ Fiz.IPhoneTouchScrollableSection.prototype.touchMoveHandler = function(event){
     this.speed = (newY - this.oldY)/(newTime - this.oldTime);
 
     /*
-     * The local variable 'boundary' defines the most negative possible value 
+     * The local variable 'boundary' defines the most negative possible value
      * for the top attribute of the scrollable section. This minimum is
      * attained when the scrollable section is moved all the way up, so that
      * the bottom of the content is visible.
      */
-    var boundary = (document.getElementById(this.idOut).offsetHeight - 
+    var boundary = (document.getElementById(this.idOut).offsetHeight -
             content.offsetHeight);
 
     /*
@@ -129,14 +129,14 @@ Fiz.IPhoneTouchScrollableSection.prototype.touchMoveHandler = function(event){
     var newTop = parseFloat(content.style.top) + (newY - this.oldY);
     newTop = (newTop > 0) ? 0 : (newTop < boundary) ? boundary : newTop;
     content.style.top = newTop + "px";
-    
+
     this.oldY = newY;
     this.oldTime = newTime;
     event.preventDefault();
 }
 
 /**
- * Handler for the {@code touchend} event on an IPhoneTouchScrollableSection 
+ * Handler for the {@code touchend} event on an IPhoneTouchScrollableSection
  * object.
  */
 Fiz.IPhoneTouchScrollableSection.prototype.touchEndHandler = function(event){
@@ -148,15 +148,15 @@ Fiz.IPhoneTouchScrollableSection.prototype.touchEndHandler = function(event){
     var oldTop = parseFloat(content.style.top);
 
     /*
-     * The local variable 'boundary' defines the minimum possible value 
+     * The local variable 'boundary' defines the minimum possible value
      * for the top attribute of the scrollable section. This minimum is
      * attained when the scrollable section is moved all the way up.
      */
-    var boundary = (document.getElementById(this.idOut).offsetHeight - 
+    var boundary = (document.getElementById(this.idOut).offsetHeight -
             content.offsetHeight);
 
     /*
-     * We must restrict the speed to a range of values otherwise the 
+     * We must restrict the speed to a range of values otherwise the
      * scroller will shoot off suddenly if the instantaneous speed of dragging
      * was high just before the finger was lifted.
      */
@@ -214,10 +214,10 @@ Fiz.IPhoneTouchScrollableSection.prototype.coastToStop = function(boundary){
     element.style.top = newTop + "px";
 
     /*
-     * If the speed becomes lower than the acceleration, or the section reaches 
+     * If the speed becomes lower than the acceleration, or the section reaches
      * its scrollable limit, then the function cleans up and exits.
      */
-    if (Math.abs(acceleration) > Math.abs(speed) || 
+    if (Math.abs(acceleration) > Math.abs(speed) ||
             newTop == 0 || newTop == boundary) {
         this.speed = 0;
         this.acceleration = null;
@@ -240,7 +240,7 @@ Fiz.IPhoneTouchScrollableSection.prototype.coastToStop = function(boundary){
  * elements within the page as the user tries to scroll. If a {@code touchmove}
  * event is followed by a {@code click} event, then the default action of
  * the click event is prevented. Otherwise, the action associated with the
- * {@code click} event takes place as usual. 
+ * {@code click} event takes place as usual.
  */
 Fiz.IPhoneTouchScrollableSection.prototype.disableLinksOnScroll = function() {
     var content = document.getElementById(this.idIn);

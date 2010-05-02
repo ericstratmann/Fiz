@@ -125,7 +125,7 @@ public class Html {
     /**
      * Adds the string passed as a parameter to the head of the HTML document.
      * The headExtra object is initialized 'on demand', ie. when this method is
-     * called for the first time. Subsequent calls to this method only append 
+     * called for the first time. Subsequent calls to this method only append
      * a string to it.
      * @param extra                   String to be appended to the head of the
      *                                HTML document.
@@ -136,10 +136,10 @@ public class Html {
         }
         headExtra.append(extra);
     }
-    
+
     /**
      * Returns the extra information added to the head of the HTML document.
-     * @return                        Returns the extra information added to 
+     * @return                        Returns the extra information added to
      *                                the head of the HTML document. If nothing
      *                                has been added, it returns null.
      */
@@ -148,7 +148,7 @@ public class Html {
             return headExtra.toString();
         }
         else{
-            return ""; 
+            return "";
         }
     }
 
@@ -388,7 +388,7 @@ public class Html {
                 }
                 writer.write("</style>\n");
             }
-            
+
             if (headExtra != null){
                 writer.write(headExtra.toString() + "\n");
             }

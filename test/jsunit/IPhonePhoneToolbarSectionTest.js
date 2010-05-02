@@ -1,6 +1,6 @@
 /* IPhonePhoneToolbarSectionTest.js --
  *
- * Jsunit tests for IPhonePhoneToolbarSection.js, organized in the standard 
+ * Jsunit tests for IPhonePhoneToolbarSection.js, organized in the standard
  * fashion.
  *
  * Copyright (c) 2010 Stanford University
@@ -30,7 +30,7 @@ IPhonePhoneToolbarSectionTest.test_constructor_noHandlersCalled = function(){
     childElement.listeners = new Array();
     testElement.appendChild(childElement);
     var iSection = new Fiz.IPhonePhoneToolbarSection("iSection");
-    assertEqual(undefined, childElement.listeners["touchstart"], 
+    assertEqual(undefined, childElement.listeners["touchstart"],
             "Touch Start Handler");
 }
 
@@ -41,7 +41,7 @@ IPhonePhoneToolbarSectionTest.test_addHandlerFirst = function(){
     childElement.listeners = new Array();
     testElement.appendChild(childElement);
     var iSection = new Fiz.IPhonePhoneToolbarSection("iSection");
-    assertEqual("\nfunction () {\n" + 
+    assertEqual("\nfunction () {\n" +
         "    Fiz.changeImage(image + label, image + \"-active.png\");\n" +
         "    Fiz.addClass(document.getElementById(\"td\" + image + label), \"active\");\n" +
         "}\n", childElement.listeners["touchstart"][0].toString(), "Touch Start Handler");
@@ -54,7 +54,7 @@ IPhonePhoneToolbarSectionTest.test_addHandlerSecond = function(){
     childElement.listeners = new Array();
     testElement.appendChild(childElement);
     var iSection = new Fiz.IPhonePhoneToolbarSection("iSection");
-    assertEqual("\nfunction () {\n" + 
+    assertEqual("\nfunction () {\n" +
         "    Fiz.changeImage(image + label, image + \".png\");\n" +
         "    Fiz.removeClass(document.getElementById(\"td\" + image + label), \"active\");\n" +
         "}\n", childElement.listeners["click"][0].toString(), "Click Handler");

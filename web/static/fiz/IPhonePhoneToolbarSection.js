@@ -2,9 +2,9 @@
  *
  * This file provides Javascript functions needed to implement the
  * PhoneToolbarSection class for an iPhone.
- * One Fiz.IPhonePhoneToolbarSection Javascript object gets created for each 
- * PhoneToolbarSection Java object created on an iPhone.  
- * Methods on the Javascript object are invoked for changing the color of the 
+ * One Fiz.IPhonePhoneToolbarSection Javascript object gets created for each
+ * PhoneToolbarSection Java object created on an iPhone.
+ * Methods on the Javascript object are invoked for changing the color of the
  * button when clicked.
  *
  * Copyright (c) 2010 Stanford University
@@ -48,9 +48,9 @@ Fiz.IPhonePhoneToolbarSection = function(id) {
 }
 
 /**
- * Initializes handlers for the buttons in the toolbar according to 
+ * Initializes handlers for the buttons in the toolbar according to
  * requirements for the iPhone.
- * @param button                   HTML element corresponding to the 
+ * @param button                   HTML element corresponding to the
  *                                 {@code div} element that contains this
  *                                 button.
  * @param image                    The name of the image file (without the
@@ -60,15 +60,15 @@ Fiz.IPhonePhoneToolbarSection = function(id) {
  *                                 button. The label and the the image
  *                                 name are used to assign javascript handlers
  *                                 to various HTML elements contained in this
- *                                 button.                                                              
+ *                                 button.
  */
 Fiz.IPhonePhoneToolbarSection.prototype.addHandlers = function(button, image, label){
     button.addEventListener("touchstart", function(){
         Fiz.changeImage(image + label, image + "-active.png");
-        Fiz.addClass(document.getElementById("td" + image + label), "active"); 
+        Fiz.addClass(document.getElementById("td" + image + label), "active");
     }, false);
     button.addEventListener("click", function(){
         Fiz.changeImage(image + label, image + ".png");
-        Fiz.removeClass(document.getElementById("td" + image + label), "active"); 
+        Fiz.removeClass(document.getElementById("td" + image + label), "active");
     }, false);
 }

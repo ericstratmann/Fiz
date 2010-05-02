@@ -38,15 +38,15 @@ public class TestInteractor extends Interactor {
     int ajaxCount1 = 0;
     int ajaxCount2 = 0;
     long startTime;
-    
+
     // This is used for a measurement of client to client RTT.
     class SyncInt {
         private int messageState;
-        
+
         public SyncInt(){
             messageState = 0;
         }
-        
+
         public synchronized void increment (int i, ClientRequest cr) {
             while (messageState != i) {
                 try {
@@ -57,14 +57,14 @@ public class TestInteractor extends Interactor {
             messageState = (messageState + 1) % 4;
             notifyAll();
         }
-        
+
         public int get() {
             return messageState;
         }
     }
 
     SyncInt syncInt = new SyncInt();
-    
+
     public void path(ClientRequest cr) {
         logger.info("getRealPath(\"a/b/c\"): "
                 + cr.getServletContext().getRealPath("a/b/c"));
@@ -249,7 +249,7 @@ public class TestInteractor extends Interactor {
                 new Dataset());
         body.append("<span id=\"perf\"></span>\n");
     }
-    
+
     public void ajaxRtt1(ClientRequest cr) {
         if (ajaxCount1 == 0){
             startTime = System.nanoTime();
@@ -268,7 +268,7 @@ public class TestInteractor extends Interactor {
                 String.format("<br>Time per round-trip: %.2fms",
                 (endTime - startTime)/(100*1000000.0)));
     }
-    
+
     public void ajaxRtt2(ClientRequest cr) {
         ajaxCount2++;
         if (ajaxCount2 < 100) {
@@ -283,7 +283,7 @@ public class TestInteractor extends Interactor {
         syncInt.increment(2, cr);
         cr.evalJavascript("new Fiz.Ajax(\"ajaxRtt2\");");
     }
-    
+
     public void rtt1(ClientRequest cr) {
         Html html = cr.getHtml();
         html.setTitle("RTT Test Page 1");

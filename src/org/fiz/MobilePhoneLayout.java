@@ -17,7 +17,7 @@ package org.fiz;
 
 /**
  * This class is used to define device-level properties while creating web
- * applications using Fiz. The caller must call the {@code setup} method with 
+ * applications using Fiz. The caller must call the {@code setup} method with
  * the client request object as an argument along with the target device.
  */
 
@@ -35,7 +35,7 @@ public class MobilePhoneLayout {
      * @param device               A string containing the device name.
      *                             This is used to set the value of "device"
      *                             in the main dataset associated with the
-     *                             client request object and can thus be 
+     *                             client request object and can thus be
      *                             accessed in other places.
      */
     public void setup(ClientRequest cr, String device){
@@ -44,8 +44,8 @@ public class MobilePhoneLayout {
         Html html = cr.getHtml();
 
         if (device.equals("IPhone")){
-            html.appendToHead(" <meta name=\"viewport\" " + 
-                    "content=\"width=device-width; " + 
+            html.appendToHead(" <meta name=\"viewport\" " +
+                    "content=\"width=device-width; " +
                     "initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; " +
                     "user-scalable=0;\" />");
             html.includeCssFile("IPhoneLayout.css");
@@ -54,8 +54,8 @@ public class MobilePhoneLayout {
         }
 
         if (device.equals("Android")){
-            html.appendToHead(" <meta name=\"viewport\" " + 
-                    "content=\"width=device-width; " + 
+            html.appendToHead(" <meta name=\"viewport\" " +
+                    "content=\"width=device-width; " +
                     "initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; " +
                     "user-scalable=0;\" />");
             html.includeCssFile("AndroidLayout.css");

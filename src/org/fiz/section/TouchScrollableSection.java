@@ -18,21 +18,21 @@ package org.fiz.section;
 import org.fiz.*;
 
 /**
- * A TouchScrollableSection is designed to be used for designing web 
- * applications on a phone with a touch screen. This section creates a 
- * scrollable area which forms the main body of the application. 
- * This may contain other sections inside it. A TouchScrollableSection supports 
+ * A TouchScrollableSection is designed to be used for designing web
+ * applications on a phone with a touch screen. This section creates a
+ * scrollable area which forms the main body of the application.
+ * This may contain other sections inside it. A TouchScrollableSection supports
  * the following constructor properties:
- * 
+ *
  *   class:          (optional) Used as the {@code class} attribute for
  *                   the HTML div that acts the inner (scrollable) part for
  *                   this section. The outer {@code div} contaning this
  *                   section is automatically given a {@code class} attribute
  *                   equal to this value + "Container".
- *                   Defaults to {@code touchScrollableSection}. Thus, the outer 
- *                   div has a default class 
+ *                   Defaults to {@code touchScrollableSection}. Thus, the outer
+ *                   div has a default class
  *                   {@code touchScrollableSectionContainer}
- *                   Any change to this property will over-ride the default CSS 
+ *                   Any change to this property will over-ride the default CSS
  *                   for this section.
  *
  *   id:             (optional) Used as the {@code id} attribute for
@@ -42,7 +42,7 @@ import org.fiz.*;
  *                   equal to this value + "Container".
  *                   Defaults to {@code touchScrollableSectionContent} + a
  *                   unique integer, eg.: {@code touchScrollableSectionContent1}.
- *                   Thus, the outer div has a default id 
+ *                   Thus, the outer div has a default id
  *                   {@code touchScrollableSectionContent1Container}
  */
 
@@ -88,16 +88,16 @@ public class TouchScrollableSection extends Section{
             sectionId = cr.uniqueId("touchScrollableSectionContent");
         }
 
-        cr.evalJavascript("new Fiz." + device + 
-                "TouchScrollableSection(\"" + sectionId + "Container\"," + 
+        cr.evalJavascript("new Fiz." + device +
+                "TouchScrollableSection(\"" + sectionId + "Container\"," +
                 " \"" + sectionId + "\");\n");
 
      // Render the portion of this section that comes before the children.
-        Template.appendHtml(out, 
-                "\n<!-- Start TouchScrollableSection -->\n" + 
-                "<div id=\"" + sectionId + "Container\" " + 
-                    "class=\"" + sectionClass + "Container\">\n" + 
-                "  <div id=\"" + sectionId + "\" " + 
+        Template.appendHtml(out,
+                "\n<!-- Start TouchScrollableSection -->\n" +
+                "<div id=\"" + sectionId + "Container\" " +
+                    "class=\"" + sectionClass + "Container\">\n" +
+                "  <div id=\"" + sectionId + "\" " +
                     "class=\"" + sectionClass + "\">\n");
 
         // Render the children...
@@ -106,7 +106,7 @@ public class TouchScrollableSection extends Section{
         }
 
         //End section..
-        out.append("  </div>\n</div>\n" + 
+        out.append("  </div>\n</div>\n" +
                 "<!-- End TouchScrollableSection -->\n");
     }
 }

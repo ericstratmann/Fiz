@@ -30,7 +30,7 @@ public class TouchScrollableSectionTest extends junit.framework.TestCase {
     public void setUp() {
         cr = new ClientRequestFixture();
     }
-    
+
     public void test_render_includeDeviceJs() {
         cr.getMainDataset().set("device", "IPhone");
         TouchScrollableSection scroller = new TouchScrollableSection(
@@ -71,7 +71,7 @@ public class TouchScrollableSectionTest extends junit.framework.TestCase {
                 "\"touchScrollableSectionContent0\")",
                 cr.getHtml().getJs());
     }
-    
+
     public void test_render_accumulatedJsCustomId() {
         cr.getMainDataset().set("device", "IPhone");
         TouchScrollableSection scroller = new TouchScrollableSection(
@@ -89,17 +89,17 @@ public class TouchScrollableSectionTest extends junit.framework.TestCase {
                    new Dataset(),
                    new TemplateSection ("<p>Here is some sample text " +
                        "to fill the body of this section.</p>\n"),
-                   new TemplateSection ("<p>This is a second " + 
+                   new TemplateSection ("<p>This is a second " +
                        "paragraph, which follows the first.</p>\n"));
         cr.showSections(scroller);
         assertEquals("generated HTML",
-                "\n<!-- Start TouchScrollableSection -->\n" + 
+                "\n<!-- Start TouchScrollableSection -->\n" +
                 "<div id=\"touchScrollableSectionContent0Container\" " +
-                    "class=\"touchScrollableSectionContainer\">\n" + 
+                    "class=\"touchScrollableSectionContainer\">\n" +
                 "  <div id=\"touchScrollableSectionContent0\" " +
                     "class=\"touchScrollableSection\">\n" +
-                "<p>Here is some sample text to fill the body of this " + 
-                    "section.</p>\n" + 
+                "<p>Here is some sample text to fill the body of this " +
+                    "section.</p>\n" +
                 "<p>This is a second paragraph, which follows the first.</p>\n" +
                 "  </div>\n" +
                 "</div>\n" +
