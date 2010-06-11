@@ -61,11 +61,11 @@ function check {
 
 file=""
 if [[ -t 0 ]]; then
-    file=`cat $fileName`
+    file=`cat "$filename"`
 else
     file=`cat`
     if [ -z "$file" ]; then
-        file=`cat $fileName`
+        file=`cat "$fileName"`
     fi
 fi
 

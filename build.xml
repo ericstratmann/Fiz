@@ -303,7 +303,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
        <antcall target="run-style">
            <param name="action" value="check"/>
        </antcall>
-   </target>
+   </target>   
 
    <target name="fix-style">
        <antcall target="run-style">
@@ -323,6 +323,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                     <include name="**/*.css"/>
                     <include name="**/*.xml"/>
                     <exclude name="out/**/*"/>
+                    <exclude name=".idea/**/*"/>
                 </patternset>
             </fileset>
         </apply>
