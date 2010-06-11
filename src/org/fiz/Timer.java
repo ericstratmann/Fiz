@@ -96,7 +96,7 @@ public class Timer {
             totalNs += d;
             totalSquaredNs += d*d;
         }
-        numIntervals ++;
+        numIntervals ++;  
     }
 
     /**
